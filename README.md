@@ -2,6 +2,12 @@
 
 Several scripts are included to generate signatures via Agent SKILLS with ida-pro-mcp
 
+## Requirements
+
+1. claude / codex
+
+2. https://github.com/mrexodia/ida-pro-mcp
+
 ```bash
 py .\download_bin.py -date 2026-01-22
 ```
