@@ -16,7 +16,7 @@ py .\download_bin.py -date 2026-01-22
 
 ## How to create SKILLS
 
-1. Vibe all the way down to what you want, `CBaseModelEntity_SetModel` for example.
+1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 
 ```bash
 Prompt: 
