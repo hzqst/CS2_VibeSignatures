@@ -1,0 +1,22 @@
+modules:
+  - name: engine
+    path_windows: game/bin/win64/engine2.dll
+    path_linux: game/bin/linuxsteamrt64/libengine2.so
+
+    symbols:
+      - name: IsHearingClient
+        catagory: func
+
+  - name: server
+    path_windows: game/csgo/bin/win64/server.dll
+    path_linux: game/csgo/bin/linuxsteamrt64/libserver.so
+
+    symbols:
+      - name: UTIL_SayTextFilter
+        catagory: func
+
+      - name: CBaseModelEntity_SetModel
+        catagory: vfunc
+
+      - name: CBasePlayerController_SetPlayerName
+        catagory: vfunc
