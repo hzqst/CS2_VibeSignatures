@@ -8,6 +8,8 @@ Several scripts are included to generate signatures via Agent SKILLS with ida-pr
 
 2. https://github.com/mrexodia/ida-pro-mcp
 
+## Download CS2 binaries
+
 ```bash
 py .\download_bin.py -date 2026-01-22
 ```
