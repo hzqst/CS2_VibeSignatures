@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ida-pro": {
+      "type": "sse",
+      "url": "http://127.0.0.1:8745/sse"
+    }
+  }
+}
