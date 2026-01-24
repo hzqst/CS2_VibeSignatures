@@ -41,7 +41,69 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<function_addr>", "name": "CBaseModelEntity_SetModel"}}
    ```
 
-7. Write YAML file beside the binary:
+7. Generate and validate unique signature:
+
+   - Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
+
+   - Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
+
+   ```python
+   mcp__ida-pro-mcp__py_eval code="""
+   import ida_bytes
+   import ida_segment
+
+   func_addr = <func_addr>
+
+   # Get function bytes
+   raw_bytes = ida_bytes.get_bytes(func_addr, 64)
+   print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
+
+   # Identify unique byte patterns in the function
+   # Look for distinctive instruction sequences that are unlikely to appear elsewhere
+
+   # Get .text segment bounds
+   seg = ida_segment.get_segm_by_name(".text")
+   start = seg.start_ea
+   end = seg.end_ea
+
+   # Test candidate signature - adjust based on function's unique characteristics
+   # For example, look for unique immediate values, register combinations, or call patterns
+   candidate_sig = raw_bytes[:16]  # Start with first 16 bytes as candidate
+
+   step = 0x200000
+   matches = []
+
+   for chunk_start in range(start, end, step):
+       chunk_end = min(chunk_start + step + 64, end)
+       data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
+       if data:
+           pos = 0
+           while True:
+               idx = data.find(candidate_sig, pos)
+               if idx == -1:
+                   break
+               matches.append(hex(chunk_start + idx))
+               pos = idx + 1
+
+   print(f"Signature matches: {len(matches)}")
+   for m in matches:
+       print(m)
+
+   if len(matches) == 1:
+       print("SUCCESS: Signature is unique!")
+       print("Signature:", ' '.join(f'{b:02X}' for b in candidate_sig))
+   else:
+       print("WARNING: Signature is not unique, need longer/different pattern")
+   """
+   ```
+
+   Tips for finding unique signatures:
+   - Look for unique string references or immediate values
+   - Find distinctive instruction sequences
+   - Use wildcards (`??`) for bytes that may change (relocations, offsets)
+   - Ensure the signature matches ONLY this function
+
+8. Write YAML file beside the binary:
    ```python
    mcp__ida-pro-mcp__py_eval code="""
    import idaapi
@@ -64,9 +126,12 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
        platform = 'linux'
        func_rva = func_addr  # For .so files, typically no rebase needed
 
+   func_sig = "<unique_signature>"  # Replace with validated signature
+
    yaml_content = f'''func_va: {hex(func_addr)}
 func_rva: {hex(func_rva)}
 func_size: {hex(func_size)}
+func_sig: {func_sig}
 '''
 
    yaml_path = os.path.join(dir_path, f"CBaseModelEntity_SetModel.{platform}.yaml")
@@ -103,4 +168,5 @@ The output YAML filename depends on the platform:
 func_va: 0x142de40       # Virtual address of the function - This can change when game updates.
 func_rva: 0x142de40      # Relative virtual address (VA - image base) - This can change when game updates.
 func_size: 0x3d          # Function size in bytes - This can change when game updates.
+func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - This can change when game updates.
 ```

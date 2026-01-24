@@ -85,7 +85,69 @@ Look for:
 
 Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV13CCSPlayerPawn + 0x10`.
 
-### 8. Get Image Base and Write YAML
+### 8. Generate and Validate Unique Signature
+
+- Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
+
+- Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
+
+```python
+mcp__ida-pro-mcp__py_eval code="""
+import ida_bytes
+import ida_segment
+
+func_addr = <func_addr>
+
+# Get function bytes
+raw_bytes = ida_bytes.get_bytes(func_addr, 64)
+print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
+
+# Identify unique byte patterns in the function
+# Look for distinctive instruction sequences that are unlikely to appear elsewhere
+
+# Get .text segment bounds
+seg = ida_segment.get_segm_by_name(".text")
+start = seg.start_ea
+end = seg.end_ea
+
+# Test candidate signature - adjust based on function's unique characteristics
+# For example, look for unique immediate values, register combinations, or call patterns
+candidate_sig = raw_bytes[:16]  # Start with first 16 bytes as candidate
+
+step = 0x200000
+matches = []
+
+for chunk_start in range(start, end, step):
+    chunk_end = min(chunk_start + step + 64, end)
+    data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
+    if data:
+        pos = 0
+        while True:
+            idx = data.find(candidate_sig, pos)
+            if idx == -1:
+                break
+            matches.append(hex(chunk_start + idx))
+            pos = idx + 1
+
+print(f"Signature matches: {len(matches)}")
+for m in matches:
+    print(m)
+
+if len(matches) == 1:
+    print("SUCCESS: Signature is unique!")
+    print("Signature:", ' '.join(f'{b:02X}' for b in candidate_sig))
+else:
+    print("WARNING: Signature is not unique, need longer/different pattern")
+"""
+```
+
+Tips for finding unique signatures:
+- Look for unique string references or immediate values
+- Find distinctive instruction sequences
+- Use wildcards (`??`) for bytes that may change (relocations, offsets)
+- Ensure the signature matches ONLY this function
+
+### 9. Get Image Base and Write YAML
 
 Get binary information:
 
@@ -102,9 +164,45 @@ print(f"Base: {hex(image_base)}")
 
 Calculate `func_rva = func_va - image_base`
 
-Write the YAML file beside the binary using the Write tool:
-- `server.dll` → `CCSPlayerPawnBase_PostThink.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayerPawnBase_PostThink.linux.yaml`
+Write the YAML file beside the binary:
+
+```python
+mcp__ida-pro-mcp__py_eval code="""
+import idaapi
+import os
+
+input_file = idaapi.get_input_file_path()
+dir_path = os.path.dirname(input_file)
+
+# Determine platform from file extension
+if input_file.endswith('.dll'):
+    platform = 'windows'
+    image_base = 0x180000000
+else:
+    platform = 'linux'
+    image_base = 0x0
+
+func_va = <func_addr>
+func_size = <func_size>
+func_rva = func_va - image_base
+func_sig = "<unique_signature>"  # Replace with validated signature
+
+yaml_content = f'''func_va: {hex(func_va)}
+func_rva: {hex(func_rva)}
+func_size: {hex(func_size)}
+func_sig: {func_sig}
+vfunc_name: CCSPlayerPawn
+vfunc_mangled_name: _ZTV13CCSPlayerPawn
+vfunc_offset: <vfunc_offset>
+vfunc_index: <vfunc_index>
+'''
+
+yaml_path = os.path.join(dir_path, f"CCSPlayerPawnBase_PostThink.{platform}.yaml")
+with open(yaml_path, 'w', encoding='utf-8') as f:
+    f.write(yaml_content)
+print(f"Written to: {yaml_path}")
+"""
+```
 
 ## Function Characteristics
 
@@ -136,6 +234,7 @@ The output YAML filename depends on the platform:
 func_va: 0xA58DE0        # Virtual address of the function - changes with game updates
 func_rva: 0xA58DE0       # Relative virtual address (VA - image base) - changes with game updates
 func_size: 0x86A         # Function size in bytes - changes with game updates
+func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - changes with game updates
 vfunc_name: CCSPlayerPawn
 vfunc_mangled_name: _ZTV13CCSPlayerPawn  # Use ??_7CCSPlayerPawn@@6B@ for Windows
 vfunc_offset: 0xB98      # Offset from vtable start - changes with game updates
