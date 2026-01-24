@@ -1,3 +1,4 @@
-func_va: 0x1804F8590
-func_rva: 0x4F8590
-func_size: 0xB7
+func_va: 0x1804f8590
+func_rva: 0x4f8590
+func_size: 0xb7
+func_sig: 48 89 5C 24 08 57 48 83 EC 20 33 FF 4C 8B CA 8B
