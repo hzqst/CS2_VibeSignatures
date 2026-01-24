@@ -2,6 +2,8 @@
 
 Several scripts are included to generate signatures via Agent SKILLS with ida-pro-mcp
 
+Out goal is to update signatures/offsets after game update without human involved.
+
 ## Requirements
 
 1. claude / codex
