@@ -14,10 +14,16 @@ Feel free to contibute your SKILLS!
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
-## Download CS2 binaries
+## How to locate functions or variables
+
+Let's locate `CBaseModelEntity_SetModel` for example.
 
 ```bash
 py .\download_bin.py -gamever 14132
+```
+
+```bash
+claude /find-CBaseModelEntity_SetModel
 ```
 
 ## How to create SKILLS
