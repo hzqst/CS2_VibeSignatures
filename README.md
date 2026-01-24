@@ -1,6 +1,6 @@
 # CS2 VibeSignatures
 
-Several scripts are included to generate signatures via Agent SKILLS with ida-pro-mcp
+Several scripts and prompts are included to generate signatures via Agent SKILLS with ida-pro-mcp
 
 Our goal is to update signatures/offsets for each game update without human involved.
 
