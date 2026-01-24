@@ -88,6 +88,7 @@ Prompt:
 
 ```bash
 Prompt:
+ - **DO NOT** use `find_bytes` as it won't work for function.
  - use SKILL: /generate-signature-for-function to generate a robust signature for this function.
 ```
 
