@@ -101,7 +101,7 @@ Prompt:
      … +9 lines (ctrl+o to expand)
 ```
 
-Optionally, search vftable for virtual function, CCSPlayerPawnBase_PostThink in this case
+2. Optionally, search vftable for virtual function, CCSPlayerPawnBase_PostThink in this case
 
 ```bash
 Prompt:
@@ -120,36 +120,37 @@ Prompt:
 
 ```
 
+3. Write YAML
+
 ```bash
 
 Prompt:
  - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
-
-  For virtual function:
-
-  ```yaml
-  func_va: 0x180ABCDEF
-  func_rva: 0xABCDEF
-  func_size: 0xABC
-  vfunc_name: CCSPlayerPawn
-  vfunc_mangled_name: _ZTV13CCSPlayerPawn
-  vfunc_offset: 0xA00
-  vfunc_index: 320
-  ```
-
-  For non-virtual function:
-
-  ```yaml
-  func_va: 0x180ABCDEF
-  func_rva: 0xABCDEF
-  func_size: 0xABC
-  ```
-
-  * func_rva is calculated with `func_va - ImageBase`
-
 ```
 
-Create SKILL
+For virtual function:
+
+```yaml
+func_va: 0x180ABCDEF
+func_rva: 0xABCDEF
+func_size: 0xABC
+vfunc_name: CCSPlayerPawn
+vfunc_mangled_name: _ZTV13CCSPlayerPawn
+vfunc_offset: 0xA00
+vfunc_index: 320
+```
+
+For non-virtual function:
+
+```yaml
+func_va: 0x180ABCDEF
+func_rva: 0xABCDEF
+func_size: 0xABC
+```
+
+* func_rva is calculated with `func_va - ImageBase`
+
+4. Create SKILL
 
 ```bash
 Prompt:
