@@ -1,0 +1,7 @@
+func_va: 0x1378950
+func_rva: 0x1378950
+func_size: 0x46d
+vfunc_name: CCSPlayerController
+vfunc_mangled_name: _ZTV19CCSPlayerController
+vfunc_offset: 0x328
+vfunc_index: 101

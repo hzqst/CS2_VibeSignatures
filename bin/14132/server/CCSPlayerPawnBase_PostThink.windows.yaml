@@ -1,0 +1,7 @@
+func_va: 0x1801E1260
+func_rva: 0x1E0260
+func_size: 0xA04
+vfunc_name: CCSPlayerPawn
+vfunc_mangled_name: "??_7CCSPlayerPawn@@6B@"
+vfunc_offset: 0xB80
+vfunc_index: 368

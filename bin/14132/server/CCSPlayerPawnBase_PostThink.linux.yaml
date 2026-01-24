@@ -1,0 +1,7 @@
+func_va: 0xA58DE0
+func_rva: 0xA58DE0
+func_size: 0x86A
+vfunc_name: CCSPlayerPawn
+vfunc_mangled_name: _ZTV13CCSPlayerPawn
+vfunc_offset: 0xB98
+vfunc_index: 371
