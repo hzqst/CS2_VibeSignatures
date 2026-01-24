@@ -146,6 +146,7 @@ Tips for finding unique signatures:
 - Find distinctive instruction sequences
 - Use wildcards (`??`) for bytes that may change (relocations, offsets)
 - Ensure the signature matches ONLY this function
+- **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
 
 ### 9. Get Image Base and Write YAML
 

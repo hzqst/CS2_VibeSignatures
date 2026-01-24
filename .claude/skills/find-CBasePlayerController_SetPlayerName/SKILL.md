@@ -91,11 +91,12 @@ Locate `CBasePlayerController_SetPlayerName` in CS2 server.dll or server.so usin
    """
    ```
 
-   The unique signature for this function is:
-   - `41 B8 80 00 00 00` - `mov r8d, 80h` (128 byte max name length)
-   - `48 8D 99 10 05 00 00` - `lea rbx, [rcx+510h]` (name storage offset)
-
-   Combined signature: `41 B8 80 00 00 00 48 8D 99 10 05 00 00`
+   Tips for finding unique signatures:
+   - Look for unique string references or immediate values
+   - Find distinctive instruction sequences
+   - Use wildcards (`??`) for bytes that may change (relocations, offsets)
+   - Ensure the signature matches ONLY this function
+   - **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
 
 9. Write YAML file beside the binary:
    ```python

@@ -102,6 +102,7 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
    - Find distinctive instruction sequences
    - Use wildcards (`??`) for bytes that may change (relocations, offsets)
    - Ensure the signature matches ONLY this function
+   - **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
 
 8. Write YAML file beside the binary:
    ```python
