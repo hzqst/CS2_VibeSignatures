@@ -1,6 +1,6 @@
 search string `"\"%s<%i><%s><%s>\" ChangeTeam() CTMDBG`
 
-args: `CBasePlayerController *pController, int teamIndex`
+args: `CCSPlayerController *pController, int teamIndex`
 
 dll: `server`
 
