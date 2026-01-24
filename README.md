@@ -155,5 +155,5 @@ func_size: 0xABC
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in English according to what we just did, so we can write yaml when using SKILL next time. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. You can check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
+ - /skill-creator Create project-level skill "find-{FunctionName}" in English according to what we just did, so we can write yaml when using SKILL next time. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
 ```
