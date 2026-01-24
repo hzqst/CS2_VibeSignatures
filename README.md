@@ -126,7 +126,6 @@ Prompt:
 
 Prompt:
  - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
-```
 
 For virtual function:
 
@@ -149,6 +148,8 @@ func_size: 0xABC
 ```
 
 * func_rva is calculated with `func_va - ImageBase`
+
+```
 
 4. Create SKILL
 
