@@ -81,5 +81,41 @@ Prompt:
 
 ```bash
 Prompt: 
- - /skill-creator Create project-level skill "find-CBaseModelEntity_SetModel" in English. Don't pack skill.
+ - 
+```
+
+```bash
+
+Prompt:
+ - Write `CBaseModelEntity_SetModel.windows.yaml` / `CBaseModelEntity_SetModel.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
+
+  For virtual function:
+
+  ```yaml
+  func_va: 0x180ABCDEF
+  func_rva: 0xABCDEF
+  func_size: 0xABC
+  vfunc_name: CCSPlayerPawn
+  vfunc_mangled_name: _ZTV13CCSPlayerPawn
+  vfunc_offset: 0xA00
+  vfunc_index: 320
+  ```
+
+  For non-virtual function:
+
+  ```yaml
+  func_va: 0x180ABCDEF
+  func_rva: 0xABCDEF
+  func_size: 0xABC
+  ```
+
+  * func_rva is calculated with `func_va - ImageBase`
+
+```
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-CBaseModelEntity_SetModel" in English according to what we just did, so we can write yaml when using SKILL next time. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. You can check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
+
+● Write \CS2_VibeSignatures\.claude\skills\find-CBaseModelEntity_SetModel\SKILL.md
 ```
