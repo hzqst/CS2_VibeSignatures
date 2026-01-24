@@ -88,9 +88,7 @@ Prompt:
 
 ```bash
 Prompt:
- - Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
- - Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
- - **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
+ - use SKILL: /generate-signature-for-function to generate a robust signature for this function.
 ```
 
 4. Write YAML
