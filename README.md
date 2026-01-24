@@ -120,7 +120,16 @@ Prompt:
 
 ```
 
-3. Write YAML
+3. Generate a robust signature for this function
+
+
+```bash
+Prompt:
+ - Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
+ - Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
+```
+
+4. Write YAML
 
 ```bash
 
@@ -133,6 +142,7 @@ For virtual function:
 func_va: 0x180ABCDEF
 func_rva: 0xABCDEF
 func_size: 0xABC
+func_sig: 55 8B EC 11 22 33 44 55 66 77 88
 vfunc_name: CCSPlayerPawn
 vfunc_mangled_name: _ZTV13CCSPlayerPawn
 vfunc_offset: 0xA00
@@ -145,13 +155,14 @@ For non-virtual function:
 func_va: 0x180ABCDEF
 func_rva: 0xABCDEF
 func_size: 0xABC
+func_sig: 55 8B EC 11 22 33 44 55 66 77 88
 ```
 
 * func_rva is calculated with `func_va - ImageBase`
 
 ```
 
-4. Create SKILL
+5. Create SKILL
 
 ```bash
 Prompt:
