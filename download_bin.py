@@ -5,10 +5,10 @@ Binary Download Script for CS2_VibeSignatures
 Downloads CS2 binary files from AlliedMods SourceBins based on entries in config.yaml.
 
 Usage:
-    python download_bin.py [-bindir=bin] [-date=2024-01-15] [-platform=windows|linux] [-sourcebinsurl=URL]
+    python download_bin.py -gamever=<version> [-bindir=bin] [-platform=windows|linux] [-sourcebinsurl=URL]
 
+    -gamever: Game version subdirectory name (required)
     -bindir: Directory to save downloaded binaries (default: bin)
-    -date: Date subdirectory name (default: today's date in YYYY-MM-DD format)
     -platform: Filter by platform (windows or linux). If not specified, downloads both.
     -sourcebinsurl: Base URL for SourceBins (default: https://sourcebins.alliedmods.net/cs2)
 
@@ -19,7 +19,6 @@ Requirements:
 import argparse
 import os
 import sys
-from datetime import datetime
 from pathlib import Path
 
 try:
@@ -47,9 +46,9 @@ def parse_args():
         help=f"Directory to save downloaded binaries (default: {DEFAULT_BIN_DIR})"
     )
     parser.add_argument(
-        "-date",
-        default=None,
-        help="Date subdirectory name (default: today's date in YYYY-MM-DD format)"
+        "-gamever",
+        required=True,
+        help="Game version subdirectory name (required)"
     )
     parser.add_argument(
         "-platform",
@@ -69,10 +68,6 @@ def parse_args():
     )
 
     args = parser.parse_args()
-
-    # Set default date to today if not specified
-    if args.date is None:
-        args.date = datetime.now().strftime("%Y-%m-%d")
 
     # Remove trailing slash from URL
     args.sourcebinsurl = args.sourcebinsurl.rstrip("/")
@@ -163,14 +158,14 @@ def download_file(url, target_path):
         return False
 
 
-def process_module(module, bin_dir, date, platform_filter, base_url):
+def process_module(module, bin_dir, gamever, platform_filter, base_url):
     """
     Process a single module: download binary files for specified platforms.
 
     Args:
         module: Dictionary with module info (name, path_windows, path_linux)
         bin_dir: Base directory to save binaries
-        date: Date subdirectory name
+        gamever: Game version subdirectory name
         platform_filter: Optional platform filter (windows, linux, or None for both)
         base_url: Base URL for SourceBins
 
@@ -198,8 +193,8 @@ def process_module(module, bin_dir, date, platform_filter, base_url):
         # Extract filename from path
         filename = Path(path).name
 
-        # Build target path: {bin_dir}/{module_name}/{date}/{filename}
-        target_dir = os.path.join(bin_dir, name, date)
+        # Build target path: {bin_dir}/{module_name}/{gamever}/{filename}
+        target_dir = os.path.join(bin_dir, name, gamever)
         target_path = os.path.join(target_dir, filename)
 
         print(f"\nProcessing: {name} ({platform})")
@@ -226,7 +221,7 @@ def main():
 
     config_path = args.config
     bin_dir = args.bindir
-    date = args.date
+    gamever = args.gamever
     platform_filter = args.platform
     base_url = args.sourcebinsurl
 
@@ -240,7 +235,7 @@ def main():
 
     print(f"Config file: {config_path}")
     print(f"Binary directory: {bin_dir}")
-    print(f"Date: {date}")
+    print(f"Game version: {gamever}")
     print(f"Source URL: {base_url}")
     if platform_filter:
         print(f"Platform filter: {platform_filter}")
@@ -259,7 +254,7 @@ def main():
     total_fail = 0
 
     for module in modules:
-        success, fail = process_module(module, bin_dir, date, platform_filter, base_url)
+        success, fail = process_module(module, bin_dir, gamever, platform_filter, base_url)
         total_success += success
         total_fail += fail
 
