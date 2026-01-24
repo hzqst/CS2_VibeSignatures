@@ -121,12 +121,7 @@ Prompt:
   .data.rel.ro:0000000002114CD0 ; `vtable for'CCSPlayerPawn
   .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
   ```
-
-  
-
 ```
-
-Write yaml
 
 ```bash
 
