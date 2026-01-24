@@ -26,6 +26,8 @@ py .\download_bin.py -gamever 14132
 claude /find-CBaseModelEntity_SetModel
 ```
 
+* Automation with subagents is coming soon.
+
 ## How to create SKILLS
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
