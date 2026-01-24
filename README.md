@@ -87,15 +87,14 @@ Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this cas
 
 ```bash
 Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
+ - search upward from 0x2115868 and check if any similar things like:
 
- - search upward from “0x2115868” and check if any similar things like:
-
-  ```
+  ```c
   .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
   .rdata:0000000181533788 ??_7CCSPlayerPawn@@6B@
   ```
 
-  ```
+  ```c
   .data.rel.ro:0000000002114CD0 ; `vtable for'CCSPlayerPawn
   .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
   ```
