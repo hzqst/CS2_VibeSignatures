@@ -86,13 +86,6 @@ The function contains a debug log call with format string:
 ## Function Characteristics
 
 - **Parameters**: `(this, team_id)` where `this` is CCSPlayerController pointer, `team_id` is the target team
-- **Key offsets**:
-  - `this + 0x344`: Current team ID
-  - `this + 0x810`: Team-related field
-  - `this + 0x824`: Flag (set to 1 when changing to non-spectator)
-  - `this + 0x827`: Flag (set to 1 when team is spectator)
-  - `this + 0x828`: `willSwitch` field
-  - `this + 0x82C`: Timestamp field
 
 ## Team IDs
 
@@ -107,6 +100,8 @@ The function contains a debug log call with format string:
 - **VTable Mangled Name**: `??_7CCSPlayerController@@6B@`
 - **VTable Index**: 102 (0x66) - This can change when game updates.
 - **VTable Offset**: 0x330  - This can change when game updates.
+
+* Note that for `server.so`, The first 16 bytes of "vftable" are for RTTI. the real vftable =  `_ZTV19CCSPlayerController (0x221e390)` + `0x10` = `0x221e3A0`.
 
 ## Output YAML Format
 
