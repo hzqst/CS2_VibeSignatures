@@ -115,12 +115,11 @@ Prompt:
   ```c
   .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
   .rdata:0000000181533788 ??_7CCSPlayerPawn@@6B@
-  ```
 
-  ```c
   .data.rel.ro:0000000002114CD0 ; `vtable for'CCSPlayerPawn
   .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
   ```
+  
 ```
 
 ```bash
