@@ -131,34 +131,41 @@ Prompt:
 
 4. Write YAML
 
-```bash
+For virtual function:
 
+```bash
 Prompt:
  - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
 
-For virtual function:
+  ```yaml
+  func_va: 0x180ABCDEF
+  func_rva: 0xABCDEF
+  func_size: 0xABC
+  func_sig: 55 8B EC 11 22 33 44 55 66 77 88
+  vfunc_name: CCSPlayerPawn
+  vfunc_mangled_name: _ZTV13CCSPlayerPawn
+  vfunc_offset: 0xA00
+  vfunc_index: 320
+  ```
 
-```yaml
-func_va: 0x180ABCDEF
-func_rva: 0xABCDEF
-func_size: 0xABC
-func_sig: 55 8B EC 11 22 33 44 55 66 77 88
-vfunc_name: CCSPlayerPawn
-vfunc_mangled_name: _ZTV13CCSPlayerPawn
-vfunc_offset: 0xA00
-vfunc_index: 320
+  * func_rva is calculated with `func_va - ImageBase`
+
 ```
 
 For non-virtual function:
 
-```yaml
-func_va: 0x180ABCDEF
-func_rva: 0xABCDEF
-func_size: 0xABC
-func_sig: 55 8B EC 11 22 33 44 55 66 77 88
-```
+```bash
+Prompt:
+ - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
 
-* func_rva is calculated with `func_va - ImageBase`
+  ```yaml
+  func_va: 0x180ABCDEF
+  func_rva: 0xABCDEF
+  func_size: 0xABC
+  func_sig: 55 8B EC 11 22 33 44 55 66 77 88
+  ```
+
+  * func_rva is calculated with `func_va - ImageBase`
 
 ```
 
