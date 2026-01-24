@@ -110,7 +110,7 @@ Prompt:
 
 ```bash
 Prompt: 
- - search upward from the read-only address that points to CCSPlayerPawnBase_PostThink, and check if any similar things like:
+ - search upward from the read-only address that points to CCSPlayerPawnBase_PostThink, and check if any similar things like the virtuall function table of CCSPlayerPawnBase_PostThink's class:
 
   ```c
   .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
@@ -122,7 +122,7 @@ Prompt:
   .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
   ```
 
-  or like the virtuall function table of CCSPlayerPawnBase_PostThink's class
+  
 
 ```
 
