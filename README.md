@@ -44,25 +44,21 @@ claude /find-CBaseModelEntity_SetModel
 
 ```bash
 Prompt: 
- - search string: `weapons/models/defuser/defuser.vmdl` in IDA
-
-● ida-pro-mcp - find_regex (MCP)(pattern: "weapons/models/defuser/defuser\\.vmdl")
+ - search string `weapons/models/defuser/defuser.vmdl` in IDA
 ```
 
 ```bash
 Prompt: 
  - show xref for this string
-
-● ida-pro-mcp - xrefs_to (MCP)(addrs: "0x18152e658")
 ```
 
 ```bash
 Prompt: 
- - Can you find code snippet with following pattern in xrefs?
+ - Find code snippet with following pattern in xrefs
 
   v2 = a2;
   v3 = (__int64)a1;
-  CBaseModelEntity_SetModel(a1, (__int64)"weapons/models/defuser/defuser.vmdl");
+  sub_180A8B930(a1, (__int64)"weapons/models/defuser/defuser.vmdl");
   sub_18084ABF0(v3, v2);
   v4 = (_DWORD *)sub_180CED000(&unk_1813D3728, 0xFFFFFFFFi64);
   if ( !v4 )
@@ -74,49 +70,64 @@ Prompt:
                       "defuser_dropped",
                       0i64,
                       0i64);
-
-
-● ida-pro-mcp - decompile (MCP)(addr: "0x1801B7550")
-  ⎿ {
-      "addr": "0x1801B7550",
-      "code": "__int64 __fastcall sub_1801B7550(__int64 a1, __int64 a2)\n{\n  __int64 result; // rax\n\n  sub_180CD
-    … +4 lines (ctrl+o to expand)
-
-
-● ida-pro-mcp - decompile (MCP)(addr: "0x1801B8210")
-  ⎿ {
-      "addr": "0x1801B8210",
-      "code": "__int64 __fastcall sub_1801B8210(__int64 a1, __int64 a2)\n{\n  _DWORD *v4; // rax\n  __int64 *v5; //
-    … +76 lines (ctrl+o to expand)
 ```
 
 ```bash
 Prompt: 
  - Rename sub_180A8B930 to CBaseModelEntity_SetModel in IDA
-
-● ida-pro-mcp - rename (MCP)(batch: {"func":{"addr":"0x180A8B930","name":"CBaseModelEntity_SetModel"}})
-  ⎿  {
-       "func": [
-         {
-     … +9 lines (ctrl+o to expand)
 ```
 
-2. Optionally, search vftable for virtual function, CCSPlayerPawnBase_PostThink in this case
-
-```bash
-Prompt:
- - xref CCSPlayerPawnBase_PostThink
-```
+2. Optionally, search vftable for virtual function, `CCSPlayerPawnBase_PostThink` in this case
 
 ```bash
 Prompt: 
- - search upward from the read-only address that points to CCSPlayerPawnBase_PostThink, and check if any similar things like the virtuall function table of CCSPlayerPawnBase_PostThink's class:
+ - use this script to find the function pointer in vtable and calculate offset/index:
+   ```python
+   mcp__ida-pro-mcp__py_eval code="""
+   import ida_bytes
 
-  .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
-  .rdata:0000000181533788 ??_7CCSPlayerPawn@@6B@
+   func_addr = <func_addr>           # Target function address
+   vtable_addr = <vtable_addr>       # VTable start address (from list_globals)
 
-  .data.rel.ro:0000000002114CD0 ; `vtable for'CCSPlayerPawn
-  .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
+   # VTable is an array of function pointers (8 bytes each on 64-bit)
+   # Iterate through vtable entries to find our function
+   max_entries = 500
+   found_offset = -1
+   found_index = -1
+
+   for i in range(max_entries):
+       entry_addr = vtable_addr + i * 8           # Address of vtable[i]
+       ptr = ida_bytes.get_qword(entry_addr)      # Read 8-byte pointer
+
+       if ptr == func_addr:                       # Found our function!
+           found_offset = i * 8                   # Offset = index * 8
+           found_index = i
+           print(f"Found at vtable offset: {hex(found_offset)}, index: {found_index}")
+           break
+
+   if found_index == -1:
+       print("Function not found in vtable!")
+   """
+   ```
+
+   **Memory layout explanation:**
+   ```
+   VTable @ vtable_addr:
+   ┌─────────────────┬──────────────────────┐
+   │ Offset   Index  │ Value (func pointer) │
+   ├─────────────────┼──────────────────────┤
+   │ 0x000    [0]    │ 0x180XXXXXX          │
+   │ 0x008    [1]    │ 0x180XXXXXX          │
+   │ ...      ...    │ ...                  │
+   │ 0xNNN    [N]    │ func_addr  ← Found!  │
+   └─────────────────┴──────────────────────┘
+   ```
+
+   **Formulas:**
+   - `vfunc_offset = index × 8`
+   - `vfunc_index = offset / 8`
+
+   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV19CCSPlayerController + 0x10`.
 
 ```
 
