@@ -11,7 +11,7 @@ Several scripts are included to generate signatures via Agent SKILLS with ida-pr
 ## Download CS2 binaries
 
 ```bash
-py .\download_bin.py -date 2026-01-22
+py .\download_bin.py -gamever 14132
 ```
 
 ## How to create SKILLS
