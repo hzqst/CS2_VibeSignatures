@@ -80,14 +80,34 @@ Prompt:
 ```
 
 ```bash
-Prompt: 
- - 
+Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
+ - xref CCSPlayerPawnBase_PostThink
+
+```
+
+```bash
+Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
+
+ - search upward from “0x2115868” and check if any similar things like:
+
+  ```
+  .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
+  .rdata:0000000181533788 ??_7CCSPlayerPawn@@6B@
+  ```
+
+  ```
+  .data.rel.ro:0000000002114CD0 ; `vtable for'CCSPlayerPawn
+  .data.rel.ro:0000000002114CD0 _ZTV13CCSPlayerPawn dq 0 
+  ```
+
+  or like the virtuall function table of CCSPlayerPawnBase_PostThink's class
+
 ```
 
 ```bash
 
 Prompt:
- - Write `CBaseModelEntity_SetModel.windows.yaml` / `CBaseModelEntity_SetModel.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
+ - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
 
   For virtual function:
 
