@@ -89,7 +89,7 @@ Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this cas
 
 ```bash
 Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
- - search upward from 0x2115868 and check if any similar things like:
+ - search upward from the read-only address that points to CCSPlayerPawnBase_PostThink, and check if any similar things like:
 
   ```c
   .rdata:0000000181533788 ; const CCSPlayerPawn::`vftable'
