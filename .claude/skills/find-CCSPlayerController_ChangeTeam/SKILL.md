@@ -29,23 +29,65 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSPlayerController_ChangeTeam"}]}
    ```
 
-5. Find vtable information:
+5. Find VTable and Calculate Offset:
+
+   Search for the CCSPlayerController vtable and find the function's position within it:
    ```
    mcp__ida-pro-mcp__list_globals queries={"filter": "*CCSPlayerController*"}
    ```
-   Look for `??_7CCSPlayerController@@6B@` - this is the vtable.
+   Look for:
+   - Windows: `??_7CCSPlayerController@@6B@` - the vtable
+   - Linux: `_ZTV19CCSPlayerController` - the vtable
 
-6. Get xrefs to the function to find data references:
+   Then use this script to find the function pointer in vtable and calculate offset/index:
+   ```python
+   mcp__ida-pro-mcp__py_eval code="""
+   import ida_bytes
+
+   func_addr = <func_addr>           # Target function address
+   vtable_addr = <vtable_addr>       # VTable start address (from list_globals)
+
+   # VTable is an array of function pointers (8 bytes each on 64-bit)
+   # Iterate through vtable entries to find our function
+   max_entries = 500
+   found_offset = -1
+   found_index = -1
+
+   for i in range(max_entries):
+       entry_addr = vtable_addr + i * 8           # Address of vtable[i]
+       ptr = ida_bytes.get_qword(entry_addr)      # Read 8-byte pointer
+
+       if ptr == func_addr:                       # Found our function!
+           found_offset = i * 8                   # Offset = index * 8
+           found_index = i
+           print(f"Found at vtable offset: {hex(found_offset)}, index: {found_index}")
+           break
+
+   if found_index == -1:
+       print("Function not found in vtable!")
+   """
    ```
-   mcp__ida-pro-mcp__xrefs_to addrs="<function_addr>"
+
+   **Memory layout explanation:**
    ```
-   Find the data reference that falls within the vtable range.
+   VTable @ vtable_addr:
+   ┌─────────────────┬──────────────────────┐
+   │ Offset   Index  │ Value (func pointer) │
+   ├─────────────────┼──────────────────────┤
+   │ 0x000    [0]    │ 0x180XXXXXX          │
+   │ 0x008    [1]    │ 0x180XXXXXX          │
+   │ ...      ...    │ ...                  │
+   │ 0xNNN    [N]    │ func_addr  ← Found!  │
+   └─────────────────┴──────────────────────┘
+   ```
 
-7. Calculate vtable offset and index:
-   - `vfunc_offset = data_ref_addr - vtable_addr`
-   - `vfunc_index = vfunc_offset / 8`
+   **Formulas:**
+   - `vfunc_offset = index × 8`
+   - `vfunc_index = offset / 8`
 
-8. Generate and validate unique signature:
+   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV19CCSPlayerController + 0x10`.
+
+6. Generate and validate unique signature:
 
    - Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
 
@@ -108,7 +150,7 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
    - Ensure the signature matches ONLY this function
    - **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
 
-9. Write YAML file beside the binary:
+7. Write YAML file beside the binary:
    ```python
    mcp__ida-pro-mcp__py_eval code="""
    import idaapi

@@ -81,58 +81,10 @@ Prompt:
 
 ```bash
 Prompt: 
- - use this script to find the function pointer in vtable and calculate offset/index:
-   ```python
-   mcp__ida-pro-mcp__py_eval code="""
-   import ida_bytes
-
-   func_addr = <func_addr>           # Target function address
-   vtable_addr = <vtable_addr>       # VTable start address (from list_globals)
-
-   # VTable is an array of function pointers (8 bytes each on 64-bit)
-   # Iterate through vtable entries to find our function
-   max_entries = 500
-   found_offset = -1
-   found_index = -1
-
-   for i in range(max_entries):
-       entry_addr = vtable_addr + i * 8           # Address of vtable[i]
-       ptr = ida_bytes.get_qword(entry_addr)      # Read 8-byte pointer
-
-       if ptr == func_addr:                       # Found our function!
-           found_offset = i * 8                   # Offset = index * 8
-           found_index = i
-           print(f"Found at vtable offset: {hex(found_offset)}, index: {found_index}")
-           break
-
-   if found_index == -1:
-       print("Function not found in vtable!")
-   """
-   ```
-
-   **Memory layout explanation:**
-   ```
-   VTable @ vtable_addr:
-   ┌─────────────────┬──────────────────────┐
-   │ Offset   Index  │ Value (func pointer) │
-   ├─────────────────┼──────────────────────┤
-   │ 0x000    [0]    │ 0x180XXXXXX          │
-   │ 0x008    [1]    │ 0x180XXXXXX          │
-   │ ...      ...    │ ...                  │
-   │ 0xNNN    [N]    │ func_addr  ← Found!  │
-   └─────────────────┴──────────────────────┘
-   ```
-
-   **Formulas:**
-   - `vfunc_offset = index × 8`
-   - `vfunc_index = offset / 8`
-
-   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV19CCSPlayerController + 0x10`.
-
+ - use SKILL: /get-vftable-index to get vftable index for this function.
 ```
 
 3. Generate a robust signature for this function
-
 
 ```bash
 Prompt:
