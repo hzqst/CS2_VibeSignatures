@@ -34,7 +34,9 @@ claude /find-CBaseModelEntity_SetModel
 
 * Automation with headless IDA & subagents is coming soon.
 
-## Export dump yaml
+## How to convert yaml to json / gamedata.txt (Valve KeyValues)
+
+* TODO
 
 ## How to create SKILLS
 
