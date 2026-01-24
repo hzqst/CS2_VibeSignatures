@@ -58,127 +58,17 @@ mcp__ida-pro-mcp__decompile(addr="<function_addr>")
 
 ### 5. Find VTable and Calculate Offset
 
-Search for the CCSPlayerPawn vtable and find the function's position within it:
+Use skill `/get-vftable-index` to get vtable offset and index for the function.
 
-```
-mcp__ida-pro-mcp__list_globals(queries={"filter": "*CCSPlayerPawn*"})
-```
-
-Look for:
-- Windows: `??_7CCSPlayerPawn@@6B@` - the vtable
-- Linux: `_ZTV13CCSPlayerPawn` - the vtable
-
-Then use this script to find the function pointer in vtable and calculate offset/index:
-
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes
-
-func_addr = <func_addr>           # Target function address
-vtable_addr = <vtable_addr>       # VTable start address (from list_globals)
-
-# VTable is an array of function pointers (8 bytes each on 64-bit)
-# Iterate through vtable entries to find our function
-max_entries = 500
-found_offset = -1
-found_index = -1
-
-for i in range(max_entries):
-    entry_addr = vtable_addr + i * 8           # Address of vtable[i]
-    ptr = ida_bytes.get_qword(entry_addr)      # Read 8-byte pointer
-
-    if ptr == func_addr:                       # Found our function!
-        found_offset = i * 8                   # Offset = index * 8
-        found_index = i
-        print(f"Found at vtable offset: {hex(found_offset)}, index: {found_index}")
-        break
-
-if found_index == -1:
-    print("Function not found in vtable!")
-"""
-```
-
-**Memory layout explanation:**
-```
-VTable @ vtable_addr:
-┌─────────────────┬──────────────────────┐
-│ Offset   Index  │ Value (func pointer) │
-├─────────────────┼──────────────────────┤
-│ 0x000    [0]    │ 0x180XXXXXX          │
-│ 0x008    [1]    │ 0x180XXXXXX          │
-│ ...      ...    │ ...                  │
-│ 0xNNN    [N]    │ func_addr  ← Found!  │
-└─────────────────┴──────────────────────┘
-```
-
-**Formulas:**
-- `vfunc_offset = index × 8`
-- `vfunc_index = offset / 8`
+VTable class name to search for:
+- Windows: `??_7CCSPlayerPawn@@6B@`
+- Linux: `_ZTV13CCSPlayerPawn`
 
 Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV13CCSPlayerPawn + 0x10`.
 
 ### 6. Generate and Validate Unique Signature
 
-- Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
-
-- Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
-
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes
-import ida_segment
-
-func_addr = <func_addr>
-
-# Get function bytes
-raw_bytes = ida_bytes.get_bytes(func_addr, 64)
-print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
-
-# Identify unique byte patterns in the function
-# Look for distinctive instruction sequences that are unlikely to appear elsewhere
-
-# Get .text segment bounds
-seg = ida_segment.get_segm_by_name(".text")
-start = seg.start_ea
-end = seg.end_ea
-
-# Test candidate signature - adjust based on function's unique characteristics
-# For example, look for unique immediate values, register combinations, or call patterns
-candidate_sig = raw_bytes[:16]  # Start with first 16 bytes as candidate
-
-step = 0x200000
-matches = []
-
-for chunk_start in range(start, end, step):
-    chunk_end = min(chunk_start + step + 64, end)
-    data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
-    if data:
-        pos = 0
-        while True:
-            idx = data.find(candidate_sig, pos)
-            if idx == -1:
-                break
-            matches.append(hex(chunk_start + idx))
-            pos = idx + 1
-
-print(f"Signature matches: {len(matches)}")
-for m in matches:
-    print(m)
-
-if len(matches) == 1:
-    print("SUCCESS: Signature is unique!")
-    print("Signature:", ' '.join(f'{b:02X}' for b in candidate_sig))
-else:
-    print("WARNING: Signature is not unique, need longer/different pattern")
-"""
-```
-
-Tips for finding unique signatures:
-- Look for unique string references or immediate values
-- Find distinctive instruction sequences
-- Use wildcards (`??`) for bytes that may change (relocations, offsets)
-- Ensure the signature matches ONLY this function
-- **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
+Use skill `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 ### 7. Get Image Base and Write YAML
 

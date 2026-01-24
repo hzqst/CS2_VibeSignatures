@@ -43,66 +43,7 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
 
 7. Generate and validate unique signature:
 
-   - Generate a hex signature for {FunctionName}, each byte divided with space, "??" for wildcard, keep it robust and relocation-safe, for example: 55 8B EC 11 22 33 44 55 66 77 88
-
-   - Make sure our {FunctionName} is the **ONLY** function that can be found with your signature. If your signature turn out to be connected with multiple functions, try longer signature then.
-
-   ```python
-   mcp__ida-pro-mcp__py_eval code="""
-   import ida_bytes
-   import ida_segment
-
-   func_addr = <func_addr>
-
-   # Get function bytes
-   raw_bytes = ida_bytes.get_bytes(func_addr, 64)
-   print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
-
-   # Identify unique byte patterns in the function
-   # Look for distinctive instruction sequences that are unlikely to appear elsewhere
-
-   # Get .text segment bounds
-   seg = ida_segment.get_segm_by_name(".text")
-   start = seg.start_ea
-   end = seg.end_ea
-
-   # Test candidate signature - adjust based on function's unique characteristics
-   # For example, look for unique immediate values, register combinations, or call patterns
-   candidate_sig = raw_bytes[:16]  # Start with first 16 bytes as candidate
-
-   step = 0x200000
-   matches = []
-
-   for chunk_start in range(start, end, step):
-       chunk_end = min(chunk_start + step + 64, end)
-       data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
-       if data:
-           pos = 0
-           while True:
-               idx = data.find(candidate_sig, pos)
-               if idx == -1:
-                   break
-               matches.append(hex(chunk_start + idx))
-               pos = idx + 1
-
-   print(f"Signature matches: {len(matches)}")
-   for m in matches:
-       print(m)
-
-   if len(matches) == 1:
-       print("SUCCESS: Signature is unique!")
-       print("Signature:", ' '.join(f'{b:02X}' for b in candidate_sig))
-   else:
-       print("WARNING: Signature is not unique, need longer/different pattern")
-   """
-   ```
-
-   Tips for finding unique signatures:
-   - Look for unique string references or immediate values
-   - Find distinctive instruction sequences
-   - Use wildcards (`??`) for bytes that may change (relocations, offsets)
-   - Ensure the signature matches ONLY this function
-   - **DO NOT** use `find_bytes` to validate signature as `find_bytes` does't work for function.
+   Use skill `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 8. Write YAML file beside the binary:
    ```python
