@@ -58,17 +58,18 @@ mcp__ida-pro-mcp__decompile(addr="<function_addr>")
 
 ### 5. Find VTable and Calculate Offset
 
-Use skill `/get-vftable-index` to get vtable offset and index for the function.
+  **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
 
-VTable class name to search for:
-- Windows: `??_7CCSPlayerPawn@@6B@`
-- Linux: `_ZTV13CCSPlayerPawn`
+  VTable class name to search for:
+  - Windows: `??_7CCSPlayerPawn@@6B@`
+  - Linux: `_ZTV13CCSPlayerPawn`
 
-Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV13CCSPlayerPawn + 0x10`.
+  Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV13CCSPlayerPawn + 0x10`.
 
 ### 6. Generate and Validate Unique Signature
 
-Use skill `/generate-signature-for-function` to generate a robust and unique signature for the function.
+  **DO NOT** use `find_bytes` as it won't work for function.
+  **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 ### 7. Get Image Base and Write YAML
 

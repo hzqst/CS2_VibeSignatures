@@ -31,7 +31,7 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
 5. Find VTable and Calculate Offset:
 
-   Use skill `/get-vftable-index` to get vtable offset and index for the function.
+  **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
 
    VTable class name to search for:
    - Windows: `??_7CCSPlayerController@@6B@`
@@ -41,7 +41,8 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
 6. Generate and validate unique signature:
 
-   Use skill `/generate-signature-for-function` to generate a robust and unique signature for the function.
+  **DO NOT** use `find_bytes` as it won't work for function.
+   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 7. Write YAML file beside the binary:
    ```python
