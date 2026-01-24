@@ -2,7 +2,7 @@
 
 Several scripts are included to generate signatures via Agent SKILLS with ida-pro-mcp
 
-Out goal is to update signatures/offsets for each game update without human involved.
+Our goal is to update signatures/offsets for each game update without human involved.
 
 Feel free to contibute your SKILLS!
 
