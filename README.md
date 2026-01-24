@@ -104,7 +104,6 @@ Optionally, search vftable for virtual function, CCSPlayerPawnBase_PostThink in 
 ```bash
 Prompt:
  - xref CCSPlayerPawnBase_PostThink
-
 ```
 
 ```bash
@@ -161,6 +160,4 @@ Create SKILL
 ```bash
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in English according to what we just did, so we can write yaml when using SKILL next time. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. You can check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
-
-● Write \CS2_VibeSignatures\.claude\skills\find-{FunctionName}\SKILL.md
 ```
