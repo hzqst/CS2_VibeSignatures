@@ -12,6 +12,8 @@ Feel free to contibute your SKILLS!
 
 2. https://github.com/mrexodia/ida-pro-mcp
 
+3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
+
 ## Download CS2 binaries
 
 ```bash
