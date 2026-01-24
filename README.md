@@ -18,15 +18,23 @@ Feel free to contibute your SKILLS!
 
 Let's locate `CBaseModelEntity_SetModel` for example.
 
+1. Download CS2 binaries
 ```bash
 py .\download_bin.py -gamever 14132
 ```
 
+2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`) with IDA-Pro, Ctrl+Alt+M to start MCP server.
+
+3. Let claude do everything for you
 ```bash
 claude /find-CBaseModelEntity_SetModel
 ```
 
-* Automation with subagents is coming soon.
+4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
+
+* Automation with headless IDA & subagents is coming soon.
+
+## Export dump yaml
 
 ## How to create SKILLS
 
