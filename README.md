@@ -99,14 +99,16 @@ Prompt:
      … +9 lines (ctrl+o to expand)
 ```
 
+Optionally, search vftable for virtual function, CCSPlayerPawnBase_PostThink in this case
+
 ```bash
-Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
+Prompt:
  - xref CCSPlayerPawnBase_PostThink
 
 ```
 
 ```bash
-Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this case)
+Prompt: 
  - search upward from the read-only address that points to CCSPlayerPawnBase_PostThink, and check if any similar things like:
 
   ```c
@@ -122,6 +124,8 @@ Prompt: (optional, for virtual function, CCSPlayerPawnBase_PostThink in this cas
   or like the virtuall function table of CCSPlayerPawnBase_PostThink's class
 
 ```
+
+Write yaml
 
 ```bash
 
@@ -151,6 +155,8 @@ Prompt:
   * func_rva is calculated with `func_va - ImageBase`
 
 ```
+
+Create SKILL
 
 ```bash
 Prompt:
