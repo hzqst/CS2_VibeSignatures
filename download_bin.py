@@ -193,8 +193,8 @@ def process_module(module, bin_dir, gamever, platform_filter, base_url):
         # Extract filename from path
         filename = Path(path).name
 
-        # Build target path: {bin_dir}/{module_name}/{gamever}/{filename}
-        target_dir = os.path.join(bin_dir, name, gamever)
+        # Build target path: {bin_dir}/{gamever}/{module_name}/{filename}
+        target_dir = os.path.join(bin_dir, gamever, name)
         target_path = os.path.join(target_dir, filename)
 
         print(f"\nProcessing: {name} ({platform})")
