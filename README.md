@@ -97,6 +97,7 @@ Prompt:
 
 ```bash
 Prompt:
+   Generate a robust signature for this function
    -- **DO NOT** use `find_bytes` as it won't work for function.
    -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
@@ -109,14 +110,14 @@ Prompt:
 
   Required parameters:
   - `func_name`: `CCSPlayerPawnBase_PostThink`
-  - `func_addr`: The function address from step 2
-  - `func_sig`: The validated signature from step 6
+  - `func_addr`: The function address from step 1
+  - `func_sig`: The validated signature from step 3
 
-  VTable parameters (this is a virtual function):
+  VTable parameters (if this is a virtual function):
   - `vfunc_name`: `CCSPlayerPawn`
   - `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
-  - `vfunc_offset`: The offset from step 5
-  - `vfunc_index`: The index from step 5
+  - `vfunc_offset`: The offset from step 2
+  - `vfunc_index`: The index from step 2
 ```
 
 5. Create SKILL

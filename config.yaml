@@ -29,3 +29,6 @@ modules:
 
       - name: InventoryUpdateThink
         catagory: func
+
+      - name: CCSGameRules_TerminateRound
+        catagory: func
