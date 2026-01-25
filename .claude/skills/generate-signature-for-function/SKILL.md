@@ -16,7 +16,9 @@ Generate a unique hex byte signature for a function that can be used for pattern
 
 ## Method
 
-### 1. Get Function Bytes
+### 1. Get Function Bytes and Disassembly
+
+First, retrieve the raw bytes and disassembly to understand the function structure:
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
@@ -30,55 +32,110 @@ print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
 """
 ```
 
-### 2. Validate Signature Uniqueness
+Also get disassembly for context:
+```
+mcp__ida-pro-mcp__disasm addr="<func_addr>" max_instructions=15
+```
 
-Test that the signature matches ONLY this function in the .text segment:
+### 2. Analyze and Generate Signature (LLM Task)
+
+**YOU (the LLM) must analyze the bytes and disassembly to create a signature.**
+
+When analyzing, consider:
+- **Opcodes** (instruction bytes): Usually stable, keep as-is
+- **Immediates/Offsets**: Often change between builds, use `??` wildcards
+- **Register encodings**: Usually stable unless compiler changes register allocation
+- **Relocation addresses**: Always use `??` wildcards (4 bytes for 32-bit, 8 for 64-bit)
+- **Displacement values in memory operands**: May change, consider wildcarding, **ESPECIALLY** with E8 call, E9 jmp
+
+Example analysis:
+```
+Bytes: 48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 12 34 56 00
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^
+       Prologue - stable opcodes                           Call with relative offset - wildcard it
+
+Result: 48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??
+```
+
+**Generate a signature that is:**
+- Long enough to be unique (typically 16-32 bytes)
+- Uses `??` for bytes that may change between binary updates
+- Starts from function entry point
+
+### 3. Validate Signature Uniqueness
+
+Test that YOUR generated signature matches ONLY this function:
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
 import ida_bytes
 import ida_segment
+import re
 
 func_addr = <func_addr>
+
+# YOUR GENERATED SIGNATURE HERE (space-separated hex with ?? for wildcards)
+signature_str = "<YOUR_SIGNATURE>"  # e.g., "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??"
+
+# Parse signature
+sig_parts = signature_str.split()
+sig_bytes = []
+mask = []
+for part in sig_parts:
+    if part == "??":
+        sig_bytes.append(0x2A)  # Wildcard represented as '*' (0x2A)
+        mask.append(False)
+    else:
+        sig_bytes.append(int(part, 16))
+        mask.append(True)
+
+sig_len = len(sig_bytes)
 
 # Get .text segment bounds
 seg = ida_segment.get_segm_by_name(".text")
 start = seg.start_ea
 end = seg.end_ea
 
-# Candidate signature - start with first N bytes
-raw_bytes = ida_bytes.get_bytes(func_addr, 64)
-candidate_sig = raw_bytes[:16]  # Adjust length as needed
-
-# Search in chunks to avoid memory issues
+# Search with mask support
 step = 0x200000
 matches = []
 
+def match_with_mask(data, offset, sig_bytes, mask):
+    for i, (b, m) in enumerate(zip(sig_bytes, mask)):
+        if m and data[offset + i] != b:
+            return False
+    return True
+
 for chunk_start in range(start, end, step):
-    chunk_end = min(chunk_start + step + 64, end)
+    chunk_end = min(chunk_start + step + sig_len, end)
     data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
     if data:
-        pos = 0
-        while True:
-            idx = data.find(candidate_sig, pos)
-            if idx == -1:
-                break
-            matches.append(hex(chunk_start + idx))
-            pos = idx + 1
+        for i in range(len(data) - sig_len + 1):
+            if match_with_mask(data, i, sig_bytes, mask):
+                matches.append(hex(chunk_start + i))
 
 print(f"Signature matches: {len(matches)}")
 for m in matches:
     print(m)
 
-if len(matches) == 1:
-    print("SUCCESS: Signature is unique!")
-    print("Signature:", ' '.join(f'{b:02X}' for b in candidate_sig))
+if len(matches) == 1 and int(matches[0], 16) == func_addr:
+    print("SUCCESS: Signature is unique and matches target function!")
+elif len(matches) == 1:
+    print("WARNING: Signature matches but at different address!")
 else:
-    print("WARNING: Signature not unique, need longer/different pattern")
+    print("FAILED: Signature not unique, need longer/different pattern")
 """
 ```
 
-### 3. Continue with the unfinished tasks
+### 4. Iterate if Needed
+
+If the signature is not unique:
+1. Extend the signature length
+2. Analyze which bytes are causing false matches
+3. Add more specific bytes or adjust wildcard placement
+4. Re-validate until unique
+
+### 5. Continue with Unfinished Tasks
 
 If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
@@ -86,24 +143,32 @@ If we are called by a task from a task list / parent SKILL, restore and continue
 
 Signature format: space-separated hex bytes with `??` for wildcards.
 
-Example: `55 8B EC 83 E4 F8 83 EC ?? 53 56 57`
+Example: `48 89 5C 24 08 48 89 74 24 10 57 48 83 EC ?? 48 8B F9 E8 ?? ?? ?? ??`
 
-## Tips for Unique Signatures
+## Signature Analysis Guidelines for LLM
 
-- **Start short, extend if needed**: Begin with 16 bytes, extend to 24/32 if not unique
-- **Use wildcards (`??`)** for:
-  - Immediate offsets that may change
-  - Relocation addresses
-  - Register encodings that vary
-- **Look for distinctive patterns**:
-  - Unique string references
-  - Unusual instruction sequences
-  - Specific immediate values
-- **Avoid**:
-  - Common prologues (`55 8B EC` alone)
-  - All-zero or all-FF sequences
-  - Short repeated patterns
+When analyzing function bytes, consider these instruction patterns:
+
+### Bytes to Keep (Usually Stable)
+- **Function prologues**: `48 89 5C 24` (mov [rsp+x], rbx), `55` (push rbp), `48 83 EC` (sub rsp)
+- **Opcode bytes**: The actual instruction opcodes
+- **ModR/M bytes**: Register-to-register operations
+- **Fixed immediate values**: Constants that are part of the algorithm
+
+### Bytes to Wildcard (May Change)
+- **Relative call/jump offsets**: 4 bytes after `E8` (call) or `E9` (jmp) - these are relative addresses
+- **Absolute addresses**: Any pointer/address in code
+- **Stack offsets in large functions**: May change with local variable layout
+- **String/data references**: Offsets to .rdata/.data sections
+
+### Common Patterns
+| Pattern | Meaning | Wildcard? |
+|---------|---------|-----------|
+| `E8 XX XX XX XX` | Relative call | Wildcard the 4 offset bytes |
+| `48 8D 0D XX XX XX XX` | LEA with RIP-relative | Wildcard the 4 offset bytes |
+| `FF 15 XX XX XX XX` | Indirect call via IAT | Wildcard the 4 offset bytes |
+| `48 8B 05 XX XX XX XX` | MOV from global | Wildcard the 4 offset bytes |
 
 ## Important
 
-**DO NOT** use `find_bytes` to validate signatures - it doesn't work reliably for function pattern matching. Always use the `py_eval` method above.
+**DO NOT** use `find_bytes` to validate signatures - it doesn't work reliably for function pattern matching. Always use the `py_eval` method with mask support above.
