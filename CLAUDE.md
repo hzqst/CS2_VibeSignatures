@@ -98,3 +98,45 @@ Multiple rename operations can be performed simultaneously:
     ]
   }
 }
+```
+
+### ida-pro-mcp.get_bytes Usage
+
+`get_bytes` reads bytes from memory addresses in the binary.
+
+#### Parameter Structure
+
+```json
+{
+  "regions": {
+    "addr": "0x12345678",  // Address to read from (hex or decimal)
+    "size": 16             // Number of bytes to read
+  }
+}
+```
+
+#### Single Region Example
+
+Read 16 bytes from a single address:
+
+```json
+{
+  "regions": {
+    "addr": "0x140001000",
+    "size": 16
+  }
+}
+```
+
+#### Multiple Regions Example
+
+Read bytes from multiple addresses simultaneously:
+
+```json
+{
+  "regions": [
+    {"addr": "0x140001000", "size": 16},
+    {"addr": "0x140002000", "size": 32},
+    {"addr": "0x140003000", "size": 8}
+  ]
+}
