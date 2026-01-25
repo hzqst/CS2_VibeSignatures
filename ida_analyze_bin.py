@@ -41,6 +41,7 @@ except ImportError as e:
 DEFAULT_CONFIG_FILE = "config.yaml"
 DEFAULT_BIN_DIR = "bin"
 DEFAULT_PLATFORM = "windows,linux"
+DEFAULT_MODULES = "*"
 DEFAULT_AGENT = "claude"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
@@ -84,6 +85,11 @@ def parse_args():
         help=f"Agent to use for analysis (default: {DEFAULT_AGENT})"
     )
     parser.add_argument(
+        "-modules",
+        default=DEFAULT_MODULES,
+        help=f"Modules to analyze, comma-separated (default: {DEFAULT_MODULES} for all). E.g., server,engine"
+    )
+    parser.add_argument(
         "-ida",
         default="",
         help="Additional arguments for idalib-mcp (optional)"
@@ -102,6 +108,12 @@ def parse_args():
     for p in args.platforms:
         if p not in valid_platforms:
             parser.error(f"Invalid platform: {p}. Must be one of: {', '.join(valid_platforms)}")
+
+    # Parse modules filter
+    if args.modules == "*":
+        args.module_filter = None  # None means all modules
+    else:
+        args.module_filter = [m.strip() for m in args.modules.split(",") if m.strip()]
 
     return args
 
@@ -342,6 +354,7 @@ def main():
     bin_dir = args.bindir
     gamever = args.gamever
     platforms = args.platforms
+    module_filter = args.module_filter
     agent = args.agent
     ida_args = args.ida
     debug = args.debug
@@ -356,6 +369,7 @@ def main():
     print(f"Binary directory: {bin_dir}")
     print(f"Game version: {gamever}")
     print(f"Platforms: {', '.join(platforms)}")
+    print(f"Modules filter: {args.modules}")
     print(f"Agent: {agent}")
     if ida_args:
         print(f"IDA args: {ida_args}")
@@ -379,6 +393,11 @@ def main():
     for module in modules:
         module_name = module["name"]
         symbols = module["symbols"]
+
+        # Filter modules if specified
+        if module_filter is not None and module_name not in module_filter:
+            print(f"\nModule '{module_name}': Not in filter list, skipping")
+            continue
 
         if not symbols:
             print(f"\nModule '{module_name}': No symbols defined, skipping")
