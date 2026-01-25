@@ -55,15 +55,13 @@ IS_WINDOWS = sys.platform.startswith("win")
 CODEX_CMD = "codex.cmd" if IS_WINDOWS else "codex"
 
 
-async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=10):
+async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     """
     Gracefully quit IDA using MCP py_eval tool with idc.qexit(0).
 
     Args:
         host: MCP server host
         port: MCP server port
-        timeout: Timeout in seconds
-
     Returns:
         True if successful, False otherwise
     """
@@ -75,9 +73,7 @@ async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=10):
                 await session.initialize()
                 await session.call_tool(name="py_eval", arguments={"code": "import idc; idc.qexit(0)"})
                 return True
-    except asyncio.TimeoutError:
-        return False
-    except Exception as e:
+    except Exception:
         return False
 
 
