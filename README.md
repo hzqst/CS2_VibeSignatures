@@ -14,14 +14,6 @@ Feel free to contibute your SKILLS!
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
-## For codex
-
-Windows (Admin elevated):
-
-```bash
-mklink /J ".codex/skills" ".claude/skills"
-```
-
 ## How to locate functions or variables
 
 Let's locate `CBaseModelEntity_SetModel` for example.
@@ -31,11 +23,16 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 py .\download_bin.py -gamever 14132
 ```
 
-2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`) with IDA-Pro, Ctrl+Alt+M to start MCP server.
+2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro, Ctrl+Alt+M to start MCP server.
 
-3. Let claude do everything for you
+3. Let claude / codex do everything for you
+
 ```bash
 claude /find-CBaseModelEntity_SetModel
+```
+
+```bash
+codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md"
 ```
 
 4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
