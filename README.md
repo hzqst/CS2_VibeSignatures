@@ -14,7 +14,7 @@ Feel free to contibute your SKILLS!
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
-## How to locate functions or variables
+## How to locate specified function or variable
 
 Let's locate `CBaseModelEntity_SetModel` for example.
 
@@ -38,6 +38,15 @@ codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.
 4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
 
 * Automation with headless IDA & subagents is coming soon.
+
+## How to locate all functions or variables declared in `config.yaml`
+
+1. Download CS2 binaries
+```bash
+py .\download_bin.py -gamever 14132
+```
+
+2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-platform=windows] [-agent=codex] [-debug]`
 
 ## How to convert yaml to json / gamedata.txt (Valve KeyValues)
 
