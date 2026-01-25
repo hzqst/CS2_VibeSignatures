@@ -1,7 +1,7 @@
 func_va: 0x1801e1260
-func_rva: 0x1e0260
+func_rva: 0x1e1260
 func_size: 0xa04
-func_sig: 48 8B C4 55 53 56 57 41 54 48 8D 68 C8 48 81 EC
+func_sig: 48 8B C4 55 53 56 57 41 54 48 8D 68 C8 48 81 EC 10 01 00 00 4C 89 68 20 48 8B F9 0F 29 70 B8 E8 ?? ?? ?? ??
 vfunc_name: CCSPlayerPawn
 vfunc_mangled_name: ??_7CCSPlayerPawn@@6B@
 vfunc_offset: 0xb80

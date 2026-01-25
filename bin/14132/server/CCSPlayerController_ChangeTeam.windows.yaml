@@ -1,7 +1,7 @@
 func_va: 0x180999830
 func_rva: 0x999830
 func_size: 0x301
-func_sig: 48 8B C4 53 55 57 48 81 EC ?? ?? ?? ?? 0F B6 A9 ?? ?? ?? ?? 8B FA 48 8B D9 3B D5 0F 84 ?? ?? ?? ?? 48 8B 51 10 48 8D 48 10 48 89 70 18 8B 52 38 E8 ?? ?? ?? ??
+func_sig: 48 8B C4 53 55 57 48 81 EC 80 00 00 00 0F B6 A9 44 03 00 00 8B FA 48 8B D9 3B D5 0F 84 ?? ?? ?? ?? 48 8B 51 10 48 8D 48 10 48 89 70 18 8B 52 38 E8 ?? ?? ?? ??
 vfunc_name: CCSPlayerController
 vfunc_mangled_name: ??_7CCSPlayerController@@6B@
 vfunc_offset: 0x330
