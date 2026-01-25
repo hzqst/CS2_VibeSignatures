@@ -68,57 +68,42 @@ Test that YOUR generated signature matches ONLY this function:
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
+import idaapi
 import ida_bytes
 import ida_segment
-import re
 
 func_addr = <func_addr>
 
 # YOUR GENERATED SIGNATURE HERE (space-separated hex with ?? for wildcards)
 signature_str = "<YOUR_SIGNATURE>"  # e.g., "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??"
 
-# Parse signature
-sig_parts = signature_str.split()
-sig_bytes = []
-mask = []
-for part in sig_parts:
-    if part == "??":
-        sig_bytes.append(0x2A)  # Wildcard represented as '*' (0x2A)
-        mask.append(False)
-    else:
-        sig_bytes.append(int(part, 16))
-        mask.append(True)
-
-sig_len = len(sig_bytes)
+# IDA pattern syntax uses single '?' wildcard tokens (not '??').
+pattern_str = " ".join("?" if p == "??" else p for p in signature_str.split())
 
 # Get .text segment bounds
 seg = ida_segment.get_segm_by_name(".text")
 start = seg.start_ea
 end = seg.end_ea
 
-# Search with mask support
-step = 0x200000
+# Compile pattern and search using IDA's native binary search (fast, avoids get_bytes() timeouts)
+pat = ida_bytes.compiled_binpat_vec_t()
+ida_bytes.parse_binpat_str(pat, start, pattern_str, 16)
+
+flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
 matches = []
 
-def match_with_mask(data, offset, sig_bytes, mask):
-    for i, (b, m) in enumerate(zip(sig_bytes, mask)):
-        if m and data[offset + i] != b:
-            return False
-    return True
-
-for chunk_start in range(start, end, step):
-    chunk_end = min(chunk_start + step + sig_len, end)
-    data = ida_bytes.get_bytes(chunk_start, chunk_end - chunk_start)
-    if data:
-        for i in range(len(data) - sig_len + 1):
-            if match_with_mask(data, i, sig_bytes, mask):
-                matches.append(hex(chunk_start + i))
+res = ida_bytes.bin_search3(start, end, pat, flags)
+ea = res[0] if isinstance(res, tuple) else res  # IDA 9 may return (ea, idx)
+while ea != idaapi.BADADDR:
+    matches.append(ea)
+    res = ida_bytes.bin_search3(ea + 1, end, pat, flags)
+    ea = res[0] if isinstance(res, tuple) else res
 
 print(f"Signature matches: {len(matches)}")
 for m in matches:
-    print(m)
+    print(hex(m))
 
-if len(matches) == 1 and int(matches[0], 16) == func_addr:
+if len(matches) == 1 and matches[0] == func_addr:
     print("SUCCESS: Signature is unique and matches target function!")
 elif len(matches) == 1:
     print("WARNING: Signature matches but at different address!")
