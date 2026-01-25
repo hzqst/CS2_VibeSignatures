@@ -14,7 +14,7 @@ Feel free to contibute your SKILLS!
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
-## How to locate specified function or variable
+## How to find and generate signatures for specified function or variable
 
 Let's locate `CBaseModelEntity_SetModel` for example.
 
@@ -23,7 +23,7 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 py .\download_bin.py -gamever 14132
 ```
 
-2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro, Ctrl+Alt+M to start MCP server.
+2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), Ctrl+Alt+M to start MCP server.
 
 3. Let claude / codex do everything for you
 
@@ -39,14 +39,14 @@ codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.
 
 * Automation with headless IDA & subagents is coming soon.
 
-## How to locate all functions or variables declared in `config.yaml`
+## How to find and generate signatures for all functions or variables declared in `config.yaml`
 
 1. Download CS2 binaries
 ```bash
 py .\download_bin.py -gamever 14132
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-platform=windows] [-agent=codex] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-platform=windows] [-agent=claude/codex] [-debug]`
 
 ## How to convert yaml to json / gamedata.txt (Valve KeyValues)
 

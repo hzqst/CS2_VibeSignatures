@@ -1,0 +1,8 @@
+func_va: 0x1800c8c10
+func_rva: 0xc8c10
+func_size: 0xd4
+func_sig: 40 53 48 83 EC 20 48 8B D9 3B 51 48 75 0D 0F B6 81 F0 0E 00 00 48 83 C4 20 5B C3 48 89 7C 24 30 85 D2 78 1C 48 8B 41 50 3B 90 50 02 00 00 7D 10 48 8B 80 58 02 00 00
+vfunc_name: CServerSideClient
+vfunc_mangled_name: ??_7CServerSideClient@@6B@
+vfunc_offset: 0x98
+vfunc_index: 19
