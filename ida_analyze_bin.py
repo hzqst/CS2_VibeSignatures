@@ -284,40 +284,6 @@ def run_skill(agent, skill_name, debug=False):
         return False
 
 
-def quit_ida(agent, debug=False):
-    """
-    Close IDA using the quit-ida skill.
-
-    Args:
-        agent: Agent type ("claude" or "codex")
-        debug: Enable debug output
-
-    Returns:
-        True if successful, False otherwise
-    """
-    if agent == "claude":
-        cmd = ["claude", "-p", "/quit-ida"]
-    else:  # codex
-        cmd = [CODEX_CMD, "exec", "Run SKILL: .claude/skills/quit-ida/SKILL.md"]
-
-    print(f"  Closing IDA: {' '.join(cmd)}")
-
-    try:
-        if debug:
-            result = subprocess.run(cmd, timeout=120)
-        else:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
-        return result.returncode == 0
-    except Exception as e:
-        print(f"  Error closing IDA: {e}")
-        return False
-
-
 def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=False):
     """
     Process a single binary file.
@@ -354,9 +320,6 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
             else:
                 fail_count += 1
                 print(f"    Failed")
-
-        # Close IDA
-        quit_ida(agent, debug)
 
     finally:
         # Ensure process is terminated
