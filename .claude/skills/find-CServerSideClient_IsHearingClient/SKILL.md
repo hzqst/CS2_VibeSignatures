@@ -56,9 +56,9 @@ Locate `CServerSideClient_IsHearingClient` in CS2 engine2.dll or libengine2.so u
    - `func_addr`: The function address from step 4
    - `func_sig`: The validated signature from step 6
 
-   VTable parameters (this is a virtual function):
-   - `vfunc_name`: `CServerSideClient`
-   - `vfunc_mangled_name`: `??_7CServerSideClient@@6B@` (Windows) or `_ZTV19CServerSideClient` (Linux)
+   VTable parameters (when this is a virtual function):
+   - `vtable_name`: `CServerSideClient`
+   - `vtable_mangled_name`: `??_7CServerSideClient@@6B@` (Windows) or `_ZTV19CServerSideClient` (Linux)
    - `vfunc_offset`: The offset from vtable (index * 8)
    - `vfunc_index`: The vtable index (typically 19)
 
@@ -108,8 +108,8 @@ func_va: 0x1800c8c10      # Virtual address - changes with game updates
 func_rva: 0xc8c10         # Relative virtual address (VA - image base) - changes with game updates
 func_size: 0xd4           # Function size in bytes - changes with game updates
 func_sig: 40 53 48 83 EC 20 48 8B D9 3B 51 48 75 ?? ...  # Unique byte signature
-vfunc_name: CServerSideClient
-vfunc_mangled_name: ??_7CServerSideClient@@6B@
+vtable_name: CServerSideClient
+vtable_mangled_name: ??_7CServerSideClient@@6B@
 vfunc_offset: 0x98        # Offset from vtable start - changes with game updates
 vfunc_index: 19           # vtable[19] - changes with game updates
 ```

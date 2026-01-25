@@ -80,9 +80,9 @@ Required parameters:
 - `func_addr`: The function address from step 2
 - `func_sig`: The validated signature from step 6
 
-VTable parameters (this is a virtual function):
-- `vfunc_name`: `CCSPlayerPawn`
-- `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
+VTable parameters (when this is a virtual function):
+- `vtable_name`: `CCSPlayerPawn`
+- `vtable_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -117,8 +117,8 @@ func_va: 0xA58DE0        # Virtual address of the function - changes with game u
 func_rva: 0xA58DE0       # Relative virtual address (VA - image base) - changes with game updates
 func_size: 0x86A         # Function size in bytes - changes with game updates
 func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - changes with game updates
-vfunc_name: CCSPlayerPawn
-vfunc_mangled_name: _ZTV13CCSPlayerPawn  # Use ??_7CCSPlayerPawn@@6B@ for Windows
+vtable_name: CCSPlayerPawn
+vtable_mangled_name: _ZTV13CCSPlayerPawn  # Use ??_7CCSPlayerPawn@@6B@ for Windows
 vfunc_offset: 0xB98      # Offset from vtable start - changes with game updates
 vfunc_index: 371         # vtable index - changes with game updates
 ```

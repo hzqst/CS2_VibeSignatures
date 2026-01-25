@@ -26,8 +26,8 @@ Before using this skill, you should have:
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `vfunc_name` | Class name for vtable | `CCSPlayerController` |
-| `vfunc_mangled_name` | Mangled vtable name | `??_7CCSPlayerController@@6B@` |
+| `vtable_name` | Class name for vtable | `CCSPlayerController` |
+| `vtable_mangled_name` | Mangled vtable name | `??_7CCSPlayerController@@6B@` |
 | `vfunc_offset` | Offset from vtable start | `0x330` |
 | `vfunc_index` | Index in vtable | `102` |
 
@@ -90,8 +90,8 @@ func_sig = "<func_sig>"             # e.g., "48 89 5C 24 08"
 # ======================================
 
 # === VTABLE INFO: Replace these values ===
-vfunc_name = "<vfunc_name>"                 # e.g., "CCSPlayerController"
-vfunc_mangled_name = "<vfunc_mangled_name>" # e.g., "??_7CCSPlayerController@@6B@"
+vtable_name = "<vtable_name>"                 # e.g., "CCSPlayerController"
+vtable_mangled_name = "<vtable_mangled_name>" # e.g., "??_7CCSPlayerController@@6B@"
 vfunc_offset = <vfunc_offset>               # e.g., 0x330
 vfunc_index = <vfunc_index>                 # e.g., 102
 # =========================================
@@ -117,8 +117,8 @@ yaml_content = f'''func_va: {hex(func_addr)}
 func_rva: {hex(func_rva)}
 func_size: {hex(func_size)}
 func_sig: {func_sig}
-vfunc_name: {vfunc_name}
-vfunc_mangled_name: {vfunc_mangled_name}
+vtable_name: {vtable_name}
+vtable_mangled_name: {vtable_mangled_name}
 vfunc_offset: {hex(vfunc_offset)}
 vfunc_index: {vfunc_index}
 '''
@@ -160,8 +160,8 @@ func_va: 0x180999830      # Virtual address - changes with game updates
 func_rva: 0x999830        # Relative virtual address (VA - image base) - changes with game updates
 func_size: 0x301          # Function size in bytes - changes with game updates
 func_sig: 48 89 5C 24 08  # Unique byte signature
-vfunc_name: CCSPlayerController
-vfunc_mangled_name: ??_7CCSPlayerController@@6B@
+vtable_name: CCSPlayerController
+vtable_mangled_name: ??_7CCSPlayerController@@6B@
 vfunc_offset: 0x330       # Offset from vtable start - changes with game updates
 vfunc_index: 102          # vtable[102] - changes with game updates
 ```
