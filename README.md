@@ -105,13 +105,13 @@ Prompt:
   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
 
   Required parameters:
-  - `func_name`: `CCSPlayerPawnBase_PostThink`
+  - `func_name`: `CCSPlayerPawnBase_PostThink` (for example)
   - `func_addr`: The function address from step 1
   - `func_sig`: The validated signature from step 3
 
   VTable parameters (if this is a virtual function):
-  - `vfunc_name`: `CCSPlayerPawn`
-  - `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
+  - `vfunc_name`: `CCSPlayerPawn` (for example)
+  - `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux) (for example)
   - `vfunc_offset`: The offset from step 2
   - `vfunc_index`: The index from step 2
 ```

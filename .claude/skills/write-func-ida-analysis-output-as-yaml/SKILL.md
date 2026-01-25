@@ -139,6 +139,9 @@ Examples:
 - `server.dll` → `CBaseModelEntity_SetModel.windows.yaml`
 - `server.so` / `libserver.so` → `CBaseModelEntity_SetModel.linux.yaml`
 
+- `engine2.dll` → `CServerSideClient_IsHearingClient.windows.yaml`
+- `libengine2.so` → `CServerSideClient_IsHearingClient.linux.yaml`
+
 ## Output YAML Format
 
 ### Regular Function
