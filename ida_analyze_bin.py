@@ -94,20 +94,19 @@ def quit_ida_gracefully(process, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=Fal
 
     # Try graceful quit via MCP (fast timeout so we don't hang on a dead server)
     try:
-        success = asyncio.run(asyncio.wait_for(quit_ida_via_mcp(host, port), timeout=5))
+        asyncio.run(asyncio.wait_for(quit_ida_via_mcp(host, port), timeout=5))
     except Exception:
-        success = False
+        pass
 
-    if success:
-        # Wait for process to exit
-        try:
-            process.wait(timeout=10)
-            if debug:
-                print("  IDA exited gracefully")
-            return
-        except subprocess.TimeoutExpired:
-            if debug:
-                print("  Warning: IDA did not exit after qexit, forcing kill...")
+    # Wait briefly for the process to exit on its own after the quit request.
+    try:
+        process.wait(timeout=10)
+        if debug:
+            print("  IDA exited gracefully")
+        return
+    except subprocess.TimeoutExpired:
+        if debug:
+            print("  Warning: IDA did not exit after qexit, forcing kill...")
 
     # Last resort: force kill (avoid terminate to reduce chances of breaking IDB)
     if process.poll() is None:

@@ -28,11 +28,11 @@ python download_bin.py -gamever 14132
 3. Let claude / codex do everything for you
 
 ```bash
-claude /find-CBaseModelEntity_SetModel
+claude -p "/find-CBaseModelEntity_SetModel" --agent sig-finder
 ```
 
 ```bash
-codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md"
+codex exec "Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md"
 ```
 
 4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
