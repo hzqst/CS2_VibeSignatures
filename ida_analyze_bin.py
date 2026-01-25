@@ -19,7 +19,7 @@ Usage:
 Requirements:
     pip install pyyaml
     uv (for running idalib-mcp)
-    claude CLI or codex CLI
+    claude CLI or codex CLI (codex.cmd on Windows)
 """
 
 import argparse
@@ -46,6 +46,10 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 120  # seconds to wait for MCP server
 SKILL_TIMEOUT = 600  # 10 minutes per skill
+
+# Determine codex command based on OS
+IS_WINDOWS = sys.platform.startswith("win")
+CODEX_CMD = "codex.cmd" if IS_WINDOWS else "codex"
 
 
 def parse_args():
@@ -245,8 +249,8 @@ def run_skill(agent, skill_name, debug=False):
     if agent == "claude":
         cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder"]
     else:  # codex
-        skill_path = f".claude\\skills\\{skill_name}\\SKILL.md"
-        cmd = ["codex", "exec", f"run SKILL: {skill_path}"]
+        skill_path = f".claude/skills/{skill_name}/SKILL.md"
+        cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
 
     print(f"    Running: {' '.join(cmd)}")
 
@@ -294,7 +298,7 @@ def quit_ida(agent, debug=False):
     if agent == "claude":
         cmd = ["claude", "-p", "/quit-ida"]
     else:  # codex
-        cmd = ["codex", "exec", "run SKILL: .claude\\skills\\quit-ida\\SKILL.md"]
+        cmd = [CODEX_CMD, "exec", "Run SKILL: .claude/skills/quit-ida/SKILL.md"]
 
     print(f"  Closing IDA: {' '.join(cmd)}")
 
