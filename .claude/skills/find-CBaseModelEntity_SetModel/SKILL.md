@@ -14,6 +14,8 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
    mcp__ida-pro-mcp__find_regex pattern="weapons/models/defuser/defuser\.vmdl"
    ```
 
+   * Note that if `find_regex` find nothing, you may try single back-slash instead of double back-slash(which means you should go with escaped character).
+
 2. Get cross-references to the string:
    ```
    mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
