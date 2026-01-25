@@ -90,60 +90,38 @@ Prompt:
 
 ```bash
 Prompt: 
- - use SKILL: /get-vftable-index to get vftable index for this function.
+ - **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
 ```
 
 3. Generate a robust signature for this function
 
 ```bash
 Prompt:
- - **DO NOT** use `find_bytes` as it won't work for function.
- - use SKILL: /generate-signature-for-function to generate a robust signature for this function.
+   -- **DO NOT** use `find_bytes` as it won't work for function.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
 
 4. Write YAML
 
-For virtual function:
-
 ```bash
 Prompt:
- - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
+  **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
 
-  ```yaml
-  func_va: 0x180ABCDEF
-  func_rva: 0xABCDEF
-  func_size: 0xABC
-  func_sig: 55 8B EC 11 22 33 44 55 66 77 88
-  vfunc_name: CCSPlayerPawn
-  vfunc_mangled_name: _ZTV13CCSPlayerPawn
-  vfunc_offset: 0xA00
-  vfunc_index: 320
-  ```
+  Required parameters:
+  - `func_name`: `CCSPlayerPawnBase_PostThink`
+  - `func_addr`: The function address from step 2
+  - `func_sig`: The validated signature from step 6
 
-  * func_rva is calculated with `func_va - ImageBase`
-
-```
-
-For non-virtual function:
-
-```bash
-Prompt:
- - Write `{FunctionName}.windows.yaml` / `{FunctionName}.linux.yaml` beside the `server.dll` / `server.so` being analyzed, with the following content:
-
-  ```yaml
-  func_va: 0x180ABCDEF
-  func_rva: 0xABCDEF
-  func_size: 0xABC
-  func_sig: 55 8B EC 11 22 33 44 55 66 77 88
-  ```
-
-  * func_rva is calculated with `func_va - ImageBase`
-
+  VTable parameters (this is a virtual function):
+  - `vfunc_name`: `CCSPlayerPawn`
+  - `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
+  - `vfunc_offset`: The offset from step 5
+  - `vfunc_index`: The index from step 5
 ```
 
 5. Create SKILL
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in English according to what we just did, so we can write yaml when using SKILL next time. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
+ - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
 ```
