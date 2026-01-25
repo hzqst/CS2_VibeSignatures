@@ -44,44 +44,20 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-7. Write YAML file beside the binary:
-   ```python
-   mcp__ida-pro-mcp__py_eval code="""
-   import idaapi
-   import os
+7. Write IDA analysis output as YAML beside the binary:
 
-   input_file = idaapi.get_input_file_path()
-   dir_path = os.path.dirname(input_file)
+   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
 
-   # Determine platform from file extension
-   if input_file.endswith('.dll'):
-       platform = 'windows'
-       image_base = 0x180000000
-   else:
-       platform = 'linux'
-       image_base = 0x0
+   Required parameters:
+   - `func_name`: `CCSPlayerController_ChangeTeam`
+   - `func_addr`: The function address from step 3
+   - `func_sig`: The validated signature from step 6
 
-   func_va = <func_addr>
-   func_size = <func_size>
-   func_rva = func_va - image_base
-   func_sig = "<unique_signature>"  # Replace with validated signature
-
-   yaml_content = f'''func_va: {hex(func_va)}
-func_rva: {hex(func_rva)}
-func_size: {hex(func_size)}
-func_sig: {func_sig}
-vfunc_name: CCSPlayerController
-vfunc_mangled_name: ??_7CCSPlayerController@@6B@
-vfunc_offset: <vfunc_offset>
-vfunc_index: <vfunc_index>
-'''
-
-   yaml_path = os.path.join(dir_path, f"CCSPlayerController_ChangeTeam.{platform}.yaml")
-   with open(yaml_path, 'w', encoding='utf-8') as f:
-       f.write(yaml_content)
-   print(f"Written to: {yaml_path}")
-   """
-   ```
+   VTable parameters (this is a virtual function):
+   - `vfunc_name`: `CCSPlayerController`
+   - `vfunc_mangled_name`: `??_7CCSPlayerController@@6B@` (Windows) or `_ZTV19CCSPlayerController` (Linux)
+   - `vfunc_offset`: The offset from step 5
+   - `vfunc_index`: The index from step 5
 
 ## Signature Pattern
 

@@ -71,62 +71,20 @@ mcp__ida-pro-mcp__decompile(addr="<function_addr>")
   **DO NOT** use `find_bytes` as it won't work for function.
   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-### 7. Get Image Base and Write YAML
+### 7. Write IDA analysis output as YAML beside the binary
 
-Get binary information:
+**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
 
-```python
-mcp__ida-pro-mcp__py_eval(code="""
-import ida_nalt
-import ida_ida
-file_path = ida_nalt.get_input_file_path()
-image_base = ida_ida.inf_get_min_ea()
-print(f"File: {file_path}")
-print(f"Base: {hex(image_base)}")
-""")
-```
+Required parameters:
+- `func_name`: `CCSPlayerPawnBase_PostThink`
+- `func_addr`: The function address from step 2
+- `func_sig`: The validated signature from step 6
 
-Calculate `func_rva = func_va - image_base`
-
-Write the YAML file beside the binary:
-
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import idaapi
-import os
-
-input_file = idaapi.get_input_file_path()
-dir_path = os.path.dirname(input_file)
-
-# Determine platform from file extension
-if input_file.endswith('.dll'):
-    platform = 'windows'
-    image_base = 0x180000000
-else:
-    platform = 'linux'
-    image_base = 0x0
-
-func_va = <func_addr>
-func_size = <func_size>
-func_rva = func_va - image_base
-func_sig = "<unique_signature>"  # Replace with validated signature
-
-yaml_content = f'''func_va: {hex(func_va)}
-func_rva: {hex(func_rva)}
-func_size: {hex(func_size)}
-func_sig: {func_sig}
-vfunc_name: CCSPlayerPawn
-vfunc_mangled_name: _ZTV13CCSPlayerPawn
-vfunc_offset: <vfunc_offset>
-vfunc_index: <vfunc_index>
-'''
-
-yaml_path = os.path.join(dir_path, f"CCSPlayerPawnBase_PostThink.{platform}.yaml")
-with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
-print(f"Written to: {yaml_path}")
-"""
-```
+VTable parameters (this is a virtual function):
+- `vfunc_name`: `CCSPlayerPawn`
+- `vfunc_mangled_name`: `??_7CCSPlayerPawn@@6B@` (Windows) or `_ZTV13CCSPlayerPawn` (Linux)
+- `vfunc_offset`: The offset from step 5
+- `vfunc_index`: The index from step 5
 
 ## Function Characteristics
 

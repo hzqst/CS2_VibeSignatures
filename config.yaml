@@ -12,11 +12,20 @@ modules:
     path_linux: game/csgo/bin/linuxsteamrt64/libserver.so
 
     symbols:
-      - name: UTIL_SayTextFilter
+      - name: CBaseModelEntity_SetModel
         catagory: func
 
-      - name: CBaseModelEntity_SetModel
+      - name: CBasePlayerController_SetPlayerName
+        catagory: func
+
+      - name: CCSPlayerController_ChangeTeam
         catagory: vfunc
 
-      - name: CBasePlayerController_SetPlayerName
+      - name: CCSPlayerPawnBase_PostThink
         catagory: vfunc
+
+      - name: GetCSWeaponDataFromKey
+        catagory: vfunc
+
+      - name: InventoryUpdateThink
+        catagory: func
