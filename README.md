@@ -19,7 +19,6 @@ Feel free to contibute your SKILLS!
 Windows (Admin elevated):
 
 ```bash
-mkdir ".codex"
 mklink /J ".codex/skills" ".claude/skills"
 ```
 
