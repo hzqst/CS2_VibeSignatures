@@ -234,7 +234,7 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         return None
 
 
-def run_skill(agent, skill_name, debug=False):
+def run_skill(skill_name, agent="claude", debug=False):
     """
     Execute a skill using the specified agent.
 
@@ -248,7 +248,7 @@ def run_skill(agent, skill_name, debug=False):
     """
     if agent == "claude":
         cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder"]
-    else:  # codex
+    elif agent == "codex": 
         skill_path = f".claude/skills/{skill_name}/SKILL.md"
         cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
 
@@ -314,7 +314,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
             skill_name = f"find-{symbol}"
             print(f"  Processing symbol: {symbol}")
 
-            if run_skill(agent, skill_name, debug):
+            if run_skill(skill_name, agent, debug):
                 success_count += 1
                 print(f"    Success")
             else:
