@@ -27,7 +27,9 @@ modules:
       - name: GetCSWeaponDataFromKey
         catagory: vfunc
 
-      - name: InventoryUpdateThink
+      - name: CCSPlayerController_InventoryUpdateThink
+        alias: 
+          - InventoryUpdateThink
         catagory: func
 
       - name: CCSGameRules_TerminateRound
