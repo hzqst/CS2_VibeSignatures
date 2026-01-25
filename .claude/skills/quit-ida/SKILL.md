@@ -24,3 +24,8 @@ idc.qexit(0)
 ```
 
 This will cleanly exit IDA Pro and close the current session.
+
+## Important notes
+
+- `py_eval` returns `ConnectionResetError`, and later calls to `ida-pro-mcp` become `ConnectionRefusedError`.
+- This means IDA quit as expected.
