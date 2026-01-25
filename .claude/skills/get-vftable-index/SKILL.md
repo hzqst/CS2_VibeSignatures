@@ -16,7 +16,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
 
 ## Method
 
-1. Get vtable address:
+### 1. Get vtable address:
    ```
    mcp__ida-pro-mcp__list_globals(queries={"filter": "*ClassName*"})
    ```
@@ -24,7 +24,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
    - Windows: `??_7ClassName@@6B@`
    - Linux: `_ZTVNClassName` or `_ZTVN...E`
 
-2. Find function in vtable:
+### 2. Find function in vtable:
    ```python
    mcp__ida-pro-mcp__py_eval code="""
    import ida_bytes
@@ -42,6 +42,9 @@ Find a function's position (offset and index) within a vtable by iterating throu
        print("Function not found in vtable!")
    """
    ```
+### 3. Continue with the unfinished tasks
+
+    If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
 ## Memory Layout
 

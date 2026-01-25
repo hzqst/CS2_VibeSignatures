@@ -78,6 +78,10 @@ else:
 """
 ```
 
+### 3. Continue with the unfinished tasks
+
+If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
+
 ## Output Format
 
 Signature format: space-separated hex bytes with `??` for wildcards.
