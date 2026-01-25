@@ -20,7 +20,7 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 
 1. Download CS2 binaries
 ```bash
-py .\download_bin.py -gamever 14132
+python download_bin.py -gamever 14132
 ```
 
 2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), Ctrl+Alt+M to start MCP server.
@@ -43,7 +43,7 @@ codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.
 
 1. Download CS2 binaries
 ```bash
-py .\download_bin.py -gamever 14132
+python download_bin.py -gamever 14132
 ```
 
 2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-platform=windows] [-agent=claude/codex] [-debug]`
