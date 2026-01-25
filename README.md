@@ -14,6 +14,15 @@ Feel free to contibute your SKILLS!
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
+## For codex
+
+Windows (Admin elevated):
+
+```bash
+mkdir ".codex"
+mklink /J ".codex/skills" ".claude/skills"
+```
+
 ## How to locate functions or variables
 
 Let's locate `CBaseModelEntity_SetModel` for example.
