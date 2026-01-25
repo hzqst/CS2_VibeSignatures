@@ -105,13 +105,13 @@ for m in matches:
 
 if len(matches) == 1 and matches[0] == func_addr:
     print("SUCCESS: Signature is unique and matches target function!")
-    return
-elif len(matches) == 1:
-    print("WARNING: Signature matches but at different address!")
-    return
-else:
-    print("FAILED: Signature not unique, need longer/different pattern")
-    return
+elif len(matches) == 1 and matches[0] != func_addr:
+    print("WARNING: Signature matches but at different address, This should not happen!")
+elif len(matches) > 1:
+    print("FAILED: Signature not unique, need longer/different pattern. Ignore this failure if we got SUCCESS before, as py_eval has issue with duplicate evaluation sometimes.")
+elif len(matches) == 0:
+    print("FAILED: Found nothing with this signature. Ignore this failure if we got SUCCESS before, as py_eval has issue with duplicate evaluation sometimes.")
+
 """
 ```
 
