@@ -41,7 +41,7 @@ except ImportError as e:
 DEFAULT_CONFIG_FILE = "config.yaml"
 DEFAULT_BIN_DIR = "bin"
 DEFAULT_PLATFORM = "windows,linux"
-DEFAULT_AGENT = "codex"
+DEFAULT_AGENT = "claude"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 120  # seconds to wait for MCP server
