@@ -105,10 +105,13 @@ for m in matches:
 
 if len(matches) == 1 and matches[0] == func_addr:
     print("SUCCESS: Signature is unique and matches target function!")
+    return
 elif len(matches) == 1:
     print("WARNING: Signature matches but at different address!")
+    return
 else:
     print("FAILED: Signature not unique, need longer/different pattern")
+    return
 """
 ```
 
