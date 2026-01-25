@@ -46,7 +46,7 @@ codex exec "run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.
 python download_bin.py -gamever 14132
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-platform=windows] [-agent=claude/codex] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-debug]`
 
 ## How to convert yaml to json / gamedata.txt (Valve KeyValues)
 
