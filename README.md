@@ -8,9 +8,11 @@ Feel free to contibute your SKILLS!
 
 ## Requirements
 
-1. claude / codex
+1. `pip install yaml requests asyncio mcp vdf`
 
-2. https://github.com/mrexodia/ida-pro-mcp
+2. claude / codex
+
+3. https://github.com/mrexodia/ida-pro-mcp
 
 3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
 
