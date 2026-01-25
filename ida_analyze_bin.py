@@ -32,12 +32,14 @@ from pathlib import Path
 
 try:
     import yaml
+    import asyncio
+    from mcp import ClientSession
+    from mcp.client.sse import sse_client
 except ImportError as e:
     print(f"Error: Missing required dependency: {e.name}")
     print("Please install required packages: pip install pyyaml")
     sys.exit(1)
-
-
+    
 DEFAULT_CONFIG_FILE = "config.yaml"
 DEFAULT_BIN_DIR = "bin"
 DEFAULT_PLATFORM = "windows,linux"
@@ -51,6 +53,73 @@ SKILL_TIMEOUT = 600  # 10 minutes per skill
 # Determine codex command based on OS
 IS_WINDOWS = sys.platform.startswith("win")
 CODEX_CMD = "codex.cmd" if IS_WINDOWS else "codex"
+
+
+async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT, timeout=10):
+    """
+    Gracefully quit IDA using MCP py_eval tool with idc.qexit(0).
+
+    Args:
+        host: MCP server host
+        port: MCP server port
+        timeout: Timeout in seconds
+
+    Returns:
+        True if successful, False otherwise
+    """
+    server_url = f"http://{host}:{port}/sse"
+
+    try:
+        async with sse_client(server_url) as (read_stream, write_stream):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                await session.call_tool(name="py_eval", arguments={"code": "import idc; idc.qexit(0)"})
+                return True
+    except asyncio.TimeoutError:
+        return False
+    except Exception as e:
+        return False
+
+
+def quit_ida_gracefully(process, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False):
+    """
+    Attempt to quit IDA gracefully via MCP, fall back to terminate if needed.
+
+    Args:
+        process: subprocess.Popen object
+        host: MCP server host
+        port: MCP server port
+    """
+    if process.poll() is not None:
+        return  # Process already exited
+
+    if debug:
+        print("  Quitting IDA gracefully via MCP...")
+
+    # Try graceful quit via MCP (fast timeout so we don't hang on a dead server)
+    try:
+        success = asyncio.run(asyncio.wait_for(quit_ida_via_mcp(host, port), timeout=5))
+    except Exception:
+        success = False
+
+    if success:
+        # Wait for process to exit
+        try:
+            process.wait(timeout=10)
+            if debug:
+                print("  IDA exited gracefully")
+            return
+        except subprocess.TimeoutExpired:
+            if debug:
+                print("  Warning: IDA did not exit after qexit, forcing kill...")
+
+    # Last resort: force kill (avoid terminate to reduce chances of breaking IDB)
+    if process.poll() is None:
+        try:
+            process.kill()
+            process.wait(timeout=5)
+        except Exception:
+            pass
 
 
 def parse_args():
@@ -334,14 +403,8 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
                 print(f"    Failed")
 
     finally:
-        # Ensure process is terminated
-        if process.poll() is None:
-            print("  Terminating idalib-mcp process...")
-            process.terminate()
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
+        # Gracefully quit IDA via MCP to avoid breaking IDB
+        quit_ida_gracefully(process, host, port, debug=debug)
 
     return success_count, fail_count
 
