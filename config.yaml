@@ -4,8 +4,10 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     symbols:
-      - name: IsHearingClient
-        catagory: func
+      - name: CServerSideClient_IsHearingClient
+        alias:
+          - IsHearingClient
+        catagory: vfunc
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
