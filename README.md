@@ -4,7 +4,7 @@ Several scripts and prompts are included to generate signatures via Agent SKILLS
 
 Our goal is to update signatures/offsets without human involved.
 
-Feel free to contibute your SKILLS!
+Feel free to contribute your SKILLS with PR!
 
 ## Requirements
 
