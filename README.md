@@ -12,9 +12,11 @@ Feel free to contibute your SKILLS!
 
 2. claude / codex
 
-3. https://github.com/mrexodia/ida-pro-mcp
+3. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
 
-3. https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md
+4. [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md), can be installed from claude marketplace.
+
+5. [idalib](https://docs.hex-rays.com/user-guide/idalib)
 
 ## How to find and generate signatures for specified function or variable
 
@@ -25,7 +27,7 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 python download_bin.py -gamever 14132
 ```
 
-2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), Ctrl+Alt+M to start MCP server.
+2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
 
 3. Let claude / codex do everything for you
 
@@ -122,3 +124,19 @@ Prompt:
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as reference.
 ```
+
+## Troubleshooting
+
+### Cannot load IDA library file {name}, Please make sure you are using IDA 
+
+This is because the official idapro package is not compatible with IDA 9.0
+
+Mitigation: Overwrite `Python313/Lib/site-packages/idapro/__init__.py` with `CS2_VibeSignatures/patched-init-for-ida-9.0/Lib/site-packages/idapro/__init__.py`.
+
+### error: could not create 'ida.egg-info': access denied
+
+Mitigation: You should run `pip install .` and `python py-activate-idalib.py` for `C:\Program Files\IDA Professional 9.0\idalib\python` with **administrator** privilege.
+
+### Could not find idalib64.dll in .........
+
+Mitigation: Try `set IDADIR=C:\Program Files\IDA Professional 9.0` or add `IDADIR=C:\Program Files\IDA Professional 9.0` to your system environment.
