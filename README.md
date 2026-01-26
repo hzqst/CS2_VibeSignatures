@@ -131,11 +131,11 @@ Prompt:
 
 This is because the official idapro package is not compatible with IDA 9.0
 
-Mitigation: Overwrite `Python313/Lib/site-packages/idapro/__init__.py` with `CS2_VibeSignatures/patched-init-for-ida-9.0/Lib/site-packages/idapro/__init__.py`.
+Mitigation: Overwrite `Python3**/Lib/site-packages/idapro/__init__.py` with `CS2_VibeSignatures/patched-init-for-ida-9.0/Lib/site-packages/idapro/__init__.py`.
 
 ### error: could not create 'ida.egg-info': access denied
 
-Mitigation: You should run `pip install .` and `python py-activate-idalib.py` for `C:\Program Files\IDA Professional 9.0\idalib\python` with **administrator** privilege.
+Mitigation: You should run `pip install .` and `python py-activate-idalib.py` under `C:\Program Files\IDA Professional 9.0\idalib\python` with **administrator** privilege.
 
 ### Could not find idalib64.dll in .........
 
