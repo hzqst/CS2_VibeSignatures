@@ -23,11 +23,12 @@ Feel free to contibute your SKILLS!
 Let's locate `CBaseModelEntity_SetModel` for example.
 
 1. Download CS2 binaries
+
 ```bash
 python download_bin.py -gamever 14132
 ```
 
-2. Open `\CS2_VibeSignatures\bin\14132\server\server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
+2. Open `CS2_VibeSignatures/bin/14132/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
 
 3. Let claude / codex do everything for you
 
@@ -45,13 +46,24 @@ claude
 
 ```bash
 prompt:
- - Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md
+ - /find-CCSPlayerController_ChangeTeam
 ```
 
 codex (no-interactive-mode)
 
 ```bash
-codex exec "Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md"
+codex exec "Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md"
+```
+
+codex (interactive-mode)
+
+```bash
+codex
+```
+
+```bash
+prompt:
+ - Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md
 ```
 
 4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
@@ -61,6 +73,7 @@ codex exec "Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.
 ## How to find and generate signatures for all functions or variables declared in `config.yaml`
 
 1. Download CS2 binaries
+
 ```bash
 python download_bin.py -gamever 14132
 ```
