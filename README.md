@@ -16,7 +16,7 @@ Feel free to contibute your SKILLS!
 
 4. [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md), can be installed from claude marketplace.
 
-5. [idalib](https://docs.hex-rays.com/user-guide/idalib)
+5. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
 ## How to find and generate signatures for specified function or variable
 
