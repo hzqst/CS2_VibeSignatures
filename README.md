@@ -31,9 +31,24 @@ python download_bin.py -gamever 14132
 
 3. Let claude / codex do everything for you
 
+claude (no-interactive-mode)
+
 ```bash
 claude -p "/find-CBaseModelEntity_SetModel" --agent sig-finder
 ```
+
+claude (interactive-mode)
+
+```bash
+claude
+```
+
+```bash
+prompt:
+ - Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md
+```
+
+codex (no-interactive-mode)
 
 ```bash
 codex exec "Run SKILL: .claude\skills\find-CCSPlayerController_ChangeTeam\SKILL.md"
