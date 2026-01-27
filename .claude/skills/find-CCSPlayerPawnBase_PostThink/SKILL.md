@@ -60,6 +60,8 @@ mcp__ida-pro-mcp__decompile(addr="<function_addr>")
 
   **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
+  VTable class name: `CCSPlayerPawn`
+
 ### 6. Generate and Validate Unique Signature
 
   **DO NOT** use `find_bytes` as it won't work for function.

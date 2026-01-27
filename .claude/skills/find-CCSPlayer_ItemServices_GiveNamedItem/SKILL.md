@@ -98,11 +98,7 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CC
 
 **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
-Expected results:
-- **Vtable Index**: 20 (may change with game updates)
-- **Vtable Offset**: 0xb0 (may change with game updates)
-
-For Linux, remember to account for the 0x10 RTTI offset when calculating.
+VTable class name: `CCSPlayer_WeaponServices`
 
 ### 9. Generate and validate unique signature
 

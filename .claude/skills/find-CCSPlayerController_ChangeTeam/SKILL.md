@@ -33,11 +33,7 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
   **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
-   VTable class name to search for:
-   - Windows: `??_7CCSPlayerController@@6B@`
-   - Linux: `_ZTV19CCSPlayerController`
-
-   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV19CCSPlayerController + 0x10`.
+   VTable class name: `CCSPlayerController`
 
 6. Generate and validate unique signature:
 

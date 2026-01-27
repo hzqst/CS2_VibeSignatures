@@ -51,11 +51,7 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "s_GameEv
 
 **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
-VTable class name to search for:
-- Windows: `??_7CSource2Server@@6B@` or search with `*CSource2Server*`
-- Linux: `_ZTV14CSource2Server`
-
-Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV14CSource2Server + 0x10`.
+VTable class name: `CSource2Server`
 
 ### 6. Generate and validate unique signature
 
