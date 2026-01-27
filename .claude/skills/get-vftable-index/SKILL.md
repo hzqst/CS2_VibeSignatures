@@ -71,6 +71,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
    - `<FUNC_ADDRESS>` with the target function address
    - `<VTABLE_ADDRESS>` with `vtableAddress` from step 1
    - `<NUMBER_OF_VIRTUAL_FUNCTIONS>` with `numberOfVirtualFunctions` from step 1
+   
 ### 3. Continue with the unfinished tasks
 
     If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.

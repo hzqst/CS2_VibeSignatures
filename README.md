@@ -100,7 +100,32 @@ python update_gamedata.py -gamever 14132
 
 [plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
 
-## How to create SKILLS
+## How to create SKILL for: find-{vtable}
+
+1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
+
+```bash
+Prompt: 
+ - **ALWAYS** Use SKILL: get-vftable-address to find vtable for CCSPlayerPawn.
+```
+
+2. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results.
+```
+
+3. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-{vtableName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
+   @.claude/skills/find-CCSPlayerPawn_vtable/SKILL.md  
+   as references.
+```
+
+## How to create SKILL for: find-{function}
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 

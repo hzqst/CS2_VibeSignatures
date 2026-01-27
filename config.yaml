@@ -15,9 +15,9 @@ modules:
 
     symbols:
       - name: CSource2Server_vtable
-        alias:
-          - CSource2Server::vtable
-          - CSource2Server::vftable
+        catagory: vtable
+
+      - name: CCSGameRules_vtable
         catagory: vtable
 
       - name: CBaseModelEntity_SetModel
