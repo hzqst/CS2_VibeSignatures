@@ -580,8 +580,14 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir):
                 updated_count += 1
 
     # Write back with BOM
+    # Use vdf.dumps() to get string, then manually fix escaped backslashes
+    vdf_content = vdf.dumps(gamedata, pretty=True)
+    # VDF library escapes backslashes, but CS2Fixes expects single backslash
+    # Replace \\x with \x in signature strings
+    vdf_content = vdf_content.replace("\\\\x", "\\x")
+
     with open(gamedata_path, "w", encoding="utf-8-sig") as f:
-        vdf.dump(gamedata, f, pretty=True)
+        f.write(vdf_content)
 
     return updated_count, skipped_count
 
