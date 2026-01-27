@@ -1,4 +1,0 @@
-func_va: 0x180bc22e0
-func_rva: 0xbc22e0
-func_size: 0x1ea
-func_sig: 48 89 5C 24 08 48 89 74 24 18 48 89 7C 24 20 55 41 56 41 57 48 8D 6C 24 D1 48 81 EC C0 00 00 00 4D 8B F0 48 89 4D ?? 8B DA C6 45 ?? FF 48 8D 05 ?? ?? ?? ?? C7 45 ?? 00 00 80 BF

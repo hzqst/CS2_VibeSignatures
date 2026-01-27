@@ -139,13 +139,6 @@ Prompt:
  - Rename sub_180A8B930 to CBaseModelEntity_SetModel in IDA
 ```
 
-2. Optionally, search vftable for virtual function, `CCSPlayerPawnBase_PostThink` in this case
-
-```bash
-Prompt: 
- - **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
-```
-
 3. Generate a robust signature for this function
 
 ```bash
