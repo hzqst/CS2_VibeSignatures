@@ -73,6 +73,10 @@ Find a class's virtual function table within it's class name.
 
    Replace `<VTABLE_ADDRESS>` with the actual hex address (e.g., `0x180A12345`).
 
+### 3. Continue with Unfinished Tasks
+
+If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
+
 ## Output
 
 The skill returns:
