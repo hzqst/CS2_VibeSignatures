@@ -1,0 +1,8 @@
+func_va: 0x180a19010
+func_rva: 0xa19010
+func_size: 0x239
+func_sig: 48 89 5C 24 10 48 89 6C 24 18 56 57 41 56 48 83 EC 30 48 8B 01 48 8B FA 48 8B D9 FF 90 E0 00 00 00 84 C0 0F 84 ?? ?? ?? ?? 45 33 F6 4C 8D 0D ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 44 89 74 24 20 33
+vtable_name: CCSPlayer_WeaponServices
+vtable_mangled_name: ??_7CCSPlayer_WeaponServices@@6B@
+vfunc_offset: 0xb8
+vfunc_index: 23
