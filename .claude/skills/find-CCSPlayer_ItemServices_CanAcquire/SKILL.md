@@ -32,7 +32,7 @@ Locate `CCSPlayer_ItemServices_CanAcquire` in CS2 server.dll or server.so using 
    ```
 
    This call satisfies:
-   - First argument is a services subobject at offset **3712**
+   - First argument is a services subobject at offset 3712 (offset can diffs between windows / linux and change after game updates)
    - Second argument is an item definition/handle
    - Third argument is a flag (value: 1) indicating execution mode
    - Fourth argument is a flag (value: 0)
