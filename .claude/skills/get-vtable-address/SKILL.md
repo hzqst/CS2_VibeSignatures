@@ -80,14 +80,6 @@ If we are called by a task from a task list / parent SKILL, restore and continue
 ## Output
 
 The skill returns:
-- **vtableAddress**: The address of the vtable
+- **vtableAddress**: The start address of the vtable
 - **sizeInBytes**: Total size of the vtable in bytes
 - **numberOfVirtualFunctions**: Count of virtual function entries in the vtable
-
-## Platform Notes
-
-- **Windows**: VTable starts directly at the symbol address
-- **Linux**: First 16 bytes are RTTI metadata. Real vtable address = `_ZTV... + 0x10`, The vtable structure is:
-    - Offset 0x00: offset to this (8 bytes)
-    - Offset 0x08: typeinfo pointer (8 bytes)
-    - Offset 0x10: **Index 0 starts here**

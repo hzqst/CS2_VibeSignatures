@@ -78,7 +78,7 @@ If the skill returns an error, stop and report to user.
 Otherwise, extract `vtable_va` and `vtable_numvfunc` for subsequent steps.
 ```
 
-## Output Values
+## Expected Output Values
 
 | Field | Description | Example |
 |-------|-------------|---------|

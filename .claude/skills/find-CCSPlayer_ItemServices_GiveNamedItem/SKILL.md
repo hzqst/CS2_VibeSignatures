@@ -61,10 +61,6 @@ mcp__ida-pro-mcp__get_int queries=[
 ]
 ```
 
-**Note for Linux:** The first 16 bytes (0x10) of the vtable symbol are RTTI metadata. Virtual function pointers start at `_ZTV22CCSPlayer_ItemServices + 0x10`. Calculate offsets accordingly:
-- Index 18: vtable_start + 0x10 + (18 * 8) = vtable_start + 0xA0
-- Index 20: vtable_start + 0x10 + (20 * 8) = vtable_start + 0xB0
-
 ### 5. Decompile each vtable function
 
 For each function address retrieved in step 4:
