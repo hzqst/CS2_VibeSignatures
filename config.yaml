@@ -17,7 +17,16 @@ modules:
       - name: CSource2Server_vtable
         catagory: vtable
 
+      - name: CGameRules_vtable
+        catagory: vtable
+
       - name: CCSGameRules_vtable
+        catagory: vtable
+
+      - name: CCSPlayer_ItemServices
+        catagory: vtable
+
+      - name: CCSPlayerController
         catagory: vtable
 
       - name: CBaseModelEntity_SetModel

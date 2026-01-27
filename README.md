@@ -171,7 +171,7 @@ Prompt:
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL: get-vtable-address to find vtable for CCSPlayerPawn.
+ - **ALWAYS** Use SKILL: `/get-vtable-address` to find vtable for CCSPlayerPawn.
 ```
 
 * For interface vtable like Source2Server, see `.claude/skills/find-CSource2Server_vtable/SKILL.md`
