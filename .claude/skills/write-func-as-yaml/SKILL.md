@@ -1,6 +1,6 @@
 ---
 name: write-func-as-yaml
-description: Write function analysis results as YAML file beside the binary using IDA Pro MCP. Use this skill after completing function identification and signature generation to persist the results in a standardized YAML format. For virtual functions with vtable info, use write-vfunc-as-yaml instead.
+description: Write function analysis results as YAML file beside the binary using IDA Pro MCP. Use this skill after completing function identification and signature generation to persist the results in a standardized YAML format. For virtual functions with known vtable index, use write-vfunc-as-yaml instead.
 ---
 
 # Write Function IDA Analysis Output as YAML
