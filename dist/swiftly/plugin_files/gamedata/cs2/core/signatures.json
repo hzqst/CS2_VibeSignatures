@@ -1,0 +1,112 @@
+{
+    "CEntityInstance_AcceptInput": {
+        "lib": "server",
+        "windows": "48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 49 8B F0 48 8B D9 48 8B 0D",
+        "linux": "55 48 89 F0 48 89 E5 41 57 49 89 FF 41 56 48 8D 7D"
+    },
+    "CEntityIdentity_AcceptInput": {
+        "lib": "server",
+        "windows": "48 89 5C 24 ? 48 89 54 24 ? 48 89 4C 24 ? 55 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B 02",
+        "linux": "55 49 89 D3 48 89 E5 41 57 45 89 CF 41 56"
+    },
+    "CCSPlayerController_SwitchTeam": {
+        "lib": "server",
+        "windows": "40 53 57 48 81 EC ? ? ? ? 48 8B D9 8B FA",
+        "linux": "55 48 89 E5 41 54 49 89 FC 89 F7"
+    },
+    "UTIL_CreateEntityByName": {
+        "lib": "server",
+        "windows": "48 83 EC 48 C6 44 24 30 00",
+        "linux": "48 8D 05 ? ? ? ? 55 48 89 FA"
+    },
+    "CBaseModelEntity_SetModel": {
+        "lib": "server",
+        "windows": "40 53 48 83 EC ? 48 8B D9 4C 8B C2 48 8B 0D ? ? ? ? 48 8D 54 24 ? 48 8B 01 FF 50 ? 48 8B 44 24",
+        "linux": "55 48 89 F2 48 89 E5 53 48 89 FB 48 8D 7D ? 48 83 EC ? 48 8D 05 ? ? ? ? 48 8B 30 48 8B 06"
+    },
+    "CBaseEntity_DispatchSpawn": {
+        "lib": "server",
+        "windows": "48 89 5C 24 10 57 48 83 EC 30 48 8B DA 48 8B F9 48 85 C9",
+        "linux": "48 85 FF 74 ? 55 48 89 E5 41 55 49 89 FD"
+    },
+    "UTIL_Remove": {
+        "lib": "server",
+        "windows": "48 85 C9 74 ? 48 8B D1 48 8B 0D ? ? ? ?",
+        "linux": "48 89 FE 48 85 FF 74 ? 48 8D 05 ? ? ? ? 48"
+    },
+    "LegacyGameEventListener": {
+        "lib": "server",
+        "windows": "48 8B 15 ? ? ? ? 48 85 D2 74 ? 83 F9 ? 77 ? 48 63 C1 48 C1 E0",
+        "linux": "48 8B 05 ? ? ? ? 48 85 C0 74 ? 83 FF ? 77 ? 48 63 FF 48 C1 E7 ? 48 8D 44 38"
+    },
+    "CAttributeList_SetOrAddAttributeValueByName": {
+        "lib": "server",
+        "windows": "40 53 55 41 56 48 81 EC 90 00 00 00",
+        "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 89 F3 48 83 EC ? F3 0F 11 85"
+    },
+    "CBaseModelEntity_SetBodygroup": {
+        "lib": "server",
+        "windows": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 41 8B F8 48 8B F2 48 8B D9 E8 ? ? ? ?",
+        "linux": "55 48 89 E5 41 55 49 89 F5 41 54 41 89 D4 53 48 89 FB 48 83 EC ? E8 ? ? ? ? 48 85 C0"
+    },
+    "GiveNamedItem": {
+        "lib": "server",
+        "windows": "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 20 44 89 44 24 18",
+        "linux": "55 48 89 E5 41 57 41 56 41 55 41 54 53 48 81 EC ? ? ? ? 48 89 BD ? ? ? ? 89 95 ? ? ? ? 48 89 8D ? ? ? ? 44 89 85"
+    },
+    "CTakeDamageInfo_Constructor": {
+        "lib": "server",
+        "windows": "40 53 48 83 EC ? 48 8D 05 ? ? ? ? 48 8B D9 48 89 01 33 C0",
+        "linux": "49 BB ? ? ? ? ? ? ? ? 55 66 0F EF C9 48 89 E5"
+    },
+    "FireOutputInternal": {
+        "lib": "server",
+        "windows": "4C 89 4C 24 ? 48 89 4C 24 ? 53 56",
+        "linux": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 41 54 49 89 D4 53 48 89 F3"
+    },
+    "CBasePlayerController_SetPawn": {
+        "lib": "server",
+        "windows": "44 88 4C 24 ? 53 57",
+        "linux": "55 48 8D 87 ? ? ? ? 48 89 E5 41 57 41 56 41 89 CE 41 55 45 89 CD"
+    },
+    "CCSPlayerPawnBase_PostThink": {
+        "lib": "server",
+        "windows": "48 ? ? 55 53 56 57 41 ? 48 ? ? ? 48 ? ? ? ? ? ? 4C 89 68",
+        "linux": "55 48 89 E5 41 56 41 55 41 54 53 48 89 FB 48 83 EC 40 E8 ? ? ? ? F3 0F 10 83"
+    },
+    "CGameRules_TerminateRound": {
+        "lib": "server",
+        "windows": "48 8B C4 4C 89 48 ? 48 89 48 ? 55 56",
+        "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC ? ? ? ? 48 8D 05 ? ? ? ? F3 0F 11 85"
+    },
+    "CBaseEntity_TakeDamage": {
+        "lib": "server",
+        "windows": "40 55 41 54 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8D 6C 24 ? 48 89 9D ? ? ? ? 45 33 ED",
+        "linux": "55 48 89 E5 41 57 41 56 49 89 F6 41 55 41 54 49 89 FC 53 48 89 D3 48 83 EC ? 48 85 D2"
+    },
+    "BotNavIgnore1": {
+        "lib": "server",
+        "windows": "0F 84 ? ? ? ? 80 B8 ? ? ? ? 00 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 74 15",
+        "linux": "0F 84 ? ? ? ? 44 0F B6 B0 ? ? ? ? 45 84 F6 0F 84"
+    },
+    "BotNavIgnore2": {
+        "lib": "server",
+        "windows": "0F 84 ? ? ? ? 80 B8 ? ? ? ? 00 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 74 15",
+        "linux": "0F 84 ? ? ? ? 44 0F B6 B0 ? ? ? ? 45 84 F6 0F 84"
+    },
+    "BotNavIgnore3": {
+        "lib": "server",
+        "windows": "0F 84 ? ? ? ? 80 B8 ? ? ? ? 00 0F 84 ? ? ? ? 80 3D ? ? ? ? 00 74 15",
+        "linux": "0F 84 ? ? ? ? 44 0F B6 B0 ? ? ? ? 45 84 F6 0F 84"
+    },
+    "IGameSystem_InitAllSystems_pFirst": {
+        "lib": "server",
+        "windows": "48 8B 1D ? ? ? ? 48 85 DB 0F 84 ? ? ? ? BD",
+        "linux": "4C 8B 35 ? ? ? ? 4D 85 F6 75 ? E9"
+    },
+    "CCSPlayer_MovementServices_ProcessUserCmd": {
+        "lib": "server",
+        "windows": "48 8B C4 44 88 48 20 44 89 40 18 48 89 50 10 53",
+        "linux": "55 48 89 E5 41 57 41 56 41 55 41 54 53 48 89 FB 48 83 EC ? 89 4D"
+    }
+}
