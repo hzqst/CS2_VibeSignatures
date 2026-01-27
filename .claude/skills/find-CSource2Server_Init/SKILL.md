@@ -64,7 +64,7 @@ Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata.
 
 ### 7. Write IDA analysis output as YAML beside the binary
 
-**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CSource2Server_Init`

@@ -96,7 +96,7 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<wrapper_addr>", "name": "CCS
 
 ### 8. Write IDA analysis output as YAML
 
-**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CCSPlayerController_InventoryUpdateThink`

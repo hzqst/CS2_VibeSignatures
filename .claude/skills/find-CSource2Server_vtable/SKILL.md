@@ -101,39 +101,9 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "<off_name>", "new": "CSource2Se
 
 ### 10. Write VTable Info as YAML
 
-Use IDA Python to write the vtable information:
-
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import idaapi
-import os
-
-vtable_class = "CSource2Server"
-vtable_va = <vtable_addr>
-
-input_file = idaapi.get_input_file_path()
-dir_path = os.path.dirname(input_file)
-
-if input_file.endswith('.dll'):
-    platform = 'windows'
-    image_base = idaapi.get_imagebase()
-else:
-    platform = 'linux'
-    image_base = 0x0
-
-vtable_rva = vtable_va - image_base
-
-yaml_content = f'''vtable_class: {vtable_class}
-vtable_va: {hex(vtable_va)}
-vtable_rva: {hex(vtable_rva)}
-'''
-
-yaml_path = os.path.join(dir_path, f"{vtable_class}_vtable.{platform}.yaml")
-with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
-print(f"Written to: {yaml_path}")
-"""
-```
+Use `/write-vtable-as-yaml` skill with:
+- `vtable_class`: `CSource2Server`
+- `vtable_va`: The vtable address found in step 8
 
 ## Interface Registration Pattern
 
@@ -172,6 +142,8 @@ The output YAML filename depends on the platform:
 vtable_class: CSource2Server
 vtable_va: 0x18171c170    # Virtual address - changes with game updates
 vtable_rva: 0x171c170     # Relative virtual address - changes with game updates
+vtable_size: 0x120        # VTable size in bytes - changes with game updates
+vtable_numvfunc: 36       # Number of virtual functions - changes with game updates
 ```
 
 ## Platform Differences

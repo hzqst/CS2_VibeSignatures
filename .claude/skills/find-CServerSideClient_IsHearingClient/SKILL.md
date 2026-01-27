@@ -77,7 +77,7 @@ VTable class name: `CServerSideClient`
 
 ### 7. Write IDA Analysis Output as YAML
 
-**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CServerSideClient_IsHearingClient`
