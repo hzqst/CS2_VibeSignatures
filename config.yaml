@@ -50,16 +50,19 @@ modules:
         alias:
           - CCSPlayer_ItemServices::GiveNamedItem
         catagory: vfunc
+        prerequsite: CCSPlayer_ItemServices_vtable
 
       - name: CCSPlayer_WeaponServices_CanUse
         alias:
           - CCSPlayer_WeaponServices::CanUse
         catagory: vfunc
+        prerequsite: CCSPlayer_WeaponServices_vtable
 
       - name: CCSPlayerController_ChangeTeam
         alias:
           - CCSPlayerController::ChangeTeam
         catagory: vfunc
+        prerequsite: CCSPlayerController_vtable
 
       - name: CCSPlayerController_InventoryUpdateThink
         alias: 
@@ -71,6 +74,7 @@ modules:
         alias:
           - CCSPlayerController::Respawn
         catagory: vfunc
+        prerequsite: CCSPlayerController_vtable
 
       - name: CCSPlayerController_SwitchTeam
         alias:
@@ -81,16 +85,19 @@ modules:
         alias:
           - CCSPlayerPawnBase::PostThink
         catagory: vfunc
+        prerequsite: CCSPlayerPawn_vtable
 
       - name: CSource2Server_Init
         alias:
           - CSource2Server::Init
         catagory: vfunc
+        prerequsite: CSource2Server_vtable
 
       - name: CGameEventManager_Init
         alias:
           - CGameEventManager::Init
         catagory: func
+        prerequsite: CSource2Server_Init
 
       - name: ClientPrint
         catagory: func
