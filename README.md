@@ -168,7 +168,7 @@ Prompt:
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
    @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
-   @.claude/skills/find-CCSPlayerController_ChangeTeam/find-CCSPlayerPawnBase_PostThink 
+   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md find-CCSPlayerPawnBase_PostThink 
    as references.
 ```
 
