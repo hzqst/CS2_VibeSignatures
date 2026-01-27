@@ -20,13 +20,22 @@ modules:
       - name: CBasePlayerController_SetPlayerName
         catagory: func
 
+      - name: CCSGameRules_FindPickerEntity
+        catagory: vfunc
+
+      - name: CCSGameRules_TerminateRound
+        catagory: func
+
+      - name: CCSPlayer_ItemServices_CanAcquire
+        catagory: func
+
+      - name: CCSPlayer_ItemServices_GiveNamedItem
+        catagory: vfunc
+
+      - name: CCSPlayer_WeaponServices_CanUse
+        catagory: vfunc
+
       - name: CCSPlayerController_ChangeTeam
-        catagory: vfunc
-
-      - name: CCSPlayerPawnBase_PostThink
-        catagory: vfunc
-
-      - name: GetCSWeaponDataFromKey
         catagory: vfunc
 
       - name: CCSPlayerController_InventoryUpdateThink
@@ -34,5 +43,29 @@ modules:
           - InventoryUpdateThink
         catagory: func
 
-      - name: CCSGameRules_TerminateRound
+      - name: CCSPlayerController_Respawn
+        catagory: vfunc
+
+      - name: CCSPlayerController_SwitchTeam
+        catagory: func
+
+      - name: CCSPlayerPawnBase_PostThink
+        catagory: vfunc
+
+      - name: CGameEventManager_Init
+        catagory: func
+
+      - name: ClientPrint
+        catagory: func
+
+      - name: GetCSWeaponDataFromKey
+        catagory: func
+
+      - name: GiveNamedItem
+        catagory: func
+
+      - name: UTIL_ClientPrintAll
+        catagory: func
+
+      - name: UTIL_Remove
         catagory: func
