@@ -5,9 +5,9 @@ description: |
   Triggers: get vftable address, get virtual function table, find vtable, get vtable
 ---
 
-# Get VTable Index
+# Get VTable address and size
 
-Find a class's virtual function table within it's class name.
+Find a class's virtual function table within it's class name. Get it's address and size.
 
 ## Prerequisites
 

@@ -113,7 +113,7 @@ Prompt:
 
 ```bash
 Prompt:
-  **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results.
+  **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results into yaml.
 ```
 
 3. Create SKILL
@@ -184,7 +184,7 @@ Prompt:
 
 ```bash
 Prompt:
-  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results into yaml.
 ```
 
 5. Create SKILL
