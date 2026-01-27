@@ -171,7 +171,7 @@ Prompt:
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL: `/get-vtable-address` to find vtable for CCSPlayerPawn.
+ - **ALWAYS** Use SKILL: `/get-vtable-address` to find vtable for `CCSPlayerPawn`.
 ```
 
 * For interface vtable like Source2Server, see `.claude/skills/find-CSource2Server_vtable/SKILL.md`
@@ -187,7 +187,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{vtableName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
+ - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
    @.claude/skills/find-CCSPlayerPawn_vtable/SKILL.md  
    as references.
 ```
