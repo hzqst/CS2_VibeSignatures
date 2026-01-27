@@ -11,13 +11,13 @@ Locate `CCSPlayerController_Respawn` in CS2 server.dll or server.so using IDA Pr
 
 ### 1. Get CCSPlayerController VTable Address
 
-**ALWAYS** Use SKILL `/get-vtable-address` to get vtable address and size.
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSPlayerController`.
 
-Class name to search for: `CCSPlayerController`
+If the skill returns an error, **STOP** and report to user.
 
-This will return:
-- `vtableAddress`: The vtable start address
-- `numberOfVirtualFunctions`: Total count of virtual functions (last valid index = count - 1)
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 
 ### 2. Decompile vtable[270 ~ last] and Search for Pattern
 
@@ -27,10 +27,10 @@ List virtual functions from index 270 to the last valid index:
 mcp__ida-pro-mcp__py_eval code="""
 import ida_bytes, ida_name
 
-vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
+vtable_start = <VTABLE_START>  # Use calculated vtable_start from step 1
 ptr_size = 8
 start_index = 270
-end_index = <LAST_VALID_INDEX>  # Use (numberOfVirtualFunctions - 1) from step 1
+end_index = <LAST_VALID_INDEX>  # Use (vtable_numvfunc - 1) from step 1
 
 for i in range(start_index, end_index + 1):
     func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)

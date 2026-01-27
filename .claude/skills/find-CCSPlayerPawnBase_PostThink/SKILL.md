@@ -60,12 +60,6 @@ mcp__ida-pro-mcp__decompile(addr="<function_addr>")
 
   **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
-  VTable class name to search for:
-  - Windows: `??_7CCSPlayerPawn@@6B@`
-  - Linux: `_ZTV13CCSPlayerPawn`
-
-  Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV13CCSPlayerPawn + 0x10`.
-
 ### 6. Generate and Validate Unique Signature
 
   **DO NOT** use `find_bytes` as it won't work for function.

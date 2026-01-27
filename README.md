@@ -100,6 +100,78 @@ python update_gamedata.py -gamever 14132
 
 [plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
 
+## How to create SKILL for: find-{function}
+
+1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
+
+```bash
+Prompt: 
+ - search string `weapons/models/defuser/defuser.vmdl` in IDA
+```
+
+```bash
+Prompt: 
+ - show xref for this string
+```
+
+```bash
+Prompt: 
+ - Find code snippet with following pattern in xrefs
+
+  v2 = a2;
+  v3 = (__int64)a1;
+  sub_180A8B930(a1, (__int64)"weapons/models/defuser/defuser.vmdl");
+  sub_18084ABF0(v3, v2);
+  v4 = (_DWORD *)sub_180CED000(&unk_1813D3728, 0xFFFFFFFFi64);
+  if ( !v4 )
+    v4 = *(_DWORD **)(qword_1813D3730 + 8);
+  if ( *v4 == 1 )
+  {
+    v5 = (__int64 *)(*(__int64 (__fastcall **)(__int64, const char *, _QWORD, _QWORD))(*(_QWORD *)qword_18140DB60 + 48i64))(
+                      qword_18140DB60,
+                      "defuser_dropped",
+                      0i64,
+                      0i64);
+```
+
+```bash
+Prompt: 
+ - Rename sub_180A8B930 to CBaseModelEntity_SetModel in IDA
+```
+
+2. Optionally, search vftable for virtual function, `CCSPlayerPawnBase_PostThink` in this case
+
+```bash
+Prompt: 
+ - **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
+```
+
+3. Generate a robust signature for this function
+
+```bash
+Prompt:
+   Generate a robust signature for this function
+   -- **DO NOT** use `find_bytes` as it won't work for function.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+```
+
+4. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results into yaml.
+```
+
+5. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
+   @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
+   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md find-CCSPlayerPawnBase_PostThink 
+   as references.
+```
+
 ## How to create SKILL for: find-{vtable}
 
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
@@ -125,13 +197,20 @@ Prompt:
    as references.
 ```
 
-## How to create SKILL for: find-{function}
+## How to create SKILL for: find-{virtualfunction}
 
-1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
+1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
 
 ```bash
 Prompt: 
- - search string `weapons/models/defuser/defuser.vmdl` in IDA
+ - **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSPlayerController`.
+
+  If the skill returns an error, **STOP** and report to user.
+
+  Otherwise, extract these values for subsequent steps:
+  - `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+  - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+
 ```
 
 ```bash

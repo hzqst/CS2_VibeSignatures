@@ -17,23 +17,62 @@ Find a function's position (offset and index) within a vtable by iterating throu
 ## Method
 
 ### 1. Get vtable address and size:
-   **ALWAYS** Invoke the SKILL: `get-vtable-address` with the <ClassName> to obtain:
-   - `vtableAddress`: The actual vtable start address (already adjusted for Linux RTTI offset)
-   - `numberOfVirtualFunctions`: The valid vtable entry count
 
-   Example output from `get-vtable-address`:
+   **ALWAYS** first check if `{ClassName}_vtable.{platform}.yaml` exists beside the binary:
+
+   ```python
+   mcp__ida-pro-mcp__py_eval code="""
+   import idaapi
+   import os
+
+   # Replace with actual class name
+   class_name = "<ClassName>"
+
+   input_file = idaapi.get_input_file_path()
+   dir_path = os.path.dirname(input_file)
+   platform = 'windows' if input_file.endswith('.dll') else 'linux'
+
+   yaml_path = os.path.join(dir_path, f"{class_name}_vtable.{platform}.yaml")
+
+   if os.path.exists(yaml_path):
+       with open(yaml_path, 'r', encoding='utf-8') as f:
+           print(f.read())
+       print(f"YAML_EXISTS: True")
+   else:
+       print(f"ERROR: Required file {class_name}_vtable.{platform}.yaml not found.")
+       print(f"Expected path: {yaml_path}")
+       print(f"Please run `/find-{class_name}_vtable` first to generate the vtable YAML file.")
+   """
    ```
-   vtableAddress: 0x180A12345
-   sizeInBytes: 400
-   numberOfVirtualFunctions: 50
+
+   **If YAML exists**, extract these values:
+   - `vtable_va`: The vtable start address
+   - `vtable_numvfunc`: The valid vtable entry count
+
+    Example YAML content:
+    ```yaml
+    vtable_class: CCSPlayerPawn
+    vtable_va: 0x2114cd0
+    vtable_rva: 0x2114cd0
+    vtable_size: 0xd60
+    vtable_numvfunc: 428
+    ```
+
+   **If YAML does NOT exist**, **ERROR OUT** with message:
    ```
+   ERROR: Required file {class_name}_vtable.{platform}.yaml not found.
+   Please run `/find-{class_name}_vtable` first to generate the vtable YAML file.
+   ```
+   Do NOT proceed with the remaining steps.
 
 ### 2. Find function in vtable:
 
    IMPORTANT NOTES (common pitfalls):
    - Use the function *entry* address. VTables store pointers to the function start; string xrefs often land in the middle of a function.
      If you only have an address inside the function, resolve the real entry first (e.g. `idaapi.get_func(ea).start_ea`).
-   - The `vtableAddress` from step 1 is already adjusted for Linux RTTI offset, use it directly.
+   - Calculate vtable_start based on platform:
+     - Linux: `vtable_start = vtable_va + 0x10` (skip RTTI metadata)
+     - Windows: `vtable_start = vtable_va`
 
    ```python
    mcp__ida-pro-mcp__py_eval code="""
@@ -97,4 +136,6 @@ VTable @ vtable_addr:
 
 ## Platform Notes
 
-- **Windows/Linux**: The `vtableAddress` from `get-vtable-address` skill is already adjusted for platform differences (Linux RTTI offset handled automatically).
+- **From YAML file**: You need to manually adjust for platform:
+  - Linux (`_ZTV` prefix vtables): `vtable_start = vtable_va + 0x10`
+  - Windows: `vtable_start = vtable_va`

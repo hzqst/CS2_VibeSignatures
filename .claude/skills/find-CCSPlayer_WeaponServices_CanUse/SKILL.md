@@ -11,13 +11,13 @@ Locate `CCSPlayer_WeaponServices_CanUse` in CS2 server.dll or server.so using ID
 
 ### 1. Get CCSPlayer_WeaponServices VTable Address
 
-**ALWAYS** Use SKILL `/get-vtable-address` to get vtable address and size.
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSPlayer_WeaponServices`.
 
-Class name to search for: `CCSPlayer_WeaponServices`
+If the skill returns an error, **STOP** and report to user.
 
-This will return:
-- `vtableAddress`: The vtable start address
-- `numberOfVirtualFunctions`: Total count of virtual functions
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 
 ### 2. Read VTable Entry at Index ~26
 

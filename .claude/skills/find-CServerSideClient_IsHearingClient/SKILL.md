@@ -11,13 +11,13 @@ Locate `CServerSideClient_IsHearingClient` in CS2 engine2.dll or libengine2.so u
 
 ### 1. Get CServerSideClient VTable Address
 
-**ALWAYS** Use SKILL `/get-vtable-address` to get vtable address and size.
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CServerSideClient`.
 
-Class name to search for: `CServerSideClient`
+If the skill returns an error, **STOP** and report to user.
 
-This will return:
-- `vtableAddress`: The vtable start address
-- `numberOfVirtualFunctions`: Total count of virtual functions
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 
 ### 2. Read VTable Entries at Index 16-25
 
