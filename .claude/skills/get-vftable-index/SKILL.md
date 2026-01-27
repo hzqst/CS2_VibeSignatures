@@ -12,57 +12,65 @@ Find a function's position (offset and index) within a vtable by iterating throu
 ## Prerequisites
 
 - Function address (from decompilation or xrefs)
-- VTable address (from `list_globals` with class name filter)
+- ClassName (to get vtable via `get-vftable-address` skill)
 
 ## Method
 
-### 1. Get vtable address:
+### 1. Get vtable address and size:
+   **ALWAYS** Invoke the SKILL: `get-vftable-address` with the <ClassName> to obtain:
+   - `vtableAddress`: The actual vtable start address (already adjusted for Linux RTTI offset)
+   - `numberOfVirtualFunctions`: The valid vtable entry count
+
+   Example output from `get-vftable-address`:
    ```
-   mcp__ida-pro-mcp__list_globals(queries={"filter": "*ClassName*"})
+   vtableAddress: 0x180A12345
+   sizeInBytes: 400
+   numberOfVirtualFunctions: 50
    ```
-   Look for:
-   - Windows: `??_7ClassName@@6B@`
-   - Linux: `_ZTVNClassName` or `_ZTVN...E`
 
 ### 2. Find function in vtable:
 
    IMPORTANT NOTES (common pitfalls):
    - Use the function *entry* address. VTables store pointers to the function start; string xrefs often land in the middle of a function.
      If you only have an address inside the function, resolve the real entry first (e.g. `idaapi.get_func(ea).start_ea`).
-   - Linux vtables: the first 16 bytes are RTTI/metadata. The real vtable entries start at `_ZTV... + 0x10`.
-   - If the function is not found, increase the scan range (some classes have very large vtables), and double-check you are scanning the correct class' vtable.
+   - The `vtableAddress` from step 1 is already adjusted for Linux RTTI offset, use it directly.
 
    ```python
    mcp__ida-pro-mcp__py_eval code="""
-   import ida_bytes, ida_name, idaapi, ida_segment
+   import ida_bytes, idaapi
 
    # Target function address (MUST be the function entry/start address)
    # If you only have an address inside the function, uncomment the next 2 lines:
    # f = idaapi.get_func(func_addr)
    # func_addr = f.start_ea if f else func_addr
-   func_addr = <func_addr>
+   func_addr = <FUNC_ADDRESS>
 
-   # VTable symbol (preferred on Linux), e.g. "_ZTV13CCSPlayerPawn"
-   # Windows: vtable_start = vtable_sym
-   # Linux:   vtable_start = vtable_sym + 0x10  (skip RTTI/metadata)
-   vtable_sym = <vtable_addr>
-   vtable_start = vtable_sym
-   vtable_name = ida_name.get_name(vtable_sym) or ""
-   if vtable_name.startswith("_ZTV"):
-       vtable_start = vtable_sym + 0x10
+   # From get-vftable-address skill output
+   vtable_start = <VTABLE_ADDRESS>
+   vtable_size = <NUMBER_OF_VIRTUAL_FUNCTIONS>
 
-   # VTable = array of 8-byte function pointers (64-bit)
-   for i in range(500):
-       ptr = ida_bytes.get_qword(vtable_start + i * 8)
+   # Determine pointer size
+   ptr_size = 8 if idaapi.inf_is_64bit() else 4
+
+   # Search within the valid vtable range
+   for i in range(vtable_size):
+       if ptr_size == 8:
+           ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
+       else:
+           ptr = ida_bytes.get_dword(vtable_start + i * ptr_size)
        if ptr == func_addr:
-           print(f"Found at vtable offset: {hex(i * 8)}, index: {i}")
-           print("vtable_sym  :", hex(vtable_sym))
-           print("vtable_start:", hex(vtable_start))
+           print(f"Found at vtable offset: {hex(i * ptr_size)}, index: {i}")
+           print(f"vtable_start: {hex(vtable_start)}")
            break
    else:
        print("Function not found in vtable!")
    """
    ```
+
+   Replace:
+   - `<FUNC_ADDRESS>` with the target function address
+   - `<VTABLE_ADDRESS>` with `vtableAddress` from step 1
+   - `<NUMBER_OF_VIRTUAL_FUNCTIONS>` with `numberOfVirtualFunctions` from step 1
 ### 3. Continue with the unfinished tasks
 
     If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
@@ -83,10 +91,9 @@ VTable @ vtable_addr:
 
 ## Formulas
 
-- `vfunc_offset = index × 8`
-- `vfunc_index = offset / 8`
+- `vfunc_offset = index × ptr_size` (ptr_size = 8 for 64-bit, 4 for 32-bit)
+- `vfunc_index = offset / ptr_size`
 
 ## Platform Notes
 
-- **Windows**: VTable starts directly at the symbol address
-- **Linux**: First 16 bytes are RTTI metadata. Real vtable = `_ZTV... + 0x10`
+- **Windows/Linux**: The `vtableAddress` from `get-vftable-address` skill is already adjusted for platform differences (Linux RTTI offset handled automatically).
