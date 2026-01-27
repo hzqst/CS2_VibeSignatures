@@ -9,102 +9,97 @@ Locate `CCSGameRules_FindPickerEntity` in CS2 server.dll or server.so using IDA 
 
 ## Method
 
-1. Search for the CCSGameRules vtable string:
-   ```
-   mcp__ida-pro-mcp__find_regex pattern="vtable for.?CCSGameRules"
-   ```
+### 1. Get CCSGameRules VTable Address
 
-   Or search for CCSGameRules in globals:
-   ```
-   mcp__ida-pro-mcp__list_globals queries={"count": 100, "filter": "*CCSGameRules*", "offset": 0}
-   ```
+**ALWAYS** Use SKILL `/get-vftable-address` to get vtable address and size.
 
-   Look for:
-   - Windows: `??_7CCSGameRules@@6B@`
-   - Linux: `_ZTV12CCSGameRules`
+Class name to search for: `CCSGameRules`
 
-2. Get vtable address and read entries at index 21-30:
+This will return:
+- `vtableAddress`: The vtable start address
+- `numberOfVirtualFunctions`: Total count of virtual functions
 
-   For Linux server.so, the vtable structure is:
-   - Offset 0x00: offset to this (8 bytes)
-   - Offset 0x08: typeinfo pointer (8 bytes)
-   - Offset 0x10: **Index 0 starts here**
+### 2. Read VTable Entries at Index 21-30
 
-   Calculate the address for index 21-30:
-   - Index 21 is at vtable_base + 0x10 + (21 * 8) = vtable_base + 0xB8
+```python
+mcp__ida-pro-mcp__py_eval code="""
+import ida_bytes, ida_name
 
-   ```
-   mcp__ida-pro-mcp__get_bytes regions={"addr": "<vtable_addr + 0xB8>", "size": 80}
-   ```
+vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
+ptr_size = 8
 
-   Then lookup the function pointers from the bytes.
+for i in range(21, 31):
+    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
+    func_name = ida_name.get_name(func_ptr) or "unknown"
+    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
+"""
+```
 
-3. Search for cross-references to nullsub_843 and nullsub_844:
+### 3. Identify by Nullsub Pattern
 
-   The target function has a distinctive pattern that checks two nullsubs:
-   ```c
-   v10 = *(void (**)(void))(*(_QWORD *)a1 + 192LL);  // vtable offset 0xC0, index 24
-   if ( v10 != nullsub_843 )
-       v10();
+The target function has a distinctive pattern that checks two nullsubs:
+```c
+v10 = *(void (**)(void))(*(_QWORD *)a1 + 192LL);  // vtable offset 0xC0, index 24
+if ( v10 != nullsub_843 )
+    v10();
 
-   // ... function logic ...
+// ... function logic ...
 
-   v13 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 200LL);  // vtable offset 0xC8, index 25
-   if ( v13 != nullsub_844 )
-       ((void (__fastcall *)(__int64))v13)(a1);
-   ```
+v13 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 200LL);  // vtable offset 0xC8, index 25
+if ( v13 != nullsub_844 )
+    ((void (__fastcall *)(__int64))v13)(a1);
+```
 
-   Search for xrefs to both nullsubs:
-   ```
-   mcp__ida-pro-mcp__xrefs_to addrs=["<nullsub_843_addr>", "<nullsub_844_addr>"]
-   ```
+Search for xrefs to both nullsubs:
+```
+mcp__ida-pro-mcp__xrefs_to addrs=["<nullsub_843_addr>", "<nullsub_844_addr>"]
+```
 
-   Find a function that references BOTH nullsubs - this is the target function.
+Find a function that references BOTH nullsubs - this is the target function.
 
-4. Decompile the candidate function to verify the pattern:
-   ```
-   mcp__ida-pro-mcp__decompile addr="<function_addr>"
-   ```
+### 4. Decompile and Verify
 
-   Verify it contains:
-   - Check for vtable offset +192 (0xC0) comparing to nullsub_843
-   - Check for vtable offset +200 (0xC8) comparing to nullsub_844
-   - References to CBasePlayerController type checking
+Decompile the candidate function:
+```
+mcp__ida-pro-mcp__decompile addr="<function_addr>"
+```
 
-5. Rename the function:
-   ```
-   mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSGameRules_FindPickerEntity"}]}
-   ```
+Verify it contains:
+- Check for vtable offset +192 (0xC0) comparing to nullsub
+- Check for vtable offset +200 (0xC8) comparing to nullsub
+- References to CBasePlayerController type checking
 
-6. Find VTable and Calculate Offset:
+### 5. Rename the Function
 
-   **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+```
+mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSGameRules_FindPickerEntity"}]}
+```
 
-   VTable class name to search for:
-   - Windows: `??_7CCSGameRules@@6B@`
-   - Linux: `_ZTV12CCSGameRules`
+### 6. Find VTable Offset and Index
 
-   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV12CCSGameRules + 0x10`.
+**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
 
-7. Generate and validate unique signature:
+VTable class name: `CCSGameRules`
 
-   **DO NOT** use `find_bytes` as it won't work for function.
-   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+### 7. Generate and Validate Unique Signature
 
-8. Write IDA analysis output as YAML beside the binary:
+**DO NOT** use `find_bytes` as it won't work for function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+### 8. Write IDA Analysis Output as YAML
 
-   Required parameters:
-   - `func_name`: `CCSGameRules_FindPickerEntity`
-   - `func_addr`: The function address from step 4
-   - `func_sig`: The validated signature from step 7
+**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
 
-   VTable parameters (when this is a virtual function):
-   - `vtable_name`: `CCSGameRules`
-   - `vtable_mangled_name`: `??_7CCSGameRules@@6B@` (Windows) or `_ZTV12CCSGameRules` (Linux)
-   - `vfunc_offset`: The offset from step 6
-   - `vfunc_index`: The index from step 6
+Required parameters:
+- `func_name`: `CCSGameRules_FindPickerEntity`
+- `func_addr`: The function address
+- `func_sig`: The validated signature from step 7
+
+VTable parameters:
+- `vtable_name`: `CCSGameRules`
+- `vtable_mangled_name`: `??_7CCSGameRules@@6B@` (Windows) or `_ZTV12CCSGameRules` (Linux)
+- `vfunc_offset`: The offset from step 6
+- `vfunc_index`: The index from step 6
 
 ## Function Characteristics
 
@@ -112,16 +107,6 @@ Locate `CCSGameRules_FindPickerEntity` in CS2 server.dll or server.so using IDA 
 - **Purpose**: Appears to handle player interaction/picking logic in the game rules
 - **Pattern**: Distinctive nullsub checks at vtable offsets +192 and +200
 - **Contains**: Type checking for CBasePlayerController, position/distance calculations
-
-## VTable Information
-
-- **VTable Name**: `CCSGameRules::`vftable'`
-- **VTable Mangled Name (Windows)**: `??_7CCSGameRules@@6B@`
-- **VTable Mangled Name (Linux)**: `_ZTV12CCSGameRules`
-- **VTable Index**: 26 - This can change when game updates.
-- **VTable Offset**: 0xE0 - This can change when game updates.
-
-* Note that for `server.so`, the first 16 bytes of vtable are for RTTI. The real vtable = `_ZTV12CCSGameRules` + `0x10`.
 
 ## Related Nullsubs
 
@@ -136,12 +121,12 @@ The output YAML filename depends on the platform:
 - `server.so` → `CCSGameRules_FindPickerEntity.linux.yaml`
 
 ```yaml
-func_va: 0x16f8ca0       # Virtual address of the function - This can change when game updates.
-func_rva: 0x16f8ca0      # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x3a1         # Function size in bytes - This can change when game updates.
-func_sig: 55 48 89 E5 41 57 41 56 41 55 49 89 D5 41 54 48 8D 15 ?? ?? ?? ?? 49 89 FC 53 48 89 F3 48 83 EC 78 48 8B 07 48 8B 80 C0 00 00 00 48 39 D0 0F 85 ?? ?? ?? ??  # Unique byte signature - This can change when game updates.
+func_va: 0x16f8ca0       # Virtual address - changes with game updates
+func_rva: 0x16f8ca0      # Relative virtual address - changes with game updates
+func_size: 0x3a1         # Function size in bytes - changes with game updates
+func_sig: 55 48 89 E5 41 57 41 56 ...  # Unique byte signature - changes with game updates
 vtable_name: CCSGameRules
 vtable_mangled_name: _ZTV12CCSGameRules
-vfunc_offset: 0xe0       # Offset from vtable start - This can change when game updates.
-vfunc_index: 26          # vtable[26] - This can change when game updates.
+vfunc_offset: 0xe0       # Offset from vtable start - changes with game updates
+vfunc_index: 26          # vtable[26] - changes with game updates
 ```

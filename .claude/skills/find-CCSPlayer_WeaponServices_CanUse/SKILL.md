@@ -9,67 +9,75 @@ Locate `CCSPlayer_WeaponServices_CanUse` in CS2 server.dll or server.so using ID
 
 ## Method
 
-1. Search for the CCSPlayer_WeaponServices vtable:
-   ```
-   mcp__ida-pro-mcp__list_globals queries={"count": 50, "filter": "*CCSPlayer_WeaponServices*", "offset": 0}
-   ```
+### 1. Get CCSPlayer_WeaponServices VTable Address
 
-   Look for `_ZTV24CCSPlayer_WeaponServices` (Linux) or similar vtable name.
+**ALWAYS** Use SKILL `/get-vftable-address` to get vtable address and size.
 
-2. Calculate vtable entry address for index 26:
-   - Vtable index 26 = offset 0xD0 (26 * 8 bytes)
-   - For Linux: Add 0x10 to vtable base for RTTI offset, then add 0xD0
-   - Address = vtable_base + 0x10 + 0xD0
+Class name to search for: `CCSPlayer_WeaponServices`
 
-3. Read the function pointer at that vtable entry:
-   ```
-   mcp__ida-pro-mcp__get_int queries={"addr": "<calculated_address>", "ty": "u64le"}
-   ```
+This will return:
+- `vtableAddress`: The vtable start address
+- `numberOfVirtualFunctions`: Total count of virtual functions
 
-4. Decompile the function:
-   ```
-   mcp__ida-pro-mcp__decompile addr="<function_addr>"
-   ```
+### 2. Read VTable Entry at Index ~26
 
-5. Verify by searching for "weapon_taser" string reference in the decompiled code:
-   - The function should contain logic that references "weapon_taser"
-   - Look for pattern: `sub_191A840(&qword_256F7A8, "weapon_taser")`
-   - This is the key identifier for this function
+```python
+mcp__ida-pro-mcp__py_eval code="""
+import ida_bytes, ida_name
 
-6. Rename the function:
-   ```
-   mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSPlayer_WeaponServices_CanUse"}]}
-   ```
+vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
+ptr_size = 8
 
-7. Find VTable and Calculate Offset:
+for i in range(24, 30):
+    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
+    func_name = ida_name.get_name(func_ptr) or "unknown"
+    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
+"""
+```
 
-   **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+### 3. Decompile and Verify by "weapon_taser" String
 
-   VTable class name to search for:
-   - Windows: `??_7CCSPlayer_WeaponServices@@6B@`
-   - Linux: `_ZTV24CCSPlayer_WeaponServices`
+Decompile the function:
+```
+mcp__ida-pro-mcp__decompile addr="<function_addr>"
+```
 
-   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV24CCSPlayer_WeaponServices + 0x10`.
+Verify by searching for "weapon_taser" string reference in the decompiled code:
+- The function should contain logic that references "weapon_taser"
+- Look for pattern: `sub_XXXXXXX(&qword_XXXXXXX, "weapon_taser")`
+- This is the key identifier for this function
 
-8. Generate and validate unique signature:
+### 4. Rename the Function
 
-   **DO NOT** use `find_bytes` as it won't work for function.
-   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+```
+mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSPlayer_WeaponServices_CanUse"}]}
+```
 
-9. Write IDA analysis output as YAML beside the binary:
+### 5. Find VTable Offset and Index
 
-   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
 
-   Required parameters:
-   - `func_name`: `CCSPlayer_WeaponServices_CanUse`
-   - `func_addr`: The function address from step 3
-   - `func_sig`: The validated signature from step 8
+VTable class name: `CCSPlayer_WeaponServices`
 
-   VTable parameters (when this is a virtual function):
-   - `vtable_name`: `CCSPlayer_WeaponServices`
-   - `vtable_mangled_name`: `??_7CCSPlayer_WeaponServices@@6B@` (Windows) or `_ZTV24CCSPlayer_WeaponServices` (Linux)
-   - `vfunc_offset`: The offset from step 7
-   - `vfunc_index`: The index from step 7
+### 6. Generate and Validate Unique Signature
+
+**DO NOT** use `find_bytes` as it won't work for function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+
+### 7. Write IDA Analysis Output as YAML
+
+**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+
+Required parameters:
+- `func_name`: `CCSPlayer_WeaponServices_CanUse`
+- `func_addr`: The function address
+- `func_sig`: The validated signature from step 6
+
+VTable parameters:
+- `vtable_name`: `CCSPlayer_WeaponServices`
+- `vtable_mangled_name`: `??_7CCSPlayer_WeaponServices@@6B@` (Windows) or `_ZTV24CCSPlayer_WeaponServices` (Linux)
+- `vfunc_offset`: The offset from step 5
+- `vfunc_index`: The index from step 5
 
 ## Signature Pattern
 
@@ -91,17 +99,6 @@ This string is used to look up weapon data in a hash map/dictionary structure, a
   - Has special validation logic for taser (weapon_taser) to prevent duplicate pickups
   - Validates weapon slots in player inventory
 
-## VTable Information
-
-- **VTable Name**: `CCSPlayer_WeaponServices::\`vftable'`
-- **VTable Mangled Name**:
-  - Windows: `??_7CCSPlayer_WeaponServices@@6B@`
-  - Linux: `_ZTV24CCSPlayer_WeaponServices`
-- **VTable Index**: 26 - This can change when game updates.
-- **VTable Offset**: 0xD0 (26 * 8 bytes) - This can change when game updates.
-
-Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV24CCSPlayer_WeaponServices` + `0x10`.
-
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
@@ -109,12 +106,12 @@ The output YAML filename depends on the platform:
 - `server.so` → `CCSPlayer_WeaponServices_CanUse.linux.yaml`
 
 ```yaml
-func_va: 0x13cc6a0           # Virtual address of the function - This can change when game updates.
-func_rva: 0x13cc6a0          # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x3af             # Function size in bytes - This can change when game updates.
-func_sig: 55 48 8D 15 ?? ?? ?? ?? 48 89 E5 41 55 41 54 49 89 FC 53 48 89 F3 48 83 EC 08 48 8B 07 48 8B 80 E8 00 00 00 48 39 D0 0F 85 ?? ?? ?? ?? 80 BF A8 00 00 00 00 0F 85 ?? ?? ?? ?? 48 8B 7F 38 48 85  # Unique byte signature - This can change when game updates.
+func_va: 0x13cc6a0           # Virtual address - changes with game updates
+func_rva: 0x13cc6a0          # Relative virtual address - changes with game updates
+func_size: 0x3af             # Function size in bytes - changes with game updates
+func_sig: 55 48 8D 15 ?? ?? ?? ?? ...  # Unique byte signature - changes with game updates
 vtable_name: CCSPlayer_WeaponServices
 vtable_mangled_name: _ZTV24CCSPlayer_WeaponServices
-vfunc_offset: 0xd0           # Offset from vtable start - This can change when game updates.
-vfunc_index: 26              # vtable[26] - This can change when game updates.
+vfunc_offset: 0xd0           # Offset from vtable start - changes with game updates
+vfunc_index: 26              # vtable[26] - changes with game updates
 ```

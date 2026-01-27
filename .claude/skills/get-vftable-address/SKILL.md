@@ -83,4 +83,7 @@ The skill returns:
 ## Platform Notes
 
 - **Windows**: VTable starts directly at the symbol address
-- **Linux**: First 16 bytes are RTTI metadata. Real vtable address = `_ZTV... + 0x10`
+- **Linux**: First 16 bytes are RTTI metadata. Real vtable address = `_ZTV... + 0x10`, The vtable structure is:
+    - Offset 0x00: offset to this (8 bytes)
+    - Offset 0x08: typeinfo pointer (8 bytes)
+    - Offset 0x10: **Index 0 starts here**

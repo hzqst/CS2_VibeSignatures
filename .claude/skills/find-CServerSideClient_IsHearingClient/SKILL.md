@@ -9,58 +9,86 @@ Locate `CServerSideClient_IsHearingClient` in CS2 engine2.dll or libengine2.so u
 
 ## Method
 
-1. Search for CServerSideClient vtable:
-   ```
-   mcp__ida-pro-mcp__list_globals(queries={"filter": "*CServerSideClient*"})
-   ```
-   Look for:
-   - Windows: `??_7CServerSideClient@@6B@`
-   - Linux: `_ZTV19CServerSideClient`
+### 1. Get CServerSideClient VTable Address
 
-2. Get vtable address and read entries at index 16-25:
-   ```
-   mcp__ida-pro-mcp__get_bytes regions={"addr": "<vtable_addr>", "size": 208}
-   ```
+**ALWAYS** Use SKILL `/get-vftable-address` to get vtable address and size.
 
-3. Decompile virtual functions at indices 16-25 to find the pattern:
-   ```
-   mcp__ida-pro-mcp__decompile addr="<vfunc_addr>"
-   ```
+Class name to search for: `CServerSideClient`
 
-4. Identify the function by this characteristic pattern:
-   ```c
-   if ( a2 == *(_DWORD *)(a1 + 72) )
-     return *(_BYTE *)(a1 + 3824);
-   if ( a2 < 0 || (v4 = *(_QWORD *)(a1 + 80), a2 >= *(_DWORD *)(v4 + 592)) )
-     v5 = 0LL;
-   else
-     v5 = *(_QWORD **)(*(_QWORD *)(v4 + 600) + 8LL * a2);
-   ```
+This will return:
+- `vtableAddress`: The vtable start address
+- `numberOfVirtualFunctions`: Total count of virtual functions
 
-5. Rename the function:
-   ```
-   mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CServerSideClient_IsHearingClient"}]}
-   ```
+### 2. Read VTable Entries at Index 16-25
 
-6. Generate and validate unique signature:
+```python
+mcp__ida-pro-mcp__py_eval code="""
+import ida_bytes, ida_name
 
-   **DO NOT** use `find_bytes` as it won't work for function.
-   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
+ptr_size = 8
 
-7. Write IDA analysis output as YAML beside the binary:
+for i in range(16, 26):
+    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
+    func_name = ida_name.get_name(func_ptr) or "unknown"
+    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
+"""
+```
 
-   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+### 3. Decompile and Identify by Pattern
 
-   Required parameters:
-   - `func_name`: `CServerSideClient_IsHearingClient`
-   - `func_addr`: The function address from step 4
-   - `func_sig`: The validated signature from step 6
+Decompile virtual functions at indices 16-25:
+```
+mcp__ida-pro-mcp__decompile addr="<vfunc_addr>"
+```
 
-   VTable parameters (when this is a virtual function):
-   - `vtable_name`: `CServerSideClient`
-   - `vtable_mangled_name`: `??_7CServerSideClient@@6B@` (Windows) or `_ZTV19CServerSideClient` (Linux)
-   - `vfunc_offset`: The offset from vtable (index * 8)
-   - `vfunc_index`: The vtable index (typically 19)
+Identify the function by this characteristic pattern:
+```c
+if ( a2 == *(_DWORD *)(a1 + 72) )
+  return *(_BYTE *)(a1 + 3824);
+if ( a2 < 0 || (v4 = *(_QWORD *)(a1 + 80), a2 >= *(_DWORD *)(v4 + 592)) )
+  v5 = 0LL;
+else
+  v5 = *(_QWORD **)(*(_QWORD *)(v4 + 600) + 8LL * a2);
+```
+
+Key code pattern to look for:
+```c
+v7 = *((_DWORD *)v5 + ((__int64)*(int *)(a1 + 72) >> 5) + 756);
+return _bittest(&v7, *(_DWORD *)(a1 + 72) & 0x1F);
+```
+
+### 4. Rename the Function
+
+```
+mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CServerSideClient_IsHearingClient"}]}
+```
+
+### 5. Find VTable Offset and Index
+
+**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+
+VTable class name: `CServerSideClient`
+
+### 6. Generate and Validate Unique Signature
+
+**DO NOT** use `find_bytes` as it won't work for function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+
+### 7. Write IDA Analysis Output as YAML
+
+**ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+
+Required parameters:
+- `func_name`: `CServerSideClient_IsHearingClient`
+- `func_addr`: The function address
+- `func_sig`: The validated signature from step 6
+
+VTable parameters:
+- `vtable_name`: `CServerSideClient`
+- `vtable_mangled_name`: `??_7CServerSideClient@@6B@` (Windows) or `_ZTV19CServerSideClient` (Linux)
+- `vfunc_offset`: The offset from step 5
+- `vfunc_index`: The index from step 5
 
 ## Function Characteristics
 
@@ -80,22 +108,6 @@ The function checks:
 2. Get target client from server's client array
 3. Check HLTV replay conditions
 4. Return bit from hearing bitmask
-
-Key code pattern to look for:
-```c
-v7 = *((_DWORD *)v5 + ((__int64)*(int *)(a1 + 72) >> 5) + 756);
-return _bittest(&v7, *(_DWORD *)(a1 + 72) & 0x1F);
-```
-
-## VTable Information
-
-- **VTable Name**: `CServerSideClient::\`vftable'`
-- **VTable Mangled Name (Windows)**: `??_7CServerSideClient@@6B@`
-- **VTable Mangled Name (Linux)**: `_ZTV19CServerSideClient`
-- **VTable Index**: 19 - This can change when game updates.
-- **VTable Offset**: 0x98 (19 * 8) - This can change when game updates.
-
-Note: For Linux `libengine2.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at `_ZTV19CServerSideClient + 0x10`.
 
 ## Output YAML Format
 
