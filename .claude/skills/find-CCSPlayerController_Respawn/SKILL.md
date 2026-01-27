@@ -158,7 +158,6 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CCSPlayerController`
-- `vtable_mangled_name`: `??_7CCSPlayerController@@6B@` (Windows) or `_ZTV19CCSPlayerController` (Linux)
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -201,7 +200,6 @@ func_rva: 0x9B8530         # Relative virtual address - changes with game update
 func_size: 0x129           # Function size in bytes - changes with game updates
 func_sig: XX XX XX XX XX   # Unique byte signature - changes with game updates
 vtable_name: CCSPlayerController
-vtable_mangled_name: ??_7CCSPlayerController@@6B@
 vfunc_offset: 0x880        # Offset from vtable start - changes with game updates
 vfunc_index: 272           # vtable index - changes with game updates
 ```
@@ -214,7 +212,6 @@ func_rva: 0x1341230        # Relative virtual address - changes with game update
 func_size: 0x2B0           # Function size in bytes (larger due to inlining)
 func_sig: XX XX XX XX XX   # Unique byte signature - changes with game updates
 vtable_name: CCSPlayerController
-vtable_mangled_name: _ZTV19CCSPlayerController
 vfunc_offset: 0x890        # Offset from vtable start - changes with game updates
 vfunc_index: 274           # vtable index - changes with game updates
 ```

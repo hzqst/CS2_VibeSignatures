@@ -75,7 +75,6 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CCSPlayer_WeaponServices`
-- `vtable_mangled_name`: `??_7CCSPlayer_WeaponServices@@6B@` (Windows) or `_ZTV24CCSPlayer_WeaponServices` (Linux)
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -111,7 +110,6 @@ func_rva: 0x13cc6a0          # Relative virtual address - changes with game upda
 func_size: 0x3af             # Function size in bytes - changes with game updates
 func_sig: 55 48 8D 15 ?? ?? ?? ?? ...  # Unique byte signature - changes with game updates
 vtable_name: CCSPlayer_WeaponServices
-vtable_mangled_name: _ZTV24CCSPlayer_WeaponServices
 vfunc_offset: 0xd0           # Offset from vtable start - changes with game updates
 vfunc_index: 26              # vtable[26] - changes with game updates
 ```

@@ -86,7 +86,6 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CServerSideClient`
-- `vtable_mangled_name`: `??_7CServerSideClient@@6B@` (Windows) or `_ZTV19CServerSideClient` (Linux)
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -121,7 +120,6 @@ func_rva: 0xc8c10         # Relative virtual address (VA - image base) - changes
 func_size: 0xd4           # Function size in bytes - changes with game updates
 func_sig: 40 53 48 83 EC 20 48 8B D9 3B 51 48 75 ?? ...  # Unique byte signature
 vtable_name: CServerSideClient
-vtable_mangled_name: ??_7CServerSideClient@@6B@
 vfunc_offset: 0x98        # Offset from vtable start - changes with game updates
 vfunc_index: 19           # vtable[19] - changes with game updates
 ```

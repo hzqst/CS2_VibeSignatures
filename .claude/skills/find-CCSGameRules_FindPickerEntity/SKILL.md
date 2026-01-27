@@ -135,7 +135,6 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CCSGameRules`
-- `vtable_mangled_name`: `??_7CCSGameRules@@6B@` (Windows) or `_ZTV12CCSGameRules` (Linux)
 - `vfunc_offset`: The offset from step 6
 - `vfunc_index`: The index from step 6
 
@@ -164,7 +163,6 @@ func_rva: 0x16f8ca0      # Relative virtual address - changes with game updates
 func_size: 0x3a1         # Function size in bytes - changes with game updates
 func_sig: 55 48 89 E5 41 57 41 56 ...  # Unique byte signature - changes with game updates
 vtable_name: CCSGameRules
-vtable_mangled_name: _ZTV12CCSGameRules
 vfunc_offset: 0xe0       # Offset from vtable start - changes with game updates
 vfunc_index: 26          # vtable[26] - changes with game updates
 ```

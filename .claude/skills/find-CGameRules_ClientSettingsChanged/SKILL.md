@@ -29,6 +29,8 @@ Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using 
    if ( (_DWORD)PlayerInfo != -1 )
        v4 = (_DWORD)PlayerInfo - 1;
    v31 = (_BYTE *)v30(g_Source2EngineToServer, v4, "fov_desired");
+   v23 = v22;
+   if ( v22 && *v22 && (unsigned int)V_atoi(v22) )
    ```
 
    You should also see references to `oldname`, `newname` and `player_changename` within the function.
@@ -38,15 +40,9 @@ Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using 
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CGameRules_ClientSettingsChanged"}]}
    ```
 
-5. Find VTable and Calculate Offset (if applicable):
+5. Find VTable and Calculate Offset:
 
    **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
-
-   VTable class name to search for:
-   - Windows: `??_7CGameRules@@6B@` or `??_7CCSGameRules@@6B@`
-   - Linux: `_ZTV10CGameRules` or `_ZTV12CCSGameRules`
-
-   Note: For Linux `server.so`, the first 16 bytes of vtable are for RTTI metadata. The real vtable starts at vtable address + `0x10`.
 
 6. Generate and validate unique signature:
 
@@ -64,7 +60,6 @@ Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using 
 
    VTable parameters (when this is a virtual function):
    - `vtable_name`: `CGameRules` or `CCSGameRules` (depending on which vtable contains it)
-   - `vtable_mangled_name`: `??_7CGameRules@@6B@` (Windows) or `_ZTV10CGameRules` (Linux)
    - `vfunc_offset`: The offset from step 5
    - `vfunc_index`: The index from step 5
 
@@ -104,7 +99,6 @@ func_rva: 0xXXXXXX        # Relative virtual address (VA - image base) - This ca
 func_size: 0xXXX          # Function size in bytes - This can change when game updates.
 func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
 vtable_name: CGameRules   # (if virtual function)
-vtable_mangled_name: ??_7CGameRules@@6B@  # (if virtual function)
 vfunc_offset: 0xXXX       # Offset from vtable start - This can change when game updates. (if virtual function)
 vfunc_index: XX           # vtable[XX] - This can change when game updates. (if virtual function)
 ```

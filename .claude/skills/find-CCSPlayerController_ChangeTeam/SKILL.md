@@ -55,7 +55,6 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
    VTable parameters (when this is a virtual function):
    - `vtable_name`: `CCSPlayerController`
-   - `vtable_mangled_name`: `??_7CCSPlayerController@@6B@` (Windows) or `_ZTV19CCSPlayerController` (Linux)
    - `vfunc_offset`: The offset from step 5
    - `vfunc_index`: The index from step 5
 
@@ -98,7 +97,6 @@ func_rva: 0x999830        # Relative virtual address (VA - image base) - This ca
 func_size: 0x301          # Function size in bytes  - This can change when game updates.
 func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
 vtable_name: CCSPlayerController
-vtable_mangled_name: ??_7CCSPlayerController@@6B@
 vfunc_offset: 0x330       # Offset from vtable start - This can change when game updates.
 vfunc_index: 102          # vtable[102] - This can change when game updates.
 ```

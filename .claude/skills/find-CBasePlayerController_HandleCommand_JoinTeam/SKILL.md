@@ -55,7 +55,6 @@ Locate `CBasePlayerController_HandleCommand_JoinTeam` in CS2 server.dll or serve
 
    VTable parameters (when this is a virtual function):
    - `vtable_name`: `CBasePlayerController`
-   - `vtable_mangled_name`: `??_7CBasePlayerController@@6B@` (Windows) or `_ZTV21CBasePlayerController` (Linux)
    - `vfunc_offset`: The offset from step 5
    - `vfunc_index`: The index from step 5
 
@@ -103,7 +102,6 @@ func_rva: 0xXXXXXX        # Relative virtual address (VA - image base) - This ca
 func_size: 0xXXX          # Function size in bytes  - This can change when game updates.
 func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
 vtable_name: CBasePlayerController
-vtable_mangled_name: ??_7CBasePlayerController@@6B@
 vfunc_offset: 0xXXX       # Offset from vtable start - This can change when game updates.
 vfunc_index: XX           # vtable[XX] - This can change when game updates.
 ```

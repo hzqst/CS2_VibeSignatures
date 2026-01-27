@@ -25,6 +25,12 @@ modules:
           - CBaseModelEntity::SetModel
         catagory: func
 
+      - name: CBasePlayerController_HandleCommand_JoinTeam
+        alias:
+          - CBasePlayerController::HandleCommand_JoinTeam
+        catagory: func
+        prerequsite: CBasePlayerController_vtable
+
       - name: CBasePlayerController_SetPlayerName
         alias:
           - CBasePlayerController::SetPlayerName
@@ -84,6 +90,12 @@ modules:
       - name: CCSPlayerPawnBase_PostThink
         alias:
           - CCSPlayerPawnBase::PostThink
+        catagory: vfunc
+        prerequsite: CCSPlayerPawn_vtable
+
+      - name: CGameRules_ClientSettingsChanged
+        alias:
+          - CGameRules::ClientSettingsChanged
         catagory: vfunc
         prerequsite: CCSPlayerPawn_vtable
 

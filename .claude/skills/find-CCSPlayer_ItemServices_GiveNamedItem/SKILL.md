@@ -131,7 +131,6 @@ Required parameters:
 
 Vtable parameters:
 - `vtable_name`: `CCSPlayer_ItemServices`
-- `vtable_mangled_name`: `??_7CCSPlayer_ItemServices@@6B@` (Windows) or `_ZTV22CCSPlayer_ItemServices` (Linux)
 - `vfunc_offset`: The offset from step 8
 - `vfunc_index`: The index from step 8
 
@@ -181,7 +180,6 @@ func_rva: 0x13378a0         # Relative virtual address (VA - image base) - Chang
 func_size: 0xf              # Function size in bytes - Changes with game updates
 func_sig: 45 31 C9 45 31 C0 31 C9 31 D2 E9 ?? ?? ?? ?? CC 55 45 31 C9  # Unique byte signature
 vtable_name: CCSPlayer_ItemServices
-vtable_mangled_name: _ZTV22CCSPlayer_ItemServices  # Linux format shown
 vfunc_offset: 0xb0          # Offset from vtable start - Changes with game updates
 vfunc_index: 20             # vtable[20] - Changes with game updates
 ```
