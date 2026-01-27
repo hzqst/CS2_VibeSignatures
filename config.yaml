@@ -23,10 +23,13 @@ modules:
       - name: CCSGameRules_vtable
         catagory: vtable
 
-      - name: CCSPlayer_ItemServices
+      - name: CCSPlayer_ItemServices_vtable
         catagory: vtable
 
-      - name: CCSPlayerController
+      - name: CCSPlayerController_vtable
+        catagory: vtable
+
+      - name: CCSPlayerPawn_vtable
         catagory: vtable
 
       - name: CBaseModelEntity_SetModel
@@ -106,7 +109,7 @@ modules:
         alias:
           - CGameRules::ClientSettingsChanged
         catagory: vfunc
-        prerequsite: CCSPlayerPawn_vtable
+        prerequsite: CGameRules_vtable
 
       - name: CSource2Server_Init
         alias:
