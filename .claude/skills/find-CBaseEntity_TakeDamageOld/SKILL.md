@@ -61,7 +61,7 @@ Locate `CBaseEntity_TakeDamageOld` in CS2 server.dll or server.so using IDA Pro 
 
 6. Write IDA analysis output as YAML beside the binary:
 
-   **ALWAYS** Use SKILL `/write-func-ida-analysis-output-as-yaml` to write the analysis results.
+   **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
    Required parameters:
    - `func_name`: `CBaseEntity_TakeDamageOld`

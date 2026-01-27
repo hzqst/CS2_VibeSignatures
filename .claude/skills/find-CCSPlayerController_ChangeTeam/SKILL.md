@@ -42,7 +42,7 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
 7. Write IDA analysis output as YAML beside the binary:
 
-   **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+   **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
    Required parameters:
    - `func_name`: `CCSPlayerController_ChangeTeam`

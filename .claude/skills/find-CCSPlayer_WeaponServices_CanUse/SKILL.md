@@ -66,7 +66,7 @@ VTable class name: `CCSPlayer_WeaponServices`
 
 ### 7. Write IDA Analysis Output as YAML
 
-**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CCSPlayer_WeaponServices_CanUse`

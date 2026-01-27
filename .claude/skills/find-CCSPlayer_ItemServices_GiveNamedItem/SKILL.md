@@ -118,7 +118,7 @@ This represents:
 
 ### 10. Write IDA analysis output as YAML
 
-**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CCSPlayer_ItemServices_GiveNamedItem`

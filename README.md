@@ -252,12 +252,14 @@ Prompt:
  - Rename the virtual function we found to CCSPlayerController_Respawn in IDA
 ```
 
+3. Get vtable index for this function
+
 ```bash
 Prompt: 
  - **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 ```
 
-3. Generate a robust signature for this function
+4. Generate a robust signature for this function
 
 ```bash
 Prompt:
@@ -266,19 +268,18 @@ Prompt:
    -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
 
-4. Write YAML
+5. Write YAML
 
 ```bash
 Prompt:
-  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results into yaml.
+  **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results into yaml.
 ```
 
-5. Create SKILL
+6. Create SKILL
 
 ```bash
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
    @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
    as references.
 ```
