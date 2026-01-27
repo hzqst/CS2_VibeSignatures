@@ -1,5 +1,5 @@
 ---
-name: get-vftable-address
+name: get-vtable-address
 description: |
   Find a function's vtable address using IDA Pro MCP. Use this skill when want to get exact virtual address of a class.
   Triggers: get vftable address, get virtual function table, find vtable, get vtable

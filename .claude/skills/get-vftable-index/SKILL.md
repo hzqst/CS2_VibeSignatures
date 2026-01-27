@@ -1,5 +1,5 @@
 ---
-name: get-vftable-index
+name: get-vtable-index
 description: |
   Find a function's vtable offset and index using IDA Pro MCP. Use this skill when you have a function address and need to determine its position in a vtable by iterating through vtable entries.
   Triggers: vtable index, vftable offset, virtual function table position, find function in vtable
@@ -12,16 +12,16 @@ Find a function's position (offset and index) within a vtable by iterating throu
 ## Prerequisites
 
 - Function address (from decompilation or xrefs)
-- ClassName (to get vtable via `get-vftable-address` skill)
+- ClassName (to get vtable via `get-vtable-address` skill)
 
 ## Method
 
 ### 1. Get vtable address and size:
-   **ALWAYS** Invoke the SKILL: `get-vftable-address` with the <ClassName> to obtain:
+   **ALWAYS** Invoke the SKILL: `get-vtable-address` with the <ClassName> to obtain:
    - `vtableAddress`: The actual vtable start address (already adjusted for Linux RTTI offset)
    - `numberOfVirtualFunctions`: The valid vtable entry count
 
-   Example output from `get-vftable-address`:
+   Example output from `get-vtable-address`:
    ```
    vtableAddress: 0x180A12345
    sizeInBytes: 400
@@ -45,7 +45,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
    # func_addr = f.start_ea if f else func_addr
    func_addr = <FUNC_ADDRESS>
 
-   # From get-vftable-address skill output
+   # From get-vtable-address skill output
    vtable_start = <VTABLE_ADDRESS>
    vtable_size = <NUMBER_OF_VIRTUAL_FUNCTIONS>
 
@@ -71,7 +71,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
    - `<FUNC_ADDRESS>` with the target function address
    - `<VTABLE_ADDRESS>` with `vtableAddress` from step 1
    - `<NUMBER_OF_VIRTUAL_FUNCTIONS>` with `numberOfVirtualFunctions` from step 1
-   
+
 ### 3. Continue with the unfinished tasks
 
     If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
@@ -97,4 +97,4 @@ VTable @ vtable_addr:
 
 ## Platform Notes
 
-- **Windows/Linux**: The `vtableAddress` from `get-vftable-address` skill is already adjusted for platform differences (Linux RTTI offset handled automatically).
+- **Windows/Linux**: The `vtableAddress` from `get-vtable-address` skill is already adjusted for platform differences (Linux RTTI offset handled automatically).

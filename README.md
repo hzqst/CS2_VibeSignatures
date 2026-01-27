@@ -106,7 +106,7 @@ python update_gamedata.py -gamever 14132
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL: get-vftable-address to find vtable for CCSPlayerPawn.
+ - **ALWAYS** Use SKILL: get-vtable-address to find vtable for CCSPlayerPawn.
 ```
 
 2. Write YAML
@@ -168,7 +168,7 @@ Prompt:
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+ - **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 ```
 
 3. Generate a robust signature for this function

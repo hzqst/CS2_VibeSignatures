@@ -11,7 +11,7 @@ Locate `CServerSideClient_IsHearingClient` in CS2 engine2.dll or libengine2.so u
 
 ### 1. Get CServerSideClient VTable Address
 
-**ALWAYS** Use SKILL `/get-vftable-address` to get vtable address and size.
+**ALWAYS** Use SKILL `/get-vtable-address` to get vtable address and size.
 
 Class name to search for: `CServerSideClient`
 
@@ -66,7 +66,7 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CS
 
 ### 5. Find VTable Offset and Index
 
-**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+**ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
 VTable class name: `CServerSideClient`
 

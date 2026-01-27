@@ -11,7 +11,7 @@ Locate `CCSPlayerController_Respawn` in CS2 server.dll or server.so using IDA Pr
 
 ### 1. Get CCSPlayerController VTable Address
 
-**ALWAYS** Use SKILL `/get-vftable-address` to get vtable address and size.
+**ALWAYS** Use SKILL `/get-vtable-address` to get vtable address and size.
 
 Class name to search for: `CCSPlayerController`
 
@@ -138,7 +138,7 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CC
 
 ### 5. Find VTable Offset and Index
 
-**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+**ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
 VTable class name: `CCSPlayerController`
 

@@ -96,7 +96,7 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CC
 
 ### 8. Find vtable offset and index
 
-**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+**ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
 Expected results:
 - **Vtable Index**: 20 (may change with game updates)

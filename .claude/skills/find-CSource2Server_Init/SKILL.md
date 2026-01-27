@@ -49,7 +49,7 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "s_GameEv
 
 ### 5. Find VTable and Calculate Offset
 
-**ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+**ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
 VTable class name to search for:
 - Windows: `??_7CSource2Server@@6B@` or search with `*CSource2Server*`

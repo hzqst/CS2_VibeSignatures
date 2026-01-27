@@ -12,7 +12,7 @@ Persist function analysis results to a YAML file beside the binary using IDA Pro
 Before using this skill, you should have:
 1. Identified and renamed the target function
 2. Generated a unique signature using `/generate-signature-for-function`
-3. (Optional) Obtained vtable information using `/get-vftable-index`
+3. (Optional) Obtained vtable information using `/get-vtable-index`
 
 ## Required Parameters
 

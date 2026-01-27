@@ -31,7 +31,7 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
 5. Find VTable and Calculate Offset:
 
-  **ALWAYS** Use SKILL `/get-vftable-index` to get vtable offset and index for the function.
+  **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
    VTable class name to search for:
    - Windows: `??_7CCSPlayerController@@6B@`
