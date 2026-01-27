@@ -11,9 +11,6 @@
         "windows": 102,
         "linux": 101
     },
-    /*
-    Called in CBaseEntityAPI::TeleportToPoint
-    */
     "CBaseEntity::Teleport": {
         "windows": 162,
         "linux": 161
@@ -38,21 +35,6 @@
         "windows": 2,
         "linux": 0
     },
-    /*
-    find string 'CBaseEntity::EmitSound' inside server.dll to find EmitSoundFilter function,
-    inside it, at the beginning there's a return struct initialization, which contains the guid
-    the initialization looks like this:
-
-    *((_DWORD *)a2 + 1) = -1;
-    *(_DWORD *)a2 = 0;
-    *((_DWORD *)a2 + 2) = 0;
-    *(_QWORD *)((char *)a2 + 12) = 0i64;
-    v6 = a3;
-
-    *a2 = 0 is the initialization of guid.
-    find the modification to a2 on the following code to find the function that acquire a new guid.
-    inside it there should be a virtual call on CSoundSystem.
-    */
     "CSoundSystem::TakeGuid": {
         "windows": 76,
         "linux": 75
@@ -70,7 +52,7 @@
         "linux": 24
     },
     "CCSPlayer_ItemServices::GiveNamedItem": {
-        "windows": 19,
+        "windows": 20,
         "linux": 20
     },
     "CCSPlayer_WeaponServices::CanUse": {
@@ -89,7 +71,6 @@
         "windows": 21,
         "linux": 22
     },
-    /* From sdk */
     "ICvar::FindConCommand": {
         "windows": 17,
         "linux": 17
@@ -98,7 +79,6 @@
         "windows": 20,
         "linux": 20
     },
-    /* From sdk */
     "IServerGameDLL::PreWorldUpdate": {
         "windows": 15,
         "linux": 15
@@ -183,9 +163,6 @@
         "windows": 149,
         "linux": 148
     },
-    /*
-    By tracing the calls in cstrike15_src
-    */
     "CGameRules::GetViewVectors": {
         "windows": 32,
         "linux": 33

@@ -878,13 +878,6 @@ def main():
     print(f"  Updated: {cs2f_updated}, Skipped: {cs2f_skipped}")
 
     print("\n" + "=" * 50)
-    print("Updating Swiftly...")
-    swift_updated, swift_skipped = update_swiftly(
-        yaml_data, func_lib_map, platforms, script_dir
-    )
-    print(f"  Updated: {swift_updated}, Skipped: {swift_skipped}")
-
-    print("\n" + "=" * 50)
     print("Updating SwiftlyS2...")
     swifts2_updated, swifts2_skipped = update_swiftlys2(
         yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map
@@ -899,8 +892,8 @@ def main():
     print(f"  Updated: {plugify_updated}, Skipped: {plugify_skipped}")
 
     # Summary
-    total_updated = css_updated + cs2f_updated + swift_updated + swifts2_updated + plugify_updated
-    total_skipped = css_skipped + cs2f_skipped + swift_skipped + swifts2_skipped + plugify_skipped
+    total_updated = css_updated + cs2f_updated + swifts2_updated + plugify_updated
+    total_skipped = css_skipped + cs2f_skipped + swifts2_skipped + plugify_skipped
 
     print("\n" + "=" * 50)
     print(f"Total: {total_updated} updates, {total_skipped} skipped")
