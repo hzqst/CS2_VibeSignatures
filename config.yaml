@@ -15,44 +15,69 @@ modules:
 
     symbols:
       - name: CBaseModelEntity_SetModel
+        alias:
+          - CBaseModelEntity::SetModel
         catagory: func
 
       - name: CBasePlayerController_SetPlayerName
+        alias:
+          - CBasePlayerController::SetPlayerName
         catagory: func
 
       - name: CCSGameRules_FindPickerEntity
+        alias:
+          - CCSGameRules::FindPickerEntity
         catagory: vfunc
 
       - name: CCSGameRules_TerminateRound
+        alias:
+          - CCSGameRules::TerminateRound
         catagory: func
 
       - name: CCSPlayer_ItemServices_CanAcquire
+        alias:
+          - CCSPlayer_ItemServices::CanAcquire
         catagory: func
 
       - name: CCSPlayer_ItemServices_GiveNamedItem
+        alias:
+          - CCSPlayer_ItemServices::GiveNamedItem
         catagory: vfunc
 
       - name: CCSPlayer_WeaponServices_CanUse
+        alias:
+          - CCSPlayer_WeaponServices::CanUse
         catagory: vfunc
 
       - name: CCSPlayerController_ChangeTeam
+        alias:
+          - CCSPlayerController::ChangeTeam
         catagory: vfunc
 
       - name: CCSPlayerController_InventoryUpdateThink
         alias: 
           - InventoryUpdateThink
+          - CCSPlayerController::InventoryUpdateThink
         catagory: func
 
       - name: CCSPlayerController_Respawn
+        alias:
+          - CCSPlayerController::Respawn
         catagory: vfunc
 
       - name: CCSPlayerController_SwitchTeam
+        alias:
+          - CCSPlayerController::SwitchTeam
         catagory: func
 
       - name: CCSPlayerPawnBase_PostThink
+        alias:
+          - CCSPlayerPawnBase::PostThink
         catagory: vfunc
 
       - name: CGameEventManager_Init
+        alias:
+          - CGameEventManager::Init
         catagory: func
 
       - name: ClientPrint
