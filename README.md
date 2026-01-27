@@ -168,7 +168,7 @@ Prompt:
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
    @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md find-CCSPlayerPawnBase_PostThink 
+   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
    as references.
 ```
 
@@ -215,35 +215,47 @@ Prompt:
 
 ```bash
 Prompt: 
- - show xref for this string
+
+  - List virtual functions from index 270 to the last valid index:
+
+  mcp__ida-pro-mcp__py_eval code="""
+  import ida_bytes, ida_name
+
+  vtable_start = <VTABLE_START>  # Use calculated vtable_start from step 1
+  ptr_size = 8
+  start_index = 270
+  end_index = <LAST_VALID_INDEX>  # Use (vtable_numvfunc - 1) from step 1
+
+  for i in range(start_index, end_index + 1):
+      func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
+      func_name = ida_name.get_name(func_ptr) or "unknown"
+      print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
+  """
+    
+  - Then decompile each function with:
+
+  mcp__ida-pro-mcp__decompile addr="<function_addr>"
+
+
 ```
 
 ```bash
 Prompt: 
- - Find code snippet with following pattern in xrefs
+ - Identify CCSPlayerController_Respawn with following code pattern:
 
-  v2 = a2;
-  v3 = (__int64)a1;
-  sub_180A8B930(a1, (__int64)"weapons/models/defuser/defuser.vmdl");
-  sub_18084ABF0(v3, v2);
-  v4 = (_DWORD *)sub_180CED000(&unk_1813D3728, 0xFFFFFFFFi64);
-  if ( !v4 )
-    v4 = *(_DWORD **)(qword_1813D3730 + 8);
-  if ( *v4 == 1 )
-  {
-    v5 = (__int64 *)(*(__int64 (__fastcall **)(__int64, const char *, _QWORD, _QWORD))(*(_QWORD *)qword_18140DB60 + 48i64))(
-                      qword_18140DB60,
-                      "defuser_dropped",
-                      0i64,
-                      0i64);
+    result = GetPlayerPawn(a1);  // Called once
+    if ( result )
+    {
+        v6 = GetPlayerPawn(a1);  // Called again (same function)
+        return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v6 + PAWN_VFUNC_OFFSET))(v6);
+    }
+    return result;
 ```
 
 ```bash
 Prompt: 
- - Rename sub_180A8B930 to CBaseModelEntity_SetModel in IDA
+ - Rename the virtual function we found to CCSPlayerController_Respawn in IDA
 ```
-
-2. Optionally, search vftable for virtual function, `CCSPlayerPawnBase_PostThink` in this case
 
 ```bash
 Prompt: 
@@ -272,7 +284,7 @@ Prompt:
 Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
    @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md find-CCSPlayerPawnBase_PostThink 
+   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
    as references.
 ```
 
