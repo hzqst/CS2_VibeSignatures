@@ -323,7 +323,7 @@ def run_skill(skill_name, agent="claude", debug=False):
         True if successful, False otherwise
     """
     if agent == "claude":
-        cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder"]
+        cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder", "--allowedTools", "mcp__ida-pro-mcp__*"]
     elif agent == "codex": 
         skill_path = f".claude/skills/{skill_name}/SKILL.md"
         cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
