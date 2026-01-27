@@ -34,6 +34,7 @@ modules:
         alias:
           - CCSGameRules::FindPickerEntity
         catagory: vfunc
+        prerequsite: CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
         alias:
@@ -79,6 +80,11 @@ modules:
       - name: CCSPlayerPawnBase_PostThink
         alias:
           - CCSPlayerPawnBase::PostThink
+        catagory: vfunc
+
+      - name: CSource2Server_Init
+        alias:
+          - CSource2Server::Init
         catagory: vfunc
 
       - name: CGameEventManager_Init
