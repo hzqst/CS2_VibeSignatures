@@ -80,7 +80,7 @@ python download_bin.py -gamever 14132
 
 2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-debug]`
 
-## How to convert yaml to gamedata json / txt
+## How to convert generated yaml to gamedata json / txt
 
 ```bash
 python update_gamedata.py -gamever 14132
