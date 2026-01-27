@@ -48,26 +48,18 @@ Use `rename` to give the function a meaningful name:
 mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<function_addr>", "name": "CCSPlayerPawnBase_PostThink"}})
 ```
 
-### 4. Decompile to View Pseudocode
-
-Use `decompile` to view the function pseudocode and get function size:
-
-```
-mcp__ida-pro-mcp__decompile(addr="<function_addr>")
-```
-
-### 5. Find VTable and Calculate Offset
+### 4. Find VTable and Calculate Offset
 
   **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
 
   VTable class name: `CCSPlayerPawn`
 
-### 6. Generate and Validate Unique Signature
+### 5. Generate and Validate Unique Signature
 
   **DO NOT** use `find_bytes` as it won't work for function.
   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-### 7. Write IDA analysis output as YAML beside the binary
+### 6. Write IDA analysis output as YAML beside the binary
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
