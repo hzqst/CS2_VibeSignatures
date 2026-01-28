@@ -159,9 +159,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
+ - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md and  @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
    as references.
 ```
 
@@ -187,9 +185,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CGameRules_vtable/SKILL.md  
-   as references.
+ - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
 ```
 
 ## How to create SKILL for: find-{virtualfunction}
@@ -279,9 +275,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
-   as references.
+ - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
 ## Troubleshooting
