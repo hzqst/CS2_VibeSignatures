@@ -128,6 +128,13 @@ modules:
         prerequsite: 
          - CCSPlayerPawn_vtable
 
+      - name: CGameEventManager_Init
+        alias:
+          - CGameEventManager::Init
+        catagory: func
+        prerequsite:
+         - CSource2Server_Init
+
       - name: CGameRules_ClientSettingsChanged
         alias:
           - CGameRules::ClientSettingsChanged
@@ -136,6 +143,9 @@ modules:
          - CGameRules_vtable
          - CCSGameRules_vtable
 
+      - name: ClientPrint
+        catagory: func
+
       - name: CSource2Server_Init
         alias:
           - CSource2Server::Init
@@ -143,14 +153,7 @@ modules:
         prerequsite:
          - CSource2Server_vtable
 
-      - name: CGameEventManager_Init
-        alias:
-          - CGameEventManager::Init
-        catagory: func
-        prerequsite:
-         - CSource2Server_Init
-
-      - name: ClientPrint
+      - name: CTakeDamageInfo_GetWeaponName
         catagory: func
 
       - name: GetCSWeaponDataFromKey
@@ -159,8 +162,26 @@ modules:
       - name: GiveNamedItem
         catagory: func
 
+      - name: Host_Say
+        catagory: func
+
+      - name: NetworkStateChanged
+        catagory: func
+
       - name: UTIL_ClientPrintAll
         catagory: func
 
+      - name: UTIL_PlayerSlotToPlayerController
+        catagory: func
+
       - name: UTIL_Remove
+        catagory: func
+
+      - name: UTIL_SayTextFilter
+        catagory: func
+
+      - name: UTIL_SayTextFilter2
+        catagory: func
+
+      - name: WeaponBuy
         catagory: func
