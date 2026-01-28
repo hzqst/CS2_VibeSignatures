@@ -4,13 +4,15 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     symbols:
-      - name: CServerSideClient
+      - name: CServerSideClient_vtable
         catagory: vtable
 
       - name: CServerSideClient_IsHearingClient
         alias:
           - IsHearingClient
         catagory: vfunc
+        prerequsite:
+         - CServerSideClient_vtable
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
