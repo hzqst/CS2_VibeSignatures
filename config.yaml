@@ -33,6 +33,9 @@ modules:
       - name: CCSPlayer_ItemServices_vtable
         catagory: vtable
 
+      - name: CCSPlayer_WeaponServices_vtable
+        catagory: vtable
+
       - name: CBaseEntity_vtable
         catagory: vtable
 
