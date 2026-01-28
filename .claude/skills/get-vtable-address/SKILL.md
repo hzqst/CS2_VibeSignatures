@@ -21,7 +21,7 @@ Find a class's virtual function table within it's class name. Get it's address a
    ```
    Look for:
    - Windows: `??_7ClassName@@6B@`
-   - Linux: `_ZTVNClassName` or `_ZTVN...E`
+   - Linux: `_ZTVNClassName` or `_ZTVN...E`, For example: `CSource2Server` -> `ZTV14CSource2Server`, `CGameRules` -> `_ZTV10CGameRules`
 
 ### 2. Get vtable size:
    Run this Python script using `mcp__ida-pro-mcp__py_eval` with the vtable address from step 1:

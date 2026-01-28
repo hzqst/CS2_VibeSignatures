@@ -48,9 +48,9 @@ vtable_rva = vtable_va - image_base
 
 # Handle Linux vtables (skip RTTI metadata)
 vtable_name = ida_name.get_name(vtable_va) or ""
-vtable_start = vtable_va
 if vtable_name.startswith("_ZTV"):
-    vtable_start = vtable_va + 0x10
+    vtable_va = vtable_va + 0x10
+    vtable_rva = vtable_va - image_base
 
 # Determine pointer size and count virtual functions
 ptr_size = 8 if idaapi.inf_is_64bit() else 4
@@ -58,9 +58,9 @@ count = 0
 
 for i in range(1000):
     if ptr_size == 8:
-        ptr_value = ida_bytes.get_qword(vtable_start + i * ptr_size)
+        ptr_value = ida_bytes.get_qword(vtable_va + i * ptr_size)
     else:
-        ptr_value = ida_bytes.get_dword(vtable_start + i * ptr_size)
+        ptr_value = ida_bytes.get_dword(vtable_va + i * ptr_size)
 
     if ptr_value == 0 or ptr_value == 0xFFFFFFFFFFFFFFFF:
         break
