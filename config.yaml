@@ -59,8 +59,6 @@ modules:
         alias:
           - CBasePlayerController::HandleCommand_JoinTeam
         catagory: func
-        prerequsite:
-         - CBasePlayerController_vtable
 
       - name: CBasePlayerController_SetPlayerName
         alias:
