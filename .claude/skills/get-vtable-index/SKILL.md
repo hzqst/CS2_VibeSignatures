@@ -13,6 +13,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
 
 - Function address (from decompilation or xrefs)
 - ClassName (to get vtable via `get-vtable-address` skill)
+- platform (either `windows` or `linux`, depending on the binary we are analyzing)
 
 ## Method
 
@@ -70,9 +71,6 @@ Find a function's position (offset and index) within a vtable by iterating throu
    IMPORTANT NOTES (common pitfalls):
    - Use the function *entry* address. VTables store pointers to the function start; string xrefs often land in the middle of a function.
      If you only have an address inside the function, resolve the real entry first (e.g. `idaapi.get_func(ea).start_ea`).
-   - Calculate vtable_start based on platform:
-     - Linux: `vtable_start = vtable_va + 0x10` (skip RTTI metadata)
-     - Windows: `vtable_start = vtable_va`
 
    ```python
    mcp__ida-pro-mcp__py_eval code="""
@@ -122,8 +120,8 @@ VTable @ vtable_addr:
 ┌─────────────────┬──────────────────────┐
 │ Offset   Index  │ Value (func pointer) │
 ├─────────────────┼──────────────────────┤
-│ 0x000    [0]    │ 0x180XXXXXX          │
-│ 0x008    [1]    │ 0x180XXXXXX          │
+│ 0x000    [0]    │ 0xXXXXXX             │
+│ 0x008    [1]    │ 0xXXXXXX             │
 │ ...      ...    │ ...                  │
 │ 0xNNN    [N]    │ func_addr  ← Found!  │
 └─────────────────┴──────────────────────┘
@@ -133,9 +131,3 @@ VTable @ vtable_addr:
 
 - `vfunc_offset = index × ptr_size` (ptr_size = 8 for 64-bit, 4 for 32-bit)
 - `vfunc_index = offset / ptr_size`
-
-## Platform Notes
-
-- **From YAML file**: You need to manually adjust for platform:
-  - Linux (`_ZTV` prefix vtables): `vtable_start = vtable_va + 0x10`
-  - Windows: `vtable_start = vtable_va`
