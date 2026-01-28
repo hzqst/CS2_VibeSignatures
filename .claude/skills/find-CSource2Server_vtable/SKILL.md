@@ -7,7 +7,7 @@ description: Find and identify the CSource2Server vtable in CS2 binary using IDA
 
 Locate `CSource2Server_vtable` in CS2 server.dll or server.so using IDA Pro MCP tools.
 
-## Method (Linux - Preferred)
+## Method (Linux Only)
 
 For Linux binaries (server.so), use RTTI symbols to directly locate the vtable:
 
@@ -33,7 +33,7 @@ Done! The `/write-vtable-as-yaml` skill automatically:
 
 ---
 
-## Method (Windows - Alternative)
+## Method (Windows Only)
 
 For Windows binaries (server.dll) without RTTI symbols, trace through the interface registration pattern:
 
