@@ -22,6 +22,7 @@ modules:
 
       - name: CCSGameRules_vtable
         catagory: vtable
+        prerequsite: CGameRules_vtable
 
       - name: CCSPlayer_ItemServices_vtable
         catagory: vtable
@@ -109,7 +110,9 @@ modules:
         alias:
           - CGameRules::ClientSettingsChanged
         catagory: vfunc
-        prerequsite: CGameRules_vtable
+        prerequsite: 
+         - CGameRules_vtable
+         - CCSGameRules_vtable
 
       - name: CSource2Server_Init
         alias:
