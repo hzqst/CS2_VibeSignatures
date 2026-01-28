@@ -211,7 +211,10 @@ def parse_config(config_path):
         for sym in module.get("symbols", []):
             sym_name = sym.get("name")
             if sym_name:
-                symbols.append(sym_name)
+                symbols.append({
+                    "name": sym_name,
+                    "prerequisite": sym.get("prerequsite", []) or []  # Note: config uses "prerequsite" (typo)
+                })
 
         modules.append({
             "name": name,
@@ -221,6 +224,62 @@ def parse_config(config_path):
         })
 
     return modules
+
+
+def topological_sort_symbols(symbols):
+    """
+    Perform topological sort on symbols based on their prerequisites.
+
+    Args:
+        symbols: List of symbol dicts with 'name' and 'prerequisite' keys
+
+    Returns:
+        List of symbol names in topologically sorted order (dependencies first)
+    """
+    # Build name -> symbol dict and adjacency list
+    symbol_map = {sym["name"]: sym for sym in symbols}
+    symbol_names = set(symbol_map.keys())
+
+    # Build in-degree count and adjacency list
+    in_degree = {name: 0 for name in symbol_names}
+    dependents = {name: [] for name in symbol_names}  # prereq -> list of symbols that depend on it
+
+    for sym in symbols:
+        name = sym["name"]
+        for prereq in sym["prerequisite"]:
+            if prereq in symbol_names:
+                in_degree[name] += 1
+                dependents[prereq].append(name)
+
+    # Kahn's algorithm for topological sort
+    # Start with symbols that have no prerequisites (in_degree == 0)
+    queue = [name for name in symbol_names if in_degree[name] == 0]
+    # Sort to ensure deterministic order for symbols at the same level
+    queue.sort()
+
+    sorted_names = []
+    while queue:
+        # Pop the first item (maintains stable order)
+        current = queue.pop(0)
+        sorted_names.append(current)
+
+        # Reduce in-degree for dependents
+        for dependent in sorted(dependents[current]):
+            in_degree[dependent] -= 1
+            if in_degree[dependent] == 0:
+                queue.append(dependent)
+        queue.sort()
+
+    # Check for cycles
+    if len(sorted_names) != len(symbol_names):
+        remaining = symbol_names - set(sorted_names)
+        print(f"  Warning: Circular dependency detected among symbols: {remaining}")
+        # Append remaining symbols in original order as fallback
+        for sym in symbols:
+            if sym["name"] not in sorted_names:
+                sorted_names.append(sym["name"])
+
+    return sorted_names
 
 
 def get_binary_path(bin_dir, gamever, module_name, module_path):
@@ -379,7 +438,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
 
     Args:
         binary_path: Path to binary file
-        symbols: List of symbol names to analyze
+        symbols: List of symbol dicts with 'name' and 'prerequisite' keys
         agent: Agent type ("claude" or "codex")
         host: MCP server host
         port: MCP server port
@@ -397,15 +456,18 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
     # Get the directory containing the binary for yaml output check
     binary_dir = os.path.dirname(binary_path)
 
+    # Topological sort symbols based on prerequisites
+    sorted_symbol_names = topological_sort_symbols(symbols)
+
     # Filter symbols that need processing (skip if yaml already exists)
     symbols_to_process = []
-    for symbol in symbols:
-        yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
+    for symbol_name in sorted_symbol_names:
+        yaml_path = os.path.join(binary_dir, f"{symbol_name}.{platform}.yaml")
         if os.path.exists(yaml_path):
-            print(f"  Skipping symbol: {symbol} (yaml already exists)")
+            print(f"  Skipping symbol: {symbol_name} (yaml already exists)")
             skip_count += 1
         else:
-            symbols_to_process.append(symbol)
+            symbols_to_process.append(symbol_name)
 
     # If all symbols are skipped, no need to start IDA
     if not symbols_to_process:

@@ -25,9 +25,13 @@ modules:
 
       - name: CCSGameRules_vtable
         catagory: vtable
-        prerequsite: CGameRules_vtable
+        prerequsite:
+         - CGameRules_vtable
 
       - name: CCSPlayer_ItemServices_vtable
+        catagory: vtable
+
+      - name: CBasePlayerController_vtable
         catagory: vtable
 
       - name: CCSPlayerController_vtable
@@ -35,6 +39,11 @@ modules:
 
       - name: CCSPlayerPawn_vtable
         catagory: vtable
+
+      - name: CBaseEntity_TakeDamageOld
+        alias:
+          - CBaseEntity::TakeDamageOld
+        catagory: func
 
       - name: CBaseModelEntity_SetModel
         alias:
@@ -45,7 +54,8 @@ modules:
         alias:
           - CBasePlayerController::HandleCommand_JoinTeam
         catagory: func
-        prerequsite: CBasePlayerController_vtable
+        prerequsite:
+         - CBasePlayerController_vtable
 
       - name: CBasePlayerController_SetPlayerName
         alias:
@@ -56,7 +66,8 @@ modules:
         alias:
           - CCSGameRules::FindPickerEntity
         catagory: vfunc
-        prerequsite: CCSGameRules_vtable
+        prerequsite:
+         - CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
         alias:
@@ -72,19 +83,22 @@ modules:
         alias:
           - CCSPlayer_ItemServices::GiveNamedItem
         catagory: vfunc
-        prerequsite: CCSPlayer_ItemServices_vtable
+        prerequsite:
+         - CCSPlayer_ItemServices_vtable
 
       - name: CCSPlayer_WeaponServices_CanUse
         alias:
           - CCSPlayer_WeaponServices::CanUse
         catagory: vfunc
-        prerequsite: CCSPlayer_WeaponServices_vtable
+        prerequsite:
+         - CCSPlayer_WeaponServices_vtable
 
       - name: CCSPlayerController_ChangeTeam
         alias:
           - CCSPlayerController::ChangeTeam
         catagory: vfunc
-        prerequsite: CCSPlayerController_vtable
+        prerequsite:
+         - CCSPlayerController_vtable
 
       - name: CCSPlayerController_InventoryUpdateThink
         alias: 
@@ -96,7 +110,8 @@ modules:
         alias:
           - CCSPlayerController::Respawn
         catagory: vfunc
-        prerequsite: CCSPlayerController_vtable
+        prerequsite:
+         - CCSPlayerController_vtable
 
       - name: CCSPlayerController_SwitchTeam
         alias:
@@ -107,7 +122,8 @@ modules:
         alias:
           - CCSPlayerPawnBase::PostThink
         catagory: vfunc
-        prerequsite: CCSPlayerPawn_vtable
+        prerequsite: 
+         - CCSPlayerPawn_vtable
 
       - name: CGameRules_ClientSettingsChanged
         alias:
@@ -121,13 +137,15 @@ modules:
         alias:
           - CSource2Server::Init
         catagory: vfunc
-        prerequsite: CSource2Server_vtable
+        prerequsite:
+         - CSource2Server_vtable
 
       - name: CGameEventManager_Init
         alias:
           - CGameEventManager::Init
         catagory: func
-        prerequsite: CSource2Server_Init
+        prerequsite:
+         - CSource2Server_Init
 
       - name: ClientPrint
         catagory: func
