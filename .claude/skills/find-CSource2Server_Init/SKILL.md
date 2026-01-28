@@ -32,7 +32,7 @@ mcp__ida-pro-mcp__decompile addr="<function_addr>"
 Verify the function contains the pattern:
 ```c
 COM_TimestampedLog("gameeventmanager->Init()");
-CGameEventManager_Init((__int64)s_GameEventManager);
+sub_XXXXXXXXXX((__int64)s_GameEventManager);
 ```
 
 ### 4. Rename the function and global variable
@@ -45,6 +45,11 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CS
 Rename the game event manager global (if found):
 ```
 mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "s_GameEventManager"}}
+```
+
+Rename the caller for `s_GameEventManager` to `CGameEventManager_Init` (if found):
+```
+mcp__ida-pro-mcp__rename batch={"data": {"old": "sub_XXXXXXXXXX", "new": "CGameEventManager_Init"}}
 ```
 
 ### 5. Find VTable and Calculate Offset
