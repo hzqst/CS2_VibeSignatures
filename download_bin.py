@@ -201,7 +201,7 @@ def process_module(module, bin_dir, gamever, platform_filter, base_url):
 
         # Skip if already exists
         if os.path.exists(target_path):
-            print(f"  File already exists: {target_path}")
+            print(f"  [SKIP] File already exists, skipping download: {target_path}")
             success_count += 1
             continue
 

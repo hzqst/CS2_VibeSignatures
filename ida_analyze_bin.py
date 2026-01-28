@@ -20,6 +20,11 @@ Requirements:
     pip install pyyaml
     uv (for running idalib-mcp)
     claude CLI or codex CLI (codex.cmd on Windows)
+
+Output:
+    bin/14132/engine/CServerSideClient_IsHearingClient.linux.yaml
+    bin/14132/engine/CServerSideClient_IsHearingClient.windows.yaml
+    ...and more
 """
 
 import argparse
@@ -360,7 +365,7 @@ def run_skill(skill_name, agent="claude", debug=False):
         return False
 
 
-def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=False):
+def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, debug=False):
     """
     Process a single binary file.
 
@@ -371,28 +376,54 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
         host: MCP server host
         port: MCP server port
         ida_args: Additional arguments for idalib-mcp
+        platform: Platform name (e.g., "windows", "linux")
         debug: Enable debug output
 
     Returns:
-        Tuple of (success_count, fail_count)
+        Tuple of (success_count, fail_count, skip_count)
     """
     success_count = 0
     fail_count = 0
+    skip_count = 0
+
+    # Get the directory containing the binary for yaml output check
+    binary_dir = os.path.dirname(binary_path)
+
+    # Filter symbols that need processing (skip if yaml already exists)
+    symbols_to_process = []
+    for symbol in symbols:
+        yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
+        if os.path.exists(yaml_path):
+            print(f"  Skipping symbol: {symbol} (yaml already exists)")
+            skip_count += 1
+        else:
+            symbols_to_process.append(symbol)
+
+    # If all symbols are skipped, no need to start IDA
+    if not symbols_to_process:
+        print(f"  All symbols already have yaml files, skipping IDA startup")
+        return success_count, fail_count, skip_count
 
     # Start idalib-mcp
     process = start_idalib_mcp(binary_path, host, port, ida_args, debug)
     if process is None:
-        return 0, len(symbols)
+        return 0, len(symbols_to_process), skip_count
 
     try:
         # Process each symbol
-        for symbol in symbols:
+        for symbol in symbols_to_process:
             skill_name = f"find-{symbol}"
+            yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
             print(f"  Processing symbol: {symbol}")
 
             if run_skill(skill_name, agent, debug):
-                success_count += 1
-                print(f"    Success")
+                # Verify yaml file was actually generated
+                if os.path.exists(yaml_path):
+                    success_count += 1
+                    print(f"    Success")
+                else:
+                    fail_count += 1
+                    print(f"    Failed: yaml file not generated at {yaml_path}")
             else:
                 fail_count += 1
                 print(f"    Failed")
@@ -401,7 +432,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
         # Gracefully quit IDA via MCP to avoid breaking IDB
         quit_ida_gracefully(process, host, port, debug=debug)
 
-    return success_count, fail_count
+    return success_count, fail_count, skip_count
 
 
 def main():
@@ -489,12 +520,13 @@ def main():
                 continue
 
             # Process binary
-            success, fail = process_binary(
+            success, fail, skip = process_binary(
                 binary_path, symbols, agent,
-                DEFAULT_HOST, DEFAULT_PORT, ida_args, debug
+                DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug
             )
             total_success += success
             total_fail += fail
+            total_skip += skip
 
     # Summary
     print(f"\n{'='*60}")
