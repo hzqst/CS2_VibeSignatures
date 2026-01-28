@@ -20,15 +20,12 @@ Otherwise, extract these values for subsequent steps:
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 - `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 2. Read VTable Entry at Index ~26
+### 2. Decompile virtual functions from vtable_entries[24-30]
 
-Using `vtable_entries` from step 1, list functions around index 26:
+Using `vtable_entries` from step 1, decompile virtual functions around indices 24-30:
 
-```python
-# vtable_entries is already available from step 1
-for i in range(24, 30):
-    func_ptr = vtable_entries[i]
-    print(f"vftable[{i}]: {hex(func_ptr)}")
+```
+  mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
 ### 3. Decompile and Verify by "weapon_taser" String

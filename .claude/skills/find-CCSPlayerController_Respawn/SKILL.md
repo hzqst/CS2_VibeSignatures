@@ -22,19 +22,8 @@ Otherwise, extract these values for subsequent steps:
 
 ### 2. Decompile vtable[270 ~ last] and Search for Pattern
 
-Using `vtable_entries` from step 1, list virtual functions from index 270 to the last valid index:
+Using `vtable_entries` from step 1, Decompile virtual functions from index 270 to the last valid index:
 
-```python
-# vtable_entries is already available from step 1
-start_index = 270
-end_index = len(vtable_entries) - 1  # Last valid index
-
-for i in range(start_index, end_index + 1):
-    func_ptr = vtable_entries[i]
-    print(f"vftable[{i}]: {hex(func_ptr)}")
-```
-
-Then decompile each function:
 ```
 mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
