@@ -88,9 +88,13 @@ python update_gamedata.py -gamever 14132
 
 ### Current supported gamedata dist
 
-[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) `dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
+[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 
-[CS2Fixes](https://github.com/Source2ZE/CS2Fixes) `dist/CS2Fixes/gamedata/cs2fixes.games.txt`
+`dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
+
+[CS2Fixes](https://github.com/Source2ZE/CS2Fixes) 
+
+`dist/CS2Fixes/gamedata/cs2fixes.games.txt`
 
 [swiftlys2](https://github.com/swiftly-solution/swiftlys2) 
 
@@ -98,7 +102,13 @@ python update_gamedata.py -gamever 14132
 
 `dist/swiftlys2/plugin_files/gamedata/cs2/core/signatures.jsonc`
 
-[plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
+[plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) 
+
+`dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
+
+[cs2kz-metamod](https://github.com/Source2ZE/CS2Fixes) 
+
+`dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
 ## How to create SKILL for: find-{function}
 
