@@ -100,7 +100,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
            print(f"vtable_start: {hex(vtable_start)}")
            break
    else:
-       print("Function not found in vtable!")
+       print("Function not found in vtable! Ignore this if we found a vtable offset before, because py_eval has issue with duplicate evaluation sometimes.")
    """
    ```
 
