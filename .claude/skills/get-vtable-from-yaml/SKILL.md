@@ -80,7 +80,7 @@ When a skill needs vtable information, use this skill first:
 **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name={ClassName}`.
 
 If the skill returns an error, stop and report to user.
-Otherwise, extract `vtable_va` and `vtable_numvfunc` for subsequent steps.
+Otherwise, extract `vtable_va`, `vtable_numvfunc` and `vtable_entries` for subsequent steps.
 ```
 
 ## Expected Output Values

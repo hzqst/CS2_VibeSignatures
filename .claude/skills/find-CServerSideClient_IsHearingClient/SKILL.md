@@ -18,21 +18,17 @@ If the skill returns an error, **STOP** and report to user.
 Otherwise, extract these values for subsequent steps:
 - `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
 ### 2. Read VTable Entries at Index 16-25
 
+Using `vtable_entries` from step 1, list functions around indices 16-25:
+
 ```python
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes, ida_name
-
-vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
-ptr_size = 8
-
+# vtable_entries is already available from step 1
 for i in range(16, 26):
-    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
-    func_name = ida_name.get_name(func_ptr) or "unknown"
-    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
-"""
+    func_ptr = vtable_entries[i]
+    print(f"vftable[{i}]: {hex(func_ptr)}")
 ```
 
 ### 3. Decompile and Identify by Pattern

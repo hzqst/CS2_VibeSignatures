@@ -11,66 +11,24 @@ Locate `CCSGameRules_FindPickerEntity` in CS2 server.dll or server.so using IDA 
 
 ### 1. Get CCSGameRules VTable Address
 
-**ALWAYS** first check if `CCSGameRules_vtable.{platform}.yaml` exists beside the binary:
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSGameRules`.
 
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import idaapi
-import os
+If the skill returns an error, **STOP** and report to user.
 
-class_name = "CCSGameRules"
-
-input_file = idaapi.get_input_file_path()
-dir_path = os.path.dirname(input_file)
-platform = 'windows' if input_file.endswith('.dll') else 'linux'
-
-yaml_path = os.path.join(dir_path, f"{class_name}_vtable.{platform}.yaml")
-
-if os.path.exists(yaml_path):
-    with open(yaml_path, 'r', encoding='utf-8') as f:
-        print(f.read())
-    print(f"YAML_EXISTS: True")
-else:
-    print(f"ERROR: Required file {class_name}_vtable.{platform}.yaml not found.")
-    print(f"Expected path: {yaml_path}")
-    print(f"Please run `/find-CCSGameRules_vtable` first to generate the vtable YAML file.")
-"""
-```
-
-**If YAML exists**, extract these values:
-- `vtable_va`: The vtable start address
-- `vtable_numvfunc`: The valid vtable entry count
-
-    Example YAML content:
-    ```yaml
-    vtable_class: CCSGameRules
-    vtable_va: 0x2114cd0
-    vtable_rva: 0x2114cd0
-    vtable_size: 0xd60
-    vtable_numvfunc: 428
-    ```
-
-**If YAML does NOT exist**, **ERROR OUT** with message:
-```
-ERROR: Required file {class_name}_vtable.{platform}.yaml not found.
-Please run `/find-CCSGameRules_vtable` first to generate the vtable YAML file.
-```
-Do NOT proceed with the remaining steps.
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
 ### 2. Read VTable Entries at Index 21-30
 
+Using `vtable_entries` from step 1, list functions around indices 21-30:
+
 ```python
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes, ida_name
-
-vtable_start = <VTABLE_START>  # Use calculated vtable_start from step 1
-ptr_size = 8
-
+# vtable_entries is already available from step 1
 for i in range(21, 31):
-    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
-    func_name = ida_name.get_name(func_ptr) or "unknown"
-    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
-"""
+    func_ptr = vtable_entries[i]
+    print(f"vftable[{i}]: {hex(func_ptr)}")
 ```
 
 ### 3. Identify by Nullsub Pattern
