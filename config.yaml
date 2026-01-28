@@ -31,6 +31,9 @@ modules:
       - name: CCSPlayer_ItemServices_vtable
         catagory: vtable
 
+      - name: CBaseEntity_vtable
+        catagory: vtable
+
       - name: CBasePlayerController_vtable
         catagory: vtable
 
