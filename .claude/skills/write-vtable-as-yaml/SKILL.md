@@ -106,6 +106,10 @@ vtable_va: 0x182B8D9D8      # Virtual address - changes with game updates
 vtable_rva: 0x2B8D9D8       # Relative virtual address (VA - image base) - changes with game updates
 vtable_size: 0x2D8          # VTable size in bytes - changes with game updates
 vtable_numvfunc: 91         # Number of virtual functions - changes with game updates
+vtable_entries:
+  - 0x180C87B20
+  - 0x180C87FA0
+  - 0x180C87FF0
 ```
 
 ## Platform Detection

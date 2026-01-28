@@ -48,14 +48,19 @@ else:
 - `vtable_rva`: The vtable relative virtual address
 - `vtable_size`: The vtable size in bytes
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0].
 
 Example YAML content:
 ```yaml
 vtable_class: CCSPlayerController
-vtable_va: 0x2114cd0
-vtable_rva: 0x2114cd0
+vtable_va: 0x221fc80
+vtable_rva: 0x221fc80
 vtable_size: 0xd60
 vtable_numvfunc: 428
+vtable_entries:
+  - 0x9b4bb0
+  - 0x9b4bc0
+  - 0x9b4bd0
 ```
 
 **If YAML does NOT exist**, **ERROR OUT** and report to user:
@@ -87,3 +92,4 @@ Otherwise, extract `vtable_va` and `vtable_numvfunc` for subsequent steps.
 | `vtable_rva` | Relative virtual address | `0x2114cd0` |
 | `vtable_size` | Size in bytes | `0xd60` |
 | `vtable_numvfunc` | Number of virtual functions | `428` |
+| `vtable_entries` | An array of virtual functions starting from vtable[0] | ... |
