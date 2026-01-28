@@ -315,7 +315,7 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         return None
 
 
-def run_skill(skill_name, agent="claude", debug=False):
+def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None):
     """
     Execute a skill using the specified agent.
 
@@ -323,13 +323,15 @@ def run_skill(skill_name, agent="claude", debug=False):
         agent: Agent type ("claude" or "codex")
         skill_name: Name of the skill (e.g., "find-CServerSideClient_IsHearingClient")
         debug: Enable debug output
+        expected_yaml_path: Path to the expected yaml output file. If provided,
+                           the skill is considered failed if this file is not generated.
 
     Returns:
         True if successful, False otherwise
     """
     if agent == "claude":
         cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder", "--allowedTools", "mcp__ida-pro-mcp__*"]
-    elif agent == "codex": 
+    elif agent == "codex":
         skill_path = f".claude/skills/{skill_name}/SKILL.md"
         cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
 
@@ -351,6 +353,12 @@ def run_skill(skill_name, agent="claude", debug=False):
             if not debug and result.stderr:
                 print(f"    stderr: {result.stderr[:500]}")
             return False
+
+        # Verify yaml file was generated if expected_yaml_path is provided
+        if expected_yaml_path is not None:
+            if not os.path.exists(expected_yaml_path):
+                print(f"    Error: Expected yaml file not generated at {expected_yaml_path}")
+                return False
 
         return True
 
@@ -416,14 +424,9 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
             yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
             print(f"  Processing symbol: {symbol}")
 
-            if run_skill(skill_name, agent, debug):
-                # Verify yaml file was actually generated
-                if os.path.exists(yaml_path):
-                    success_count += 1
-                    print(f"    Success")
-                else:
-                    fail_count += 1
-                    print(f"    Failed: yaml file not generated at {yaml_path}")
+            if run_skill(skill_name, agent, debug, expected_yaml_path=yaml_path):
+                success_count += 1
+                print(f"    Success")
             else:
                 fail_count += 1
                 print(f"    Failed")
