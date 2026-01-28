@@ -28,6 +28,7 @@ import idaapi
 import ida_bytes
 import ida_name
 import os
+import yaml
 
 # === REQUIRED: Replace these values ===
 vtable_class = "<vtable_class>"     # e.g., "CSource2Server"
@@ -76,21 +77,19 @@ for i in range(1000):
 count = len(vtable_entries)
 vtable_size = count * ptr_size
 
-# Build vtable_entries YAML section
-entries_yaml = "vtable_entries:\\n"
-for entry in vtable_entries:
-    entries_yaml += f"  - {hex(entry)}\\n"
-
-yaml_content = f'''vtable_class: {vtable_class}
-vtable_va: {hex(vtable_va)}
-vtable_rva: {hex(vtable_rva)}
-vtable_size: {hex(vtable_size)}
-vtable_numvfunc: {count}
-{entries_yaml}'''
+# Build YAML data structure
+yaml_data = {
+    'vtable_class': vtable_class,
+    'vtable_va': hex(vtable_va),
+    'vtable_rva': hex(vtable_rva),
+    'vtable_size': hex(vtable_size),
+    'vtable_numvfunc': count,
+    'vtable_entries': {i: hex(entry) for i, entry in enumerate(vtable_entries)}
+}
 
 yaml_path = os.path.join(dir_path, f"{vtable_class}_vtable.{platform}.yaml")
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
+    yaml.dump(yaml_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 print(f"Written to: {yaml_path}")
 """
 ```
@@ -113,9 +112,9 @@ vtable_rva: 0x2B8D9D8       # Relative virtual address (VA - image base) - chang
 vtable_size: 0x2D8          # VTable size in bytes - changes with game updates
 vtable_numvfunc: 91         # Number of virtual functions - changes with game updates
 vtable_entries:             # Every virtual functions starting from vtable[0]
-  - 0x180C87B20             # vtable[0] - changes with game updates
-  - 0x180C87FA0             # vtable[1] - changes with game updates
-  - 0x180C87FF0             # vtable[2] - changes with game updates
+  0: 0x180C87B20             # vtable[0] - changes with game updates
+  1: 0x180C87FA0             # vtable[1] - changes with game updates
+  2: 0x180C87FF0             # vtable[2] - changes with game updates
 ```
 
 ## Platform Detection

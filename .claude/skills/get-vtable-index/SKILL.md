@@ -46,12 +46,13 @@ Find a function's position (offset and index) within a vtable by iterating throu
        with open(yaml_path, 'r', encoding='utf-8') as f:
            data = yaml.safe_load(f)
 
-       vtable_entries = data.get('vtable_entries', [])
+       vtable_entries = data.get('vtable_entries', {})
        vtable_va = data.get('vtable_va')
        ptr_size = 8 if idaapi.inf_is_64bit() else 4
 
-       for i, entry in enumerate(vtable_entries):
+       for idx, entry in vtable_entries.items():
            # Handle both int and hex string formats
+           i = int(idx) if isinstance(idx, str) else idx
            entry_addr = int(entry, 16) if isinstance(entry, str) else entry
            if entry_addr == func_addr:
                offset = i * ptr_size

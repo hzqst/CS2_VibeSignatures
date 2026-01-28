@@ -207,18 +207,7 @@ Prompt:
 
 ```bash
 Prompt:
-
-  - List virtual functions from index 270 to the last valid index using vtable_entries from YAML:
-
-  # vtable_entries is already available from step 1
-  start_index = 270
-  end_index = len(vtable_entries) - 1  # Last valid index
-
-  for i in range(start_index, end_index + 1):
-      func_ptr = vtable_entries[i]
-      print(f"vftable[{i}]: {hex(func_ptr)}")
-
-  - Then decompile each function with:
+  - Decompile virtual functions from index 270 to the last valid index
 
   mcp__ida-pro-mcp__decompile addr="<function_addr>"
 

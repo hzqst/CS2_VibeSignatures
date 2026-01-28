@@ -20,15 +20,12 @@ Otherwise, extract these values for subsequent steps:
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 - `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 2. Read VTable Entries at Index 21-30
+### 2. Decompile virtual functions from vtable_entries[21-30]
 
-Using `vtable_entries` from step 1, list functions around indices 21-30:
+Using `vtable_entries` from step 1, decompile virtual functions around indices 21-30:
 
-```python
-# vtable_entries is already available from step 1
-for i in range(21, 31):
-    func_ptr = vtable_entries[i]
-    print(f"vftable[{i}]: {hex(func_ptr)}")
+```
+  mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
 ### 3. Identify by Nullsub Pattern
