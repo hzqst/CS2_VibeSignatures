@@ -74,7 +74,6 @@ Required parameters:
 
 VTable parameters (when this is a virtual function):
 - `vtable_name`: `CSource2Server`
-- `vtable_symbol`: The vtable symbol name (e.g., `off_XXXXXXXX` for Windows if no mangled name)
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -124,7 +123,6 @@ func_rva: 0xc87700        # Relative virtual address (VA - image base) - changes
 func_size: 0x1e9          # Function size in bytes - changes with game updates
 func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - changes with game updates
 vtable_name: CSource2Server
-vtable_symbol: off_18171C170
 vfunc_offset: 0x18        # Offset from vtable start - changes with game updates
 vfunc_index: 3            # vtable[3] - changes with game updates
 ```
