@@ -172,7 +172,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
-6. Don't forget to add your SKILL to `config.yaml`
+6. Add your SKILL to `config.yaml`, in `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -180,6 +180,14 @@ Prompt:
       - name: find-CBaseModelEntity_SetModel
         expected_output:
           - CBaseModelEntity_SetModel.{platform}.yaml
+```
+
+7. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CBaseModelEntity_SetModel
+        alias:
+          - CBaseModelEntity::SetModel
 ```
 
 ## How to create SKILL for: find-{vtable}
@@ -207,7 +215,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
 ```
 
-4. Don't forget to add your SKILL to `config.yaml`
+4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -215,6 +223,12 @@ Prompt:
       - name: find-CCSPlayerPawn_vtable
         expected_output:
           - CCSPlayerPawn_vtable.{platform}.yaml
+```
+
+5. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CCSPlayerPawn_vtable
 ```
 
 ## How to create SKILL for: find-{virtualfunction}
@@ -290,7 +304,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
-7. Don't forget to add your SKILL to `config.yaml`
+7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -302,6 +316,15 @@ Prompt:
           - CCSPlayerController_vtable.{platform}.yaml
         prerequisite:
           - find-CCSPlayerController_vtable
+```
+
+8. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CCSPlayerController_Respawn
+        catagory: vfunc
+        alias:
+          - CCSPlayerController::Respawn
 ```
 
 ## Troubleshooting
