@@ -1,11 +1,11 @@
 ---
-name: find-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
-description: Find and identify the UTIL_SayTextFilter and UTIL_SayTextFilter2 function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the UTIL_SayTextFilter and UTIL_SayTextFilter2 function by searching for the "%s %s @ %s:" string reference and analyzing cross-references.
+name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
+description: Find and identify the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 function by searching for the "%s %s @ %s:" string reference and analyzing cross-references.
 ---
 
-# Find UTIL_SayTextFilter and UTIL_SayTextFilter2
+# Find Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2
 
-Locate `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -19,10 +19,26 @@ Locate `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 server.dll or serve
    mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
    ```
 
-3. Decompile the referencing function:
+3. Decompile and rename the referencing function:
    ```
    mcp__ida-pro-mcp__decompile addr="<function_addr>"
    ```
+
+   * The decompiled function is `Host_Say`, and it needs to be renamed.
+
+   ```
+   mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "Host_Say"}]}
+   ```
+
+   - Key Behaviors of Host_Say:
+
+      1. Parses "say" or "say_team" commands
+      2. Validates and sanitizes chat message
+      3. Truncates message if too long (Unicode-aware)
+      4. Broadcasts message to appropriate recipients (all or team)
+      5. Logs chat to console with format `[All Chat][PlayerName (userid)]: message`
+      6. Handles console-originated messages specially
+
 
 4. In the decompiled code, look for the characteristic if-else pattern:
    ```c
@@ -68,39 +84,63 @@ Locate `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 server.dll or serve
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<util_saytextfilter2_addr>", "name": "UTIL_SayTextFilter2"}]}
    ```
 
-7. Generate and validate unique signature for `UTIL_SayTextFilter`:
+7. Generate and validate unique signature for `Host_Say`:
 
    **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-8. Write IDA analysis output for `UTIL_SayTextFilter` as YAML beside the binary:
+8. Write IDA analysis output for `Host_Say` as YAML beside the binary:
+
+   **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+
+   Required parameters:
+   - `func_name`: `Host_Say`
+   - `func_addr`: The function address of `Host_Say` from step 3
+   - `func_sig`: The validated signature from step 7
+
+   Note: This is NOT a virtual function, so no vtable parameters are needed.
+
+9. Generate and validate unique signature for `UTIL_SayTextFilter`:
+
+   **DO NOT** use `find_bytes` as it won't work for function.
+   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+
+10. Write IDA analysis output for `UTIL_SayTextFilter` as YAML beside the binary:
 
    **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
    Required parameters:
    - `func_name`: `UTIL_SayTextFilter`
    - `func_addr`: The function address of `UTIL_SayTextFilter` from step 5
-   - `func_sig`: The validated signature from step 7
+   - `func_sig`: The validated signature from step 9
 
    Note: This is NOT a virtual function, so no vtable parameters are needed.
 
-9. Generate and validate unique signature for `UTIL_SayTextFilter2`:
+11. Generate and validate unique signature for `UTIL_SayTextFilter2`:
 
    **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-10. Write IDA analysis output for `UTIL_SayTextFilter2` as YAML beside the binary:
+12. Write IDA analysis output for `UTIL_SayTextFilter2` as YAML beside the binary:
 
    **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
    Required parameters:
    - `func_name`: `UTIL_SayTextFilter2`
    - `func_addr`: The function address of `UTIL_SayTextFilter2` from step 5
-   - `func_sig`: The validated signature from step 7
+   - `func_sig`: The validated signature from step 11
 
    Note: This is NOT a virtual function, so no vtable parameters are needed.
 
 ## Function Characteristics
+
+- **Prototype**: `void Host_Say(CBasePlayerController *pController, CCommand &args, bool teamonly, int unk1, const char *unk2)`
+- **Parameters**:
+  - `pController`: Player controller sending the message (can be null for console)
+  - `args`: Command arguments containing the message
+  - `teamonly`: True for team chat, false for all chat
+  - `unk1`: Unknown parameter
+  - `unk2`: Unknown parameter (alternative command name)
 
 - **Prototype**: `void UTIL_SayTextFilter(IRecipientFilter* filter, const char* pText, CBasePlayerController* pPlayer, bool chat)`
 - **Parameters**:
@@ -119,10 +159,6 @@ Locate `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 server.dll or serve
   - `text2`: Second text parameter
   - `text3`: Third text parameter
   - `reserved`: Reserved parameter (usually 0/null)
-
-## Related Functions
-
-- `Host_Say` - Higher-level function that calls these utilities
 
 ## DLL Information
 

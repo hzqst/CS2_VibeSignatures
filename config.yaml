@@ -177,10 +177,6 @@ modules:
         expected_output:
           - GiveNamedItem.{platform}.yaml
 
-      - name: find-Host_Say
-        expected_output:
-          - Host_Say.{platform}.yaml
-
       - name: find-NetworkStateChanged
         expected_output:
           - NetworkStateChanged.{platform}.yaml
@@ -197,11 +193,12 @@ modules:
         expected_output:
           - UTIL_Remove.{platform}.yaml
 
-      - name: find-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
+      - name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
         expected_output:
+          - Host_Say.{platform}.yaml
           - UTIL_SayTextFilter.{platform}.yaml
           - UTIL_SayTextFilter2.{platform}.yaml
-        max_retries: 5
+        max_retries: 6
 
       - name: find-WeaponBuy
         expected_output:
