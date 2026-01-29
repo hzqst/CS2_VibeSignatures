@@ -4,9 +4,10 @@ This file provides guidance and important rules working with code in this reposi
 
 ## Important rules
 
-### When running SKILLS with ida-pro-mcp
+### When running SKILLS
 
- - **DONT STOP** half-way until you finish all tasks in SKILL
+ - **NEVER** stop half-way even the step you were running shows a success, until you finish **ALL** tasks.
+
 
 ## IDA Pro MCP Tools Reference
 
