@@ -33,6 +33,7 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 try:
@@ -167,6 +168,12 @@ def parse_args():
         "-debug",
         action="store_true",
         help="Enable debug output"
+    )
+    parser.add_argument(
+        "-maxretry",
+        type=int,
+        default=3,
+        help="Maximum number of retry attempts for skill execution (default: 3)"
     )
 
     args = parser.parse_args()
@@ -374,70 +381,93 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         return None
 
 
-def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None):
+def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None, max_retries=3):
     """
-    Execute a skill using the specified agent.
+    Execute a skill using the specified agent with retry support.
 
     Args:
-        agent: Agent type ("claude" or "codex")
         skill_name: Name of the skill (e.g., "find-CServerSideClient_IsHearingClient")
+        agent: Agent type ("claude" or "codex")
         debug: Enable debug output
         expected_yaml_path: Path to the expected yaml output file. If provided,
                            the skill is considered failed if this file is not generated.
+        max_retries: Maximum number of retry attempts (default: 3)
 
     Returns:
         True if successful, False otherwise
     """
-    if agent == "claude":
-        cmd = ["claude",
-               "-p", f"/{skill_name}",
-               "--agent", "sig-finder",
-               "--allowedTools", "mcp__ida-pro-mcp__*",
-               "--append-system-prompt", "\"This is a multi-step task. You **MUST** complete all steps until the YAML is successfully written or an unrecoverable error occurs. Do not stop until then.\""
-               ]
-    elif agent == "codex":
-        skill_path = f".claude/skills/{skill_name}/SKILL.md"
-        cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
+    session_id = str(uuid.uuid4())
 
-    print(f"    Running: {' '.join(cmd)}")
+    for attempt in range(max_retries):
+        is_retry = attempt > 0
 
-    try:
-        if debug:
-            result = subprocess.run(cmd, timeout=SKILL_TIMEOUT)
-        else:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=SKILL_TIMEOUT
-            )
+        if agent == "claude":
+            cmd = ["claude",
+                   "-p", f"/{skill_name}",
+                   "--agent", "sig-finder",
+                   "--allowedTools", "mcp__ida-pro-mcp__*"
+                   ]
+            # Add session management flags
+            if is_retry:
+                cmd.extend(["--resume", session_id])
+            else:
+                cmd.extend(["--session-id", session_id])
+        elif agent == "codex":
+            skill_path = f".claude/skills/{skill_name}/SKILL.md"
+            cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
 
-        if result.returncode != 0:
-            print(f"    Skill failed with return code: {result.returncode}")
-            if not debug and result.stderr:
-                print(f"    stderr: {result.stderr[:500]}")
+        attempt_str = f"(attempt {attempt + 1}/{max_retries})" if max_retries > 1 else ""
+        retry_str = "[RETRY] " if is_retry else ""
+        print(f"    {retry_str}Running {attempt_str}: {' '.join(cmd)}")
+
+        try:
+            if debug:
+                result = subprocess.run(cmd, timeout=SKILL_TIMEOUT)
+            else:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=SKILL_TIMEOUT
+                )
+
+            if result.returncode != 0:
+                print(f"    Skill failed with return code: {result.returncode}")
+                if not debug and result.stderr:
+                    print(f"    stderr: {result.stderr[:500]}")
+                if attempt < max_retries - 1:
+                    print(f"    Retrying with session {session_id}...")
+                continue
+
+            # Verify yaml file was generated if expected_yaml_path is provided
+            if expected_yaml_path is not None:
+                if not os.path.exists(expected_yaml_path):
+                    print(f"    Error: Expected yaml file not generated at {expected_yaml_path}")
+                    if attempt < max_retries - 1:
+                        print(f"    Retrying with session {session_id}...")
+                    continue
+
+            return True
+
+        except subprocess.TimeoutExpired:
+            print(f"    Error: Skill execution timeout ({SKILL_TIMEOUT} seconds)")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with session {session_id}...")
+            continue
+        except FileNotFoundError:
+            print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
             return False
+        except Exception as e:
+            print(f"    Error executing skill: {e}")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with session {session_id}...")
+            continue
 
-        # Verify yaml file was generated if expected_yaml_path is provided
-        if expected_yaml_path is not None:
-            if not os.path.exists(expected_yaml_path):
-                print(f"    Error: Expected yaml file not generated at {expected_yaml_path}")
-                return False
-
-        return True
-
-    except subprocess.TimeoutExpired:
-        print(f"    Error: Skill execution timeout ({SKILL_TIMEOUT} seconds)")
-        return False
-    except FileNotFoundError:
-        print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
-        return False
-    except Exception as e:
-        print(f"    Error executing skill: {e}")
-        return False
+    print(f"    Failed after {max_retries} attempts")
+    return False
 
 
-def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, debug=False):
+def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, debug=False, max_retries=3):
     """
     Process a single binary file.
 
@@ -450,6 +480,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
         ida_args: Additional arguments for idalib-mcp
         platform: Platform name (e.g., "windows", "linux")
         debug: Enable debug output
+        max_retries: Maximum number of retry attempts for skill execution
 
     Returns:
         Tuple of (success_count, fail_count, skip_count)
@@ -491,7 +522,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
             yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
             print(f"  Processing symbol: {symbol}")
 
-            if run_skill(skill_name, agent, debug, expected_yaml_path=yaml_path):
+            if run_skill(skill_name, agent, debug, expected_yaml_path=yaml_path, max_retries=max_retries):
                 success_count += 1
                 print(f"    Success")
             else:
@@ -592,7 +623,8 @@ def main():
             # Process binary
             success, fail, skip = process_binary(
                 binary_path, symbols, agent,
-                DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug
+                DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug,
+                max_retries=args.maxretry
             )
             total_success += success
             total_fail += fail
