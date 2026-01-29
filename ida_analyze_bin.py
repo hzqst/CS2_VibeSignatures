@@ -222,7 +222,8 @@ def parse_config(config_path):
                     "name": skill_name,
                     "expected_output": skill.get("expected_output", []),
                     "expected_input": skill.get("expected_input", []),
-                    "prerequisite": skill.get("prerequisite", []) or []  # Note: config uses "prerequisite" (typo)
+                    "prerequisite": skill.get("prerequsite", []) or [],  # Note: config uses "prerequsite" (typo)
+                    "max_retries": skill.get("max_retries"),  # None means use default
                 })
 
         modules.append({
@@ -476,14 +477,14 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
 
     Args:
         binary_path: Path to binary file
-        skills: List of skill dicts with 'name', 'expected_output', 'expected_input', and 'prerequisite' keys
+        skills: List of skill dicts with 'name', 'expected_output', 'expected_input', 'prerequisite', and optional 'max_retries' keys
         agent: Agent type ("claude" or "codex")
         host: MCP server host
         port: MCP server port
         ida_args: Additional arguments for idalib-mcp
         platform: Platform name (e.g., "windows", "linux")
         debug: Enable debug output
-        max_retries: Maximum number of retry attempts for skill execution
+        max_retries: Default maximum number of retry attempts for skill execution
 
     Returns:
         Tuple of (success_count, fail_count, skip_count)
@@ -515,7 +516,9 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
             print(f"  Skipping skill: {skill_name} (all outputs exist)")
             skip_count += 1
         else:
-            skills_to_process.append((skill_name, expected_outputs))
+            # Use skill-specific max_retries if provided, otherwise use default
+            skill_max_retries = skill.get("max_retries") or max_retries
+            skills_to_process.append((skill_name, expected_outputs, skill_max_retries))
 
     # If all skills are skipped, no need to start IDA
     if not skills_to_process:
@@ -529,10 +532,10 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
 
     try:
         # Process each skill
-        for skill_name, expected_outputs in skills_to_process:
+        for skill_name, expected_outputs, skill_max_retries in skills_to_process:
             print(f"  Processing skill: {skill_name}")
 
-            if run_skill(skill_name, agent, debug, expected_yaml_paths=expected_outputs, max_retries=max_retries):
+            if run_skill(skill_name, agent, debug, expected_yaml_paths=expected_outputs, max_retries=skill_max_retries):
                 success_count += 1
                 print(f"    Success")
             else:

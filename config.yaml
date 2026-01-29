@@ -201,6 +201,7 @@ modules:
         expected_output:
           - UTIL_SayTextFilter.{platform}.yaml
           - UTIL_SayTextFilter2.{platform}.yaml
+        max_retries: 5
 
       - name: find-WeaponBuy
         expected_output:
