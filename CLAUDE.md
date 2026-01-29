@@ -4,7 +4,7 @@ This file provides guidance and important rules working with code in this reposi
 
 ### When agent coding
 
- - **ALWAYS** activate call Serena's activate_project on agent startup
+ - **ALWAYS** call Serena's `activate_project` on agent startup
 
 ### When agent running SKILLS
 
