@@ -138,18 +138,18 @@ Provide the following information for runtime GV resolution:
 
 ### Required Output Fields
 
-1. **signature**: Space-separated hex bytes with `??` for wildcards
-2. **instr_offset**: Offset (in bytes) from signature start to the GV-accessing instruction
-3. **instr_length**: Total length of the GV-accessing instruction (for RIP calculation)
-4. **offset_position**: Position of the 4-byte RIP-relative offset within the instruction
+1. **gv_signature**: Space-separated hex bytes with `??` for wildcards
+2. **gv_inst_offset**: Offset (in bytes) from signature start to the GV-accessing instruction
+3. **gv_inst_length**: Total length of the GV-accessing instruction (for RIP calculation)
+4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction
 
 ### Example Output
 
 ```yaml
-signature: "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
-instr_offset: 0          # GV instruction starts at signature start
-instr_length: 7          # 48 8B 1D XX XX XX XX = 7 bytes
-offset_position: 3       # Offset bytes start at position 3 (after 48 8B 1D)
+gv_signature: "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
+gv_inst_offset: 0          # GV instruction starts at signature start
+gv_inst_length: 7          # 48 8B 1D XX XX XX XX = 7 bytes
+gv_inst_disp:   3          # Displacement offset start at position 3 (after 48 8B 1D)
 ```
 
 ### Runtime Resolution Formula
@@ -158,17 +158,17 @@ At runtime, after pattern scan finds the signature at address `scan_result`:
 
 ```cpp
 // C++ example
-uint8_t* instr_addr = scan_result + instr_offset;
-int32_t rip_offset = *(int32_t*)(instr_addr + offset_position);
-void* gv_address = instr_addr + instr_length + rip_offset;
+uint8_t* inst_addr = scan_result + inst_offset;
+int32_t rip_offset = *(int32_t*)(inst_addr + inst_disp);
+void* gv_address = inst_addr + inst_length + rip_offset;
 ```
 
 ```python
 # Python example
 import struct
-instr_addr = scan_result + instr_offset
-rip_offset = struct.unpack('<i', memory[instr_addr + offset_position : instr_addr + offset_position + 4])[0]
-gv_address = instr_addr + instr_length + rip_offset
+inst_addr = scan_result + inst_offset
+rip_offset = struct.unpack('<i', memory[inst_addr + inst_disp : inst_addr + inst_disp + 4])[0]
+gv_address = inst_addr + inst_length + rip_offset
 ```
 
 ## Signature Analysis Guidelines for LLM
