@@ -155,6 +155,9 @@ modules:
         catagory: vfunc
         prerequsite:
          - CSource2Server_vtable
+        output_yaml:
+         - CSource2Server_Init
+         - CGameEventManager_Init
 
       - name: CTakeDamageInfo_GetWeaponName
         catagory: func
