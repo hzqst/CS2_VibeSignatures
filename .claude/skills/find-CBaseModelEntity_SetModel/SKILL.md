@@ -45,6 +45,7 @@ Locate `CBaseModelEntity_SetModel` in CS2 server.dll or server.so using IDA Pro 
 
 7. Generate and validate unique signature:
 
+   **NOTE** that there could be two or three functions with basically the same "wildcard-based" signatures in `server.dll`, we should **NOT** enable wildcard for `E8 XX XX XX XX   call sub_180XXXXXX` when generating signature.
    **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 

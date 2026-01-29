@@ -35,7 +35,7 @@ python download_bin.py -gamever 14132
 claude (no-interactive-mode)
 
 ```bash
-claude -p "/find-CBaseModelEntity_SetModel" --agent sig-finder
+claude -p "/find-CCSPlayerController_ChangeTeam" --agent sig-finder
 ```
 
 claude (interactive-mode)
@@ -66,7 +66,7 @@ prompt:
  - Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md
 ```
 
-4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
+4. `CCSPlayerController_ChangeTeam.windows.yaml` or `CCSPlayerController_ChangeTeam.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
 
 * Automation with headless IDA & subagents is coming soon.
 
@@ -75,15 +75,15 @@ prompt:
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14132
+python download_bin.py -gamever 14133
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14133 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
-python update_gamedata.py -gamever 14132
+python update_gamedata.py -gamever 14133
 ```
 
 ### Current supported gamedata dist
