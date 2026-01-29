@@ -13,7 +13,7 @@ Usage:
     -bindir: Directory containing downloaded binaries (default: bin)
     -platform: Platforms to analyze, comma-separated (default: windows,linux)
     -agent: Agent to use for analysis: codex or claude (default: codex)
-    -ida: Additional arguments for idalib-mcp (optional)
+    -idaargs: Additional arguments for idalib-mcp (optional)
     -debug: Enable debug output
 
 Requirements:
@@ -160,7 +160,7 @@ def parse_args():
         help=f"Modules to analyze, comma-separated (default: {DEFAULT_MODULES} for all). E.g., server,engine"
     )
     parser.add_argument(
-        "-ida",
+        "-ida_args",
         default="",
         help="Additional arguments for idalib-mcp (optional)"
     )
@@ -546,7 +546,7 @@ def main():
     platforms = args.platforms
     module_filter = args.module_filter
     agent = args.agent
-    ida_args = args.ida
+    ida_args = args.ida_args
     debug = args.debug
 
     # Validate config file exists
