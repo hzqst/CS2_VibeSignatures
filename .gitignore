@@ -8,4 +8,3 @@
 *.til
 settings.local.json
 __pycache__
-bin
