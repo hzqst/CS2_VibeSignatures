@@ -222,7 +222,7 @@ def parse_config(config_path):
                     "name": skill_name,
                     "expected_output": skill.get("expected_output", []),
                     "expected_input": skill.get("expected_input", []),
-                    "prerequisite": skill.get("prerequsite", []) or []  # Note: config uses "prerequsite" (typo)
+                    "prerequisite": skill.get("prerequisite", []) or []  # Note: config uses "prerequisite" (typo)
                 })
 
         modules.append({

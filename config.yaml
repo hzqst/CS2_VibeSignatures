@@ -13,7 +13,7 @@ modules:
           - CServerSideClient_IsHearingClient.{platform}.yaml
         expected_input:
           - CServerSideClient_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CServerSideClient_vtable
 
     symbols:
@@ -43,7 +43,7 @@ modules:
           - CCSGameRules_vtable.{platform}.yaml
         expected_input:
           - CGameRules_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CGameRules_vtable
 
       - name: find-CCSPlayer_ItemServices_vtable
@@ -103,7 +103,7 @@ modules:
           - CCSPlayer_ItemServices_GiveNamedItem.{platform}.yaml
         expected_input:
           - CCSPlayer_ItemServices.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CCSPlayer_ItemServices
 
       - name: find-CCSPlayer_WeaponServices_CanUse
@@ -111,7 +111,7 @@ modules:
           - CCSPlayer_WeaponServices_CanUse.{platform}.yaml
         expected_input:
           - CCSPlayer_WeaponServices.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CCSPlayer_WeaponServices
 
       - name: find-CCSPlayerController_ChangeTeam
@@ -119,7 +119,7 @@ modules:
           - CCSPlayerController_ChangeTeam.{platform}.yaml
         expected_input:
           - CCSPlayerController_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CCSPlayerController_vtable
 
       - name: find-CCSPlayerController_InventoryUpdateThink
@@ -131,7 +131,7 @@ modules:
           - CCSPlayerController_Respawn.{platform}.yaml
         expected_input:
           - CCSPlayerController_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CCSPlayerController_vtable
 
       - name: find-CCSPlayerController_SwitchTeam
@@ -143,7 +143,7 @@ modules:
           - CCSPlayerPawnBase_PostThink.{platform}.yaml
         expected_input:
           - CCSPlayerPawnBase_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CCSPlayerPawnBase_vtable
 
       - name: find-CSource2Server_Init-AND-CGameEventManager_Init
@@ -152,7 +152,7 @@ modules:
           - CGameEventManager_Init.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CSource2Server_vtable
 
       - name: find-CGameRules_ClientSettingsChanged
@@ -161,7 +161,7 @@ modules:
         expected_input:
           - CGameRules_vtable.{platform}.yaml
           - CCSGameRules_vtable.{platform}.yaml
-        prerequsite:
+        prerequisite:
           - find-CGameRules_vtable
           - find-CCSGameRules_vtable
 
@@ -258,7 +258,7 @@ modules:
         catagory: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
-        prerequsite:
+        prerequisite:
           - CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
