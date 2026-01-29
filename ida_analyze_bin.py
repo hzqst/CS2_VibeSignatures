@@ -202,7 +202,7 @@ def parse_config(config_path):
         config_path: Path to config.yaml file
 
     Returns:
-        List of module dictionaries containing name, paths, and symbols
+        List of module dictionaries containing name, paths, and skills
     """
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -214,54 +214,56 @@ def parse_config(config_path):
             print("  Warning: Skipping module without name")
             continue
 
-        symbols = []
-        for sym in module.get("symbols", []):
-            sym_name = sym.get("name")
-            if sym_name:
-                symbols.append({
-                    "name": sym_name,
-                    "prerequisite": sym.get("prerequsite", []) or []  # Note: config uses "prerequsite" (typo)
+        skills = []
+        for skill in module.get("skills", []):
+            skill_name = skill.get("name")
+            if skill_name:
+                skills.append({
+                    "name": skill_name,
+                    "expected_output": skill.get("expected_output", []),
+                    "expected_input": skill.get("expected_input", []),
+                    "prerequisite": skill.get("prerequsite", []) or []  # Note: config uses "prerequsite" (typo)
                 })
 
         modules.append({
             "name": name,
             "path_windows": module.get("path_windows"),
             "path_linux": module.get("path_linux"),
-            "symbols": symbols
+            "skills": skills
         })
 
     return modules
 
 
-def topological_sort_symbols(symbols):
+def topological_sort_skills(skills):
     """
-    Perform topological sort on symbols based on their prerequisites.
+    Perform topological sort on skills based on their prerequisites.
 
     Args:
-        symbols: List of symbol dicts with 'name' and 'prerequisite' keys
+        skills: List of skill dicts with 'name' and 'prerequisite' keys
 
     Returns:
-        List of symbol names in topologically sorted order (dependencies first)
+        List of skill names in topologically sorted order (dependencies first)
     """
-    # Build name -> symbol dict and adjacency list
-    symbol_map = {sym["name"]: sym for sym in symbols}
-    symbol_names = set(symbol_map.keys())
+    # Build name -> skill dict and adjacency list
+    skill_map = {skill["name"]: skill for skill in skills}
+    skill_names = set(skill_map.keys())
 
     # Build in-degree count and adjacency list
-    in_degree = {name: 0 for name in symbol_names}
-    dependents = {name: [] for name in symbol_names}  # prereq -> list of symbols that depend on it
+    in_degree = {name: 0 for name in skill_names}
+    dependents = {name: [] for name in skill_names}  # prereq -> list of skills that depend on it
 
-    for sym in symbols:
-        name = sym["name"]
-        for prereq in sym["prerequisite"]:
-            if prereq in symbol_names:
+    for skill in skills:
+        name = skill["name"]
+        for prereq in skill["prerequisite"]:
+            if prereq in skill_names:
                 in_degree[name] += 1
                 dependents[prereq].append(name)
 
     # Kahn's algorithm for topological sort
-    # Start with symbols that have no prerequisites (in_degree == 0)
-    queue = [name for name in symbol_names if in_degree[name] == 0]
-    # Sort to ensure deterministic order for symbols at the same level
+    # Start with skills that have no prerequisites (in_degree == 0)
+    queue = [name for name in skill_names if in_degree[name] == 0]
+    # Sort to ensure deterministic order for skills at the same level
     queue.sort()
 
     sorted_names = []
@@ -278,13 +280,13 @@ def topological_sort_symbols(symbols):
         queue.sort()
 
     # Check for cycles
-    if len(sorted_names) != len(symbol_names):
-        remaining = symbol_names - set(sorted_names)
-        print(f"  Warning: Circular dependency detected among symbols: {remaining}")
-        # Append remaining symbols in original order as fallback
-        for sym in symbols:
-            if sym["name"] not in sorted_names:
-                sorted_names.append(sym["name"])
+    if len(sorted_names) != len(skill_names):
+        remaining = skill_names - set(sorted_names)
+        print(f"  Warning: Circular dependency detected among skills: {remaining}")
+        # Append remaining skills in original order as fallback
+        for skill in skills:
+            if skill["name"] not in sorted_names:
+                sorted_names.append(skill["name"])
 
     return sorted_names
 
@@ -381,7 +383,7 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         return None
 
 
-def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None, max_retries=3):
+def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None, max_retries=3):
     """
     Execute a skill using the specified agent with retry support.
 
@@ -389,8 +391,8 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None, 
         skill_name: Name of the skill (e.g., "find-CServerSideClient_IsHearingClient")
         agent: Agent type ("claude" or "codex")
         debug: Enable debug output
-        expected_yaml_path: Path to the expected yaml output file. If provided,
-                           the skill is considered failed if this file is not generated.
+        expected_yaml_paths: List of paths to expected yaml output files. If provided,
+                            the skill is considered failed if any file is not generated.
         max_retries: Maximum number of retry attempts (default: 3)
 
     Returns:
@@ -439,10 +441,11 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None, 
                     print(f"    Retrying with session {session_id}...")
                 continue
 
-            # Verify yaml file was generated if expected_yaml_path is provided
-            if expected_yaml_path is not None:
-                if not os.path.exists(expected_yaml_path):
-                    print(f"    Error: Expected yaml file not generated at {expected_yaml_path}")
+            # Verify all yaml files were generated if expected_yaml_paths is provided
+            if expected_yaml_paths is not None:
+                missing_files = [p for p in expected_yaml_paths if not os.path.exists(p)]
+                if missing_files:
+                    print(f"    Error: Expected yaml files not generated: {missing_files}")
                     if attempt < max_retries - 1:
                         print(f"    Retrying with session {session_id}...")
                     continue
@@ -467,13 +470,13 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None, 
     return False
 
 
-def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, debug=False, max_retries=3):
+def process_binary(binary_path, skills, agent, host, port, ida_args, platform, debug=False, max_retries=3):
     """
     Process a single binary file.
 
     Args:
         binary_path: Path to binary file
-        symbols: List of symbol dicts with 'name' and 'prerequisite' keys
+        skills: List of skill dicts with 'name', 'expected_output', 'expected_input', and 'prerequisite' keys
         agent: Agent type ("claude" or "codex")
         host: MCP server host
         port: MCP server port
@@ -492,37 +495,44 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, platform, 
     # Get the directory containing the binary for yaml output check
     binary_dir = os.path.dirname(binary_path)
 
-    # Topological sort symbols based on prerequisites
-    sorted_symbol_names = topological_sort_symbols(symbols)
+    # Build skill_map for lookup
+    skill_map = {skill["name"]: skill for skill in skills}
 
-    # Filter symbols that need processing (skip if yaml already exists)
-    symbols_to_process = []
-    for symbol_name in sorted_symbol_names:
-        yaml_path = os.path.join(binary_dir, f"{symbol_name}.{platform}.yaml")
-        if os.path.exists(yaml_path):
-            print(f"  Skipping symbol: {symbol_name} (yaml already exists)")
+    # Topological sort skills based on prerequisites
+    sorted_skill_names = topological_sort_skills(skills)
+
+    # Filter skills that need processing (skip if all expected outputs already exist)
+    skills_to_process = []
+    for skill_name in sorted_skill_names:
+        skill = skill_map[skill_name]
+        # Expand {platform} placeholder in expected_output paths
+        expected_outputs = [
+            os.path.join(binary_dir, f.replace("{platform}", platform))
+            for f in skill["expected_output"]
+        ]
+        # Check if all output files already exist
+        if expected_outputs and all(os.path.exists(p) for p in expected_outputs):
+            print(f"  Skipping skill: {skill_name} (all outputs exist)")
             skip_count += 1
         else:
-            symbols_to_process.append(symbol_name)
+            skills_to_process.append((skill_name, expected_outputs))
 
-    # If all symbols are skipped, no need to start IDA
-    if not symbols_to_process:
-        print(f"  All symbols already have yaml files, skipping IDA startup")
+    # If all skills are skipped, no need to start IDA
+    if not skills_to_process:
+        print(f"  All skills already have yaml files, skipping IDA startup")
         return success_count, fail_count, skip_count
 
     # Start idalib-mcp
     process = start_idalib_mcp(binary_path, host, port, ida_args, debug)
     if process is None:
-        return 0, len(symbols_to_process), skip_count
+        return 0, len(skills_to_process), skip_count
 
     try:
-        # Process each symbol
-        for symbol in symbols_to_process:
-            skill_name = f"find-{symbol}"
-            yaml_path = os.path.join(binary_dir, f"{symbol}.{platform}.yaml")
-            print(f"  Processing symbol: {symbol}")
+        # Process each skill
+        for skill_name, expected_outputs in skills_to_process:
+            print(f"  Processing skill: {skill_name}")
 
-            if run_skill(skill_name, agent, debug, expected_yaml_path=yaml_path, max_retries=max_retries):
+            if run_skill(skill_name, agent, debug, expected_yaml_paths=expected_outputs, max_retries=max_retries):
                 success_count += 1
                 print(f"    Success")
             else:
@@ -582,20 +592,20 @@ def main():
 
     for module in modules:
         module_name = module["name"]
-        symbols = module["symbols"]
+        skills = module["skills"]
 
         # Filter modules if specified
         if module_filter is not None and module_name not in module_filter:
             print(f"\nModule '{module_name}': Not in filter list, skipping")
             continue
 
-        if not symbols:
-            print(f"\nModule '{module_name}': No symbols defined, skipping")
+        if not skills:
+            print(f"\nModule '{module_name}': No skills defined, skipping")
             continue
 
         print(f"\n{'='*60}")
         print(f"Module: {module_name}")
-        print(f"Symbols: {len(symbols)}")
+        print(f"Skills: {len(skills)}")
         print(f"{'='*60}")
 
         for platform in platforms:
@@ -604,7 +614,7 @@ def main():
 
             if not module_path:
                 print(f"\n  Platform {platform}: No path defined, skipping")
-                total_skip += len(symbols)
+                total_skip += len(skills)
                 continue
 
             # Build binary path
@@ -617,12 +627,12 @@ def main():
             if not os.path.exists(binary_path):
                 print(f"  Error: Binary file not found: {binary_path}")
                 print(f"  Hint: Run download_bin.py first to download binaries")
-                total_skip += len(symbols)
+                total_skip += len(skills)
                 continue
 
             # Process binary
             success, fail, skip = process_binary(
-                binary_path, symbols, agent,
+                binary_path, skills, agent,
                 DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug,
                 max_retries=args.maxretry
             )
