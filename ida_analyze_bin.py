@@ -393,7 +393,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_path=None):
                "-p", f"/{skill_name}",
                "--agent", "sig-finder",
                "--allowedTools", "mcp__ida-pro-mcp__*",
-               "--append-system-prompt", "This is a multi-step task. You must complete all steps until the YAML is successfully written or an unrecoverable error occurs. Do not stop until then."
+               "--append-system-prompt", "This is a multi-step task. You **MUST** complete all steps until the YAML is successfully written or an unrecoverable error occurs. Do not stop until then."
                ]
     elif agent == "codex":
         skill_path = f".claude/skills/{skill_name}/SKILL.md"
