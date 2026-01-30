@@ -169,7 +169,10 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
+ - /skill-creator Create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to what we just did. 
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
 6. Add your SKILL to `config.yaml`, in `skills`.
@@ -186,6 +189,7 @@ Prompt:
 
 ```yaml
       - name: CBaseModelEntity_SetModel
+        catagoty: func
         alias:
           - CBaseModelEntity::SetModel
 ```
@@ -212,7 +216,10 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
+ - /skill-creator Create project-level skill "find-CSource2Server_vtable" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
 ```
 
 4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
@@ -229,6 +236,7 @@ Prompt:
 
 ```yaml
       - name: CCSPlayerPawn_vtable
+        catagory: vtable
 ```
 
 ## How to create SKILL for virtual function: find-CCSPlayerController_Respawn
@@ -301,7 +309,10 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
+ - /skill-creator Create project-level skill "find-CCSPlayerController_Respawn" in **ENGLISH** according to what we just did. 
+ - Don't pack skill. 
+ - Note that the SKILL should be working with both `server.dll` and `server.so`. 
+ - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
 7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
@@ -385,7 +396,10 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md as references.
+ - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md as references.
 ```
 
 7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
@@ -393,7 +407,7 @@ Prompt:
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
 ```yaml
-      - name: find-IGameSystem_InitAllSystems
+      - name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
         expected_output:
           - IGameSystem_InitAllSystems.{platform}.yaml
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
