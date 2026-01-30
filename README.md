@@ -110,7 +110,7 @@ python update_gamedata.py -gamever 14133
 
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
-## How to create SKILL for regular function: find-CBaseModelEntity_SetModel
+## How to create SKILL for regular function
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 
@@ -194,7 +194,7 @@ Prompt:
           - CBaseModelEntity::SetModel
 ```
 
-## How to create SKILL for vtable: find-CCSPlayerPawn_vtable
+## How to create SKILL for vtable
 
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
 
@@ -239,7 +239,7 @@ Prompt:
         catagory: vtable
 ```
 
-## How to create SKILL for virtual function: find-CCSPlayerController_Respawn
+## How to create SKILL for virtual function
 
 1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
 
@@ -338,9 +338,9 @@ Prompt:
           - CCSPlayerController::Respawn
 ```
 
-## How to create SKILL for global variable: find-IGameSystem_InitAllSystems
+## How to create SKILL for global variable
 
-1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems` for example.
+1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems_pFirst` for example.
 
 ```bash
 Prompt: 
