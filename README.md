@@ -110,7 +110,7 @@ python update_gamedata.py -gamever 14133
 
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
-## How to create SKILL for: find-{function}
+## How to create SKILL for regular function: find-CBaseModelEntity_SetModel
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 
@@ -190,7 +190,7 @@ Prompt:
           - CBaseModelEntity::SetModel
 ```
 
-## How to create SKILL for: find-{vtable}
+## How to create SKILL for vtable: find-CCSPlayerPawn_vtable
 
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
 
@@ -231,7 +231,7 @@ Prompt:
       - name: CCSPlayerPawn_vtable
 ```
 
-## How to create SKILL for: find-{virtualfunction}
+## How to create SKILL for virtual function: find-CCSPlayerController_Respawn
 
 1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
 
@@ -325,6 +325,92 @@ Prompt:
         catagory: vfunc
         alias:
           - CCSPlayerController::Respawn
+```
+
+## How to create SKILL for global variable: find-IGameSystem_InitAllSystems
+
+1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems` for example.
+
+```bash
+Prompt: 
+ - search string "IGameSystem::InitAllSystems" in IDA
+```
+
+```bash
+Prompt: 
+ - search xrefs for this string
+```
+
+```bash
+rename sub_1804F3DC0 to IGameSystem_InitAllSystems
+```
+
+```bash
+rename "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )" to "for ( i = IGameSystem_InitAllSystems_pFirst; i; i = *(_QWORD *)(i + 8) )" if it was not renamed yet.
+```
+
+2. Generate a robust signature for IGameSystem_InitAllSystems
+
+```bash
+Prompt:
+   Generate a robust signature for IGameSystem_InitAllSystems
+   -- **DO NOT** use `find_bytes` as it won't work for code.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for IGameSystem_InitAllSystems.
+```
+
+3. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results for IGameSystem_InitAllSystems into yaml.
+```
+
+4. Generate a robust signature for IGameSystem_InitAllSystems_pFirst
+
+```bash
+Prompt:
+   Generate a robust signature for IGameSystem_InitAllSystems_pFirst
+   -- **DO NOT** use `find_bytes` as it won't work for code.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for IGameSystem_InitAllSystems_pFirst.
+```
+
+5. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results for IGameSystem_InitAllSystems_pFirst into yaml.
+```
+
+6. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md as references.
+```
+
+7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-IGameSystem_InitAllSystems
+        expected_output:
+          - IGameSystem_InitAllSystems.{platform}.yaml
+          - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
+```
+
+8. Add the new symbols to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: IGameSystem_InitAllSystems
+        catagory: func
+        alias:
+          - IGameSystem::InitAllSystems
+
+      - name: IGameSystem_InitAllSystems_pFirst
+        catagory: gv
+        alias:
+          - IGameSystem::InitAllSystems::pFirst
 ```
 
 ## Troubleshooting
