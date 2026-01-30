@@ -1,11 +1,11 @@
 ---
-name: find-IGameSystem_InitAllSystems
+name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
 description: Find and identify IGameSystem_InitAllSystems (function) and IGameSystem_InitAllSystems_pFirst (global variable) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the game system initialization linked list head pointer by searching for the "IGameSystem::InitAllSystems" string and analyzing cross-references.
 ---
 
-# Find IGameSystem_InitAllSystems_pFirst
+# Find IGameSystem_InitAllSystems and IGameSystem_InitAllSystems_pFirst
 
-Locate `IGameSystem_InitAllSystems_pFirst` global variable in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_pFirst` (global variable) in CS2 server.dll or server.so using IDA Pro MCP tools.
 
 ## Method
 
