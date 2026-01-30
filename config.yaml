@@ -48,6 +48,12 @@ modules:
           - CBasePlayerController::SetPlayerName
         catagory: func
 
+      - name: CBasePlayerController_SetPawn
+        alias:
+          - CBasePlayerController::SetPawn
+        catagory: func
+        prerequsite: CBasePlayerController_vtable
+
       - name: CCSGameRules_FindPickerEntity
         alias:
           - CCSGameRules::FindPickerEntity
@@ -133,6 +139,11 @@ modules:
         catagory: func
 
       - name: UTIL_ClientPrintAll
+        catagory: func
+
+      - name: UTIL_CreateEntityByName
+        alias:
+          - UTIL::CreateEntityByName
         catagory: func
 
       - name: UTIL_Remove
