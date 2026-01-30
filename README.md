@@ -295,6 +295,142 @@ Prompt:
           - CBaseModelEntity::SetModel
 ```
 
+## How to create SKILL for interface vtable
+
+1. Vibe all the way down to get what you want, `CSource2Server_vtable` for example.
+
+* For `server.dll`:
+
+```bash
+Prompt: 
+  - Search for the Source2Server interface identifier:
+
+  mcp__ida-pro-mcp__find_regex pattern="Source2Server001"
+```
+
+```bash
+Prompt: 
+  - Find functions that reference this string:
+
+    mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
+
+    Look for a small function (~0x1a bytes) that:
+    - Loads the interface string into r8
+    - Loads an implementation function into rdx
+    - Loads a global pointer into rcx
+    - Jumps to a registration function
+```
+
+
+```bash
+Prompt: 
+
+  - Identify Interface Implementation Function
+
+    Decompile the small registration wrapper to find the interface implementation function:
+
+    mcp__ida-pro-mcp__decompile addr="<wrapper_func_addr>"
+
+    The implementation function (e.g., `sub_180XXXXXX`) simply returns a pointer to the static instance.
+
+```
+
+```bash
+Prompt: 
+
+ - Rename Interface Implementation
+
+  mcp__ida-pro-mcp__rename batch={"func": {"addr": "<impl_func_addr>", "name": "source2server"}}
+
+```
+
+```bash
+Prompt: 
+
+  - Decompile to Find Static Instance
+
+    mcp__ida-pro-mcp__decompile addr="<impl_func_addr>"
+
+    The function returns `&s_Source2Server` - rename this:
+
+    mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181XXXXXX", "new": "s_Source2Server"}}
+```
+
+```bash
+Prompt: 
+
+  - Find VTable by Reading the Pointer s_Source2Server Points To
+
+    Use `get_global_value` to get the address of `s_Source2Server`, then read 8 bytes (64-bit pointer) at that address:
+
+    mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2Server_addr>", "size": 8}
+
+    The returned bytes are in little-endian format. Convert them to get the vtable address.
+
+    Example:
+    - Bytes: `0x90 0xd1 0x71 0x81 0x01 0x00 0x00 0x00`
+    - Reversed (little-endian): `0x18171D190`
+```
+
+```bash
+Prompt: 
+
+  - Rename VTable
+
+    Use `func` rename with the vtable address:
+
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2Server_vtable"}}
+
+    Example:
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2Server_vtable"}}
+
+```
+
+* For `libserver.so`:
+
+```bash
+Prompt: 
+  - Search for CSource2Server VTable Symbol
+
+    mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*CSource2Server*"}
+
+    Look for `_ZTV14CSource2Server` - this is the mangled vtable symbol.
+```
+
+2. Write YAML
+
+```bash
+Prompt:
+  - **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the vtable analysis results into yaml.
+```
+
+3. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-CSource2Server_vtable" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CSource2Server_vtable/SKILL.md as references.
+```
+
+4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CSource2Server_vtable
+        expected_output:
+          - CSource2Server_vtable.{platform}.yaml
+```
+
+5. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CSource2Server_vtable
+        catagory: vtable
+```
+
 ## How to create SKILL for vtable
 
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
@@ -317,7 +453,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-CSource2Server_vtable" in **ENGLISH** according to what we just did.
+ - /skill-creator Create project-level skill "find-CCSPlayerPawn_vtable" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
  - **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.

@@ -334,9 +334,6 @@ modules:
       - name: gameeventmanager
         catagory: gv
 
-      - name: s_GameEventManager
-        catagory: gv
-
       - name: CTakeDamageInfo_GetWeaponName
         catagory: func
 

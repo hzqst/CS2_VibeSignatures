@@ -39,7 +39,7 @@
             "CSource2Server::Init": {
                 "library": "server",
                 "win64": "48 83 EC 28 48 83 3D ? ? ? ? 00 74 07 33 C9 E8 ? ? ? ? FF 15 ? ? ? ? 45 33 C0 BA E6 B4 D6 34",
-                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC 08 48 8D 05 ? ? ? ? 48 83 38 00 74 07 31 FF E8 ? ? ? ? E8 ? ? ? ? 31 D2 BE E6 B4 D6 34 48 89 C7 48 8B 00 FF 50 30"
+                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC 08 48 8D 05 ? ? ? ? 48 83 38 00 74 ? 31 FF E8 ? ? ? ? E8 ? ? ? ? 31 D2 BE E6 B4 D6 34"
             },
             "CEntityInstance::AcceptInput": {
                 "library": "server",
