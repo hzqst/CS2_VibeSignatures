@@ -138,7 +138,8 @@ Provide the following information for runtime GV resolution:
 
 ### Required Output Fields
 
-1. **gv_signature**: Space-separated hex bytes with `??` for wildcards
+1. **gv_sig**: Space-separated hex bytes with `??` for wildcards
+1. **gv_sig_va**: The virtual address that the signature matches
 2. **gv_inst_offset**: Offset (in bytes) from signature start to the GV-accessing instruction
 3. **gv_inst_length**: Total length of the GV-accessing instruction (for RIP calculation)
 4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction
@@ -146,7 +147,8 @@ Provide the following information for runtime GV resolution:
 ### Example Output
 
 ```yaml
-gv_signature: "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
+gv_sig: "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
+gv_sig_va: 0x1804f3df3     # The virtual address that the signature matches
 gv_inst_offset: 0          # GV instruction starts at signature start
 gv_inst_length: 7          # 48 8B 1D XX XX XX XX = 7 bytes
 gv_inst_disp:   3          # Displacement offset start at position 3 (after 48 8B 1D)
