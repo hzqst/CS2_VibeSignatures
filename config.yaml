@@ -417,9 +417,6 @@ modules:
       - name: UTIL_ClientPrintAll
         catagory: func
 
-      - name: UTIL_CreateEntityByName
-        catagory: func
-          
       - name: UTIL_PlayerSlotToPlayerController
         catagory: func
 
