@@ -1,13 +1,12 @@
 ---
-name: find-CSource2Server_Init
+name: find-CSource2Server_Init-AND-CGameEventManager_Init
 description: |
-  Find and identify the CSource2Server_Init function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
-  Trigger: CSource2Server_Init, CSource2Server::Init, server initialization
+  Find and identify the CSource2Server_Init function and CGameEventManager_Init function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
 ---
 
 # Find CSource2Server_Init
 
-Locate `CSource2Server_Init` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CSource2Server_Init` and `CGameEventManager_Init` in CS2 server.dll or server.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -32,7 +31,7 @@ mcp__ida-pro-mcp__decompile addr="<function_addr>"
 Verify the function contains the pattern:
 ```c
 COM_TimestampedLog("gameeventmanager->Init()");
-sub_XXXXXXXXXX((__int64)s_GameEventManager);
+sub_XXXXXXXXXX((__int64)s_GameEventManager); //This is CGameEventManager_Init
 ```
 
 ### 4. Rename the function and global variable
@@ -58,24 +57,38 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "sub_XXXXXXXXXX", "new": "CGameE
 
 VTable class name: `CSource2Server`
 
-### 6. Generate and validate unique signature
+### 6. Generate and validate unique signature for CSource2Server_Init
 
 **DO NOT** use `find_bytes` as it won't work for function.
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CSource2Server_Init.
 
-### 7. Write IDA analysis output as YAML beside the binary
+### 7. Write IDA analysis output for CSource2Server_Init as YAML beside the binary
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for CSource2Server_Init.
 
 Required parameters:
 - `func_name`: `CSource2Server_Init`
-- `func_addr`: The function address from step 3
+- `func_addr`: The function address of CSource2Server_Initfrom step 3
 - `func_sig`: The validated signature from step 6
 
 VTable parameters (when this is a virtual function):
 - `vtable_name`: `CSource2Server`
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
+
+### 8. Generate and validate unique signature for CGameEventManager_Init
+
+**DO NOT** use `find_bytes` as it won't work for function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CGameEventManager_Init.
+
+### 9. Write IDA analysis output for CGameEventManager_Init as YAML beside the binary
+
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results for CGameEventManager_Init.
+
+Required parameters:
+- `func_name`: `CGameEventManager_Init`
+- `func_addr`: The function address of CGameEventManager_Init from step 3
+- `func_sig`: The validated signature from step 8
 
 ## Signature Pattern
 
@@ -89,10 +102,23 @@ COM_TimestampedLog("CLoopModeRegistry::RegisterLoopModes()");
 
 ## Function Characteristics
 
+### CSource2Server_Init
+
 - **Class**: `CSource2Server`
 - **Method**: `Init`
 - **Return type**: `__int64` (returns 0 or 1)
 - **Purpose**: Initializes the Source 2 server, including game event manager, engine services, loop modes, and game systems
+
+### CGameEventManager_Init
+
+- **Purpose**: Initializes the game event manager by loading event definitions from three resource files
+- **Parameters**: `(this)` where `this` is a pointer to the game event manager object
+- **Return**: Returns 1 (success)
+- **Behavior**:
+  - Calls vtable offset +24 (0x18) for initialization
+  - Loads core game events (parameter 0)
+  - Loads game-specific events (parameter 0)
+  - Loads mod events (parameter 1)
 
 ## Key Calls in Function
 
@@ -113,7 +139,7 @@ COM_TimestampedLog("CLoopModeRegistry::RegisterLoopModes()");
 
 ## Output YAML Format
 
-The output YAML filename depends on the platform:
+The output YAML filename for CSource2Server_Init depends on the platform:
 - `server.dll` → `CSource2Server_Init.windows.yaml`
 - `server.so` / `libserver.so` → `CSource2Server_Init.linux.yaml`
 
@@ -125,6 +151,17 @@ func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - changes
 vtable_name: CSource2Server
 vfunc_offset: 0x18        # Offset from vtable start - changes with game updates
 vfunc_index: 3            # vtable[3] - changes with game updates
+```
+
+The output YAML filename for CGameEventManager_Init depends on the platform:
+- `server.dll` → `CGameEventManager_Init.windows.yaml`
+- `server.so` → `CGameEventManager_Init.linux.yaml`
+
+```yaml
+func_va: 0x14ff3e0         # Virtual address of the function - This can change when game updates.
+func_rva: 0x14ff3e0        # Relative virtual address (VA - image base) - This can change when game updates.
+func_size: 0x56            # Function size in bytes - This can change when game updates.
+func_sig: 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 8b 07 ff 50 18 48 8b 03 48 89 df 31 d2 48 8d 35 ?? ?? ?? ?? ff 50 10 48 8b 03 48 89 df 31 d2 48 8d 35 ?? ?? ?? ?? ff 50 10  # Unique byte signature for pattern scanning - This can change when game updates.
 ```
 
 ## Related Globals

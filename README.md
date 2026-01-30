@@ -83,7 +83,108 @@ python download_bin.py -gamever 14133
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
-python update_gamedata.py -gamever 14133
+python update_gamedata.py -gamever 14133 [-debug]
+```
+
+Expected result:
+
+```
+Config file: config.yaml
+Binary directory: bin
+Game version: 14133
+Platforms: windows, linux
+Debug mode: enabled
+
+Loading config...
+Found 61 function mappings
+
+Loading YAML data...
+  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..windows.yaml
+  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..linux.yaml
+Loaded data for 42 functions
+
+==================================================
+Updating CounterStrikeSharp...
+  Warning: Unknown library for CCSPlayer_ItemServices_DropActivePlayerWeapon, skipping
+  Warning: Unknown library for CCSPlayer_ItemServices_RemoveWeapons, skipping
+  Warning: Unknown library for CGameSceneNode_GetSkeletonInstance, skipping
+  Warning: Unknown library for CTakeDamageInfo_HitGroup, skipping
+  Warning: Unknown library for CBaseEntity_IsPlayerPawn, skipping
+  Warning: Unknown library for CBasePlayerPawn_CommitSuicide, skipping
+  Warning: Unknown library for CBaseEntity_Teleport, skipping
+  Warning: Unknown library for GameEntitySystem, skipping
+  Warning: Unknown library for GameEventManager, skipping
+  Warning: Unknown library for CEntityResourceManifest_AddResource, skipping
+  Warning: Unknown library for CheckTransmitPlayerSlot, skipping
+  Warning: Unknown library for SetStateChanged, skipping
+  Warning: Unknown library for ISource2GameEntities::CheckTransmit, skipping
+  Updated: 36, Skipped: 26
+
+==================================================
+Updating CS2Fixes...
+  Updated: 18, Skipped: 69
+
+==================================================
+Updating CS2KZ...
+  Updated: 2, Skipped: 64
+
+==================================================
+Updating SwiftlyS2...
+  Updated: 16, Skipped: 70
+
+==================================================
+Updating Plugify...
+  Updated: 12, Skipped: 31
+
+==================================================
+Total: 84 updates, 260 skipped
+
+============================================================
+DEBUG INFO: Summary
+============================================================
+
+[Missing YAML Files] (2 items)
+  - CGameEventManager_Init. (server/windows)
+  - CGameEventManager_Init. (server/linux)
+
+[CounterStrikeSharp] Updated Symbols (36 items)
+  + UTIL_ClientPrintAll (signature/windows)
+  + UTIL_ClientPrintAll (signature/linux)
+  + ClientPrint (signature/windows)
+  + ClientPrint (signature/linux)
+  + CCSPlayerController_SwitchTeam (signature/windows)
+  + CCSPlayerController_SwitchTeam (signature/linux)
+  + CCSPlayerController_ChangeTeam (offset/windows)
+  + CCSPlayerController_ChangeTeam (offset/linux)
+  + CCSPlayerController_Respawn (offset/windows)
+  + CCSPlayerController_Respawn (offset/linux)
+  + CCSPlayerPawnBase_PostThink (signature/windows)
+  + CCSPlayerPawnBase_PostThink (signature/linux)
+  + GiveNamedItem (signature/windows)
+  + GiveNamedItem (signature/linux)
+  + UTIL_Remove (signature/windows)
+  + UTIL_Remove (signature/linux)
+  + CBaseModelEntity_SetModel (signature/windows)
+  + CBaseModelEntity_SetModel (signature/linux)
+  + CCSPlayer_WeaponServices_CanUse (signature/windows)
+  + CCSPlayer_WeaponServices_CanUse (signature/linux)
+  + CCSPlayer_ItemServices_CanAcquire (signature/windows)
+  + CCSPlayer_ItemServices_CanAcquire (signature/linux)
+  + GetCSWeaponDataFromKey (signature/windows)
+  + GetCSWeaponDataFromKey (signature/linux)
+  + CCSPlayer_ItemServices_GiveNamedItem (offset/windows)
+  + CCSPlayer_ItemServices_GiveNamedItem (offset/linux)
+  + CCSGameRules_TerminateRound (signature/windows)
+  + CCSGameRules_TerminateRound (signature/linux)
+  + CCSGameRules_FindPickerEntity (offset/windows)
+  + CCSGameRules_FindPickerEntity (offset/linux)
+  + CBaseEntity_TakeDamageOld (signature/windows)
+  + CBaseEntity_TakeDamageOld (signature/linux)
+  + NetworkStateChanged (signature/windows)
+  + NetworkStateChanged (signature/linux)
+  + Host_Say (signature/windows)
+  + Host_Say (signature/linux)
+  ... more
 ```
 
 ### Current supported gamedata dist
