@@ -143,10 +143,6 @@ Total: 84 updates, 260 skipped
 DEBUG INFO: Summary
 ============================================================
 
-[Missing YAML Files] (2 items)
-  - CGameEventManager_Init. (server/windows)
-  - CGameEventManager_Init. (server/linux)
-
 [CounterStrikeSharp] Updated Symbols (36 items)
   + UTIL_ClientPrintAll (signature/windows)
   + UTIL_ClientPrintAll (signature/linux)
@@ -212,6 +208,8 @@ DEBUG INFO: Summary
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
 ## How to create SKILL for regular function
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 
@@ -296,6 +294,8 @@ Prompt:
 ```
 
 ## How to create SKILL for interface vtable
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CSource2GameEntities_vtable` for example.
 
@@ -433,6 +433,8 @@ Prompt:
 
 ## How to create SKILL for vtable
 
+* Always make sure you have ida-pro-mcp server running.
+
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
 
 ```bash
@@ -477,6 +479,8 @@ Prompt:
 ```
 
 ## How to create SKILL for virtual function
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
 
@@ -577,6 +581,8 @@ Prompt:
 
 ## How to create SKILL for global variable
 
+* Always make sure you have ida-pro-mcp server running.
+
 1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example.
 
 ```bash
@@ -636,7 +642,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md AND @.claude/skills/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.md as references.
+ - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md AND @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager.md as references.
 ```
 
 7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
