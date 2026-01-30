@@ -450,23 +450,20 @@ modules:
           - ISource2GameEntities::CheckTransmit
           - ISource2GameEntities_CheckTransmit
 
-      - name: find-CBaseEntity_EmitSoundFilter
-        expected_output:
-          - CBaseEntity_EmitSoundFilter.{platform}.yaml
-
-      - name: CBasePlayerPawn_RemovePlayerItem
+      - name: CBaseEntity_EmitSoundFilter
         catagory: func
         alias:
-          - CBasePlayerPawn::RemovePlayerItem
+          - CBaseEntity::EmitSoundFilter
 
-      - name: find-CEntityIOOutput_FireOutputInternal
-        expected_output:
-          - CEntityIOOutput_FireOutputInternal.{platform}.yaml
+      - name: CEntityIOOutput_FireOutputInternal
+        catagory: func
+        alias:
+          - CEntityIOOutput::FireOutputInternal
 
-      - name: find-CEntitySystem_AddEntityIOEvent
-        expected_output:
-          - CEntitySystem_AddEntityIOEvent.{platform}.yaml
+      - name: CEntitySystem_AddEntityIOEvent
+        catagory: func
+        alias:
+          - CEntitySystem::AddEntityIOEvent
 
-      - name: find-LegacyGameEventListener
-        expected_output:
-          - LegacyGameEventListener.{platform}.yaml
+      - name: LegacyGameEventListener
+        catagory: func
