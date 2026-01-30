@@ -1,6 +1,6 @@
 ---
 name: find-CBasePlayerController_SetPawn
-description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by analyzing the cleanup sequence in CBasePlayerController virtual function index 14 and identifying the characteristic call pattern.
+description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by analyzing the cleanup sequence in CBasePlayerController virtual function index around 14 (12 ~ 16) and identifying the characteristic call pattern.
 ---
 
 # Find CBasePlayerController_SetPawn
@@ -13,13 +13,12 @@ Locate `CBasePlayerController_SetPawn` in CS2 server.dll or server.so using IDA 
 
 **ALWAYS** Use SKILL `/get-vtable-address` to find vtable for `CBasePlayerController`.
 
-### 2. Decompile virtual function index 14
+### 2. Decompile virtual function index around 14 (12 ~ 16)
 
-Virtual function index 14 is the cleanup/destructor-like function. Calculate the address:
-- vtable_start + (14 * 8) for 64-bit binaries
+`vfunc_addr = vtable_start + (vtable_index * 8)`
 
 ```
-mcp__ida-pro-mcp__decompile addr="<vfunc_14_addr>"
+mcp__ida-pro-mcp__decompile addr="<vfunc_addr>"
 ```
 
 ### 3. Identify CBasePlayerController_SetPawn call pattern
@@ -107,9 +106,9 @@ mov     ecx, [rdi+7C0h]     ; Same offset appears twice
 ```
 
 Key identifying features:
-- Offset 0x7C0 (1984) appears twice - this is the pawn field offset in CBasePlayerController
+- Offset 0x7C0 (1984) appears twice - this is the pawn field offset in CBasePlayerController (note that 0x7C0 can change on game updates)
 - Standard function prologue with register preservation
-- Stack allocation of 0x68 bytes
+- Stack allocation of 0x68 bytes (can change on game updates too)
 
 ## Output YAML Format
 
