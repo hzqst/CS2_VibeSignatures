@@ -437,7 +437,7 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
 # CounterStrikeSharp Updater
 # =============================================================================
 
-def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, debug=False):
+def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug=False):
     """
     Update CounterStrikeSharp gamedata.json file.
 
@@ -446,6 +446,7 @@ def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, de
         func_lib_map: Function name to library mapping
         platforms: List of platforms to update
         script_dir: Script directory for resolving paths
+        alias_to_name_map: Mapping from aliases to function names
         debug: If True, collect updated and skipped symbols info
 
     Returns:
@@ -469,12 +470,15 @@ def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, de
     skipped_symbols = []
 
     for func_name, entry in gamedata.items():
+        # Convert :: to _ for matching with YAML data
+        yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
+
         # Determine library for this function
         library = None
         if "signatures" in entry and "library" in entry["signatures"]:
             library = entry["signatures"]["library"]
-        elif func_name in func_lib_map:
-            library = func_lib_map[func_name]
+        elif yaml_func_name in func_lib_map:
+            library = func_lib_map[yaml_func_name]
 
         if not library:
             print(f"  Warning: Unknown library for {func_name}, skipping")
@@ -487,13 +491,8 @@ def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, de
             continue
 
         # Find matching YAML data
-        yaml_entry = None
-        for name, data in yaml_data.items():
-            if name == func_name and data.get("library") == library:
-                yaml_entry = data
-                break
-
-        if not yaml_entry:
+        yaml_entry = yaml_data.get(yaml_func_name)
+        if not yaml_entry or yaml_entry.get("library") != library:
             skipped_count += 1
             if debug:
                 skipped_symbols.append({
@@ -541,7 +540,7 @@ def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, de
 # CS2Fixes Updater
 # =============================================================================
 
-def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False):
+def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug=False):
     """
     Update CS2Fixes cs2fixes.games.txt file (VDF format).
 
@@ -550,6 +549,7 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False)
         func_lib_map: Function name to library mapping
         platforms: List of platforms to update
         script_dir: Script directory for resolving paths
+        alias_to_name_map: Mapping from aliases to function names
         debug: If True, collect updated and skipped symbols info
 
     Returns:
@@ -581,10 +581,13 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False)
     # Update Signatures
     signatures = csgo.get("Signatures", {})
     for func_name, entry in signatures.items():
+        # Convert :: to _ for matching with YAML data
+        yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
+
         # Determine library
         library = entry.get("library")
-        if not library and func_name in func_lib_map:
-            library = func_lib_map[func_name]
+        if not library and yaml_func_name in func_lib_map:
+            library = func_lib_map[yaml_func_name]
 
         if not library:
             skipped_count += 1
@@ -596,13 +599,8 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False)
             continue
 
         # Find matching YAML data
-        yaml_entry = None
-        for name, data in yaml_data.items():
-            if name == func_name and data.get("library") == library:
-                yaml_entry = data
-                break
-
-        if not yaml_entry:
+        yaml_entry = yaml_data.get(yaml_func_name)
+        if not yaml_entry or yaml_entry.get("library") != library:
             skipped_count += 1
             if debug:
                 skipped_symbols.append({
@@ -627,13 +625,11 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False)
     # Update Offsets
     offsets = csgo.get("Offsets", {})
     for func_name, entry in offsets.items():
-        # Find matching YAML data
-        yaml_entry = None
-        for name, data in yaml_data.items():
-            if name == func_name:
-                yaml_entry = data
-                break
+        # Convert :: to _ for matching with YAML data
+        yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
 
+        # Find matching YAML data
+        yaml_entry = yaml_data.get(yaml_func_name)
         if not yaml_entry:
             skipped_count += 1
             if debug:
@@ -673,7 +669,7 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, debug=False)
 # CS2KZ Updater
 # =============================================================================
 
-def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, debug=False):
+def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug=False):
     """
     Update CS2KZ cs2kz-core.games.txt file (VDF format).
 
@@ -682,6 +678,7 @@ def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, debug=False):
         func_lib_map: Function name to library mapping
         platforms: List of platforms to update
         script_dir: Script directory for resolving paths
+        alias_to_name_map: Mapping from aliases to function names
         debug: If True, collect updated and skipped symbols info
 
     Returns:
@@ -713,10 +710,13 @@ def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, debug=False):
     # Update Signatures
     signatures = csgo.get("Signatures", {})
     for func_name, entry in signatures.items():
+        # Convert :: to _ for matching with YAML data
+        yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
+
         # Determine library
         library = entry.get("library")
-        if not library and func_name in func_lib_map:
-            library = func_lib_map[func_name]
+        if not library and yaml_func_name in func_lib_map:
+            library = func_lib_map[yaml_func_name]
 
         if not library:
             skipped_count += 1
@@ -728,13 +728,8 @@ def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, debug=False):
             continue
 
         # Find matching YAML data
-        yaml_entry = None
-        for name, data in yaml_data.items():
-            if name == func_name and data.get("library") == library:
-                yaml_entry = data
-                break
-
-        if not yaml_entry:
+        yaml_entry = yaml_data.get(yaml_func_name)
+        if not yaml_entry or yaml_entry.get("library") != library:
             skipped_count += 1
             if debug:
                 skipped_symbols.append({
@@ -759,13 +754,11 @@ def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, debug=False):
     # Update Offsets
     offsets = csgo.get("Offsets", {})
     for func_name, entry in offsets.items():
-        # Find matching YAML data
-        yaml_entry = None
-        for name, data in yaml_data.items():
-            if name == func_name:
-                yaml_entry = data
-                break
+        # Convert :: to _ for matching with YAML data
+        yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
 
+        # Find matching YAML data
+        yaml_entry = yaml_data.get(yaml_func_name)
         if not yaml_entry:
             skipped_count += 1
             if debug:
@@ -1194,7 +1187,7 @@ def main():
     print("\n" + "=" * 50)
     print("Updating CounterStrikeSharp...")
     css_updated, css_skipped, css_updated_syms, css_skipped_syms = update_counterstrikesharp(
-        yaml_data, func_lib_map, platforms, script_dir, debug
+        yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug
     )
     print(f"  Updated: {css_updated}, Skipped: {css_skipped}")
     all_updated_symbols["CounterStrikeSharp"] = css_updated_syms
@@ -1203,7 +1196,7 @@ def main():
     print("\n" + "=" * 50)
     print("Updating CS2Fixes...")
     cs2f_updated, cs2f_skipped, cs2f_updated_syms, cs2f_skipped_syms = update_cs2fixes(
-        yaml_data, func_lib_map, platforms, script_dir, debug
+        yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug
     )
     print(f"  Updated: {cs2f_updated}, Skipped: {cs2f_skipped}")
     all_updated_symbols["CS2Fixes"] = cs2f_updated_syms
@@ -1212,7 +1205,7 @@ def main():
     print("\n" + "=" * 50)
     print("Updating CS2KZ...")
     cs2kz_updated, cs2kz_skipped, cs2kz_updated_syms, cs2kz_skipped_syms = update_cs2kz(
-        yaml_data, func_lib_map, platforms, script_dir, debug
+        yaml_data, func_lib_map, platforms, script_dir, alias_to_name_map, debug
     )
     print(f"  Updated: {cs2kz_updated}, Skipped: {cs2kz_skipped}")
     all_updated_symbols["CS2KZ"] = cs2kz_updated_syms
