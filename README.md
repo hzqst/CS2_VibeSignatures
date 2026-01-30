@@ -297,15 +297,15 @@ Prompt:
 
 ## How to create SKILL for interface vtable
 
-1. Vibe all the way down to get what you want, `CSource2Server_vtable` for example.
+1. Vibe all the way down to get what you want, `CSource2GameEntities_vtable` for example.
 
 * For `server.dll`:
 
 ```bash
 Prompt: 
-  - Search for the Source2Server interface identifier:
+  - Search for the Source2GameEntities interface identifier:
 
-  mcp__ida-pro-mcp__find_regex pattern="Source2Server001"
+  mcp__ida-pro-mcp__find_regex pattern="Source2GameEntities001"
 ```
 
 ```bash
@@ -340,7 +340,7 @@ Prompt:
 
  - Rename Interface Implementation
 
-  mcp__ida-pro-mcp__rename batch={"func": {"addr": "<impl_func_addr>", "name": "source2server"}}
+  mcp__ida-pro-mcp__rename batch={"func": {"addr": "<impl_func_addr>", "name": "GetSource2GameEntities"}}
 
 ```
 
@@ -351,19 +351,19 @@ Prompt:
 
     mcp__ida-pro-mcp__decompile addr="<impl_func_addr>"
 
-    The function returns `&s_Source2Server` - rename this:
+    The function returns `&s_Source2GameEntities` - rename this:
 
-    mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181XXXXXX", "new": "s_Source2Server"}}
+    mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181XXXXXX", "new": "s_Source2GameEntities"}}
 ```
 
 ```bash
 Prompt: 
 
-  - Find VTable by Reading the Pointer s_Source2Server Points To
+  - Find VTable by Reading the Pointer s_Source2GameEntities Points To
 
-    Use `get_global_value` to get the address of `s_Source2Server`, then read 8 bytes (64-bit pointer) at that address:
+    Use `get_global_value` to get the address of `s_Source2GameEntities`, then read 8 bytes (64-bit pointer) at that address:
 
-    mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2Server_addr>", "size": 8}
+    mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2GameEntities_addr>", "size": 8}
 
     The returned bytes are in little-endian format. Convert them to get the vtable address.
 
@@ -379,10 +379,10 @@ Prompt:
 
     Use `func` rename with the vtable address:
 
-    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2Server_vtable"}}
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2GameEntities_vtable"}}
 
     Example:
-    mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2Server_vtable"}}
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2GameEntities_vtable"}}
 
 ```
 
@@ -390,11 +390,11 @@ Prompt:
 
 ```bash
 Prompt: 
-  - Search for CSource2Server VTable Symbol
+  - Search for Source2GameEntities VTable Symbol
 
-    mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*CSource2Server*"}
+    mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*Source2GameEntities*"}
 
-    Look for `_ZTV14CSource2Server` - this is the mangled vtable symbol.
+    Look for `_ZTV*Source2GameEntities` - this is the mangled vtable symbol.
 ```
 
 2. Write YAML
@@ -408,7 +408,7 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-CSource2Server_vtable" in **ENGLISH** according to what we just did.
+ - /skill-creator Create project-level skill "find-CSource2GameEntities_vtable" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
  - **ALWAYS** check for: @.claude/skills/find-CSource2Server_vtable/SKILL.md as references.

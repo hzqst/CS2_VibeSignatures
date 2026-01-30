@@ -34,6 +34,10 @@ modules:
         expected_output:
           - CSource2Server_vtable.{platform}.yaml
 
+      - name: find-CSource2GameEntities_vtable
+        expected_output:
+          - CSource2GameEntities_vtable.{platform}.yaml
+
       - name: find-CGameRules_vtable
         expected_output:
           - CGameRules_vtable.{platform}.yaml
@@ -214,6 +218,9 @@ modules:
 
     symbols:
       - name: CSource2Server_vtable
+        catagory: vtable
+        
+      - name: CSource2GameEntities_vtable
         catagory: vtable
 
       - name: CGameRules_vtable
