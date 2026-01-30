@@ -340,7 +340,7 @@ Prompt:
 
 ## How to create SKILL for global variable
 
-1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems_pFirst` for example.
+1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example.
 
 ```bash
 Prompt: 
@@ -399,7 +399,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md as references.
+ - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md AND @.claude/skills/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.md as references.
 ```
 
 7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
