@@ -19,11 +19,12 @@ Before using this skill, you should have:
 |-----------|-------------|---------|
 | `gv_name` | Name of the global variable | `IGameSystem_InitAllSystems_pFirst` |
 | `gv_addr` | Virtual address of the global variable | `0x180XXXXXX` |
-| `gv_sig` | Unique byte signature | `48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00` |
-| `gv_inst_offset` | Offset from signature start to the instruction referencing the GV | `0` |
+| `gv_sig` | Unique byte signature (must start at the GV-referencing instruction) | `48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00` |
 | `gv_inst_length` | Length of the instruction in bytes | `7` |
 | `gv_inst_disp` | Displacement offset within the instruction | `3` |
 | `gv_sig_va` | Virtual address where the signature matches | `0x180XXXXXX` |
+
+**Note:** `gv_inst_offset` is always 0 - the signature MUST start at the instruction that references the global variable.
 
 ## Method
 
@@ -37,10 +38,12 @@ gv_name = "<gv_name>"               # e.g., "IGameSystem_InitAllSystems_pFirst"
 gv_addr = <gv_addr>                 # e.g., 0x180XXXXXX
 gv_sig = "<gv_sig>"                 # e.g., "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
 gv_sig_va = <gv_sig_va>             # e.g., 0x180XXXXXX (virtual address where signature matches)
-gv_inst_offset = <gv_inst_offset>   # e.g., 0 (offset from signature start to instruction)
 gv_inst_length = <gv_inst_length>   # e.g., 7 (instruction length in bytes)
 gv_inst_disp = <gv_inst_disp>       # e.g., 3 (displacement offset within instruction)
 # ======================================
+
+# Fixed value - signature must start at the GV-referencing instruction
+gv_inst_offset = 0
 
 # Get binary path and determine platform
 input_file = idaapi.get_input_file_path()
@@ -88,9 +91,9 @@ Examples:
 ```yaml
 gv_va: 0x180XXXXXX   # Global variable's virtual address - changes with game updates
 gv_rva: 0xXXXXXX     # Relative virtual address (VA - image base) - changes with game updates
-gv_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00  # Unique byte signature
+gv_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00  # Unique byte signature (starts at GV-referencing instruction)
 gv_sig_va: 0x180XXXXXX     # The virtual address that signature matches
-gv_inst_offset: 0          # GV instruction starts at signature start
+gv_inst_offset: 0          # Always 0 - signature must start at the GV-referencing instruction
 gv_inst_length: 7          # 48 8B 1D XX XX XX XX = 7 bytes
 gv_inst_disp:   3          # Displacement offset start at position 3 (after 48 8B 1D)
 ```
