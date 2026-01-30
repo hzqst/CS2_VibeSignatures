@@ -56,11 +56,6 @@ DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 120  # seconds to wait for MCP server
 SKILL_TIMEOUT = 600  # 10 minutes per skill
 
-# Determine codex command based on OS
-IS_WINDOWS = sys.platform.startswith("win")
-CODEX_CMD = "codex.cmd" if IS_WINDOWS else "codex"
-
-
 async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     """
     Gracefully quit IDA using MCP py_eval tool with idc.qexit(0).
@@ -150,9 +145,8 @@ def parse_args():
     )
     parser.add_argument(
         "-agent",
-        choices=["codex", "claude"],
         default=DEFAULT_AGENT,
-        help=f"Agent to use for analysis (default: {DEFAULT_AGENT})"
+        help=f"Agent executable to use for analysis, e.g., claude, claude.cmd, codex, codex.cmd (default: {DEFAULT_AGENT})"
     )
     parser.add_argument(
         "-modules",
@@ -404,8 +398,12 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
     for attempt in range(max_retries):
         is_retry = attempt > 0
 
-        if agent == "claude":
-            cmd = ["claude",
+        # Determine agent type based on executable name
+        is_claude_agent = "claude" in agent.lower()
+        is_codex_agent = "codex" in agent.lower()
+
+        if is_claude_agent:
+            cmd = [agent,
                    "-p", f"/{skill_name}",
                    "--agent", "sig-finder",
                    "--allowedTools", "mcp__ida-pro-mcp__*"
@@ -415,9 +413,12 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
                 cmd.extend(["--resume", session_id])
             else:
                 cmd.extend(["--session-id", session_id])
-        elif agent == "codex":
+        elif is_codex_agent:
             skill_path = f".claude/skills/{skill_name}/SKILL.md"
-            cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
+            cmd = [agent, "exec", f"Run SKILL: {skill_path}"]
+        else:
+            print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
+            return False
 
         attempt_str = f"(attempt {attempt + 1}/{max_retries})" if max_retries > 1 else ""
         retry_str = "[RETRY] " if is_retry else ""
