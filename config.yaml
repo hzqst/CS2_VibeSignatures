@@ -366,6 +366,7 @@ modules:
 
       - name: UTIL_SayTextFilter2
         catagory: func
+        alias: UTIL_SayText2Filter
 
       - name: WeaponBuy
         catagory: func
