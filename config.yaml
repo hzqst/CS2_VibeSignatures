@@ -204,6 +204,12 @@ modules:
         expected_output:
           - WeaponBuy.{platform}.yaml
 
+      - name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
+        expected_output:
+          - IGameSystem_InitAllSystems.{platform}.yaml
+          - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
+        max_retries: 6
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -355,3 +361,9 @@ modules:
 
       - name: WeaponBuy
         catagory: func
+
+      - name: IGameSystem_InitAllSystems
+        catagory: func
+
+      - name: IGameSystem_InitAllSystems_pFirst
+        catagory: gv
