@@ -452,6 +452,11 @@ modules:
         alias:
           - CBaseEntity::EmitSoundFilter
 
+      - name: CBasePlayerPawn_RemovePlayerItem
+        catagory: func
+        alias:
+          - CBasePlayerPawn::RemovePlayerItem
+
       - name: CEntityIOOutput_FireOutputInternal
         catagory: func
         alias:
