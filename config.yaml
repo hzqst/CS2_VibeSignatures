@@ -216,10 +216,18 @@ modules:
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
         max_retries: 6
 
+      - name: find-CSource2GameEntities_CheckTransmit
+        expected_output:
+          - CSource2GameEntities_CheckTransmit.{platform}.yaml
+        expected_input:
+          - CSource2GameEntities_vtable.{platform}.yaml
+        prerequisite:
+          - find-CSource2GameEntities_vtable
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
-        
+
       - name: CSource2GameEntities_vtable
         catagory: vtable
 
@@ -380,3 +388,10 @@ modules:
 
       - name: IGameSystem_InitAllSystems_pFirst
         catagory: gv
+
+      - name: CSource2GameEntities_CheckTransmit
+        catagory: vfunc
+        alias:
+          - CSource2GameEntities::CheckTransmit
+          - ISource2GameEntities::CheckTransmit
+          - ISource2GameEntities_CheckTransmit
