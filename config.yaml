@@ -102,9 +102,10 @@ modules:
         expected_output:
           - CCSGameRules_FindPickerEntity.{platform}.yaml
 
-      - name: find-CCSGameRules_TerminateRound
+      - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
         expected_output:
           - CCSGameRules_TerminateRound.{platform}.yaml
+          - CEntityInstance_AcceptInput.{platform}.yaml
 
       - name: find-CCSPlayer_ItemServices_CanAcquire
         expected_output:
@@ -187,9 +188,11 @@ modules:
         expected_output:
           - GetCSWeaponDataFromKey.{platform}.yaml
 
-      - name: find-GiveNamedItem
+      - name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
         expected_output:
           - GiveNamedItem.{platform}.yaml
+          - UTIL_CreateEntityByName.{platform}.yaml
+          - CBaseEntity_DispatchSpawn.{platform}.yaml
 
       - name: find-NetworkStateChanged
         expected_output:
@@ -231,6 +234,26 @@ modules:
           - CSource2GameEntities_vtable.{platform}.yaml
         prerequisite:
           - find-CSource2GameEntities_vtable
+
+      - name: find-CBaseEntity_EmitSoundFilter
+        expected_output:
+          - CBaseEntity_EmitSoundFilter.{platform}.yaml
+
+      - name: find-CBasePlayerPawn_RemovePlayerItem
+        expected_output:
+          - CBasePlayerPawn_RemovePlayerItem.{platform}.yaml
+
+      - name: find-CEntityIOOutput_FireOutputInternal
+        expected_output:
+          - CEntityIOOutput_FireOutputInternal.{platform}.yaml
+
+      - name: find-CEntitySystem_AddEntityIOEvent
+        expected_output:
+          - CEntitySystem_AddEntityIOEvent.{platform}.yaml
+
+      - name: find-LegacyGameEventListener
+        expected_output:
+          - LegacyGameEventListener.{platform}.yaml
 
     symbols:
       - name: CSource2Server_vtable
@@ -299,6 +322,12 @@ modules:
         alias:
           - CCSGameRules::TerminateRound
         catagory: func
+
+      - name: CEntityInstance_AcceptInput
+        catagory: func
+        alias:
+          - CEntityInstance::AcceptInput
+          - AcceptInput
 
       - name: CCSPlayer_ItemServices_CanAcquire
         catagory: func
@@ -371,6 +400,14 @@ modules:
       - name: GiveNamedItem
         catagory: func
 
+      - name: UTIL_CreateEntityByName
+        catagory: func
+
+      - name: CBaseEntity_DispatchSpawn
+        catagory: func
+        alias:
+          - CBaseEntity::DispatchSpawn
+
       - name: Host_Say
         catagory: func
 
@@ -412,3 +449,21 @@ modules:
           - CSource2GameEntities::CheckTransmit
           - ISource2GameEntities::CheckTransmit
           - ISource2GameEntities_CheckTransmit
+
+      - name: CBaseEntity_EmitSoundFilter
+        catagory: func
+        alias:
+          - CBaseEntity::EmitSoundFilter
+
+      - name: CEntityIOOutput_FireOutputInternal
+        catagory: func
+        alias:
+          - CEntityIOOutput::FireOutputInternal
+
+      - name: CEntitySystem_AddEntityIOEvent
+        catagory: func
+        alias:
+          - CEntitySystem::AddEntityIOEvent
+
+      - name: LegacyGameEventListener
+        catagory: func
