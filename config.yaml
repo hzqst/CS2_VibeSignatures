@@ -146,14 +146,16 @@ modules:
         prerequisite:
           - find-CCSPlayerPawnBase_vtable
 
-      - name: find-CSource2Server_Init-AND-CGameEventManager_Init
+      - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
         expected_output:
           - CSource2Server_Init.{platform}.yaml
           - CGameEventManager_Init.{platform}.yaml
+          - gameeventmanager.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
         prerequisite:
           - find-CSource2Server_vtable
+        max_retries: 6
 
       - name: find-CGameRules_ClientSettingsChanged
         expected_output:
@@ -311,11 +313,6 @@ modules:
         alias:
           - CCSPlayerPawnBase::PostThink
 
-      - name: CGameEventManager_Init.
-        catagory: func
-        alias:
-          - CGameEventManager::Init
-
       - name: CGameRules_ClientSettingsChanged
         catagory: vfunc
         alias:
@@ -328,6 +325,17 @@ modules:
         catagory: vfunc
         alias:
           - CSource2Server::Init
+
+      - name: CGameEventManager_Init
+        catagory: func
+        alias:
+          - CGameEventManager::Init
+
+      - name: gameeventmanager
+        catagory: gv
+
+      - name: s_GameEventManager
+        catagory: gv
 
       - name: CTakeDamageInfo_GetWeaponName
         catagory: func

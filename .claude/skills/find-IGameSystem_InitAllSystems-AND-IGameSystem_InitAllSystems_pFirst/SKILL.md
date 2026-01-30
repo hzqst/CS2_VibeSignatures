@@ -51,7 +51,7 @@ Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_p
    mcp__ida-pro-mcp__rename batch={"data": {"old": "<IGameSystem_InitAllSystems_pFirst_global_variable_address>", "new": "IGameSystem_InitAllSystems_pFirst"}}
    ```
 
-7. Generate and validate unique signature for `IGameSystem_InitAllSystems` function:
+7. Generate and validate unique signature for `IGameSystem_InitAllSystems`:
 
    **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
@@ -67,7 +67,7 @@ Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_p
 
    Note: This is NOT a virtual function, so no vtable parameters are needed.
 
-9. Generate and validate unique signature for `IGameSystem_InitAllSystems_pFirst` global variable:
+9. Generate and validate unique signature for `IGameSystem_InitAllSystems_pFirst`:
 
    **DO NOT** use `find_bytes` as it won't work for code pattern.
    **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: IGameSystem_InitAllSystems_pFirst.

@@ -23,6 +23,7 @@ Before using this skill, you should have:
 | `gv_inst_offset` | Offset from signature start to the instruction referencing the GV | `0` |
 | `gv_inst_length` | Length of the instruction in bytes | `7` |
 | `gv_inst_disp` | Displacement offset within the instruction | `3` |
+| `gv_sig_va` | Virtual address where the signature matches | `0x180XXXXXX` |
 
 ## Method
 
@@ -35,6 +36,7 @@ import os
 gv_name = "<gv_name>"               # e.g., "IGameSystem_InitAllSystems_pFirst"
 gv_addr = <gv_addr>                 # e.g., 0x180XXXXXX
 gv_sig = "<gv_sig>"                 # e.g., "48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00"
+gv_sig_va = <gv_sig_va>             # e.g., 0x180XXXXXX (virtual address where signature matches)
 gv_inst_offset = <gv_inst_offset>   # e.g., 0 (offset from signature start to instruction)
 gv_inst_length = <gv_inst_length>   # e.g., 7 (instruction length in bytes)
 gv_inst_disp = <gv_inst_disp>       # e.g., 3 (displacement offset within instruction)
@@ -56,6 +58,7 @@ gv_rva = gv_addr - image_base
 yaml_content = f'''gv_va: {hex(gv_addr)}
 gv_rva: {hex(gv_rva)}
 gv_sig: {gv_sig}
+gv_sig_va: {hex(gv_sig_va)}
 gv_inst_offset: {gv_inst_offset}
 gv_inst_length: {gv_inst_length}
 gv_inst_disp: {gv_inst_disp}
@@ -86,6 +89,7 @@ Examples:
 gv_va: 0x180XXXXXX   # Global variable's virtual address - changes with game updates
 gv_rva: 0xXXXXXX     # Relative virtual address (VA - image base) - changes with game updates
 gv_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00  # Unique byte signature
+gv_sig_va: 0x180XXXXXX     # The virtual address that signature matches
 gv_inst_offset: 0          # GV instruction starts at signature start
 gv_inst_length: 7          # 48 8B 1D XX XX XX XX = 7 bytes
 gv_inst_disp:   3          # Displacement offset start at position 3 (after 48 8B 1D)
