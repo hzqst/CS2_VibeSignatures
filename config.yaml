@@ -275,6 +275,12 @@ modules:
         alias:
           - CBasePlayerController::SetPlayerName
 
+      - name: CBasePlayerController_SetPawn
+        alias:
+          - CBasePlayerController::SetPawn
+        catagory: func
+        prerequsite: CBasePlayerController_vtable
+
       - name: CCSGameRules_FindPickerEntity
         catagory: vfunc
         alias:
@@ -367,6 +373,9 @@ modules:
       - name: UTIL_ClientPrintAll
         catagory: func
 
+      - name: UTIL_CreateEntityByName
+        catagory: func
+          
       - name: UTIL_PlayerSlotToPlayerController
         catagory: func
 
