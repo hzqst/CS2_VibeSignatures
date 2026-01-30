@@ -3,18 +3,232 @@ modules:
     path_windows: game/bin/win64/engine2.dll
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
+    skills:
+      - name: find-CServerSideClient_vtable
+        expected_output:
+          - CServerSideClient_vtable.{platform}.yaml
+
+      - name: find-CServerSideClient_IsHearingClient
+        expected_output:
+          - CServerSideClient_IsHearingClient.{platform}.yaml
+        expected_input:
+          - CServerSideClient_vtable.{platform}.yaml
+        prerequisite:
+          - find-CServerSideClient_vtable
+
     symbols:
+      - name: CServerSideClient_vtable
+        catagory: vtable
+
       - name: CServerSideClient_IsHearingClient
+        catagory: vfunc
         alias:
           - IsHearingClient
-        catagory: vfunc
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
     path_linux: game/csgo/bin/linuxsteamrt64/libserver.so
 
+    skills:
+      - name: find-CSource2Server_vtable
+        expected_output:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2GameEntities_vtable
+        expected_output:
+          - CSource2GameEntities_vtable.{platform}.yaml
+
+      - name: find-CGameRules_vtable
+        expected_output:
+          - CGameRules_vtable.{platform}.yaml
+
+      - name: find-CCSGameRules_vtable
+        expected_output:
+          - CCSGameRules_vtable.{platform}.yaml
+        expected_input:
+          - CGameRules_vtable.{platform}.yaml
+        prerequisite:
+          - find-CGameRules_vtable
+
+      - name: find-CCSPlayer_ItemServices_vtable
+        expected_output:
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
+
+      - name: find-CCSPlayer_WeaponServices_vtable
+        expected_output:
+          - CCSPlayer_WeaponServices_vtable.{platform}.yaml
+
+      - name: find-CBaseEntity_vtable
+        expected_output:
+          - CBaseEntity_vtable.{platform}.yaml
+
+      - name: find-CBasePlayerController_vtable
+        expected_output:
+          - CBasePlayerController_vtable.{platform}.yaml
+
+      - name: find-CCSPlayerController_vtable
+        expected_output:
+          - CCSPlayerController_vtable.{platform}.yaml
+
+      - name: find-CCSPlayerPawn_vtable
+        expected_output:
+          - CCSPlayerPawn_vtable.{platform}.yaml
+
+      - name: find-CBaseEntity_TakeDamageOld
+        expected_output:
+          - CBaseEntity_TakeDamageOld.{platform}.yaml
+
+      - name: find-CBaseModelEntity_SetModel
+        expected_output:
+          - CBaseModelEntity_SetModel.{platform}.yaml
+
+      - name: find-CBasePlayerController_HandleCommand_JoinTeam
+        expected_output:
+          - CBasePlayerController_HandleCommand_JoinTeam.{platform}.yaml
+
+      - name: find-CBasePlayerController_SetPlayerName
+        expected_output:
+          - CBasePlayerController_SetPlayerName.{platform}.yaml
+
+      - name: find-CCSGameRules_FindPickerEntity
+        expected_output:
+          - CCSGameRules_FindPickerEntity.{platform}.yaml
+
+      - name: find-CCSGameRules_TerminateRound
+        expected_output:
+          - CCSGameRules_TerminateRound.{platform}.yaml
+
+      - name: find-CCSPlayer_ItemServices_CanAcquire
+        expected_output:
+          - CCSPlayer_ItemServices_CanAcquire.{platform}.yaml
+
+      - name: find-CCSPlayer_ItemServices_GiveNamedItem
+        expected_output:
+          - CCSPlayer_ItemServices_GiveNamedItem.{platform}.yaml
+        expected_input:
+          - CCSPlayer_ItemServices.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_ItemServices
+
+      - name: find-CCSPlayer_WeaponServices_CanUse
+        expected_output:
+          - CCSPlayer_WeaponServices_CanUse.{platform}.yaml
+        expected_input:
+          - CCSPlayer_WeaponServices.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_WeaponServices
+
+      - name: find-CCSPlayerController_ChangeTeam
+        expected_output:
+          - CCSPlayerController_ChangeTeam.{platform}.yaml
+        expected_input:
+          - CCSPlayerController_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerController_vtable
+
+      - name: find-CCSPlayerController_InventoryUpdateThink
+        expected_output:
+          - CCSPlayerController_InventoryUpdateThink.{platform}.yaml
+
+      - name: find-CCSPlayerController_Respawn
+        expected_output:
+          - CCSPlayerController_Respawn.{platform}.yaml
+        expected_input:
+          - CCSPlayerController_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerController_vtable
+
+      - name: find-CCSPlayerController_SwitchTeam
+        expected_output:
+          - CCSPlayerController_SwitchTeam.{platform}.yaml
+
+      - name: find-CCSPlayerPawnBase_PostThink
+        expected_output:
+          - CCSPlayerPawnBase_PostThink.{platform}.yaml
+        expected_input:
+          - CCSPlayerPawnBase_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerPawnBase_vtable
+
+      - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
+        expected_output:
+          - CSource2Server_Init.{platform}.yaml
+          - CGameEventManager_Init.{platform}.yaml
+          - gameeventmanager.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+        prerequisite:
+          - find-CSource2Server_vtable
+        max_retries: 6
+
+      - name: find-CGameRules_ClientSettingsChanged
+        expected_output:
+          - CGameRules_ClientSettingsChanged.{platform}.yaml
+        expected_input:
+          - CGameRules_vtable.{platform}.yaml
+          - CCSGameRules_vtable.{platform}.yaml
+        prerequisite:
+          - find-CGameRules_vtable
+          - find-CCSGameRules_vtable
+
+      - name: find-CTakeDamageInfo_GetWeaponName
+        expected_output:
+          - CTakeDamageInfo_GetWeaponName.{platform}.yaml
+
+      - name: find-GetCSWeaponDataFromKey
+        expected_output:
+          - GetCSWeaponDataFromKey.{platform}.yaml
+
+      - name: find-GiveNamedItem
+        expected_output:
+          - GiveNamedItem.{platform}.yaml
+
+      - name: find-NetworkStateChanged
+        expected_output:
+          - NetworkStateChanged.{platform}.yaml
+
+      - name: find-UTIL_ClientPrintAll
+        expected_output:
+          - UTIL_ClientPrintAll.{platform}.yaml
+
+      - name: find-UTIL_PlayerSlotToPlayerController
+        expected_output:
+          - UTIL_PlayerSlotToPlayerController.{platform}.yaml
+
+      - name: find-UTIL_Remove
+        expected_output:
+          - UTIL_Remove.{platform}.yaml
+
+      - name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
+        expected_output:
+          - Host_Say.{platform}.yaml
+          - UTIL_SayTextFilter.{platform}.yaml
+          - UTIL_SayTextFilter2.{platform}.yaml
+        max_retries: 6
+
+      - name: find-WeaponBuy
+        expected_output:
+          - WeaponBuy.{platform}.yaml
+
+      - name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
+        expected_output:
+          - IGameSystem_InitAllSystems.{platform}.yaml
+          - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
+        max_retries: 6
+
+      - name: find-CSource2GameEntities_CheckTransmit
+        expected_output:
+          - CSource2GameEntities_CheckTransmit.{platform}.yaml
+        expected_input:
+          - CSource2GameEntities_vtable.{platform}.yaml
+        prerequisite:
+          - find-CSource2GameEntities_vtable
+
     symbols:
       - name: CSource2Server_vtable
+        catagory: vtable
+
+      - name: CSource2GameEntities_vtable
         catagory: vtable
 
       - name: CGameRules_vtable
@@ -26,27 +240,40 @@ modules:
       - name: CCSPlayer_ItemServices_vtable
         catagory: vtable
 
+      - name: CCSPlayer_WeaponServices_vtable
+        catagory: vtable
+
+      - name: CBaseEntity_vtable
+        catagory: vtable
+
+      - name: CBasePlayerController_vtable
+        catagory: vtable
+
       - name: CCSPlayerController_vtable
         catagory: vtable
 
       - name: CCSPlayerPawn_vtable
         catagory: vtable
 
+      - name: CBaseEntity_TakeDamageOld
+        catagory: func
+        alias:
+          - CBaseEntity::TakeDamageOld
+
       - name: CBaseModelEntity_SetModel
+        catagory: func
         alias:
           - CBaseModelEntity::SetModel
-        catagory: func
 
       - name: CBasePlayerController_HandleCommand_JoinTeam
+        catagory: func
         alias:
           - CBasePlayerController::HandleCommand_JoinTeam
-        catagory: func
-        prerequsite: CBasePlayerController_vtable
 
       - name: CBasePlayerController_SetPlayerName
+        catagory: func
         alias:
           - CBasePlayerController::SetPlayerName
-        catagory: func
 
       - name: CBasePlayerController_SetPawn
         alias:
@@ -55,10 +282,11 @@ modules:
         prerequsite: CBasePlayerController_vtable
 
       - name: CCSGameRules_FindPickerEntity
+        catagory: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
-        catagory: vfunc
-        prerequsite: CCSGameRules_vtable
+        prerequisite:
+          - CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
         alias:
@@ -66,70 +294,68 @@ modules:
         catagory: func
 
       - name: CCSPlayer_ItemServices_CanAcquire
+        catagory: func
         alias:
           - CCSPlayer_ItemServices::CanAcquire
-        catagory: func
 
       - name: CCSPlayer_ItemServices_GiveNamedItem
+        catagory: vfunc
         alias:
           - CCSPlayer_ItemServices::GiveNamedItem
-        catagory: vfunc
-        prerequsite: CCSPlayer_ItemServices_vtable
 
       - name: CCSPlayer_WeaponServices_CanUse
+        catagory: vfunc
         alias:
           - CCSPlayer_WeaponServices::CanUse
-        catagory: vfunc
-        prerequsite: CCSPlayer_WeaponServices_vtable
 
       - name: CCSPlayerController_ChangeTeam
+        catagory: vfunc
         alias:
           - CCSPlayerController::ChangeTeam
-        catagory: vfunc
-        prerequsite: CCSPlayerController_vtable
 
       - name: CCSPlayerController_InventoryUpdateThink
-        alias: 
+        catagory: func
+        alias:
           - InventoryUpdateThink
           - CCSPlayerController::InventoryUpdateThink
-        catagory: func
 
       - name: CCSPlayerController_Respawn
+        catagory: vfunc
         alias:
           - CCSPlayerController::Respawn
-        catagory: vfunc
-        prerequsite: CCSPlayerController_vtable
 
       - name: CCSPlayerController_SwitchTeam
+        catagory: func
         alias:
           - CCSPlayerController::SwitchTeam
-        catagory: func
 
       - name: CCSPlayerPawnBase_PostThink
+        catagory: vfunc
         alias:
           - CCSPlayerPawnBase::PostThink
-        catagory: vfunc
-        prerequsite: CCSPlayerPawn_vtable
 
       - name: CGameRules_ClientSettingsChanged
+        catagory: vfunc
         alias:
           - CGameRules::ClientSettingsChanged
-        catagory: vfunc
-        prerequsite: CGameRules_vtable
-
-      - name: CSource2Server_Init
-        alias:
-          - CSource2Server::Init
-        catagory: vfunc
-        prerequsite: CSource2Server_vtable
-
-      - name: CGameEventManager_Init
-        alias:
-          - CGameEventManager::Init
-        catagory: func
-        prerequsite: CSource2Server_Init
 
       - name: ClientPrint
+        catagory: func
+
+      - name: CSource2Server_Init
+        catagory: vfunc
+        alias:
+          - CSource2Server::Init
+
+      - name: CGameEventManager_Init
+        catagory: func
+        alias:
+          - CGameEventManager::Init
+
+      - name: gameeventmanager
+        catagory: gv
+
+      - name: CTakeDamageInfo_GetWeaponName
         catagory: func
 
       - name: GetCSWeaponDataFromKey
@@ -138,13 +364,44 @@ modules:
       - name: GiveNamedItem
         catagory: func
 
+      - name: Host_Say
+        catagory: func
+
+      - name: NetworkStateChanged
+        catagory: func
+
       - name: UTIL_ClientPrintAll
         catagory: func
 
       - name: UTIL_CreateEntityByName
-        alias:
-          - UTIL::CreateEntityByName
+        catagory: func
+          
+      - name: UTIL_PlayerSlotToPlayerController
         catagory: func
 
       - name: UTIL_Remove
         catagory: func
+
+      - name: UTIL_SayTextFilter
+        catagory: func
+
+      - name: UTIL_SayTextFilter2
+        catagory: func
+        alias:
+          - UTIL_SayText2Filter
+
+      - name: WeaponBuy
+        catagory: func
+
+      - name: IGameSystem_InitAllSystems
+        catagory: func
+
+      - name: IGameSystem_InitAllSystems_pFirst
+        catagory: gv
+
+      - name: CSource2GameEntities_CheckTransmit
+        catagory: vfunc
+        alias:
+          - CSource2GameEntities::CheckTransmit
+          - ISource2GameEntities::CheckTransmit
+          - ISource2GameEntities_CheckTransmit

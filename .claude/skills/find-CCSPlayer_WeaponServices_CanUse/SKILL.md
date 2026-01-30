@@ -18,26 +18,19 @@ If the skill returns an error, **STOP** and report to user.
 Otherwise, extract these values for subsequent steps:
 - `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 2. Read VTable Entry at Index ~26
+### 2. Decompile virtual functions from vtable_entries[24-30]
 
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes, ida_name
+Using `vtable_entries` from step 1, decompile virtual functions around indices 24-30:
 
-vtable_start = <VTABLE_ADDRESS>  # Use vtableAddress from step 1
-ptr_size = 8
-
-for i in range(24, 30):
-    func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
-    func_name = ida_name.get_name(func_ptr) or "unknown"
-    print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
-"""
+```
+  mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
 ### 3. Decompile and Verify by "weapon_taser" String
 
-Decompile the function:
+Decompile those virual functions:
 ```
 mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```

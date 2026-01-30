@@ -13,13 +13,18 @@ Usage:
     -bindir: Directory containing downloaded binaries (default: bin)
     -platform: Platforms to analyze, comma-separated (default: windows,linux)
     -agent: Agent to use for analysis: codex or claude (default: codex)
-    -ida: Additional arguments for idalib-mcp (optional)
+    -idaargs: Additional arguments for idalib-mcp (optional)
     -debug: Enable debug output
 
 Requirements:
     pip install pyyaml
     uv (for running idalib-mcp)
     claude CLI or codex CLI (codex.cmd on Windows)
+
+Output:
+    bin/14132/engine/CServerSideClient_IsHearingClient.linux.yaml
+    bin/14132/engine/CServerSideClient_IsHearingClient.windows.yaml
+    ...and more
 """
 
 import argparse
@@ -28,6 +33,7 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 try:
@@ -49,11 +55,6 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 120  # seconds to wait for MCP server
 SKILL_TIMEOUT = 600  # 10 minutes per skill
-
-# Determine codex command based on OS
-IS_WINDOWS = sys.platform.startswith("win")
-CODEX_CMD = "codex.cmd" if IS_WINDOWS else "codex"
-
 
 async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     """
@@ -144,9 +145,8 @@ def parse_args():
     )
     parser.add_argument(
         "-agent",
-        choices=["codex", "claude"],
         default=DEFAULT_AGENT,
-        help=f"Agent to use for analysis (default: {DEFAULT_AGENT})"
+        help=f"Agent executable to use for analysis, e.g., claude, claude.cmd, codex, codex.cmd (default: {DEFAULT_AGENT})"
     )
     parser.add_argument(
         "-modules",
@@ -154,7 +154,7 @@ def parse_args():
         help=f"Modules to analyze, comma-separated (default: {DEFAULT_MODULES} for all). E.g., server,engine"
     )
     parser.add_argument(
-        "-ida",
+        "-ida_args",
         default="",
         help="Additional arguments for idalib-mcp (optional)"
     )
@@ -162,6 +162,12 @@ def parse_args():
         "-debug",
         action="store_true",
         help="Enable debug output"
+    )
+    parser.add_argument(
+        "-maxretry",
+        type=int,
+        default=3,
+        help="Maximum number of retry attempts for skill execution (default: 3)"
     )
 
     args = parser.parse_args()
@@ -190,7 +196,7 @@ def parse_config(config_path):
         config_path: Path to config.yaml file
 
     Returns:
-        List of module dictionaries containing name, paths, and symbols
+        List of module dictionaries containing name, paths, and skills
     """
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -202,20 +208,82 @@ def parse_config(config_path):
             print("  Warning: Skipping module without name")
             continue
 
-        symbols = []
-        for sym in module.get("symbols", []):
-            sym_name = sym.get("name")
-            if sym_name:
-                symbols.append(sym_name)
+        skills = []
+        for skill in module.get("skills", []):
+            skill_name = skill.get("name")
+            if skill_name:
+                skills.append({
+                    "name": skill_name,
+                    "expected_output": skill.get("expected_output", []),
+                    "expected_input": skill.get("expected_input", []),
+                    "prerequisite": skill.get("prerequisite", []) or [],
+                    "max_retries": skill.get("max_retries"),  # None means use default
+                })
 
         modules.append({
             "name": name,
             "path_windows": module.get("path_windows"),
             "path_linux": module.get("path_linux"),
-            "symbols": symbols
+            "skills": skills
         })
 
     return modules
+
+
+def topological_sort_skills(skills):
+    """
+    Perform topological sort on skills based on their prerequisites.
+
+    Args:
+        skills: List of skill dicts with 'name' and 'prerequisite' keys
+
+    Returns:
+        List of skill names in topologically sorted order (dependencies first)
+    """
+    # Build name -> skill dict and adjacency list
+    skill_map = {skill["name"]: skill for skill in skills}
+    skill_names = set(skill_map.keys())
+
+    # Build in-degree count and adjacency list
+    in_degree = {name: 0 for name in skill_names}
+    dependents = {name: [] for name in skill_names}  # prereq -> list of skills that depend on it
+
+    for skill in skills:
+        name = skill["name"]
+        for prereq in skill["prerequisite"]:
+            if prereq in skill_names:
+                in_degree[name] += 1
+                dependents[prereq].append(name)
+
+    # Kahn's algorithm for topological sort
+    # Start with skills that have no prerequisites (in_degree == 0)
+    queue = [name for name in skill_names if in_degree[name] == 0]
+    # Sort to ensure deterministic order for skills at the same level
+    queue.sort()
+
+    sorted_names = []
+    while queue:
+        # Pop the first item (maintains stable order)
+        current = queue.pop(0)
+        sorted_names.append(current)
+
+        # Reduce in-degree for dependents
+        for dependent in sorted(dependents[current]):
+            in_degree[dependent] -= 1
+            if in_degree[dependent] == 0:
+                queue.append(dependent)
+        queue.sort()
+
+    # Check for cycles
+    if len(sorted_names) != len(skill_names):
+        remaining = skill_names - set(sorted_names)
+        print(f"  Warning: Circular dependency detected among skills: {remaining}")
+        # Append remaining skills in original order as fallback
+        for skill in skills:
+            if skill["name"] not in sorted_names:
+                sorted_names.append(skill["name"])
+
+    return sorted_names
 
 
 def get_binary_path(bin_dir, gamever, module_name, module_path):
@@ -310,87 +378,165 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         return None
 
 
-def run_skill(skill_name, agent="claude", debug=False):
+def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None, max_retries=3):
     """
-    Execute a skill using the specified agent.
+    Execute a skill using the specified agent with retry support.
 
     Args:
-        agent: Agent type ("claude" or "codex")
         skill_name: Name of the skill (e.g., "find-CServerSideClient_IsHearingClient")
+        agent: Agent type ("claude" or "codex")
         debug: Enable debug output
+        expected_yaml_paths: List of paths to expected yaml output files. If provided,
+                            the skill is considered failed if any file is not generated.
+        max_retries: Maximum number of retry attempts (default: 3)
 
     Returns:
         True if successful, False otherwise
     """
-    if agent == "claude":
-        cmd = ["claude", "-p", f"/{skill_name}", "--agent", "sig-finder", "--allowedTools", "mcp__ida-pro-mcp__*"]
-    elif agent == "codex": 
-        skill_path = f".claude/skills/{skill_name}/SKILL.md"
-        cmd = [CODEX_CMD, "exec", f"Run SKILL: {skill_path}"]
+    session_id = str(uuid.uuid4())
 
-    print(f"    Running: {' '.join(cmd)}")
+    for attempt in range(max_retries):
+        is_retry = attempt > 0
 
-    try:
-        if debug:
-            result = subprocess.run(cmd, timeout=SKILL_TIMEOUT)
+        # Determine agent type based on executable name
+        is_claude_agent = "claude" in agent.lower()
+        is_codex_agent = "codex" in agent.lower()
+
+        if is_claude_agent:
+            cmd = [agent,
+                   "-p", f"/{skill_name}",
+                   "--agent", "sig-finder",
+                   "--allowedTools", "mcp__ida-pro-mcp__*"
+                   ]
+            # Add session management flags
+            if is_retry:
+                cmd.extend(["--resume", session_id])
+            else:
+                cmd.extend(["--session-id", session_id])
+        elif is_codex_agent:
+            skill_path = f".claude/skills/{skill_name}/SKILL.md"
+            cmd = [agent, "exec", f"Run SKILL: {skill_path}"]
         else:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=SKILL_TIMEOUT
-            )
-
-        if result.returncode != 0:
-            print(f"    Skill failed with return code: {result.returncode}")
-            if not debug and result.stderr:
-                print(f"    stderr: {result.stderr[:500]}")
+            print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
             return False
 
-        return True
+        attempt_str = f"(attempt {attempt + 1}/{max_retries})" if max_retries > 1 else ""
+        retry_str = "[RETRY] " if is_retry else ""
+        print(f"    {retry_str}Running {attempt_str}: {' '.join(cmd)}")
 
-    except subprocess.TimeoutExpired:
-        print(f"    Error: Skill execution timeout ({SKILL_TIMEOUT} seconds)")
-        return False
-    except FileNotFoundError:
-        print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
-        return False
-    except Exception as e:
-        print(f"    Error executing skill: {e}")
-        return False
+        try:
+            if debug:
+                result = subprocess.run(cmd, timeout=SKILL_TIMEOUT)
+            else:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=SKILL_TIMEOUT
+                )
+
+            if result.returncode != 0:
+                print(f"    Skill failed with return code: {result.returncode}")
+                if not debug and result.stderr:
+                    print(f"    stderr: {result.stderr[:500]}")
+                if attempt < max_retries - 1:
+                    print(f"    Retrying with session {session_id}...")
+                continue
+
+            # Verify all yaml files were generated if expected_yaml_paths is provided
+            if expected_yaml_paths is not None:
+                missing_files = [p for p in expected_yaml_paths if not os.path.exists(p)]
+                if missing_files:
+                    print(f"    Error: Expected yaml files not generated: {missing_files}")
+                    if attempt < max_retries - 1:
+                        print(f"    Retrying with session {session_id}...")
+                    continue
+
+            return True
+
+        except subprocess.TimeoutExpired:
+            print(f"    Error: Skill execution timeout ({SKILL_TIMEOUT} seconds)")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with session {session_id}...")
+            continue
+        except FileNotFoundError:
+            print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
+            return False
+        except Exception as e:
+            print(f"    Error executing skill: {e}")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with session {session_id}...")
+            continue
+
+    print(f"    Failed after {max_retries} attempts")
+    return False
 
 
-def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=False):
+def process_binary(binary_path, skills, agent, host, port, ida_args, platform, debug=False, max_retries=3):
     """
     Process a single binary file.
 
     Args:
         binary_path: Path to binary file
-        symbols: List of symbol names to analyze
+        skills: List of skill dicts with 'name', 'expected_output', 'expected_input', 'prerequisite', and optional 'max_retries' keys
         agent: Agent type ("claude" or "codex")
         host: MCP server host
         port: MCP server port
         ida_args: Additional arguments for idalib-mcp
+        platform: Platform name (e.g., "windows", "linux")
         debug: Enable debug output
+        max_retries: Default maximum number of retry attempts for skill execution
 
     Returns:
-        Tuple of (success_count, fail_count)
+        Tuple of (success_count, fail_count, skip_count)
     """
     success_count = 0
     fail_count = 0
+    skip_count = 0
+
+    # Get the directory containing the binary for yaml output check
+    binary_dir = os.path.dirname(binary_path)
+
+    # Build skill_map for lookup
+    skill_map = {skill["name"]: skill for skill in skills}
+
+    # Topological sort skills based on prerequisites
+    sorted_skill_names = topological_sort_skills(skills)
+
+    # Filter skills that need processing (skip if all expected outputs already exist)
+    skills_to_process = []
+    for skill_name in sorted_skill_names:
+        skill = skill_map[skill_name]
+        # Expand {platform} placeholder in expected_output paths
+        expected_outputs = [
+            os.path.join(binary_dir, f.replace("{platform}", platform))
+            for f in skill["expected_output"]
+        ]
+        # Check if all output files already exist
+        if expected_outputs and all(os.path.exists(p) for p in expected_outputs):
+            print(f"  Skipping skill: {skill_name} (all outputs exist)")
+            skip_count += 1
+        else:
+            # Use skill-specific max_retries if provided, otherwise use default
+            skill_max_retries = skill.get("max_retries") or max_retries
+            skills_to_process.append((skill_name, expected_outputs, skill_max_retries))
+
+    # If all skills are skipped, no need to start IDA
+    if not skills_to_process:
+        print(f"  All skills already have yaml files, skipping IDA startup")
+        return success_count, fail_count, skip_count
 
     # Start idalib-mcp
     process = start_idalib_mcp(binary_path, host, port, ida_args, debug)
     if process is None:
-        return 0, len(symbols)
+        return 0, len(skills_to_process), skip_count
 
     try:
-        # Process each symbol
-        for symbol in symbols:
-            skill_name = f"find-{symbol}"
-            print(f"  Processing symbol: {symbol}")
+        # Process each skill
+        for skill_name, expected_outputs, skill_max_retries in skills_to_process:
+            print(f"  Processing skill: {skill_name}")
 
-            if run_skill(skill_name, agent, debug):
+            if run_skill(skill_name, agent, debug, expected_yaml_paths=expected_outputs, max_retries=skill_max_retries):
                 success_count += 1
                 print(f"    Success")
             else:
@@ -401,7 +547,7 @@ def process_binary(binary_path, symbols, agent, host, port, ida_args, debug=Fals
         # Gracefully quit IDA via MCP to avoid breaking IDB
         quit_ida_gracefully(process, host, port, debug=debug)
 
-    return success_count, fail_count
+    return success_count, fail_count, skip_count
 
 
 def main():
@@ -414,7 +560,7 @@ def main():
     platforms = args.platforms
     module_filter = args.module_filter
     agent = args.agent
-    ida_args = args.ida
+    ida_args = args.ida_args
     debug = args.debug
 
     # Validate config file exists
@@ -450,20 +596,20 @@ def main():
 
     for module in modules:
         module_name = module["name"]
-        symbols = module["symbols"]
+        skills = module["skills"]
 
         # Filter modules if specified
         if module_filter is not None and module_name not in module_filter:
             print(f"\nModule '{module_name}': Not in filter list, skipping")
             continue
 
-        if not symbols:
-            print(f"\nModule '{module_name}': No symbols defined, skipping")
+        if not skills:
+            print(f"\nModule '{module_name}': No skills defined, skipping")
             continue
 
         print(f"\n{'='*60}")
         print(f"Module: {module_name}")
-        print(f"Symbols: {len(symbols)}")
+        print(f"Skills: {len(skills)}")
         print(f"{'='*60}")
 
         for platform in platforms:
@@ -472,7 +618,7 @@ def main():
 
             if not module_path:
                 print(f"\n  Platform {platform}: No path defined, skipping")
-                total_skip += len(symbols)
+                total_skip += len(skills)
                 continue
 
             # Build binary path
@@ -485,16 +631,18 @@ def main():
             if not os.path.exists(binary_path):
                 print(f"  Error: Binary file not found: {binary_path}")
                 print(f"  Hint: Run download_bin.py first to download binaries")
-                total_skip += len(symbols)
+                total_skip += len(skills)
                 continue
 
             # Process binary
-            success, fail = process_binary(
-                binary_path, symbols, agent,
-                DEFAULT_HOST, DEFAULT_PORT, ida_args, debug
+            success, fail, skip = process_binary(
+                binary_path, skills, agent,
+                DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug,
+                max_retries=args.maxretry
             )
             total_success += success
             total_fail += fail
+            total_skip += skip
 
     # Summary
     print(f"\n{'='*60}")

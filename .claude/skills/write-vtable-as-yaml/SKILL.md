@@ -28,6 +28,7 @@ import idaapi
 import ida_bytes
 import ida_name
 import os
+import yaml
 
 # === REQUIRED: Replace these values ===
 vtable_class = "<vtable_class>"     # e.g., "CSource2Server"
@@ -48,19 +49,19 @@ vtable_rva = vtable_va - image_base
 
 # Handle Linux vtables (skip RTTI metadata)
 vtable_name = ida_name.get_name(vtable_va) or ""
-vtable_start = vtable_va
 if vtable_name.startswith("_ZTV"):
-    vtable_start = vtable_va + 0x10
+    vtable_va = vtable_va + 0x10
+    vtable_rva = vtable_va - image_base
 
 # Determine pointer size and count virtual functions
 ptr_size = 8 if idaapi.inf_is_64bit() else 4
-count = 0
+vtable_entries = []
 
 for i in range(1000):
     if ptr_size == 8:
-        ptr_value = ida_bytes.get_qword(vtable_start + i * ptr_size)
+        ptr_value = ida_bytes.get_qword(vtable_va + i * ptr_size)
     else:
-        ptr_value = ida_bytes.get_dword(vtable_start + i * ptr_size)
+        ptr_value = ida_bytes.get_dword(vtable_va + i * ptr_size)
 
     if ptr_value == 0 or ptr_value == 0xFFFFFFFFFFFFFFFF:
         break
@@ -71,20 +72,24 @@ for i in range(1000):
         if not ida_bytes.is_code(flags):
             break
 
-    count += 1
+    vtable_entries.append(ptr_value)
 
+count = len(vtable_entries)
 vtable_size = count * ptr_size
 
-yaml_content = f'''vtable_class: {vtable_class}
-vtable_va: {hex(vtable_va)}
-vtable_rva: {hex(vtable_rva)}
-vtable_size: {hex(vtable_size)}
-vtable_numvfunc: {count}
-'''
+# Build YAML data structure
+yaml_data = {
+    'vtable_class': vtable_class,
+    'vtable_va': hex(vtable_va),
+    'vtable_rva': hex(vtable_rva),
+    'vtable_size': hex(vtable_size),
+    'vtable_numvfunc': count,
+    'vtable_entries': {i: hex(entry) for i, entry in enumerate(vtable_entries)}
+}
 
 yaml_path = os.path.join(dir_path, f"{vtable_class}_vtable.{platform}.yaml")
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
+    yaml.dump(yaml_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 print(f"Written to: {yaml_path}")
 """
 ```
@@ -106,6 +111,10 @@ vtable_va: 0x182B8D9D8      # Virtual address - changes with game updates
 vtable_rva: 0x2B8D9D8       # Relative virtual address (VA - image base) - changes with game updates
 vtable_size: 0x2D8          # VTable size in bytes - changes with game updates
 vtable_numvfunc: 91         # Number of virtual functions - changes with game updates
+vtable_entries:             # Every virtual functions starting from vtable[0]
+  0: 0x180C87B20             # vtable[0] - changes with game updates
+  1: 0x180C87FA0             # vtable[1] - changes with game updates
+  2: 0x180C87FF0             # vtable[2] - changes with game updates
 ```
 
 ## Platform Detection

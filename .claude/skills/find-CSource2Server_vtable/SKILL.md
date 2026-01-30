@@ -1,13 +1,41 @@
 ---
 name: find-CSource2Server_vtable
-description: Find and identify the CSource2Server vtable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server virtual function table by searching for the "Source2Server001" interface string and tracing through the interface registration pattern.
+description: Find and identify the CSource2Server vtable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server virtual function table by searching for the "_ZTV14CSource2Server" RTTI symbol (Linux) or tracing through the "Source2Server001" interface registration pattern (Windows).
 ---
 
 # Find CSource2Server_vtable
 
 Locate `CSource2Server_vtable` in CS2 server.dll or server.so using IDA Pro MCP tools.
 
-## Method
+## Method (Linux Only)
+
+For Linux binaries (server.so), use RTTI symbols to directly locate the vtable:
+
+### 1. Search for VTable Symbol
+
+```
+mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*CSource2Server*"}
+```
+
+Look for `_ZTV14CSource2Server` - this is the mangled vtable symbol.
+
+### 2. Write VTable Info as YAML
+
+Use `/write-vtable-as-yaml` skill with:
+- `vtable_class`: `CSource2Server`
+- `vtable_va`: The vtable address from step 1
+
+Done! The `/write-vtable-as-yaml` skill automatically:
+- Skips Linux RTTI metadata (16 bytes)
+- Counts virtual functions
+- Calculates vtable size
+- Writes the YAML file
+
+---
+
+## Method (Windows Only)
+
+For Windows binaries (server.dll) without RTTI symbols, trace through the interface registration pattern:
 
 ### 1. Search for Interface String
 
@@ -56,56 +84,45 @@ mcp__ida-pro-mcp__decompile addr="<impl_func_addr>"
 The function returns `&s_Source2Server` - rename this global:
 
 ```
-mcp__ida-pro-mcp__rename batch={"data": {"old": "<off_name>", "new": "s_Source2Server"}}
+mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181bc3cd0", "new": "s_Source2Server"}}
 ```
 
-### 6. Find CSource2Server::Init via Debug String
+### 6. Find VTable by Reading the Pointer s_Source2Server Points To
 
-Search for the debug string that identifies CSource2Server::Init:
-
-```
-mcp__ida-pro-mcp__find_regex pattern="gameeventmanager->Init"
-```
-
-Get xrefs to find the Init function:
+Use `get_global_value` to get the address of `s_Source2Server`, then read 8 bytes (64-bit pointer) at that address:
 
 ```
-mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
+mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2Server_addr>", "size": 8}
 ```
 
-### 7. Find VTable via Init Function Xrefs
+The returned bytes are in little-endian format. Convert them to get the vtable address.
 
-Get cross-references to CSource2Server::Init:
+Example:
+- Bytes: `0x90 0xd1 0x71 0x81 0x01 0x00 0x00 0x00`
+- Reversed (little-endian): `0x18171D190`
 
-```
-mcp__ida-pro-mcp__xrefs_to addrs="<init_func_addr>"
-```
+### 7. Rename VTable
 
-The data references point to vtable entries. Analyze the addresses to find the vtable start.
-
-### 8. Analyze VTable Structure
-
-Read bytes around the vtable reference to identify the vtable start:
+Use `func` rename with the vtable address:
 
 ```
-mcp__ida-pro-mcp__get_bytes regions={"addr": "<vtable_area>", "size": 64}
+mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2Server_vtable"}}
 ```
 
-Parse the 64-bit pointers (little-endian) to identify function addresses and determine the vtable base.
-
-### 9. Rename VTable
-
+Example:
 ```
-mcp__ida-pro-mcp__rename batch={"data": {"old": "<off_name>", "new": "CSource2Server_vtable"}}
+mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2Server_vtable"}}
 ```
 
-### 10. Write VTable Info as YAML
+### 8. Write VTable Info as YAML
 
 Use `/write-vtable-as-yaml` skill with:
 - `vtable_class`: `CSource2Server`
-- `vtable_va`: The vtable address found in step 8
+- `vtable_va`: The vtable address found in step 6
 
-## Interface Registration Pattern
+---
+
+## Interface Registration Pattern (Windows)
 
 The Source2Server interface follows this pattern:
 
@@ -116,21 +133,11 @@ lea     rcx, s_Source2Server ; Static instance pointer
 jmp     <registration_func>
 ```
 
-## VTable Structure
-
-The CSource2Server vtable contains virtual functions including:
-
-| Offset | Function |
-|--------|----------|
-| +0x00 | Constructor/Destructor |
-| +0x08 | ... |
-| +0x18 | CSource2Server::Init |
-| ... | ... |
-
-## Key Globals
+## Key Globals (Windows)
 
 - `s_Source2Server` - Static instance pointer returned by `source2server()`
 - `CSource2Server_vtable` - Virtual function table for CSource2Server class
+- `s_Source2Server` points to `CSource2Server_vtable` as it's primary vtable.
 
 ## Output YAML Format
 
@@ -148,11 +155,14 @@ vtable_numvfunc: 36       # Number of virtual functions - changes with game upda
 
 ## Platform Differences
 
-### Windows (server.dll)
-- Interface string: `Source2Server001`
-- VTable mangled name pattern: Uses MSVC mangling
+### Linux (server.so) - Recommended Approach
+- **Direct RTTI lookup**: Search for `_ZTV14CSource2Server` symbol
+- VTable mangled name: `_ZTV14CSource2Server`
+- Linux vtables have 16 bytes of RTTI metadata before the actual function pointers
+- Much faster than tracing interface strings
 
-### Linux (server.so)
+### Windows (server.dll) - Alternative Approach
+- **No RTTI symbols**: Must trace through interface registration pattern
 - Interface string: `Source2Server001`
-- VTable mangled name pattern: `_ZTV14CSource2Server` (if present)
-- Note: Linux vtables have 16 bytes of RTTI metadata before the actual function pointers
+- VTable mangled name pattern: `??_7CSource2Server@@6B@` (MSVC mangling)
+- Requires finding static instance and reading vtable pointer from it

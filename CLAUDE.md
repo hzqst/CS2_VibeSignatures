@@ -2,11 +2,13 @@
 
 This file provides guidance and important rules working with code in this repository.
 
-## Important rules
+### When agent coding
 
-### When running SKILLS with ida-pro-mcp
+ - **ALWAYS** call Serena's `activate_project` on agent startup
 
- - **DONT STOP** half-way until you finish all tasks in SKILL
+### When agent running SKILLS
+
+ - **NEVER** stop half-way even the step indicates a success, until you finish **ALL** tasks.
 
 ## IDA Pro MCP Tools Reference
 

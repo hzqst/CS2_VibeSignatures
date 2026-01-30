@@ -18,23 +18,37 @@ Generate a unique hex byte signature for a function that can be used for pattern
 
 ### 1. Get Function Bytes and Disassembly
 
-First, retrieve the raw bytes and disassembly to understand the function structure:
+First, retrieve the raw bytes and disassembly to understand the function structure.
+
+**Note**: The input address may be in the middle of a function. The script automatically resolves it to the actual function start.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
 import ida_bytes
+import idaapi
 
-func_addr = <func_addr>
+input_addr = <func_addr>
+
+# Resolve to actual function start (input may be in the middle of a function)
+func = idaapi.get_func(input_addr)
+if func:
+    func_addr = func.start_ea
+    if func_addr != input_addr:
+        print(f"Resolved {hex(input_addr)} -> function start at {hex(func_addr)}")
+else:
+    func_addr = input_addr
+    print(f"Warning: {hex(input_addr)} is not inside a known function, using as-is")
 
 # Get first 64 bytes of function
 raw_bytes = ida_bytes.get_bytes(func_addr, 64)
+print("Function address:", hex(func_addr))
 print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
 """
 ```
 
-Also get disassembly for context:
+Also get disassembly for context (use the resolved function address from above):
 ```
-mcp__ida-pro-mcp__disasm addr="<func_addr>" max_instructions=15
+mcp__ida-pro-mcp__disasm addr="<resolved_func_addr>" max_instructions=15
 ```
 
 ### 2. Analyze and Generate Signature (LLM Task)
@@ -106,11 +120,11 @@ for m in matches:
 if len(matches) == 1 and matches[0] == func_addr:
     print("SUCCESS: Signature is unique and matches target function!")
 elif len(matches) == 1 and matches[0] != func_addr:
-    print("WARNING: Signature matches but at different address, This should not happen!")
+    print("WARNING: Signature matches but at different address ! You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
 elif len(matches) > 1:
-    print("FAILED: Signature not unique, need longer/different pattern. Ignore this failure if we got SUCCESS before, as py_eval has issue with duplicate evaluation sometimes.")
+    print("FAILED: Signature not unique, need longer pattern.")
 elif len(matches) == 0:
-    print("FAILED: Found nothing with this signature. Ignore this failure if we got SUCCESS before, as py_eval has issue with duplicate evaluation sometimes.")
+    print("FAILED: Found nothing with this signature. You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
 
 """
 ```
@@ -118,10 +132,8 @@ elif len(matches) == 0:
 ### 4. Iterate if Needed
 
 If the signature is not unique:
-1. Extend the signature length
-2. Analyze which bytes are causing false matches
-3. Add more specific bytes or adjust wildcard placement
-4. Re-validate until unique
+1. Extend the signature length, maybe include some preceding padding, or even bytes from next function, to make it unique.
+2. Re-validate until unique
 
 ### 5. Continue with Unfinished Tasks
 

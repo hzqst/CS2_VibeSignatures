@@ -8,7 +8,7 @@ Feel free to contribute your SKILLS with PR!
 
 ## Requirements
 
-1. `pip install yaml requests asyncio mcp vdf`
+1. `pip install pyyaml requests asyncio mcp vdf`
 
 2. claude / codex
 
@@ -35,7 +35,7 @@ python download_bin.py -gamever 14132
 claude (no-interactive-mode)
 
 ```bash
-claude -p "/find-CBaseModelEntity_SetModel" --agent sig-finder
+claude -p "/find-CCSPlayerController_ChangeTeam" --agent sig-finder
 ```
 
 claude (interactive-mode)
@@ -66,7 +66,7 @@ prompt:
  - Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md
 ```
 
-4. `CBaseModelEntity_SetModel.windows.yaml` or `CBaseModelEntity_SetModel.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
+4. `CCSPlayerController_ChangeTeam.windows.yaml` or `CCSPlayerController_ChangeTeam.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
 
 * Automation with headless IDA & subagents is coming soon.
 
@@ -75,22 +75,123 @@ prompt:
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14132
+python download_bin.py -gamever 14133
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14132 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14133 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
-python update_gamedata.py -gamever 14132
+python update_gamedata.py -gamever 14133 [-debug]
+```
+
+Expected result:
+
+```
+Config file: config.yaml
+Binary directory: bin
+Game version: 14133
+Platforms: windows, linux
+Debug mode: enabled
+
+Loading config...
+Found 61 function mappings
+
+Loading YAML data...
+  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..windows.yaml
+  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..linux.yaml
+Loaded data for 42 functions
+
+==================================================
+Updating CounterStrikeSharp...
+  Warning: Unknown library for CCSPlayer_ItemServices_DropActivePlayerWeapon, skipping
+  Warning: Unknown library for CCSPlayer_ItemServices_RemoveWeapons, skipping
+  Warning: Unknown library for CGameSceneNode_GetSkeletonInstance, skipping
+  Warning: Unknown library for CTakeDamageInfo_HitGroup, skipping
+  Warning: Unknown library for CBaseEntity_IsPlayerPawn, skipping
+  Warning: Unknown library for CBasePlayerPawn_CommitSuicide, skipping
+  Warning: Unknown library for CBaseEntity_Teleport, skipping
+  Warning: Unknown library for GameEntitySystem, skipping
+  Warning: Unknown library for GameEventManager, skipping
+  Warning: Unknown library for CEntityResourceManifest_AddResource, skipping
+  Warning: Unknown library for CheckTransmitPlayerSlot, skipping
+  Warning: Unknown library for SetStateChanged, skipping
+  Warning: Unknown library for ISource2GameEntities::CheckTransmit, skipping
+  Updated: 36, Skipped: 26
+
+==================================================
+Updating CS2Fixes...
+  Updated: 18, Skipped: 69
+
+==================================================
+Updating CS2KZ...
+  Updated: 2, Skipped: 64
+
+==================================================
+Updating SwiftlyS2...
+  Updated: 16, Skipped: 70
+
+==================================================
+Updating Plugify...
+  Updated: 12, Skipped: 31
+
+==================================================
+Total: 84 updates, 260 skipped
+
+============================================================
+DEBUG INFO: Summary
+============================================================
+
+[CounterStrikeSharp] Updated Symbols (36 items)
+  + UTIL_ClientPrintAll (signature/windows)
+  + UTIL_ClientPrintAll (signature/linux)
+  + ClientPrint (signature/windows)
+  + ClientPrint (signature/linux)
+  + CCSPlayerController_SwitchTeam (signature/windows)
+  + CCSPlayerController_SwitchTeam (signature/linux)
+  + CCSPlayerController_ChangeTeam (offset/windows)
+  + CCSPlayerController_ChangeTeam (offset/linux)
+  + CCSPlayerController_Respawn (offset/windows)
+  + CCSPlayerController_Respawn (offset/linux)
+  + CCSPlayerPawnBase_PostThink (signature/windows)
+  + CCSPlayerPawnBase_PostThink (signature/linux)
+  + GiveNamedItem (signature/windows)
+  + GiveNamedItem (signature/linux)
+  + UTIL_Remove (signature/windows)
+  + UTIL_Remove (signature/linux)
+  + CBaseModelEntity_SetModel (signature/windows)
+  + CBaseModelEntity_SetModel (signature/linux)
+  + CCSPlayer_WeaponServices_CanUse (signature/windows)
+  + CCSPlayer_WeaponServices_CanUse (signature/linux)
+  + CCSPlayer_ItemServices_CanAcquire (signature/windows)
+  + CCSPlayer_ItemServices_CanAcquire (signature/linux)
+  + GetCSWeaponDataFromKey (signature/windows)
+  + GetCSWeaponDataFromKey (signature/linux)
+  + CCSPlayer_ItemServices_GiveNamedItem (offset/windows)
+  + CCSPlayer_ItemServices_GiveNamedItem (offset/linux)
+  + CCSGameRules_TerminateRound (signature/windows)
+  + CCSGameRules_TerminateRound (signature/linux)
+  + CCSGameRules_FindPickerEntity (offset/windows)
+  + CCSGameRules_FindPickerEntity (offset/linux)
+  + CBaseEntity_TakeDamageOld (signature/windows)
+  + CBaseEntity_TakeDamageOld (signature/linux)
+  + NetworkStateChanged (signature/windows)
+  + NetworkStateChanged (signature/linux)
+  + Host_Say (signature/windows)
+  + Host_Say (signature/linux)
+  ... more
 ```
 
 ### Current supported gamedata dist
 
-[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) `dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
+[CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 
-[CS2Fixes](https://github.com/Source2ZE/CS2Fixes) `dist/CS2Fixes/gamedata/cs2fixes.games.txt`
+`dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
+
+[CS2Fixes](https://github.com/Source2ZE/CS2Fixes) 
+
+`dist/CS2Fixes/gamedata/cs2fixes.games.txt`
 
 [swiftlys2](https://github.com/swiftly-solution/swiftlys2) 
 
@@ -98,9 +199,17 @@ python update_gamedata.py -gamever 14132
 
 `dist/swiftlys2/plugin_files/gamedata/cs2/core/signatures.jsonc`
 
-[plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
+[plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) 
 
-## How to create SKILL for: find-{function}
+`dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
+
+[cs2kz-metamod](https://github.com/Source2ZE/CS2Fixes) 
+
+`dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
+
+## How to create SKILL for regular function
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CBaseModelEntity_SetModel` for example.
 
@@ -159,13 +268,172 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md 
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
-   as references.
+ - /skill-creator Create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to what we just did. 
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
-## How to create SKILL for: find-{vtable}
+6. Add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CBaseModelEntity_SetModel
+        expected_output:
+          - CBaseModelEntity_SetModel.{platform}.yaml
+```
+
+7. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CBaseModelEntity_SetModel
+        catagoty: func
+        alias:
+          - CBaseModelEntity::SetModel
+```
+
+## How to create SKILL for interface vtable
+
+* Always make sure you have ida-pro-mcp server running.
+
+1. Vibe all the way down to get what you want, `CSource2GameEntities_vtable` for example.
+
+* For `server.dll`:
+
+```bash
+Prompt: 
+  - Search for the Source2GameEntities interface identifier:
+
+  mcp__ida-pro-mcp__find_regex pattern="Source2GameEntities001"
+```
+
+```bash
+Prompt: 
+  - Find functions that reference this string:
+
+    mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
+
+    Look for a small function (~0x1a bytes) that:
+    - Loads the interface string into r8
+    - Loads an implementation function into rdx
+    - Loads a global pointer into rcx
+    - Jumps to a registration function
+```
+
+
+```bash
+Prompt: 
+
+  - Identify Interface Implementation Function
+
+    Decompile the small registration wrapper to find the interface implementation function:
+
+    mcp__ida-pro-mcp__decompile addr="<wrapper_func_addr>"
+
+    The implementation function (e.g., `sub_180XXXXXX`) simply returns a pointer to the static instance.
+
+```
+
+```bash
+Prompt: 
+
+ - Rename Interface Implementation
+
+  mcp__ida-pro-mcp__rename batch={"func": {"addr": "<impl_func_addr>", "name": "GetSource2GameEntities"}}
+
+```
+
+```bash
+Prompt: 
+
+  - Decompile to Find Static Instance
+
+    mcp__ida-pro-mcp__decompile addr="<impl_func_addr>"
+
+    The function returns `&s_Source2GameEntities` - rename this:
+
+    mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181XXXXXX", "new": "s_Source2GameEntities"}}
+```
+
+```bash
+Prompt: 
+
+  - Find VTable by Reading the Pointer s_Source2GameEntities Points To
+
+    Use `get_global_value` to get the address of `s_Source2GameEntities`, then read 8 bytes (64-bit pointer) at that address:
+
+    mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2GameEntities_addr>", "size": 8}
+
+    The returned bytes are in little-endian format. Convert them to get the vtable address.
+
+    Example:
+    - Bytes: `0x90 0xd1 0x71 0x81 0x01 0x00 0x00 0x00`
+    - Reversed (little-endian): `0x18171D190`
+```
+
+```bash
+Prompt: 
+
+  - Rename VTable
+
+    Use `func` rename with the vtable address:
+
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2GameEntities_vtable"}}
+
+    Example:
+    mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2GameEntities_vtable"}}
+
+```
+
+* For `libserver.so`:
+
+```bash
+Prompt: 
+  - Search for Source2GameEntities VTable Symbol
+
+    mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*Source2GameEntities*"}
+
+    Look for `_ZTV*Source2GameEntities` - this is the mangled vtable symbol.
+```
+
+2. Write YAML
+
+```bash
+Prompt:
+  - **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the vtable analysis results into yaml.
+```
+
+3. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-CSource2GameEntities_vtable" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CSource2Server_vtable/SKILL.md as references.
+```
+
+4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CSource2Server_vtable
+        expected_output:
+          - CSource2Server_vtable.{platform}.yaml
+```
+
+5. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CSource2Server_vtable
+        catagory: vtable
+```
+
+## How to create SKILL for vtable
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
 
@@ -180,19 +448,39 @@ Prompt:
 
 ```bash
 Prompt:
-  **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results into yaml.
+  - **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results into yaml.
 ```
 
 3. Create SKILL
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{vtableName}_vtable" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CGameRules_vtable/SKILL.md  
-   as references.
+ - /skill-creator Create project-level skill "find-CCSPlayerPawn_vtable" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
 ```
 
-## How to create SKILL for: find-{virtualfunction}
+4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CCSPlayerPawn_vtable
+        expected_output:
+          - CCSPlayerPawn_vtable.{platform}.yaml
+```
+
+5. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CCSPlayerPawn_vtable
+        catagory: vtable
+```
+
+## How to create SKILL for virtual function
+
+* Always make sure you have ida-pro-mcp server running.
 
 1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
 
@@ -205,32 +493,15 @@ Prompt:
   Otherwise, extract these values for subsequent steps:
   - `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
   - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+  - `vtable_entries`: An array of virtual functions starting from vtable[0]
 
 ```
 
 ```bash
-Prompt: 
-
-  - List virtual functions from index 270 to the last valid index:
-
-  mcp__ida-pro-mcp__py_eval code="""
-  import ida_bytes, ida_name
-
-  vtable_start = <VTABLE_START>  # Use calculated vtable_start from step 1
-  ptr_size = 8
-  start_index = 270
-  end_index = <LAST_VALID_INDEX>  # Use (vtable_numvfunc - 1) from step 1
-
-  for i in range(start_index, end_index + 1):
-      func_ptr = ida_bytes.get_qword(vtable_start + i * ptr_size)
-      func_name = ida_name.get_name(func_ptr) or "unknown"
-      print(f"vftable[{i}]: {hex(func_ptr)} -> {func_name}")
-  """
-    
-  - Then decompile each function with:
+Prompt:
+  - Decompile virtual functions from index 270 to the last valid index
 
   mcp__ida-pro-mcp__decompile addr="<function_addr>"
-
 
 ```
 
@@ -279,9 +550,124 @@ Prompt:
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-{FunctionName}" in **ENGLISH** according to what we just did. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check for:
-   @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md 
-   as references.
+ - /skill-creator Create project-level skill "find-CCSPlayerController_Respawn" in **ENGLISH** according to what we just did. 
+ - Don't pack skill. 
+ - Note that the SKILL should be working with both `server.dll` and `server.so`. 
+ - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
+```
+
+7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CCSPlayerController_Respawn
+        expected_output:
+          - CCSPlayerController_Respawn.{platform}.yaml
+        expected_input:
+          - CCSPlayerController_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerController_vtable
+```
+
+8. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CCSPlayerController_Respawn
+        catagory: vfunc
+        alias:
+          - CCSPlayerController::Respawn
+```
+
+## How to create SKILL for global variable
+
+* Always make sure you have ida-pro-mcp server running.
+
+1. Vibe all the way down to get what you want, `IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example.
+
+```bash
+Prompt: 
+ - search string "IGameSystem::InitAllSystems" in IDA
+```
+
+```bash
+Prompt: 
+ - search xrefs for this string
+```
+
+```bash
+rename sub_1804F3DC0 to IGameSystem_InitAllSystems
+```
+
+```bash
+rename "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )" to "for ( i = IGameSystem_InitAllSystems_pFirst; i; i = *(_QWORD *)(i + 8) )" if it was not renamed yet.
+```
+
+2. Generate a robust signature for IGameSystem_InitAllSystems
+
+```bash
+Prompt:
+   Generate a robust signature for IGameSystem_InitAllSystems
+   -- **DO NOT** use `find_bytes` as it won't work for code.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for IGameSystem_InitAllSystems.
+```
+
+3. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results for IGameSystem_InitAllSystems into yaml.
+```
+
+4. Generate a robust signature for IGameSystem_InitAllSystems_pFirst
+
+```bash
+Prompt:
+   Generate a robust signature for IGameSystem_InitAllSystems_pFirst
+   -- **DO NOT** use `find_bytes` as it won't work for code.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for IGameSystem_InitAllSystems_pFirst.
+```
+
+5. Write YAML
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results for IGameSystem_InitAllSystems_pFirst into yaml.
+```
+
+6. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+ - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md AND @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager.md as references.
+```
+
+7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
+        expected_output:
+          - IGameSystem_InitAllSystems.{platform}.yaml
+          - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
+```
+
+8. Add the new symbols to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: IGameSystem_InitAllSystems
+        catagory: func
+        alias:
+          - IGameSystem::InitAllSystems
+
+      - name: IGameSystem_InitAllSystems_pFirst
+        catagory: gv
+        alias:
+          - IGameSystem::InitAllSystems::pFirst
 ```
 
 ## Troubleshooting
@@ -290,7 +676,7 @@ Prompt:
 
 This is because the official idapro package is not compatible with IDA 9.0
 
-Mitigation: Overwrite `Python3**/Lib/site-packages/idapro/__init__.py` with `CS2_VibeSignatures/patched-init-for-ida-9.0/Lib/site-packages/idapro/__init__.py`.
+Mitigation: Overwrite `Python3**/Lib/site-packages/idapro/__init__.py` with `CS2_VibeSignatures/patched-py/Lib/site-packages/idapro/__init__.py`.
 
 ### error: could not create 'ida.egg-info': access denied
 
@@ -299,3 +685,11 @@ Mitigation: You should run `pip install .` and `python py-activate-idalib.py` un
 ### Could not find idalib64.dll in .........
 
 Mitigation: Try `set IDADIR=C:\Program Files\IDA Professional 9.0` or add `IDADIR=C:\Program Files\IDA Professional 9.0` to your system environment.
+
+### py_eval evaulates unexpected expression with multi-line code
+
+See https://github.com/mrexodia/ida-pro-mcp/pull/240
+
+Mitigation: 
+ - Overwrite `Python3**/Lib/site-packages/ida_pro_mcp/ida_mcp/api_python.py` with `CS2_VibeSignatures/patched-py/Lib/site-packages/ida_pro_mcp/ida_mcp/api_python.py`.
+ - Overwrite `%APPDATA%/Hex-Rays/IDA Pro/plugins/ida_mcp/api_python.py` with `CS2_VibeSignatures/patched-py/Lib/site-packages/ida_pro_mcp/ida_mcp/api_python.py`.
