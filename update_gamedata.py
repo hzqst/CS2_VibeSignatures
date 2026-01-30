@@ -237,8 +237,11 @@ def build_function_library_map(config):
             if func_name:
                 func_lib_map[func_name] = module_name
 
-                # Also add aliases
-                for alias in symbol.get("alias", []):
+                # Also add aliases (support both string and list format)
+                aliases = symbol.get("alias", [])
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                for alias in aliases:
                     func_lib_map[alias] = module_name
 
     return func_lib_map
@@ -263,8 +266,11 @@ def build_function_category_map(config):
             if func_name and category:
                 func_cat_map[func_name] = category
 
-                # Also add aliases
-                for alias in symbol.get("alias", []):
+                # Also add aliases (support both string and list format)
+                aliases = symbol.get("alias", [])
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                for alias in aliases:
                     func_cat_map[alias] = category
 
     return func_cat_map
@@ -286,7 +292,11 @@ def build_alias_to_name_map(config):
         for symbol in module.get("symbols", []):
             func_name = symbol.get("name")
             if func_name:
-                for alias in symbol.get("alias", []):
+                # Support both string and list format for alias
+                aliases = symbol.get("alias", [])
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                for alias in aliases:
                     alias_to_name[alias] = func_name
 
     return alias_to_name
