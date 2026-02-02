@@ -92,7 +92,7 @@ modules:
         expected_input:
           - CBasePlayerController_vtable.{platform}.yaml
         prerequisite:
-          - find-CBasePlayerController
+          - find-CBasePlayerController_vtable
 
       - name: find-CBasePlayerController_SetPlayerName
         expected_output:
@@ -106,6 +106,7 @@ modules:
         expected_output:
           - CCSGameRules_TerminateRound.{platform}.yaml
           - CEntityInstance_AcceptInput.{platform}.yaml
+        max_retries: 4
 
       - name: find-CCSPlayer_ItemServices_CanAcquire
         expected_output:
@@ -125,7 +126,7 @@ modules:
         expected_input:
           - CCSPlayer_WeaponServices_vbatle.{platform}.yaml
         prerequisite:
-          - find-CCSPlayer_WeaponServices)_vbatle
+          - find-CCSPlayer_WeaponServices_vtable
 
       - name: find-CCSPlayerController_ChangeTeam
         expected_output:
@@ -193,6 +194,7 @@ modules:
           - GiveNamedItem.{platform}.yaml
           - UTIL_CreateEntityByName.{platform}.yaml
           - CBaseEntity_DispatchSpawn.{platform}.yaml
+        max_retries: 6
 
       - name: find-NetworkStateChanged
         expected_output:
@@ -315,8 +317,6 @@ modules:
         catagory: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
-        prerequisite:
-          - CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
         alias:
