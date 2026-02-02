@@ -33,23 +33,117 @@ This will lead to a large function that processes touch events.
 mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
-Look for these patterns in the decompiled code:
+#### Locate helper function that calls into StartTouch+Touch
 
-#### Pattern for StartTouch+Touch Helper Function
+Look for a call with 4 args in the decompiled code:
 
-Find a call with comment "StartTouch+Touch":
+Windows:
 
 ```cpp
-sub_180D1AEE0(v12, v16, v18, v8);   // StartTouch+Touch
+sub_180XXXXXX(v12, v16, v18, v8);
+```
+
+Linux:
+
+```cpp
+sub_1XXXXXX(v8, v13, (__int64)v45, (__int64)v6);
+```
+
+The `sub_180XXXXXX` or `sub_1XXXXXX` should match following pattern:
+
+Windows:
+
+```cpp
+double __fastcall sub_180D1AEE0(_QWORD *a1, _QWORD *a2, __int64 a3, __int64 a4)
+{
+  __int64 v8; // rax
+  _BYTE v10[40]; // [rsp+20h] [rbp-28h] BYREF
+
+  v8 = (*(__int64 (__fastcall **)(_QWORD, _BYTE *))(**(_QWORD **)(a4 + 8) + 408LL))(*(_QWORD *)(a4 + 8), v10);
+  sub_18053B9A0(&unk_181BE1700, v8, a3);
+  qword_181BE1708 = (__int64)a2;
+  qword_181EC0DA0 = a4;
+  if ( a2 && (*(_DWORD *)(a1[2] + 48LL) & 0x200) == 0 && (*(_DWORD *)(a2[2] + 48LL) & 0x200) == 0 )
+  {
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a1 + 1176LL))(a1, a2); //StartTouch
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a1 + 1184LL))(a1, a2); //Touch
+  }
+  if ( a1 && (*(_DWORD *)(a2[2] + 48LL) & 0x200) == 0 && (*(_DWORD *)(a1[2] + 48LL) & 0x200) == 0 )
+  {
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a2 + 1176LL))(a2, a1); //StartTouch
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a2 + 1184LL))(a2, a1); //Touch
+  }
+  return sub_18128D070(&unk_181BE1700);
+}
+```
+
+Linux:
+
+```cpp
+__int64 __fastcall sub_177BE90(_QWORD *a1, _QWORD *a2, __int64 a3, __int64 a4)
+{
+  _BYTE v7[80]; // [rsp+0h] [rbp-50h] BYREF
+
+  (*(void (__fastcall **)(_BYTE *))(**(_QWORD **)(a4 + 8) + 408LL))(v7);
+  sub_E31300(&xmmword_25A3B00, v7, a3);
+  *((_QWORD *)&xmmword_25A3B00 + 1) = a2;
+  qword_25A3AF8 = a4;
+  if ( a2 )
+  {
+    if ( (*(_BYTE *)(a1[2] + 49LL) & 2) != 0 || (*(_BYTE *)(a2[2] + 49LL) & 2) != 0 )
+      return sub_1B5AAC0(&xmmword_25A3B00);
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a1 + 1168LL))(a1, a2); //StartTouch
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a1 + 1176LL))(a1, a2); //Touch
+  }
+  if ( (*(_BYTE *)(a2[2] + 49LL) & 2) == 0 && (*(_BYTE *)(a1[2] + 49LL) & 2) == 0 )
+  {
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a2 + 1168LL))(a2, a1); //StartTouch
+    (*(void (__fastcall **)(_QWORD *, _QWORD *))(*a2 + 1176LL))(a2, a1); //Touch
+  }
+  return sub_1B5AAC0(&xmmword_25A3B00);
+}
 ```
 
 #### Pattern for EndTouch Helper Function
 
 Find a call with comment or condition for "EndTouch":
 
+Windows:
+
 ```cpp
 if ( (*(_BYTE *)v8 & 0x10) != 0 )
-    sub_180D1AEA0(v12, v16);              // EndTouch
+    sub_180XXXXXX(v12, v16);
+```
+
+Linux:
+
+```cpp
+LABEL_4:
+        if ( (v14 & 0x10) == 0 )
+          goto LABEL_5;
+LABEL_43:
+        v5 += 256LL;
+        sub_1XXXXXX((__int64)v8, (__int64)v13);
+```
+
+Windows:
+
+```cpp
+__int64 __fastcall sub_180D1AEA0(__int64 a1, __int64 a2)
+{
+  (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 1192LL))(a1); //EndTouch
+  return (*(__int64 (__fastcall **)(__int64, __int64))(*(_QWORD *)a2 + 1192LL))(a2, a1);
+}
+```
+
+Linux:
+
+```cpp
+__int64 __fastcall sub_1XXXXXX(__int64 a1, __int64 a2)
+{
+  (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 1184LL))(a1);  // EndTouch
+  return (*(__int64 (__fastcall **)(__int64, __int64))(*(_QWORD *)a2 + 1184LL))(a2, a1);
+}
 ```
 
 ### 4. Decompile StartTouch+Touch Helper Function
@@ -81,23 +175,22 @@ Look for this virtual function call:
 (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 1192LL))(a1);
 ```
 
-### 6. Get CBaseEntity VTable
+### 6. Get CBaseEntity VTable 
 
-#### Windows (server.dll)
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
 
-```
-mcp__ida-pro-mcp__list_globals queries={"filter": "*??_7CBaseEntity@@6B@*"}
-```
+If the skill returns an error, **STOP** and report to user.
 
-#### Linux (server.so)
-
-```
-mcp__ida-pro-mcp__list_globals queries={"filter": "*_ZTV11CBaseEntity*"}
-```
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
 ### 7. Read CBaseEntity VTable Entries
 
 Read the virtual function addresses from the CBaseEntity vtable:
+
+* Index 147, 148, 149 can change on game update.
 
 ```python
 # Index 147 (offset 1176): CBaseEntity_StartTouch
@@ -204,7 +297,7 @@ Required parameters for each function:
 ### CBaseEntity_StartTouch
 
 - **VTable**: CBaseEntity
-- **VTable Index**: 147 (offset 0x498 = 1176)
+- **VTable Index**: 147 (offset 0x498 = 1176), can change on game update
 - **Prototype**: `void CBaseEntity::StartTouch(CBaseEntity* pOther)`
 - **Purpose**: Called when an entity starts touching another entity
 - **Implementation**: Forwards the call to the parent entity's StartTouch if applicable
@@ -212,7 +305,7 @@ Required parameters for each function:
 ### CBaseEntity_Touch
 
 - **VTable**: CBaseEntity
-- **VTable Index**: 148 (offset 0x4A0 = 1184)
+- **VTable Index**: 148 (offset 0x4A0 = 1184), can change on game update
 - **Prototype**: `void CBaseEntity::Touch(CBaseEntity* pOther)`
 - **Purpose**: Called continuously while entities are touching
 - **Implementation**: May call optional touch callback, then forwards to parent entity's Touch
@@ -220,7 +313,7 @@ Required parameters for each function:
 ### CBaseEntity_EndTouch
 
 - **VTable**: CBaseEntity
-- **VTable Index**: 149 (offset 0x4A8 = 1192)
+- **VTable Index**: 149 (offset 0x4A8 = 1192), can change on game update
 - **Prototype**: `void CBaseEntity::EndTouch(CBaseEntity* pOther)`
 - **Purpose**: Called when an entity stops touching another entity
 - **Implementation**: Forwards the call to the parent entity's EndTouch if applicable
