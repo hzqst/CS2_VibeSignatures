@@ -446,9 +446,14 @@ modules:
 
       - name: IGameSystem_InitAllSystems
         catagory: func
+        alias:
+          - IGameSystem::InitAllSystems
 
       - name: IGameSystem_InitAllSystems_pFirst
         catagory: gv
+        alias:
+          - IGameSystem::InitAllSystems::pFirst
+          - IGameSystem::InitAllSystems->pFirst
 
       - name: CSource2GameEntities_CheckTransmit
         catagory: vfunc
