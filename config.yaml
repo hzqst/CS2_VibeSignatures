@@ -315,8 +315,6 @@ modules:
         catagory: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
-        prerequisite:
-          - CCSGameRules_vtable
 
       - name: CCSGameRules_TerminateRound
         alias:
