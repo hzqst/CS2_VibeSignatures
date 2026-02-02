@@ -92,7 +92,7 @@ modules:
         expected_input:
           - CBasePlayerController_vtable.{platform}.yaml
         prerequisite:
-          - find-CBasePlayerController
+          - find-CBasePlayerController_vtable
 
       - name: find-CBasePlayerController_SetPlayerName
         expected_output:
@@ -125,7 +125,7 @@ modules:
         expected_input:
           - CCSPlayer_WeaponServices_vbatle.{platform}.yaml
         prerequisite:
-          - find-CCSPlayer_WeaponServices)_vbatle
+          - find-CCSPlayer_WeaponServices_vtable
 
       - name: find-CCSPlayerController_ChangeTeam
         expected_output:
