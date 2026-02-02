@@ -276,6 +276,11 @@ modules:
           - CBaseEntity_StartTouch.{platform}.yaml
           - CBaseEntity_Touch.{platform}.yaml
           - CBaseEntity_EndTouch.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+        max_retries: 6
 
     symbols:
       - name: CSource2Server_vtable
