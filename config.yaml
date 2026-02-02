@@ -74,6 +74,10 @@ modules:
         expected_output:
           - CCSPlayerPawn_vtable.{platform}.yaml
 
+      - name: find-CBaseTrigger_vtable
+        expected_output:
+          - CBaseTrigger_vtable.{platform}.yaml
+
       - name: find-CBaseEntity_TakeDamageOld
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
@@ -196,6 +200,16 @@ modules:
           - CBaseEntity_DispatchSpawn.{platform}.yaml
         max_retries: 6
 
+      - name: find-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_RemoveWeapons
+        expected_output:
+          - CCSPlayer_ItemServices_DropActivePlayerWeapon.{platform}.yaml
+          - CCSPlayer_ItemServices_RemoveWeapons.{platform}.yaml
+        expected_input:
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_ItemServices_vtable
+        max_retries: 4
+
       - name: find-NetworkStateChanged
         expected_output:
           - NetworkStateChanged.{platform}.yaml
@@ -257,6 +271,12 @@ modules:
         expected_output:
           - LegacyGameEventListener.{platform}.yaml
 
+      - name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch
+        expected_output:
+          - CBaseEntity_StartTouch.{platform}.yaml
+          - CBaseEntity_Touch.{platform}.yaml
+          - CBaseEntity_EndTouch.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -286,6 +306,9 @@ modules:
         catagory: vtable
 
       - name: CCSPlayerPawn_vtable
+        catagory: vtable
+
+      - name: CBaseTrigger_vtable
         catagory: vtable
 
       - name: CBaseEntity_TakeDamageOld
@@ -436,9 +459,14 @@ modules:
 
       - name: IGameSystem_InitAllSystems
         catagory: func
+        alias:
+          - IGameSystem::InitAllSystems
 
       - name: IGameSystem_InitAllSystems_pFirst
         catagory: gv
+        alias:
+          - IGameSystem::InitAllSystems::pFirst
+          - IGameSystem::InitAllSystems->pFirst
 
       - name: CSource2GameEntities_CheckTransmit
         catagory: vfunc
@@ -457,6 +485,16 @@ modules:
         alias:
           - CBasePlayerPawn::RemovePlayerItem
 
+      - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
+        catagory: vfunc
+        alias:
+          - CCSPlayer_ItemServices::DropActivePlayerWeapon
+
+      - name: CCSPlayer_ItemServices_RemoveWeapons
+        catagory: vfunc
+        alias:
+          - CCSPlayer_ItemServices::RemoveWeapons
+
       - name: CEntityIOOutput_FireOutputInternal
         catagory: func
         alias:
@@ -469,3 +507,18 @@ modules:
 
       - name: LegacyGameEventListener
         catagory: func
+
+      - name: CBaseEntity_StartTouch
+        catagory: vfunc
+        alias:
+          - CBaseEntity::StartTouch
+
+      - name: CBaseEntity_Touch
+        catagory: vfunc
+        alias:
+          - CBaseEntity::Touch
+
+      - name: CBaseEntity_EndTouch
+        catagory: vfunc
+        alias:
+          - CBaseEntity::EndTouch
