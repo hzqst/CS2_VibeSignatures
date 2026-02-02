@@ -38,7 +38,7 @@ The vtable uses MSVC name mangling:
 ### Linux (server.so)
 
 The vtable uses Itanium C++ ABI name mangling:
-- `_ZTV23CCSPlayer_ItemServices` - CCSPlayer_ItemServices vtable
+- `_ZTV22CCSPlayer_ItemServices` - CCSPlayer_ItemServices vtable
 
 ## Output YAML Format
 
@@ -48,8 +48,8 @@ The output YAML filename depends on the platform:
 
 ```yaml
 vtable_class: CCSPlayer_ItemServices
-vtable_va: 0x1816b1cf8    # Virtual address - changes with game updates
-vtable_rva: 0x16b1cf8     # Relative virtual address - changes with game updates
-vtable_size: 0xc0         # VTable size in bytes - changes with game updates
-vtable_numvfunc: 24       # Number of virtual functions - changes with game updates
+vtable_va: 0x221d120      # Virtual address - changes with game updates
+vtable_rva: 0x221d120     # Relative virtual address - changes with game updates
+vtable_size: 0xc8         # VTable size in bytes - changes with game updates
+vtable_numvfunc: 25       # Number of virtual functions - changes with game updates
 ```
