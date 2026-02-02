@@ -28,13 +28,13 @@
             },
             "CBasePlayerController::SetPawn": {
                 "library": "server",
-                "win64": "44 88 4C 24 ? 53 57",
-                "linuxsteamrt64": "55 48 8D 87 ? ? ? ? 48 89 E5 41 57 41 89 CF"
+                "win64": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 E0 04 00 00 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?",
+                "linuxsteamrt64": "55 48 8D 87 C0 07 00 00 48 89 E5 41 57 41 89 CF 41 56 41 55 45 89 CD 41 54 49 89 F4 53 48 89 FB 48 83 EC 68 8B 8F C0 07 00 00 44 89 45 80 48 89 45 88 83 F9 FF 0F 84 ? ? ? ? 48 8B 35 ? ? ? ?"
             },
             "LegacyGameEventListener": {
                 "library": "server",
-                "win64": "48 8B 15 ? ? ? ? 48 85 D2 74 ? 83 F9 ? 77",
-                "linuxsteamrt64": "48 8B 05 ? ? ? ? 48 85 C0 74 ? 83 FF ? 77 ? 48 63 FF 48 C1 E7 ? 48 8D 44 38"
+                "win64": "48 8B 15 ? ? ? ? 48 85 D2 74 14 83 F9 3F 77 0F 48 63 C1 48 83 C0 04 48 C1 E0 04 48 03 C2 C3 33 C0 C3",
+                "linuxsteamrt64": "48 8B 05 ? ? ? ? 48 85 C0 74 16 83 FF 3F 77 0F 48 63 FF 48 C1 E7 04 48 8D 44 38 40 C3"
             },
             "CSource2Server::Init": {
                 "library": "server",
@@ -43,13 +43,13 @@
             },
             "CEntityInstance::AcceptInput": {
                 "library": "server",
-                "win64": "48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 49 8B F0 48 8B D9 48 8B 0D",
-                "linuxsteamrt64": "55 48 89 F0 48 89 E5 41 57 49 89 FF 41 56 48 8D 7D"
+                "win64": "48 89 5C 24 10 48 89 74 24 18 57 48 83 EC 50 49 8B F0 48 8B D9 48 8B 0D ? ? ? ? 4C 8B C2 48 8D 54 24 60 49 8B F9 E8 ? ? ? ? 48 8B 44 24 60 48 8D 54 24 40 48 8B 4B 10 4C 8B CF",
+                "linuxsteamrt64": "55 48 89 F0 48 89 E5 41 57 49 89 FF 41 56 48 8D 7D C0 45 89 CE 41 55 4D 89 C5 41 54 49 89 CC 53 48 89 D3 48 83 EC 18 48 8D 15 ? ? ? ? 48 8B 32 48 89 C2 E8 ? ? ? ?"
             },
             "CEntityIOOutput::FireOutputInternal": {
                 "library": "server",
-                "win64": "4C 89 4C 24 ? 48 89 4C 24 ? 53 56",
-                "linuxsteamrt64": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 41 54 49 89 D4 53 48 89 F3"
+                "win64": "4C 89 4C 24 20 48 89 4C 24 08 53 56 57 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 4D 8B F0",
+                "linuxsteamrt64": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 41 54 49 89 D4 53 48 89 F3 48 83 EC 78 48 8D 05 ? ? ? ? 48 89 BD 78 FF FF FF 48 89 4D A0 F3 0F 11 45 9C 4C 89 45 A8 48 8B 00 4C 89 8D 70 FF FF FF"
             },
             "CGameRules::TerminateRound": {
                 "library": "server",
@@ -68,8 +68,8 @@
             },
             "CBaseEntity::EmitSoundFilter": {
                 "library": "server",
-                "win64": "40 53 48 83 EC ? 4C 89 4C 24 ? 48 8B D9 45 8B C8",
-                "linuxsteamrt64": "55 48 89 E5 53 48 89 FB 48 83 EC ? E8 ? ? ? ? 48 89 D8 48 8B 5D ? C9 C3 CC CC CC CC CC CC 48 B8"
+                "win64": "48 89 74 24 18 57 41 56 41 57 48 83 EC 40 BE FF FF FF FF 4C 8B FA 48 8B F9 89 74 24 78 8B D6 48 8D 0D ? ? ? ? 4D 8B F0 E8 ? ? ? ? 48 85 C0 75 0B 48 8B 05 ? ? ? ? 48 8B 40 08 80 38",
+                "linuxsteamrt64": "55 48 89 E5 41 57 41 56 49 89 F6 BE FF FF FF FF 41 55 49 89 D5 41 54 53 48 89 FB 48 8D 3D ? ? ? ? 48 83 EC 28 C7 45 C8 FF FF FF FF E8 ? ? ? ?"
             },
             "CBaseEntity::SetMoveType": {
                 "library": "server",
