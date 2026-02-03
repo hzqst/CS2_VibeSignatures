@@ -522,6 +522,7 @@ modules:
           - CSource2GameEntities::CheckTransmit
           - ISource2GameEntities::CheckTransmit
           - ISource2GameEntities_CheckTransmit
+          - CheckTransmit
 
       - name: CBaseEntity_EmitSoundFilter
         catagory: func

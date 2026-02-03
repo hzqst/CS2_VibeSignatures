@@ -215,15 +215,15 @@
   "CBaseTrigger_StartTouch": {
     "signatures": {
       "library": "server",
-      "windows": "40 57 41 56 48 83 EC ? 48 8B 01",
-      "linux": "55 48 89 E5 41 56 41 55 49 89 F5 41 54 53 48 89 FB 48 83 EC 10 48 8B 07"
+      "windows": "40 57 41 56 48 83 EC 28 48 8B 01 4C 8B F2 48 8B F9 FF 90 ? ? 00 00 84 C0 0F 84 ? ? ? ?",
+      "linux": "55 48 89 E5 41 56 41 55 49 89 F5 41 54 53 48 89 FB 48 83 EC 10 48 8B 07 FF 90 ? ? 00 00 84 C0 75 0E"
     }
   },
   "CBaseTrigger_EndTouch": {
     "signatures": {
       "library": "server",
-      "windows": "40 53 41 55 48 83 EC 28",
-      "linux": "55 BA FF FF FF FF 48 89 E5 41 57 41 56 41 55 49 89 F5 41"
+      "windows": "48 85 D2 0F 84 ? ? ? ? 53 55 48 83 EC 28 4C 8B 42 10 48 8B EA 48 8B D9 4D 85 C0 74 ?",
+      "linux": "48 85 F6 74 0B E9 ? ? ? ? 66 0F 1F 44 00 00 C3 CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 8B 07 48 8D 15"
     }
   },
   "GameEntitySystem": {
@@ -261,8 +261,8 @@
   "CheckTransmit": {
     "signatures": {
       "library": "server",
-      "windows": "48 8B C4 4C 89 48 ? 48 89 50 ? 48 89 48 ? 55 48 8D A8",
-      "linux": "55 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ? ? ? ? 41 55 41 89 D5"
+      "windows": "48 8B C4 4C 89 48 20 48 89 50 10 48 89 48 08 55 48 8D A8 E8 F6 FF FF 48 81 EC 10 0A 00 00 48 89 58 F0 48 89 70 E8 48 89 78 E0 33 FF 4C 89 60 D8 4C 89 68 D0 4C 8B E9 48 8D 0D ? ? ? ?",
+      "linux": "55 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ? ? ? ? 41 55 41 89 D5 41 54 53 48 81 EC 68 01 00 00"
     }
   },
   "CheckTransmitPlayerSlot": {
