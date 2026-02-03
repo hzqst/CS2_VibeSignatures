@@ -306,6 +306,19 @@ modules:
         prerequisite:
           - find-CBaseEntity_vtable
 
+      - name: find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
+        expected_output:
+          - CBaseTrigger_StartTouch.{platform}.yaml
+          - CBaseTrigger_EndTouch.{platform}.yaml
+        expected_input:
+          - CBaseTrigger_vtable.{platform}.yaml
+          - CBaseEntity_StartTouch.{platform}.yaml
+          - CBaseEntity_Touch.{platform}.yaml
+          - CBaseEntity_EndTouch.{platform}.yaml
+        prerequisite:
+          - find-CBaseTrigger_vtable
+          - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -515,6 +528,11 @@ modules:
         alias:
           - CBaseEntity::EmitSoundFilter
 
+      - name: CBasePlayerPawn_CommitSuicide
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::CommitSuicide
+
       - name: CBasePlayerPawn_RemovePlayerItem
         catagory: func
         alias:
@@ -562,3 +580,13 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::IsPlayerPawn
+
+      - name: CBaseTrigger_StartTouch
+        catagory: vfunc
+        alias:
+          - CBaseTrigger::StartTouch
+
+      - name: CBaseTrigger_EndTouch
+        catagory: vfunc
+        alias:
+          - CBaseTrigger::EndTouch

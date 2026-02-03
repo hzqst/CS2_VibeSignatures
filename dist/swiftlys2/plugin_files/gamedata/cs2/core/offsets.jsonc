@@ -17,7 +17,7 @@
     },
     "CCSPlayerController::Respawn": {
         "windows": 272,
-        "linux": 274
+        "linux": 275
     },
     "CBaseEntity::CollisionRulesChanged": {
         "windows": 185,
@@ -56,7 +56,7 @@
         "linux": 20
     },
     "CCSPlayer_WeaponServices::CanUse": {
-        "windows": 23,
+        "windows": 25,
         "linux": 24
     },
     "CCSPlayer_WeaponServices::DropWeapon": {

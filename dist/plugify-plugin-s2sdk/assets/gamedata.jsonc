@@ -13,8 +13,8 @@
             },
             "CCSPlayerController::SwitchTeam": {
                 "library": "server",
-                "win64": "40 53 57 48 81 EC 88 00 00 00 48 8B D9 8B FA 8B CA E8 ? ? ? ? 48 85 C0 0F 84 ? ? ? ? 8D 47 FE 83 F8 01 0F 87 ? ? ? ? 0F B6 83 44 03 00 00 3B F8",
-                "linuxsteamrt64": "55 48 89 E5 41 54 49 89 FC 89 F7 53 89 F3 E8 ? ? ? ? 48 85 C0 74 ? 8D 43 FE 83 F8 01 77 ? 41 0F B6 84 24 24 06 00 00 39 C3"
+                "win64": "40 53 57 48 81 EC 88 00 00 00 48 8B D9 8B FA 8B CA E8 ? ? ? ? 48 85 C0 0F 84 ? ? ? ? 8D 47 FE 83 F8 01 0F 87 ? ? ? ? 0F B6 83 44 03 00 00 3B F8 0F 84 ? ? ? ?",
+                "linuxsteamrt64": "55 48 89 E5 41 54 49 89 FC 89 F7 53 89 F3 E8 ? ? ? ? 48 85 C0 74 ? 8D 43 FE 83 F8 01 77 ? 41 0F B6 84 24 24 06 00 00 39 C3 74 ? 89 DE 4C 89 E7 5B 41 5C 5D E9 ? ? ? ?"
             },
             "CHostStateMgr::StartNewRequest": {
                 "library": "engine2",
@@ -28,18 +28,18 @@
             },
             "CBasePlayerController::SetPawn": {
                 "library": "server",
-                "win64": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 E0 04 00 00 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?",
+                "win64": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 ? ? ? ? 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?",
                 "linuxsteamrt64": "55 48 8D 87 C0 07 00 00 48 89 E5 41 57 41 89 CF 41 56 41 55 45 89 CD 41 54 49 89 F4 53 48 89 FB 48 83 EC 68 8B 8F C0 07 00 00 44 89 45 80 48 89 45 88 83 F9 FF 0F 84 ? ? ? ? 48 8B 35 ? ? ? ?"
             },
             "LegacyGameEventListener": {
                 "library": "server",
                 "win64": "48 8B 15 ? ? ? ? 48 85 D2 74 14 83 F9 3F 77 0F 48 63 C1 48 83 C0 04 48 C1 E0 04 48 03 C2 C3 33 C0 C3",
-                "linuxsteamrt64": "48 8B 05 ? ? ? ? 48 85 C0 74 16 83 FF 3F 77 0F 48 63 FF 48 C1 E7 04 48 8D 44 38 40 C3"
+                "linuxsteamrt64": "48 8B 05 ? ? ? ? 48 85 C0 74 ? 83 FF 3F 77 ? 48 63 FF 48 C1 E7 04 48 8D 44 38 40 C3"
             },
             "CSource2Server::Init": {
                 "library": "server",
                 "win64": "48 83 EC 28 48 83 3D ? ? ? ? 00 74 07 33 C9 E8 ? ? ? ? FF 15 ? ? ? ? 45 33 C0 BA E6 B4 D6 34",
-                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC 08 48 8D 05 ? ? ? ? 48 83 38 00 74 ? 31 FF E8 ? ? ? ? E8 ? ? ? ? 31 D2 BE E6 B4 D6 34"
+                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC 08 48 8D 05 ? ? ? ? 48 83 38 00 74 07 31 FF E8 ? ? ? ? E8 ? ? ? ? 31 D2 BE E6 B4 D6 34"
             },
             "CEntityInstance::AcceptInput": {
                 "library": "server",
@@ -48,7 +48,7 @@
             },
             "CEntityIOOutput::FireOutputInternal": {
                 "library": "server",
-                "win64": "4C 89 4C 24 20 48 89 4C 24 08 53 56 57 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 4D 8B F0",
+                "win64": "4C 89 4C 24 ? 48 89 4C 24 ? 53 56 57 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 4D 8B F0",
                 "linuxsteamrt64": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 41 54 49 89 D4 53 48 89 F3 48 83 EC 78 48 8D 05 ? ? ? ? 48 89 BD 78 FF FF FF 48 89 4D A0 F3 0F 11 45 9C 4C 89 45 A8 48 8B 00 4C 89 8D 70 FF FF FF"
             },
             "CGameRules::TerminateRound": {
@@ -69,7 +69,7 @@
             "CBaseEntity::EmitSoundFilter": {
                 "library": "server",
                 "win64": "48 89 74 24 18 57 41 56 41 57 48 83 EC 40 BE FF FF FF FF 4C 8B FA 48 8B F9 89 74 24 78 8B D6 48 8D 0D ? ? ? ? 4D 8B F0 E8 ? ? ? ? 48 85 C0 75 0B 48 8B 05 ? ? ? ? 48 8B 40 08 80 38",
-                "linuxsteamrt64": "55 48 89 E5 41 57 41 56 49 89 F6 BE FF FF FF FF 41 55 49 89 D5 41 54 53 48 89 FB 48 8D 3D ? ? ? ? 48 83 EC 28 C7 45 C8 FF FF FF FF E8 ? ? ? ?"
+                "linuxsteamrt64": "55 48 89 E5 53 48 89 FB 48 83 EC 08 E8 ? ? ? ? 48 89 D8 48 8B 5D F8 C9 C3 CC CC CC CC CC CC 48 B8"
             },
             "CBaseEntity::SetMoveType": {
                 "library": "server",
@@ -84,12 +84,12 @@
             "CCSPlayer_ItemServices::CanAcquire": {
                 "library": "server",
                 "win64": "44 89 44 24 18 48 89 54 24 10 48 89 4C 24 08 55 53 56 57 41 55 41 56 41 57 48 8B EC 48 81 EC ? ? ? ? 48 83 79 38 00 49 8B D9 45 8B E8 4C 8B FA 48 8B F9 75 05 E8 ? ? ? ?",
-                "linuxsteamrt64": "55 48 89 E5 41 57 41 56 41 55 49 89 CD 41 54 49 89 FC 53 48 89 F3 48 83 EC 78 4C 8B 77 38 89 55 BC 4D 85 F6 0F 84 ? ? ? ?"
+                "linuxsteamrt64": "55 48 89 E5 41 57 41 56 41 55 49 89 CD 41 54 49 89 FC 53 48 89 F3 48 83 EC 78 4C 8B 77 38 89 55 BC 4D 85 F6 0F 84 ? ? ? ? 48 8D 45 CC 4D 85 ED 4C 0F 44 E8 41 C7 45 00 00 00 00 00 48 85 DB"
             },
             "GetCSWeaponDataFromKey": {
                 "library": "server",
-                "win64": "48 89 5C 24 08 57 48 83 EC 20 33 FF 4C 8B CA 8B D9 8B C7 48 85 D2 74 22 38 02 74 1E 48 C7 C2 FF FF FF FF 48 FF C2 41 38 04 11 75 F7 41 B8 26 59 41 31 49 8B C9 E8 ? ? ? ?",
-                "linuxsteamrt64": "55 31 D2 48 89 E5 41 57 41 56 41 55 41 54 41 89 FC 53 48 81 EC ? 00 00 00 48 85 F6 74 ? 80 3E 00"
+                "win64": "48 89 5C 24 08 57 48 83 EC 20 33 FF 4C 8B CA 8B D9 8B C7 48 85 D2 74 22 38 02 74 1E 48 C7 C2 FF FF FF FF 48 FF C2 41 38 04 11 75 F7 41 B8 26 59 41 31 49 8B C9 E8 ? ? ? ? 89 44 24 38 85 C0",
+                "linuxsteamrt64": "55 31 D2 48 89 E5 41 57 41 56 41 55 41 54 41 89 FC 53 48 81 EC A8 00 00 00 48 85 F6 74 08 80 3E 00 49 89 F5 75 2A 48 81 C4 A8 00 00 00 44 89 E6 5B 48 8D 3D ? ? ? ?"
             },
             "VScriptInitialization": {
                 "library": "vscript",
@@ -148,7 +148,7 @@
                 "linuxsteamrt64": 400
             },
             "CCSPlayer_WeaponServices::CanUse": {
-                "win64": 23,
+                "win64": 25,
                 "linuxsteamrt64": 24
             },
             "CCSPlayer_WeaponServices::DropWeapon": {

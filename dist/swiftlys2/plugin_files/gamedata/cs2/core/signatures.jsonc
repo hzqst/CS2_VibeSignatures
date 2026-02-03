@@ -11,23 +11,23 @@
     },
     "CCSPlayerController::SwitchTeam": {
         "lib": "server",
-        "windows": "40 53 57 48 81 EC 88 00 00 00 48 8B D9 8B FA 8B CA E8 ? ? ? ? 48 85 C0 0F 84 ? ? ? ? 8D 47 FE 83 F8 01 0F 87 ? ? ? ? 0F B6 83 44 03 00 00 3B F8",
-        "linux": "55 48 89 E5 41 54 49 89 FC 89 F7 53 89 F3 E8 ? ? ? ? 48 85 C0 74 ? 8D 43 FE 83 F8 01 77 ? 41 0F B6 84 24 24 06 00 00 39 C3"
+        "windows": "40 53 57 48 81 EC 88 00 00 00 48 8B D9 8B FA 8B CA E8 ? ? ? ? 48 85 C0 0F 84 ? ? ? ? 8D 47 FE 83 F8 01 0F 87 ? ? ? ? 0F B6 83 44 03 00 00 3B F8 0F 84 ? ? ? ?",
+        "linux": "55 48 89 E5 41 54 49 89 FC 89 F7 53 89 F3 E8 ? ? ? ? 48 85 C0 74 ? 8D 43 FE 83 F8 01 77 ? 41 0F B6 84 24 24 06 00 00 39 C3 74 ? 89 DE 4C 89 E7 5B 41 5C 5D E9 ? ? ? ?"
     },
     "UTIL::CreateEntityByName": {
         "lib": "server",
         "windows": "48 83 EC 48 C6 44 24 30 00 4C 8B C1 48 8B 0D ? ? ? ? 45 33 C9 C7 44 24 28 FF FF FF FF 89 54 24 20 BA FF FF FF FF E8 ? ? ? ? 48 83 C4 48 C3",
-        "linux": "48 8D 05 ? ? ? ? 55 48 89 FA 41 89 F0 48 89 E5 48 83 EC 08 41 B9 FF FF FF FF 31 C9 BE FF FF FF FF 48 8B 38 6A 00 E8 ? ? ? ?"
+        "linux": "48 8D 05 ? ? ? ? 55 48 89 FA 41 89 F0 48 89 E5 48 83 EC 08 41 B9 FF FF FF FF 31 C9 BE FF FF FF FF 48 8B 38 6A 00 E8 ? ? ? ? C9 C3"
     },
     "CBaseModelEntity::SetModel": {
         "lib": "server",
-        "windows": "40 53 48 83 EC 20 48 8B D9 4C 8B C2 48 8B 0D A5 64 42 01 48 8D 54 24 40 48 8B 01 FF 50 60 48 8B 44 24 40 48 8D 54 24 48 48 8B CB 48 89 44 24 48 E8 ? ? ? ?",
-        "linux": "55 48 89 F2 48 89 E5 53 48 89 FB 48 8D 7D E0 48 83 EC 18 48 8D 05 CE 85 16 01 48 8B 30 48 8B 06 FF 50 68 48 8B 45 E0 48 8D 75 E8 48 89 DF 48 89 45 E8 E8 ? ? ? ?"
+        "windows": "CC CC CC CC CC CC CC CC 40 53 48 83 EC 20 48 8B D9 4C 8B C2 48 8B 0D ? ? ? ? 48 8D 54 24 40 48 8B 01 FF 50 60 48 8B 44 24 40 48 8D 54 24 48 48 8B CB 48 89 44 24 48 E8 ? ? ? ?",
+        "linux": "55 48 89 E5 41 54 53 48 85 FF 74 ? 80 3F 00 48 89 FB 74 ? 49 89 F4 E8 ? ? ? ? 48 85 C0 74 ? 80 38 00 74 ? 48 8D 35 ? ? ? ? 48 89 C7 E8 ? ? ? ? 89 C2 49 8B 04 24 85 D2 75 ?"
     },
     "CBaseEntity::DispatchSpawn": {
         "lib": "server",
-        "windows": "48 89 5C 24 10 57 48 83 EC 30 48 8B DA 48 8B F9 48 85 C9 0F 84 ? ? ? ? 48 85 D2 75 ? B9 38 00 00 00 48 89 74 24 40 E8 ? ? ? ?",
-        "linux": "48 85 FF 74 ? 55 48 89 E5 41 55 49 89 FD 41 54 53 48 89 F3 48 83 EC 18 48 85 F6 74 ? 4C 8D 25 ? ? ? ? 48 89 DA 4C 89 EE 49 8B 3C 24 E8 ? ? ? ?"
+        "windows": "48 89 5C 24 10 57 48 83 EC 30 48 8B DA 48 8B F9 48 85 C9 0F 84 ? ? ? ? 48 85 D2 75 ? B9 38 00 00 00 48 89 74 24 40 E8 ? ? ? ? 48 8B D8 48 85 C0 74 ? 45 33 C0 33 D2 48 8B C8 E8",
+        "linux": "48 85 FF 74 ? 55 48 89 E5 41 55 49 89 FD 41 54 53 48 89 F3 48 83 EC 18 48 85 F6 74 ? 4C 8D 25 ? ? ? ? 48 89 DA 4C 89 EE 49 8B 3C 24 E8 ? ? ? ? 49 8B 3C 24 E8 ? ? ? ?"
     },
     "UTIL::Remove": {
         "lib": "server",
@@ -37,7 +37,7 @@
     "LegacyGameEventListener": {
         "lib": "server",
         "windows": "48 8B 15 ? ? ? ? 48 85 D2 74 14 83 F9 3F 77 0F 48 63 C1 48 83 C0 04 48 C1 E0 04 48 03 C2 C3 33 C0 C3",
-        "linux": "48 8B 05 ? ? ? ? 48 85 C0 74 16 83 FF 3F 77 0F 48 63 FF 48 C1 E7 04 48 8D 44 38 40 C3"
+        "linux": "48 8B 05 ? ? ? ? 48 85 C0 74 ? 83 FF 3F 77 ? 48 63 FF 48 C1 E7 04 48 8D 44 38 40 C3"
     },
     "CAttributeList::SetOrAddAttributeValueByName": {
         "lib": "server",
@@ -51,12 +51,12 @@
     },
     "CEntityIOOutput::FireOutputInternal": {
         "lib": "server",
-        "windows": "4C 89 4C 24 20 48 89 4C 24 08 53 56 57 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 4D 8B F0",
+        "windows": "4C 89 4C 24 ? 48 89 4C 24 ? 53 56 57 41 55 41 56 41 57 48 81 EC ? ? ? ? 48 8B 05 ? ? ? ? 4D 8B F0",
         "linux": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 41 54 49 89 D4 53 48 89 F3 48 83 EC 78 48 8D 05 ? ? ? ? 48 89 BD 78 FF FF FF 48 89 4D A0 F3 0F 11 45 9C 4C 89 45 A8 48 8B 00 4C 89 8D 70 FF FF FF"
     },
     "CBasePlayerController::SetPawn": {
         "lib": "server",
-        "windows": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 E0 04 00 00 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?",
+        "windows": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 ? ? ? ? 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?",
         "linux": "55 48 8D 87 C0 07 00 00 48 89 E5 41 57 41 89 CF 41 56 41 55 45 89 CD 41 54 49 89 F4 53 48 89 FB 48 83 EC 68 8B 8F C0 07 00 00 44 89 45 80 48 89 45 88 83 F9 FF 0F 84 ? ? ? ? 48 8B 35 ? ? ? ?"
     },
     "CCSPlayerPawn::PostThink": {
@@ -106,8 +106,8 @@
     },
     "CEntitySystem::AddEntityIOEvent": {
         "lib": "server",
-        "windows": "48 89 5C 24 18 4C 89 4C 24 20 48 89 4C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 49 8B F9 4C 8B C9 41 BD FF 7F 00 00",
-        "linux": "55 48 89 E5 41 55 49 89 CD 41 54 49 89 FC 53 BB FF FF FF FF 48 83 EC ? 48 85 F6 74 ? 48 8B 46 10 48 85 C0 74 ? 8B 58 10 8B 48 30 C1 EB 0F 83 E1 01 29 CB 83 78 10 FF 0F 84 ? ? ? ?"
+        "windows": "48 89 5C 24 18 4C 89 4C 24 20 48 89 4C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 49 8B F9 4C 8B C9 41 BD FF 7F 00 00 48 85 D2 74 ? 48 8B 42 10 48 85 C0 74 ? 8B 50 10",
+        "linux": "55 48 89 E5 41 55 49 89 CD 41 54 49 89 FC 53 BB FF FF FF FF 48 83 EC 38 48 85 F6 74 ? 48 8B 46 10 48 85 C0 74 ? 8B 58 10 8B 48 30 C1 EB 0F 83 E1 01 29 CB 83 78 10 FF 0F 84 ? ? ? ?"
     },
     "TracePlayerBBox": {
         "lib": "server",
@@ -122,7 +122,7 @@
     "CCSPlayer_ItemServices::CanAcquire": {
         "lib": "server",
         "windows": "44 89 44 24 18 48 89 54 24 10 48 89 4C 24 08 55 53 56 57 41 55 41 56 41 57 48 8B EC 48 81 EC ? ? ? ? 48 83 79 38 00 49 8B D9 45 8B E8 4C 8B FA 48 8B F9 75 05 E8 ? ? ? ?",
-        "linux": "55 48 89 E5 41 57 41 56 41 55 49 89 CD 41 54 49 89 FC 53 48 89 F3 48 83 EC 78 4C 8B 77 38 89 55 BC 4D 85 F6 0F 84 ? ? ? ?"
+        "linux": "55 48 89 E5 41 57 41 56 41 55 49 89 CD 41 54 49 89 FC 53 48 89 F3 48 83 EC 78 4C 8B 77 38 89 55 BC 4D 85 F6 0F 84 ? ? ? ? 48 8D 45 CC 4D 85 ED 4C 0F 44 E8 41 C7 45 00 00 00 00 00 48 85 DB"
     },
     "INetworkMessageProcessingPreFilter::FilterMessage": {
         "lib": "engine2",
