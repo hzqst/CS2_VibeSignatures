@@ -1,6 +1,11 @@
 ---
 name: find-CTakeDamageInfo_vtable
 description: Find and identify the CTakeDamageInfo vtable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CTakeDamageInfo virtual function table by searching for the mangled vtable symbol name.
+expected_output:
+  - name: CTakeDamageInfo_vtable
+    category: vtable
+    files:
+      - CTakeDamageInfo_vtable.{platform}.yaml
 ---
 
 # Find CTakeDamageInfo_vtable
@@ -48,8 +53,8 @@ The output YAML filename depends on the platform:
 
 ```yaml
 vtable_class: CTakeDamageInfo
-vtable_va: 0x180XXXXXX    # Virtual address - changes with game updates
-vtable_rva: 0xXXXXXX      # Relative virtual address - changes with game updates
-vtable_size: 0xXXX        # VTable size in bytes - changes with game updates
-vtable_numvfunc: XX       # Number of virtual functions - changes with game updates
+vtable_va: 0x215f528        # Virtual address - changes with game updates
+vtable_rva: 0x215f528       # Relative virtual address - changes with game updates
+vtable_size: 0x18           # VTable size in bytes - changes with game updates
+vtable_numvfunc: 3          # Number of virtual functions - changes with game updates
 ```
