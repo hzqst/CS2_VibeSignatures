@@ -19,11 +19,19 @@ Before using this skill, you should have:
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `func_name` | Name of the function | `CCSPlayerController_ChangeTeam` |
-| `func_addr` | Virtual address of the function | `0x180999830` |
-| `func_sig` | Unique byte signature | `48 89 5C 24 08` |
 | `vtable_name` | Class name for vtable | `CCSPlayerController` |
 | `vfunc_offset` | Offset from vtable start | `0x330` |
 | `vfunc_index` | Index in vtable | `102` |
+
+## Optional Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `func_addr` | Virtual address of the function (use `None` to omit) | `0x180999830` |
+| `func_sig` | Unique byte signature (use `None` to omit) | `48 89 5C 24 08` |
+
+When `func_addr` is `None`, the following fields will be omitted from output: `func_va`, `func_rva`, `func_size`.
+When `func_sig` is `None`, the `func_sig` field will be omitted from output.
 
 ## Method
 
@@ -31,22 +39,22 @@ Before using this skill, you should have:
 mcp__ida-pro-mcp__py_eval code="""
 import idaapi
 import os
+import yaml
 
 # === REQUIRED: Replace these values ===
 func_name = "<func_name>"           # e.g., "CCSPlayerController_ChangeTeam"
-func_addr = <func_addr>             # e.g., 0x180999830
-func_sig = "<func_sig>"             # e.g., "48 89 5C 24 08"
 # ======================================
+
+# === OPTIONAL: Set to None to omit from output ===
+func_addr = <func_addr>             # e.g., 0x180999830 or None
+func_sig = <func_sig>               # e.g., "48 89 5C 24 08" or None
+# =================================================
 
 # === VTABLE INFO: Replace these values ===
 vtable_name = "<vtable_name>"       # e.g., "CCSPlayerController"
 vfunc_offset = <vfunc_offset>       # e.g., 0x330
 vfunc_index = <vfunc_index>         # e.g., 102
 # =========================================
-
-# Get function size
-func = idaapi.get_func(func_addr)
-func_size = func.size() if func else 0
 
 # Get binary path and determine platform
 input_file = idaapi.get_input_file_path()
@@ -59,20 +67,27 @@ else:
     platform = 'linux'
     image_base = 0x0
 
-func_rva = func_addr - image_base
+# Build data dictionary conditionally
+data = {}
 
-yaml_content = f'''func_va: {hex(func_addr)}
-func_rva: {hex(func_rva)}
-func_size: {hex(func_size)}
-func_sig: {func_sig}
-vtable_name: {vtable_name}
-vfunc_offset: {hex(vfunc_offset)}
-vfunc_index: {vfunc_index}
-'''
+if func_addr is not None:
+    func = idaapi.get_func(func_addr)
+    func_size = func.size() if func else 0
+    func_rva = func_addr - image_base
+    data['func_va'] = hex(func_addr)
+    data['func_rva'] = hex(func_rva)
+    data['func_size'] = hex(func_size)
+
+if func_sig is not None:
+    data['func_sig'] = func_sig
+
+data['vtable_name'] = vtable_name
+data['vfunc_offset'] = hex(vfunc_offset)
+data['vfunc_index'] = vfunc_index
 
 yaml_path = os.path.join(dir_path, f"{func_name}.{platform}.yaml")
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 print(f"Written to: {yaml_path}")
 """
 ```
@@ -88,11 +103,19 @@ Examples:
 
 ## Output YAML Format
 
+Full output (with `func_addr` and `func_sig` provided):
 ```yaml
-func_va: 0x180999830      # Virtual address - changes with game updates
-func_rva: 0x999830        # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x301          # Function size in bytes - changes with game updates
-func_sig: 48 89 5C 24 08  # Unique byte signature
+func_va: 0x180999830      # Virtual address - changes with game updates (optional)
+func_rva: 0x999830        # Relative virtual address (VA - image base) - changes with game updates (optional)
+func_size: 0x301          # Function size in bytes - changes with game updates (optional)
+func_sig: 48 89 5C 24 08  # Unique byte signature (optional)
+vtable_name: CCSPlayerController
+vfunc_offset: 0x330       # Offset from vtable start - changes with game updates
+vfunc_index: 102          # vtable[102] - changes with game updates
+```
+
+Minimal output (with `func_addr=None` and `func_sig=None`):
+```yaml
 vtable_name: CCSPlayerController
 vfunc_offset: 0x330       # Offset from vtable start - changes with game updates
 vfunc_index: 102          # vtable[102] - changes with game updates
@@ -108,7 +131,8 @@ The skill automatically detects the platform based on file extension:
 
 - All values marked "changes with game updates" should be regenerated when analyzing new binary versions
 - The YAML file is written to the same directory as the input binary
-- func_size is automatically calculated from IDA's function analysis
-- func_rva is automatically calculated as `func_va - image_base`
+- When `func_addr` is provided, func_size is automatically calculated from IDA's function analysis
+- When `func_addr` is provided, func_rva is automatically calculated as `func_va - image_base`
+- When `func_addr` or `func_sig` is `None`, those fields are omitted from the output entirely
 - This skill is specifically for virtual functions that have vtable information
 - For regular functions without vtable, use `/write-func-as-yaml` instead

@@ -27,6 +27,7 @@ Before using this skill, you should have:
 mcp__ida-pro-mcp__py_eval code="""
 import idaapi
 import os
+import yaml
 
 # === REQUIRED: Replace these values ===
 func_name = "<func_name>"           # e.g., "CBaseModelEntity_SetModel"
@@ -51,15 +52,16 @@ else:
 
 func_rva = func_addr - image_base
 
-yaml_content = f'''func_va: {hex(func_addr)}
-func_rva: {hex(func_rva)}
-func_size: {hex(func_size)}
-func_sig: {func_sig}
-'''
+data = {
+    'func_va': hex(func_addr),
+    'func_rva': hex(func_rva),
+    'func_size': hex(func_size),
+    'func_sig': func_sig,
+}
 
 yaml_path = os.path.join(dir_path, f"{func_name}.{platform}.yaml")
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 print(f"Written to: {yaml_path}")
 """
 ```

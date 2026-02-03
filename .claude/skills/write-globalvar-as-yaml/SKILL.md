@@ -32,6 +32,7 @@ Before using this skill, you should have:
 mcp__ida-pro-mcp__py_eval code="""
 import idaapi
 import os
+import yaml
 
 # === REQUIRED: Replace these values ===
 gv_name = "<gv_name>"               # e.g., "IGameSystem_InitAllSystems_pFirst"
@@ -58,18 +59,19 @@ else:
 
 gv_rva = gv_addr - image_base
 
-yaml_content = f'''gv_va: {hex(gv_addr)}
-gv_rva: {hex(gv_rva)}
-gv_sig: {gv_sig}
-gv_sig_va: {hex(gv_sig_va)}
-gv_inst_offset: {gv_inst_offset}
-gv_inst_length: {gv_inst_length}
-gv_inst_disp: {gv_inst_disp}
-'''
+data = {
+    'gv_va': hex(gv_addr),
+    'gv_rva': hex(gv_rva),
+    'gv_sig': gv_sig,
+    'gv_sig_va': hex(gv_sig_va),
+    'gv_inst_offset': gv_inst_offset,
+    'gv_inst_length': gv_inst_length,
+    'gv_inst_disp': gv_inst_disp,
+}
 
 yaml_path = os.path.join(dir_path, f"{gv_name}.{platform}.yaml")
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    f.write(yaml_content)
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 print(f"Written to: {yaml_path}")
 """
 ```
