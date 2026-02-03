@@ -1,0 +1,4 @@
+func_va: 0x180168520
+func_rva: 0x168520
+func_size: 0xb
+func_sig: 80 B9 E0 02 00 00 00 0F 94 C0 C3

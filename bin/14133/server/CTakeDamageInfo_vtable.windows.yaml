@@ -1,0 +1,9 @@
+vtable_class: CTakeDamageInfo
+vtable_va: '0x181533508'
+vtable_rva: '0x1533508'
+vtable_size: '0x18'
+vtable_numvfunc: 3
+vtable_entries:
+  0: '0x1801ea990'
+  1: '0x1804c40c0'
+  2: '0x180e03df0'

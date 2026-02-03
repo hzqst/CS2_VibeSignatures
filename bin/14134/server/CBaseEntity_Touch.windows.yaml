@@ -1,0 +1,7 @@
+func_va: 0x1803c96d0
+func_rva: 0x3c96d0
+func_size: 0x66
+func_sig: 48 89 5C 24 08 57 48 83 EC 20 48 8B 81 B8 02 00 00 48 8B FA 48 8B D9 48 85 C0 74 02 FF D0
+vtable_name: CBaseEntity
+vfunc_offset: 0x4a0
+vfunc_index: 148
