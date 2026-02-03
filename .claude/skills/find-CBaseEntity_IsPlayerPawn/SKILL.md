@@ -27,7 +27,15 @@ Get xrefs to the string address:
 mcp__ida-pro-mcp__xrefs_to addrs="<string_address>"
 ```
 
-This will lead to `CCSGameRules::Think` function. Decompile it and look for this code pattern:
+This will lead to function `CCSGameRules::Think`. rename it to `CCSGameRules_Think`
+
+```
+mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSGameRules_Think"}]}
+```
+
+### 3. Decompile CCSGameRules_Think and look for certain code pattern
+
+Decompile it and look for this code pattern:
 
 ```c
 v81 = (const char *)(*(__int64 (__fastcall **)(_QWORD))(**(_QWORD **)(v78 + 24) + 1128LL))(*(_QWORD *)(v78 + 24));
@@ -38,7 +46,7 @@ sub_XXXXXXX((unsigned __int16 *)&v123);  // <-- This is the player iterator func
 
 Note the address of `sub_XXXXXXX` (the function called after the Msg).
 
-### 3. Decompile Player Iterator and Extract VTable Offset
+### 4. Decompile Player Iterator and Extract VTable Offset
 
 Decompile the player iterator function:
 
@@ -64,36 +72,18 @@ Calculate:
 - **VTable Offset**: The value from the pattern (e.g., 1344 = 0x540)
 - **VTable Index**: offset / 8 (e.g., 1344 / 8 = **168**)
 
-### 4. Get CBaseEntity VTable and Verify
-
-**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
-
-Get the function address at the calculated vtable index and decompile to verify:
-
-```
-mcp__ida-pro-mcp__decompile addr="<vtable_entries[168]>"
-```
-
-The function should match this pattern:
-```c
-bool __fastcall sub_XXXXXX(__int64 a1)
-{
-  return *(_BYTE *)(a1 + 1472) == 0;  // offset 0x5C0, can change on game update
-}
-```
-
 ### 5. Write Analysis Results as YAML
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CBaseEntity_IsPlayerPawn`
-- `func_addr`: Leave empty
-- `func_sig`: Leave empty
+- `func_addr`: Leave empty, because we don't need it
+- `func_sig`: Leave empty, because we don't need it
 
 VTable parameters:
 - `vtable_name`: `CBaseEntity`
-- `vfunc_index`: The vtable index from step 3 (e.g., 168)
+- `vfunc_index`: The vtable index from step 4 (e.g., 168)
 - `vfunc_offset`: `vfunc_index * 8` (e.g., 1344)
 
 ## Function Characteristics
