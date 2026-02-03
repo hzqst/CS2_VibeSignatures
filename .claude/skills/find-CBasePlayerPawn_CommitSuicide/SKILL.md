@@ -32,17 +32,72 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
 
 3. Verify function characteristics to identify `CBasePlayerPawn::CommitSuicide`:
 
-   The function should exhibit these unique patterns:
+   The function should look like:
 
-   - **Pointer arithmetic**: `lea r12, [rdi+890h]` - accessing `a1 + 274` (274 * 8 = 0x890)
-   - **Sequential function calls** in fixed order:
-     - Call to view initialization function (e.g., sub_166C040)
-     - Virtual function call at vtable offset 0xBF8 (index 383)
-     - Two consecutive helper function calls
-   - **Bitwise operations**: Uses `| 0x200000` flag (bit 21)
-   - **Conditional logic**: Checks non-zero values before calling virtual functions
+   Windows:
+   ```c
+   char __fastcall sub_180BE9210(float *a1, unsigned __int8 a2, char a3)
+   {
+      __int64 v4; // rbp
+      char result; // al
+      _BYTE v7[112]; // [rsp+40h] [rbp-138h] BYREF
+      __int64 v8; // [rsp+B0h] [rbp-C8h]
+      int v9; // [rsp+180h] [rbp+8h] BYREF
+      char v10; // [rsp+198h] [rbp+20h] BYREF
 
-   If characteristics match, proceed to rename.
+      v4 = a2;
+      result = (*(__int64 (__fastcall **)(float *))(*(_QWORD *)a1 + 1336LL))(a1);
+      if ( result )
+      {
+         sub_1808757E0(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
+         result = sub_1801C22A0(a1 + 824, (float *)&v9);
+         if ( !result || a3 )
+         {
+            sub_1808757E0(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
+            a1[824] = *(float *)sub_1801965D0(&v10, &v9);
+            sub_180DFABA0((unsigned int)v7, (_DWORD)a1, (_DWORD)a1, 0, 1065353216, (_DWORD)v4 << 6, 0);
+            v8 |= (32 * (v4 ^ 1) + 32) | 0x116;
+            sub_1803C8520(a1, (__int64)v7, 0LL);//CBaseEntity::TakeDamageOld
+            return sub_180DFBEE0((__int64)v7);
+         }
+      }
+      return result;
+   }
+   ```
+
+   Linux:
+
+   ```c
+   void __fastcall sub_1628A10(__int64 a1, unsigned __int8 a2, char a3)
+   {
+      unsigned __int8 (*v4)(void); // rax
+      _BYTE v5[112]; // [rsp+0h] [rbp-140h] BYREF
+      __int64 v6; // [rsp+70h] [rbp-D0h]
+
+      v4 = *(unsigned __int8 (**)(void))(*(_QWORD *)a1 + 1328LL);
+      if ( (char *)v4 == (char *)CBaseEntity_IsPlayerPawn )
+      {
+         if ( *(_BYTE *)(a1 + 1472) )
+            return;
+      }
+      else if ( !v4() )
+      {
+         return;
+      }
+      if ( *(float *)(a1 + 4072) <= sub_118C0E0(*(unsigned int *)(*(_QWORD *)(a1 + 16) + 56LL)) || a3 )
+      {
+         *(float *)(a1 + 4072) = sub_118C0E0(*(unsigned int *)(*(_QWORD *)(a1 + 16) + 56LL)) + 5.0;
+         sub_18B0D40(v5, a1, a1, 0LL, a2 << 6, 0LL, 1.0);
+         v6 |= (a2 == 0 ? 64LL : 32LL) | 0x116;
+         sub_C8A650(a1, v5, 0LL);
+         sub_189BA20(v5);//CBaseEntity::TakeDamageOld
+      }
+   }
+   ```
+
+   where the `CBaseEntity::TakeDamageOld` can be verified by checking string "CBaseEntity::TakeDamageOld: damagetype %d with info.GetDamagePosition() == Vector::vZero\n" in it's decompiled procedure.
+
+   If the code pattern match, proceed to rename.
 
 4. Rename the function:
 

@@ -263,6 +263,14 @@ modules:
         expected_output:
           - CBaseEntity_EmitSoundFilter.{platform}.yaml
 
+      - name: find-CBasePlayerPawn_CommitSuicide
+        expected_output:
+          - CBasePlayerPawn_CommitSuicide.{platform}.yaml
+        expected_input:
+          - CBasePlayerPawn_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBasePlayerPawn_vtable
+
       - name: find-CBasePlayerPawn_RemovePlayerItem
         expected_output:
           - CBasePlayerPawn_RemovePlayerItem.{platform}.yaml
