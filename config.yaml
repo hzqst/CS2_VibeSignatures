@@ -185,6 +185,10 @@ modules:
           - find-CGameRules_vtable
           - find-CCSGameRules_vtable
 
+      - name: find-CTakeDamageInfo_vtable
+        expected_output:
+          - CTakeDamageInfo_vtable.{platform}.yaml
+
       - name: find-CTakeDamageInfo_GetWeaponName
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
@@ -282,6 +286,14 @@ modules:
           - find-CBaseEntity_vtable
         max_retries: 6
 
+      - name: find-CBaseEntity_IsPlayerPawn
+        expected_output:
+          - CBaseEntity_IsPlayerPawn.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -314,6 +326,9 @@ modules:
         catagory: vtable
 
       - name: CBaseTrigger_vtable
+        catagory: vtable
+
+      - name: CTakeDamageInfo_vtable
         catagory: vtable
 
       - name: CBaseEntity_TakeDamageOld
@@ -527,3 +542,8 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::EndTouch
+
+      - name: CBaseEntity_IsPlayerPawn
+        catagory: vfunc
+        alias:
+          - CBaseEntity::IsPlayerPawn
