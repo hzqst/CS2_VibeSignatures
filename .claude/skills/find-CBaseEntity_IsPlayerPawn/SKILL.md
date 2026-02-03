@@ -9,94 +9,92 @@ Locate `CBaseEntity_IsPlayerPawn` in CS2 server.dll or server.so using IDA Pro M
 
 ## Method
 
-### 1. Get CBaseEntity VTable 
+### 1. Search for Reference String
 
-**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
-
-If the skill returns an error, **STOP** and report to user.
-
-Otherwise, extract these values for subsequent steps:
-- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
-- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
-- `vtable_entries`: An array of virtual functions starting from vtable[0]
-
-### 2. Decompile Virtual Functions at Index 160-170
-
-Based on analysis, the function is in range of vtable[160 ~ 170]. Decompile the virtual function in range to verify:
+Search for the string `"Ignoring speaking bot %s at round end"`:
 
 ```
-mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes
-
-vtable_start = <VTABLE_START_ADDRESS>  # From step 1
-ptr_size = 8
-
-# Read function pointers for indices 160-170
-for idx in range(160, 171):
-    addr = vtable_start + (idx * ptr_size)
-    ptr_value = ida_bytes.get_qword(addr)
-    print(f"Index {idx}: {hex(ptr_value)}")
-"""
+mcp__ida-pro-mcp__find_regex pattern="Ignoring speaking bot.*at round end"
 ```
 
-Then decompile each function using:
+Note the string address.
+
+### 2. Find Cross-Reference and Containing Function
+
+Get xrefs to the string address:
+
 ```
-mcp__ida-pro-mcp__decompile addr="<function_addr>"
+mcp__ida-pro-mcp__xrefs_to addrs="<string_address>"
 ```
 
-### 3. Identify the CBaseEntity_IsPlayerPawn
+This will lead to `CCSGameRules::Think` function. Decompile it and look for this code pattern:
 
-Look for a function matching ALL these criteria:
-1. Takes exactly one pointer parameter (`__int64 a1`)
-2. Performs exactly one byte-sized memory read from offset relative to that pointer
-3. Returns boolean based solely on whether that byte equals zero
-4. Contains no function calls, no loops, no side effects
-5. Body consists only of: memory read → compare to zero → return
-
-**Expected pattern:**
 ```c
-bool __fastcall sub_XXXXXX(__int64 a1)
+v81 = (const char *)(*(__int64 (__fastcall **)(_QWORD))(**(_QWORD **)(v78 + 24) + 1128LL))(*(_QWORD *)(v78 + 24));
+Msg("Ignoring speaking bot %s at round end\n", v81);
+...
+sub_XXXXXXX((unsigned __int16 *)&v123);  // <-- This is the player iterator function
+```
+
+Note the address of `sub_XXXXXXX` (the function called after the Msg).
+
+### 3. Decompile Player Iterator and Extract VTable Offset
+
+Decompile the player iterator function:
+
+```
+mcp__ida-pro-mcp__decompile addr="<sub_XXXXXXX_address>"
+```
+
+Look for this code pattern:
+
+```c
+if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v3 + 1344LL))(v3)  // <-- 1344 is IsPlayerPawn vtable offset
+    && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v4 + 3344LL))(v4)
+    && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v4 + 3208LL))(v4) )
 {
-  return *(_BYTE *)(a1 + 1472) == 0;  // or offset 0x5C0, this offset can change on game update.
+    if ( *(_BYTE *)(v4 + 6832) ? *(_QWORD *)(v4 + 6824) : 0LL )
+      break;
 }
 ```
 
-**Assembly pattern:**
-```asm
-cmp     byte ptr [rdi+5C0h], 0
-setz    al
-retn
-```
+Extract the **first vtable offset** from this pattern (e.g., `1344`). This is the `CBaseEntity::IsPlayerPawn` vtable offset.
 
-### 4. Rename the Function
+Calculate:
+- **VTable Offset**: The value from the pattern (e.g., 1344 = 0x540)
+- **VTable Index**: offset / 8 (e.g., 1344 / 8 = **168**)
 
-```
-mcp__ida-pro-mcp__rename batch={"func": {"addr": "<function_addr>", "name": "CBaseEntity_IsPlayerPawn"}}
-```
+### 4. Get CBaseEntity VTable and Verify
 
-### 5. Generate Signature
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
 
-**DO NOT** use `find_bytes` as it won't work for function.
-
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature:
+Get the function address at the calculated vtable index and decompile to verify:
 
 ```
-/generate-signature-for-function <function_addr>
+mcp__ida-pro-mcp__decompile addr="<vtable_entries[168]>"
 ```
 
-### 6. Write Analysis Results as YAML
+The function should match this pattern:
+```c
+bool __fastcall sub_XXXXXX(__int64 a1)
+{
+  return *(_BYTE *)(a1 + 1472) == 0;  // offset 0x5C0, can change on game update
+}
+```
+
+### 5. Write Analysis Results as YAML
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CBaseEntity_IsPlayerPawn`
-- `func_addr`: The function address from step 3
-- `func_sig`: The validated signature from step 5
+- `func_addr`: Leave empty
+- `func_sig`: Leave empty
 
 VTable parameters:
 - `vtable_name`: `CBaseEntity`
-- `vfunc_index`: The vtable index from step 3
-- `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
+- `vfunc_index`: The vtable index from step 3 (e.g., 168)
+- `vfunc_offset`: `vfunc_index * 8` (e.g., 1344)
 
 ## Function Characteristics
 
@@ -110,8 +108,8 @@ VTable parameters:
 - **VTable Name**: `CBaseEntity::`vftable'`
 - **VTable Mangled Name (Windows)**: `??_7CBaseEntity@@6B@`
 - **VTable Mangled Name (Linux)**: `_ZTV11CBaseEntity`
-- **VTable Index**: 167 - This can change when game updates.
-- **VTable Offset**: 0x538 (167 * 8) - This can change when game updates.
+- **VTable Index**: 168 - This can change when game updates.
+- **VTable Offset**: 0x540 (168 * 8 = 1344) - This can change when game updates.
 
 * Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
 
@@ -149,4 +147,5 @@ func_sig: 80 BF C0 05 00 00 00 0F 94 C0 C3  # Unique byte signature - may change
 - This is a simple virtual function that checks a flag/type byte in CBaseEntity
 - The offset 1472 (0x5C0) appears to indicate whether the entity is a player pawn
 - The function is purely a predicate with no side effects
-- Being at vtable index 167 suggests it's part of the entity type/capability query interface
+- Being at vtable index 168 suggests it's part of the entity type/capability query interface
+- The vtable offset 1344 (0x540) is commonly used in player iteration patterns to filter for player pawns
