@@ -70,6 +70,10 @@ modules:
         expected_output:
           - CCSPlayerController_vtable.{platform}.yaml
 
+      - name: find-CBasePlayerPawn_vtable
+        expected_output:
+          - CBasePlayerPawn_vtable.{platform}.yaml
+
       - name: find-CCSPlayerPawn_vtable
         expected_output:
           - CCSPlayerPawn_vtable.{platform}.yaml
