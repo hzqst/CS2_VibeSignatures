@@ -1,6 +1,6 @@
 ---
 name: find-CBaseEntity_IsPlayerPawn
-description: Find and identify the CBaseEntity_IsPlayerPawn virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the IsPlayerPawn check function by analyzing the CBaseEntity vtable and identifying the simple boolean check pattern that returns whether a byte at offset 1472 equals zero.
+description: Find and identify the CBaseEntity_IsPlayerPawn virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the IsPlayerPawn check function by analyzing the CBaseEntity vtable and identifying the simple boolean check pattern that returns whether a byte at offset ~1400 equals zero.
 ---
 
 # Find CBaseEntity_IsPlayerPawn
