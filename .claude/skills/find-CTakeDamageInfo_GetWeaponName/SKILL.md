@@ -9,23 +9,8 @@ Locate `CTakeDamageInfo::GetWeaponName` in CS2 server.dll or server.so using IDA
 
 ## Method
 
-### Step 0: Find and Document CTakeDamageInfo vtable (Optional but Recommended)
+1. Search for the string "_projectile":
 
-Before locating the GetWeaponName function, it's helpful to understand the CTakeDamageInfo class structure:
-
-1. Find the vtable address:
-   ```
-   **ALWAYS** Use SKILL: `/get-vtable-address` to find vtable for `CTakeDamageInfo`.
-   ```
-
-2. Write the vtable analysis to YAML:
-   ```
-   **ALWAYS** Use SKILL: `/write-vtable-as-yaml` to write the analysis results into yaml.
-   ```
-
-### Step 1: Locate GetWeaponName Function
-
-1. Search for the string:
    ```
    mcp__ida-pro-mcp__find_regex pattern="_projectile"
    ```
