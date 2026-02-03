@@ -326,6 +326,9 @@ modules:
       - name: CCSPlayerController_vtable
         catagory: vtable
 
+      - name: CBasePlayerPawn_vtable
+        catagory: vtable
+
       - name: CCSPlayerPawn_vtable
         catagory: vtable
 

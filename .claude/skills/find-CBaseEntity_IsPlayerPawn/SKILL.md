@@ -86,13 +86,6 @@ VTable parameters:
 - `vfunc_index`: The vtable index from step 4 (e.g., 168)
 - `vfunc_offset`: `vfunc_index * 8` (e.g., 1344)
 
-## Function Characteristics
-
-- **Parameters**: `(this)` where `this` is CBaseEntity pointer
-- **Return**: `bool` - Returns true if entity is a player pawn (byte at offset 1472 equals 0)
-- **Size**: 11 bytes (0xB)
-- **Offset Checked**: 1472 (0x5C0) - likely a flag or type indicator in CBaseEntity, this offset can change on game update.
-
 ## VTable Information
 
 - **VTable Name**: `CBaseEntity::`vftable'`
@@ -103,22 +96,6 @@ VTable parameters:
 
 * Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
 
-## Expected Signature Pattern
-
-The function has a very distinctive byte pattern:
-
-**Bytes**: `80 BF C0 05 00 00 00 0F 94 C0 C3`
-
-Breakdown:
-- `80 BF C0 05 00 00` - `cmp byte ptr [rdi+5C0h], 0` (opcode + offset)
-- `0F 94 C0` - `setz al` (set byte if zero)
-- `C3` - `retn`
-
-This signature is stable because:
-- Struct offset (0x5C0/1472) is part of class layout
-- Simple opcodes are deterministic
-- No relocations or address references
-
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
@@ -126,16 +103,12 @@ The output YAML filename depends on the platform:
 - `server.so` → `CBaseEntity_IsPlayerPawn.linux.yaml`
 
 ```yaml
-func_va: 0x9b58a0           # Virtual address - changes with game updates
-func_rva: 0x9b58a0          # Relative virtual address (Linux: VA - 0) - changes with game updates
-func_size: 0xb              # Function size (11 bytes) - changes with game updates
-func_sig: 80 BF C0 05 00 00 00 0F 94 C0 C3  # Unique byte signature - may change with game updates
+vtable_name: CBaseEntity
+vfunc_index: 168
+vfunc_offset: 1344
 ```
 
 ## Notes
 
-- This is a simple virtual function that checks a flag/type byte in CBaseEntity
-- The offset 1472 (0x5C0) appears to indicate whether the entity is a player pawn
-- The function is purely a predicate with no side effects
-- Being at vtable index 168 suggests it's part of the entity type/capability query interface
-- The vtable offset 1344 (0x540) is commonly used in player iteration patterns to filter for player pawns
+- This is a simple virtual function that just return either true or false.
+- There is no need to make a signature for it.
