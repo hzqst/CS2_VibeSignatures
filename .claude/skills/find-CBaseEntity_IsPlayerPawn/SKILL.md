@@ -9,22 +9,20 @@ Locate `CBaseEntity_IsPlayerPawn` in CS2 server.dll or server.so using IDA Pro M
 
 ## Method
 
-### 1. Get CBaseEntity VTable Address
+### 1. Get CBaseEntity VTable 
 
-**ALWAYS** Use SKILL `/get-vtable-address` to find vtable for `CBaseEntity`:
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
 
-```
-/get-vtable-address CBaseEntity
-```
+If the skill returns an error, **STOP** and report to user.
 
-This returns:
-- **vtableAddress**: Start address of vtable (after RTTI for Linux)
-- **sizeInBytes**: Total vtable size
-- **numberOfVirtualFunctions**: Count of virtual functions
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 2. Decompile Virtual Functions at Index 158-170
+### 2. Decompile Virtual Functions at Index 160-170
 
-Based on analysis, the function is in range of vtable[158 ~ 170]. Decompile the virtual function in range to verify:
+Based on analysis, the function is in range of vtable[160 ~ 170]. Decompile the virtual function in range to verify:
 
 ```
 mcp__ida-pro-mcp__py_eval code="""
@@ -33,8 +31,8 @@ import ida_bytes
 vtable_start = <VTABLE_START_ADDRESS>  # From step 1
 ptr_size = 8
 
-# Read function pointers for indices 158-170
-for idx in range(158, 171):
+# Read function pointers for indices 160-170
+for idx in range(160, 171):
     addr = vtable_start + (idx * ptr_size)
     ptr_value = ida_bytes.get_qword(addr)
     print(f"Index {idx}: {hex(ptr_value)}")
@@ -46,7 +44,7 @@ Then decompile each function using:
 mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
-### 3. Identify the Target Function
+### 3. Identify the CBaseEntity_IsPlayerPawn
 
 Look for a function matching ALL these criteria:
 1. Takes exactly one pointer parameter (`__int64 a1`)
@@ -76,17 +74,7 @@ retn
 mcp__ida-pro-mcp__rename batch={"func": {"addr": "<function_addr>", "name": "CBaseEntity_IsPlayerPawn"}}
 ```
 
-### 5. Get VTable Index
-
-**ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index:
-
-```
-/get-vtable-index <function_addr>
-```
-
-VTable class name: `CBaseEntity`
-
-### 6. Generate Signature
+### 5. Generate Signature
 
 **DO NOT** use `find_bytes` as it won't work for function.
 
@@ -96,19 +84,19 @@ VTable class name: `CBaseEntity`
 /generate-signature-for-function <function_addr>
 ```
 
-### 7. Write Analysis Results as YAML
+### 6. Write Analysis Results as YAML
 
-**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results:
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
-```
-/write-func-as-yaml <function_addr>
-```
+Required parameters:
+- `func_name`: `CBaseEntity_IsPlayerPawn`
+- `func_addr`: The function address from step 3
+- `func_sig`: The validated signature from step 5
 
-This automatically generates the YAML file beside the binary with:
-- `func_va`: Virtual address
-- `func_rva`: Relative virtual address
-- `func_size`: Function size in bytes
-- `func_sig`: Unique byte signature
+VTable parameters:
+- `vtable_name`: `CBaseEntity`
+- `vfunc_index`: The vtable index from step 3
+- `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
 
 ## Function Characteristics
 
