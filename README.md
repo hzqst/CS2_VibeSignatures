@@ -25,10 +25,10 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14132
+python download_bin.py -gamever 14134
 ```
 
-2. Open `CS2_VibeSignatures/bin/14132/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
+2. Open `CS2_VibeSignatures/bin/14134/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
 
 3. Let claude / codex do everything for you
 
@@ -75,15 +75,15 @@ prompt:
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14133
+python download_bin.py -gamever 14134
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14133 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14134 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
-python update_gamedata.py -gamever 14133 [-debug]
+python update_gamedata.py -gamever 14134 [-debug]
 ```
 
 Expected result:
@@ -91,7 +91,7 @@ Expected result:
 ```
 Config file: config.yaml
 Binary directory: bin
-Game version: 14133
+Game version: 14134
 Platforms: windows, linux
 Debug mode: enabled
 
@@ -99,8 +99,8 @@ Loading config...
 Found 61 function mappings
 
 Loading YAML data...
-  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..windows.yaml
-  Warning: YAML not found: bin\14133\server\CGameEventManager_Init..linux.yaml
+  Warning: YAML not found: bin\14134\server\CGameEventManager_Init..windows.yaml
+  Warning: YAML not found: bin\14134\server\CGameEventManager_Init..linux.yaml
 Loaded data for 42 functions
 
 ==================================================

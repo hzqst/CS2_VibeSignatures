@@ -6,7 +6,7 @@ Analyzes CS2 binary files using IDA Pro MCP and Claude/Codex agents.
 Sequentially processes modules and symbols defined in config.yaml.
 
 Usage:
-    python ida_analyze_bin.py -gamever=14132 [-platform=windows,linux] [-agent=codex]
+    python ida_analyze_bin.py -gamever=14134 [-platform=windows,linux] [-agent=codex]
 
     -gamever: Game version subdirectory name (required)
     -configyaml: Path to config.yaml file (default: config.yaml)
@@ -22,8 +22,8 @@ Requirements:
     claude CLI or codex CLI (codex.cmd on Windows)
 
 Output:
-    bin/14132/engine/CServerSideClient_IsHearingClient.linux.yaml
-    bin/14132/engine/CServerSideClient_IsHearingClient.windows.yaml
+    bin/14134/engine/CServerSideClient_IsHearingClient.linux.yaml
+    bin/14134/engine/CServerSideClient_IsHearingClient.windows.yaml
     ...and more
 """
 
