@@ -41,83 +41,251 @@ mcp__ida-pro-mcp__decompile addr="<vtable_entries[23]>"
 mcp__ida-pro-mcp__decompile addr="<vtable_entries[24]>"
 ```
 
-### 3. Identify DropActivePlayerWeapon (Index 23)
+### 3. Identify DropActivePlayerWeapon (around vtable index 20 ~ 24)
 
-Look for a function with these characteristics:
+Look for a function with following code pattern:
 
-**Pattern 1: Lazy initialization of this+56**
-- Repeatedly checks `[this+56]` (0x38) for null
-- Calls initialization function if null
-- Pattern appears 3+ times in the function
+Windows:
 
-**Pattern 2: Reads weapon pointer from offset 3704**
-- Accesses `[rax+0xE78]` where 0xE78 = 3704 decimal
-- This is the active weapon pointer offset
+```c
+__int64 __fastcall sub_18099F240(__int64 a1, float *v)
+{
+  __int64 v4; // rdi
+  __int64 result; // rax
+  __int64 v6; // rsi
+  __int64 v7; // rax
+  float v8; // xmm0_4
+  unsigned __int64 *v9; // r9
+  float v10[3]; // xmm1_12
+  unsigned int v11; // xmm2_4
+  unsigned __int64 v12; // [rsp+20h] [rbp-18h] BYREF
+  float v13; // [rsp+28h] [rbp-10h]
 
-**Pattern 3: Dual virtual function calls**
-- Calls the same vtable offset (0xC8 = 200 decimal) twice
-- First call with scaled velocity vector
-- Second call with null/zero parameters
-
-**Pattern 4: SIMD vector-scaling math**
-- Uses `__m128` parameter for velocity calculations
-- SIMD instructions: `movsldup`, `mulps`, `movlps`, `movq`
-- Scales a 3D direction vector with force multiplier
-
-**Assembly signature pattern:**
-```asm
-mov     rax, [rbx+38h]      ; Read this+56
-test    rax, rax
-jz      <init_label>         ; Jump if null
-mov     r14, [rax+0E78h]     ; Read weapon at offset 3704
-...
-movq    xmm1, qword ptr [r12]  ; Load vector
-mulss   xmm2, xmm0             ; Scale Z
-movsldup xmm0, xmm0            ; Duplicate scale
-mulps   xmm0, xmm1             ; Vector multiply
-...
-call    qword ptr [rax+0C8h]   ; Virtual call offset 0xC8
+  nullsub_597();
+  if ( !*(_QWORD *)(a1 + 56) )
+    nullsub_604(a1);
+  v4 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 0xB70LL);
+  result = sub_180B84EF0(v4);
+  v6 = result;
+  if ( result )
+  {
+    if ( !*(_QWORD *)(a1 + 56) )
+      nullsub_604(a1);
+    if ( sub_1803CA0E0(*(_QWORD **)(a1 + 56), 0) )
+    {
+      if ( !*(_QWORD *)(a1 + 56) )
+        nullsub_604(a1);
+      v7 = sub_1803CA0E0(*(_QWORD **)(a1 + 56), 0);
+      *(double *)&v8 = (*(double (__fastcall **)(__int64))(*(_QWORD *)v7 + 280LL))(v7);
+      v9 = &v12;
+      v10[0] = v8 * *v;
+      *(float *)&v11 = v8 * v[1];
+      v8 = v8 * v[2];
+      v12 = __PAIR64__(v11, LODWORD(v10[0]));
+      v13 = v8;
+    }
+    else
+    {
+      v9 = 0LL;
+    }
+    return (*(__int64 (__fastcall **)(__int64, __int64, _QWORD, unsigned __int64 *, unsigned __int64, float))(*(_QWORD *)v4 + 192LL))(
+            v4,
+            v6,
+            0LL,
+            v9,
+            v12,
+            COERCE_FLOAT(LODWORD(v13)));
+  }
+  return result;
+}
 ```
 
-### 4. Identify RemoveWeapons (Index 24)
+Linux:
 
-Look for a function with these characteristics:
+```c
+  __int64 __fastcall sub_137CB20(__int64 a1, float *a2)
+{
+  __int64 v2; // rdx
+  __m128 v3; // xmm0
+  __int64 v5; // rax
+  __int64 v6; // r14
+  __int64 result; // rax
+  __int64 v8; // r13
+  __int64 v9; // rdi
+  __int64 v10; // rdi
+  __int64 v11; // rax
+  __m128 v12; // xmm1
+  __int64 v13; // [rsp+0h] [rbp-30h] BYREF
+  float v14; // [rsp+8h] [rbp-28h]
 
-**Pattern 1: Byte flag check at offset 72**
-- Checks `byte ptr [rdi+48h]` where 0x48 = 72 decimal
-- This is a dirty flag
-- Clears the flag later: `mov byte ptr [rbx+48h], 0`
-
-**Pattern 2: Multiple lazy initializations**
-- Checks `[this+56]` (0x38) multiple times
-- Calls initialization function when null
-- Pattern repeats 3+ times
-
-**Pattern 3: Resets weapon state fields**
-- Writes zero to `(*(this+56) + 3704 + 222)`: offset 0xE78 + 0xDE = offset 3926
-- Writes zero to `(*(this+56) + 7656)`: offset 0x1DE8 = 7656 decimal
-
-**Pattern 4: Cleanup calls and return**
-- Calls function via `*(ptr + 4488)` where 0x1188 = 4488 decimal
-- Ends with tail call to another function with (this, flag) parameters
-
-**Assembly signature pattern:**
-```asm
-cmp     byte ptr [rdi+48h], 0  ; Check flag at offset 72
-jnz     <special_path>
-mov     rax, [rbx+38h]         ; Read this+56
-test    rax, rax
-jz      <init_label>
-mov     rax, [rax+0E78h]       ; Offset 3704
-mov     byte ptr [rax+0DEh], 0 ; Offset +222 = 3926
-...
-mov     qword ptr [rax+1DE8h], 0  ; Offset 7656
-...
-mov     rdi, [rax+1188h]       ; Offset 4488
-call    <cleanup_func>
-...
-jmp     <final_call>           ; Tail call
+  nullsub_1277(a1, a2, v2);
+  v5 = *(_QWORD *)(a1 + 56);
+  if ( !v5 )
+  {
+    nullsub_1293(a1);
+    v5 = *(_QWORD *)(a1 + 56);
+  }
+  v6 = *(_QWORD *)(v5 + 3704);
+  result = sub_15A6560(v6);
+  v8 = result;
+  if ( result )
+  {
+    v9 = *(_QWORD *)(a1 + 56);
+    if ( !v9 )
+    {
+      nullsub_1293(a1);
+      v9 = *(_QWORD *)(a1 + 56);
+    }
+    if ( sub_C73780(v9, 0LL) )
+    {
+      v10 = *(_QWORD *)(a1 + 56);
+      if ( !v10 )
+      {
+        nullsub_1293(a1);
+        v10 = *(_QWORD *)(a1 + 56);
+      }
+      v11 = sub_C73780(v10, 0LL);
+      *(double *)v3.m128_u64 = (*(double (__fastcall **)(__int64))(*(_QWORD *)v11 + 280LL))(v11);
+      v12 = (__m128)_mm_loadl_epi64((const __m128i *)a2);
+      v14 = a2[2] * v3.m128_f32[0];
+      _mm_storel_ps((double *)&v13, _mm_mul_ps((__m128)_mm_move_epi64((__m128i)_mm_moveldup_ps(v3)), v12));
+      return (*(__int64 (__fastcall **)(__int64, __int64, _QWORD, __int64 *))(*(_QWORD *)v6 + 200LL))(v6, v8, 0LL, &v13);
+    }
+    else
+    {
+      return (*(__int64 (__fastcall **)(__int64, __int64, _QWORD, _QWORD))(*(_QWORD *)v6 + 200LL))(v6, v8, 0LL, 0LL);
+    }
+  }
+  return result;
+}
 ```
+
+where `a2` is the momentum/velocity of dropped weapon.
+
+### 4. Identify RemoveWeapons (around vtable index 20 ~ 24)
+
+Windows:
+
+```c
+__int64 __fastcall sub_1809B7C20(__int64 a1, unsigned __int8 a2)
+{
+  __int64 v4; // rdi
+  __int64 v5; // rdi
+
+  if ( *(_BYTE *)(a1 + 72) )
+    sub_1809B7FD0();
+  if ( !*(_QWORD *)(a1 + 56) )
+    nullsub_604(a1);
+  *(_BYTE *)(*(_QWORD *)(*(_QWORD *)(a1 + 56) + 2928LL) + 222LL) = 0;
+  if ( !*(_QWORD *)(a1 + 56) )
+    nullsub_604(a1);
+  *(_QWORD *)(*(_QWORD *)(a1 + 56) + 6896LL) = 0LL;
+  if ( a2 )
+  {
+    if ( *(_BYTE *)(a1 + 73) )
+    {
+      sub_1801B7320(a1 + 73, 0xFFFFFFFFLL, 0xFFFFFFFFLL);
+      *(_BYTE *)(a1 + 73) = 0;
+    }
+    if ( !*(_QWORD *)(a1 + 56) )
+      nullsub_604(a1);
+    v4 = *(_QWORD *)(a1 + 56);
+    if ( *(_DWORD *)(v4 + 6876) )
+    {
+      sub_1801B71E0(v4 + 6876, 0xFFFFFFFFLL, 0xFFFFFFFFLL);
+      *(_DWORD *)(v4 + 6876) = 0;
+    }
+    if ( !*(_QWORD *)(a1 + 56) )
+      nullsub_604(a1);
+    v5 = *(_QWORD *)(a1 + 56);
+    if ( *(_DWORD *)(v5 + 6876) )
+    {
+      sub_1801B71E0(v5 + 6876, 0xFFFFFFFFLL, 0xFFFFFFFFLL);
+      *(_DWORD *)(v5 + 6876) = 0;
+    }
+  }
+  if ( !*(_QWORD *)(a1 + 56) )
+    nullsub_604(a1);
+  sub_180972470(*(_QWORD *)(*(_QWORD *)(a1 + 56) + 3728LL));
+  return sub_180B73A40(a1, a2);
+}
+```
+
+Linux:
+```c
+__int64 __fastcall sub_137C660(__int64 a1, unsigned __int8 a2)
+{
+  __int64 v2; // rax
+  __int64 v3; // rax
+  __int64 v4; // rax
+  __int64 v6; // [rsp+0h] [rbp-60h] BYREF
+  __int64 v7; // [rsp+8h] [rbp-58h] BYREF
+  _QWORD v8[2]; // [rsp+10h] [rbp-50h] BYREF
+  __int128 v9; // [rsp+20h] [rbp-40h]
+  __int64 v10; // [rsp+30h] [rbp-30h]
+  int v11; // [rsp+38h] [rbp-28h]
+  __int16 v12; // [rsp+3Ch] [rbp-24h]
+
+  if ( *(_BYTE *)(a1 + 72) )
+  {
+    v9 = 0LL;
+    v12 = 0;
+    v6 = 1LL;
+    v7 = 0LL;
+    v8[0] = 0LL;
+    v8[1] = 0LL;
+    v10 = -1LL;
+    v11 = -1;
+    sub_9F5D20(v8, 1LL);
+    LODWORD(v7) = v7 + 1;
+    *(_DWORD *)v8[0] = 72;
+    sub_1D749F0(a1 + 8, &v6);
+    sub_9BF4F0(&v7);
+    *(_BYTE *)(a1 + 72) = 0;
+    sub_1339E60(a1);
+    v2 = *(_QWORD *)(a1 + 56);
+    if ( v2 )
+      goto LABEL_3;
+  }
+  else
+  {
+    v2 = *(_QWORD *)(a1 + 56);
+    if ( v2 )
+      goto LABEL_3;
+  }
+  nullsub_1293(a1);
+  v2 = *(_QWORD *)(a1 + 56);
+LABEL_3:
+  *(_BYTE *)(*(_QWORD *)(v2 + 3704) + 222LL) = 0;
+  v3 = *(_QWORD *)(a1 + 56);
+  if ( !v3 )
+  {
+    nullsub_1293(a1);
+    v3 = *(_QWORD *)(a1 + 56);
+  }
+  *(_QWORD *)(v3 + 7656) = 0LL;
+  if ( a2 )
+  {
+    sub_1341410(a1);
+    sub_1340900(a1);
+    v4 = *(_QWORD *)(a1 + 56);
+    if ( v4 )
+      goto LABEL_7;
+LABEL_11:
+    nullsub_1293(a1);
+    v4 = *(_QWORD *)(a1 + 56);
+    goto LABEL_7;
+  }
+  v4 = *(_QWORD *)(a1 + 56);
+  if ( !v4 )
+    goto LABEL_11;
+LABEL_7:
+  sub_1318D90(*(_QWORD *)(v4 + 4488));
+  return sub_1565440(a1, a2);
+}
+```
+
+where `a2` can be something like a boolean
 
 ### 5. Rename Functions
 
@@ -139,8 +307,8 @@ mcp__ida-pro-mcp__rename batch={
 VTable class name: `CCSPlayer_ItemServices`
 
 Run for both functions:
-- DropActivePlayerWeapon (expected index: 23)
-- RemoveWeapons (expected index: 24)
+- DropActivePlayerWeapon (expected index: 20 ~ 24, can change on game update)
+- RemoveWeapons (expected index: 20 ~ 24, can change on game update)
 
 ### 7. Generate Signatures
 
