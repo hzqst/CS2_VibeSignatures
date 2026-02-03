@@ -24,7 +24,7 @@ This returns:
 
 ### 2. Decompile Virtual Functions at Index 158-170
 
-Based on analysis, the function is at **vtable index 167**. Decompile the range to verify:
+Based on analysis, the function is in range of vtable[158 ~ 170]. Decompile the virtual function in range to verify:
 
 ```
 mcp__ida-pro-mcp__py_eval code="""
@@ -59,7 +59,7 @@ Look for a function matching ALL these criteria:
 ```c
 bool __fastcall sub_XXXXXX(__int64 a1)
 {
-  return *(_BYTE *)(a1 + 1472) == 0;  // or offset 0x5C0
+  return *(_BYTE *)(a1 + 1472) == 0;  // or offset 0x5C0, this offset can change on game update.
 }
 ```
 
@@ -115,7 +115,7 @@ This automatically generates the YAML file beside the binary with:
 - **Parameters**: `(this)` where `this` is CBaseEntity pointer
 - **Return**: `bool` - Returns true if entity is a player pawn (byte at offset 1472 equals 0)
 - **Size**: 11 bytes (0xB)
-- **Offset Checked**: 1472 (0x5C0) - likely a flag or type indicator in CBaseEntity
+- **Offset Checked**: 1472 (0x5C0) - likely a flag or type indicator in CBaseEntity, this offset can change on game update.
 
 ## VTable Information
 

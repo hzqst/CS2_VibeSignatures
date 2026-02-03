@@ -78,7 +78,7 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CBasePlayerController`
-- `vfunc_index`: The index from step 2
+- `vfunc_index`: The vtable index from step 2
 - `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
 
 ## Function Characteristics

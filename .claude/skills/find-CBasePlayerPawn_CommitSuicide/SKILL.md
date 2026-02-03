@@ -22,15 +22,15 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
 
    Extract `vtable_va` and `vtable_entries` from the result.
 
-2. Decompile the virtual function at IDA index 400:
+2. Decompile the virtual function at vtable[398 ~ 402]:
 
    ```
-   mcp__ida-pro-mcp__decompile addr="<vtable_entries[399]>"
+   mcp__ida-pro-mcp__decompile addr="<vtable_entries[index]>"
    ```
 
-   Note: IDA index 400 = array index 399 (IDA uses 1-based indexing)
+   where index ranges fronm 398 to 402
 
-3. Verify function characteristics to confirm this is CommitSuicide:
+3. Verify function characteristics to identify `CBasePlayerPawn::CommitSuicide`:
 
    The function should exhibit these unique patterns:
 
@@ -50,13 +50,7 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CBasePlayerPawn_CommitSuicide"}]}
    ```
 
-5. Get vtable offset and index:
-
-   **ALWAYS** Use SKILL `/get-vtable-index` with the function address.
-
-   VTable class name: `CBasePlayerPawn`
-
-6. Generate and validate unique signature:
+5. Generate and validate unique signature:
 
    **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
@@ -70,10 +64,10 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
    - `func_addr`: The function address from step 2
    - `func_sig`: The validated signature from step 6
 
-   VTable parameters (when this is a virtual function):
+   VTable parameters:
    - `vtable_name`: `CBasePlayerPawn`
-   - `vfunc_offset`: The offset from step 5
-   - `vfunc_index`: The index from step 5
+   - `vfunc_index`: The vtable index from step 3
+   - `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
 
 ## Function Characteristics
 
