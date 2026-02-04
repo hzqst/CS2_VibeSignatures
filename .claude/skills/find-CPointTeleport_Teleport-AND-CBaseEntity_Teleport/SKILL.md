@@ -112,7 +112,7 @@ The `CPointTeleport_Teleport` function contains:
 
 ## Output YAML Format
 
-The output YAML filename depends on the platform:
+The output YAML filename of CPointTeleport_Teleport depends on the platform:
 - `server.dll` → `CPointTeleport_Teleport.windows.yaml`
 - `server.so` / `libserver.so` → `CPointTeleport_Teleport.linux.yaml`
 
@@ -122,6 +122,16 @@ func_rva: 0xd33300       # Relative virtual address - changes with game updates
 func_size: 0x1d0         # Function size in bytes - changes with game updates
 func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning
 vtable_name: CPointTeleport
+vfunc_offset: 0x60       # Offset from vtable start - changes with game updates
+vfunc_index: 12          # vtable index - changes with game updates
+```
+
+The output YAML filename of CBaseEntity_Teleport depends on the platform:
+- `server.dll` → `CBaseEntity_Teleport.windows.yaml`
+- `server.so` / `libserver.so` → `CBaseEntity_Teleport.linux.yaml`
+
+```yaml
+vtable_name: CBaseEntity
 vfunc_offset: 0x60       # Offset from vtable start - changes with game updates
 vfunc_index: 12          # vtable index - changes with game updates
 ```

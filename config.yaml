@@ -333,6 +333,12 @@ modules:
         expected_output:
           - CPointTeleport_Teleport.{platform}.yaml
           - CBaseEntity_Teleport.{platform}.yaml
+        expected_input:
+          - CPointTeleport_vtable.{platform}.yaml
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CPointTeleport_vtable
+          - find-CBaseEntity_vtable
 
     symbols:
       - name: CSource2Server_vtable
