@@ -301,7 +301,7 @@
 			"IsEntityPawn"
 			{
 				"windows" "168"
-				"linux" "167"
+				"linux" "166"
 			}
 			"IsEntityController"
 			{
