@@ -222,8 +222,9 @@ modules:
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
 
-      - name: find-TraceAttack-AND-CTakeDamageInfo
+      - name: find-FireBullets-AND-TraceAttack-AND-CTakeDamageInfo
         expected_output:
+          - FireBullets.{platform}.yaml
           - TraceAttack.{platform}.yaml
           - CTakeDamageInfo.{platform}.yaml
 

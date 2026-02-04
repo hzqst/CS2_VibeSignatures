@@ -1,5 +1,5 @@
 ---
-name: find-TraceAttack-AND-CTakeDamageInfo
+name: find-FireBullets-AND-TraceAttack-AND-CTakeDamageInfo
 description: Find and identify the TraceAttack function and CTakeDamageInfo struct in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TraceAttack function by searching for the "FireBullets" debug string pattern, then tracing through FireBullets to find TraceAttack, and identifying CTakeDamageInfo struct member offsets.
 ---
 
@@ -103,12 +103,12 @@ Linux:
 mcp__ida-pro-mcp__rename batch={"func": {"addr": "<traceattack_addr>", "name": "TraceAttack"}}
 ```
 
-### 7. Generate and Validate Unique Signature for TraceAttack
+### 7. Generate and Validate Unique Signature for FireBullets and TraceAttack
 
 **DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-### 8. Write IDA Analysis Output as YAML for TraceAttack
+### 8. Write IDA Analysis Output as YAML for FireBullets and TraceAttack
 
 **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
