@@ -222,6 +222,11 @@ modules:
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
 
+      - name: find-TraceAttack-AND-CTakeDamageInfo
+        expected_output:
+          - TraceAttack.{platform}.yaml
+          - CTakeDamageInfo.{platform}.yaml
+
       - name: find-GetCSWeaponDataFromKey
         expected_output:
           - GetCSWeaponDataFromKey.{platform}.yaml
@@ -516,8 +521,20 @@ modules:
       - name: gameeventmanager
         catagory: gv
 
+      - name: CTakeDamageInfo
+        catagory: struct
+
       - name: CTakeDamageInfo_GetWeaponName
         catagory: func
+
+      - name: CTakeDamageInfo_HitGroupInfo
+        catagory: structmember
+        struct: CTakeDamageInfo
+        member: HitGroupInfo
+        alias:
+          - CTakeDamageInfo::HitGroupInfo
+          - CTakeDamageInfo::HitGroup
+          - CTakeDamageInfo_HitGroup
 
       - name: GetCSWeaponDataFromKey
         catagory: func
