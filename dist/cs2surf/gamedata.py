@@ -99,11 +99,13 @@ def _update_signatures(gamedata, yaml_data, _func_lib_map, platforms, alias_to_n
         if yaml_name not in yaml_data:
             skipped_count += 1
             if debug:
-                skipped_symbols.append(f"Signature:{sig_name}")
+                skipped_symbols.append({
+                    "name": sig_name,
+                    "reason": "no matching YAML data"
+                })
             continue
 
         yaml_entry = yaml_data[yaml_name]
-        any_updated = False
 
         for platform in platforms:
             if platform not in sig_data:
@@ -117,12 +119,13 @@ def _update_signatures(gamedata, yaml_data, _func_lib_map, platforms, alias_to_n
                 converted_sig = convert_sig_to_css(yaml_sig)
                 if sig_data[platform] != converted_sig:
                     sig_data[platform] = converted_sig
-                    any_updated = True
-
-        if any_updated:
-            updated_count += 1
-            if debug:
-                updated_symbols.append(f"Signature:{sig_name}")
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": sig_name,
+                            "type": "signature",
+                            "platform": platform
+                        })
 
     return updated_count, skipped_count, updated_symbols, skipped_symbols
 
@@ -149,11 +152,13 @@ def _update_offsets(gamedata, yaml_data, platforms, alias_to_name_map, debug):
         if yaml_name not in yaml_data:
             skipped_count += 1
             if debug:
-                skipped_symbols.append(f"Offset:{offset_name}")
+                skipped_symbols.append({
+                    "name": offset_name,
+                    "reason": "no matching YAML data"
+                })
             continue
 
         yaml_entry = yaml_data[yaml_name]
-        any_updated = False
 
         for platform in platforms:
             if platform not in offset_data:
@@ -167,11 +172,12 @@ def _update_offsets(gamedata, yaml_data, platforms, alias_to_name_map, debug):
             if yaml_index is not None:
                 if offset_data[platform] != yaml_index:
                     offset_data[platform] = yaml_index
-                    any_updated = True
-
-        if any_updated:
-            updated_count += 1
-            if debug:
-                updated_symbols.append(f"Offset:{offset_name}")
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": offset_name,
+                            "type": "vfunc_index",
+                            "platform": platform
+                        })
 
     return updated_count, skipped_count, updated_symbols, skipped_symbols
