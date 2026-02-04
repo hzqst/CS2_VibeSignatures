@@ -449,11 +449,15 @@ modules:
         catagory: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
+          - CGameRules::FindPickerEntity
+          - CGameRules_FindPickerEntity
 
       - name: CCSGameRules_TerminateRound
+        catagory: func
         alias:
           - CCSGameRules::TerminateRound
-        catagory: func
+          - CGameRules::TerminateRound
+          - CGameRules_TerminateRound
 
       - name: CEntityInstance_AcceptInput
         catagory: func
@@ -549,11 +553,14 @@ modules:
 
       - name: UTIL_CreateEntityByName
         catagory: func
+        alias:
+          - CreateEntityByName
 
       - name: CBaseEntity_DispatchSpawn
         catagory: func
         alias:
           - CBaseEntity::DispatchSpawn
+          - DispatchSpawn
 
       - name: CBaseEntity_SetStateChanged
         catagory: vfunc

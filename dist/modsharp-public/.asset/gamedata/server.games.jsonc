@@ -436,8 +436,8 @@
         },
         "CreateEntityByName": {
             "library": "server",
-            "linux": "48 8D 05 ? ? ? ? 55 48 89 FA",
-            "windows": "48 83 EC 48 C6 44 24 30 00"
+            "linux": "48 8D 05 ? ? ? ? 55 48 89 FA 41 89 F0 48 89 E5 48 83 EC 08 41 B9 FF FF FF FF 31 C9 BE FF FF FF FF 48 8B 38 6A 00 E8 ? ? ? ? C9 C3",
+            "windows": "48 83 EC 48 C6 44 24 30 00 4C 8B C1 48 8B 0D ? ? ? ? 45 33 C9 C7 44 24 28 FF FF FF FF 89 54 24 20 BA FF FF FF FF E8 ? ? ? ? 48 83 C4 48 C3"
         },
         "CSoundEmitterSystem::EmitSound": {
             "library": "server",
