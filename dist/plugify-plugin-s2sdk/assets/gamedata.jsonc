@@ -136,8 +136,8 @@
                 "linuxsteamrt64": 179
             },
             "CBaseEntity::Teleport": {
-                "win64": 162,
-                "linuxsteamrt64": 161
+                "win64": 12,
+                "linuxsteamrt64": 13
             },
             "CBasePlayerController::RoundRespawn": {
                 "win64": 272,

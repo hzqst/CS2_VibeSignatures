@@ -12,8 +12,8 @@
         "linux": 101
     },
     "CBaseEntity::Teleport": {
-        "windows": 162,
-        "linux": 161
+        "windows": 12,
+        "linux": 13
     },
     "CCSPlayerController::Respawn": {
         "windows": 272,

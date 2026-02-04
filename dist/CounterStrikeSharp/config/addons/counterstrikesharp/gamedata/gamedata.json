@@ -201,8 +201,8 @@
   },
   "CBaseEntity_Teleport": {
     "offsets": {
-      "windows": 162,
-      "linux": 161
+      "windows": 12,
+      "linux": 13
     }
   },
   "CBaseEntity_TakeDamageOld": {

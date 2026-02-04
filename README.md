@@ -124,6 +124,10 @@ python update_gamedata.py -gamever 14134 [-debug]
 
 `dist/modsharp-public/.asset/gamedata/tier0.games.jsonc`
 
+[CS2Surf/Timer](https://github.com/CS2Surf-CN/Timer) 
+
+`dist/cs2surf/gamedata/cs2surf-core.games.jsonc` 
+
 ## How to create SKILL for regular function
 
 * Always make sure you have ida-pro-mcp server running.

@@ -557,6 +557,7 @@ modules:
         catagory: vfunc
         alias:
           - CBasePlayerPawn::CommitSuicide
+          - CommitSuicide
 
       - name: CBasePlayerPawn_RemovePlayerItem
         catagory: func
@@ -605,6 +606,13 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::IsPlayerPawn
+          - IsEntityPawn
+
+      - name: CBaseEntity_IsPlayerController
+        catagory: vfunc
+        alias:
+          - CBaseEntity::IsPlayerController
+          - IsEntityController
 
       - name: CBaseTrigger_StartTouch
         catagory: vfunc
