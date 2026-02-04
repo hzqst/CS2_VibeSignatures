@@ -207,6 +207,20 @@ DEBUG INFO: Summary
 
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
+[modsharp](https://github.com/Kxnrl/modsharp-public) 
+
+`dist/modsharp-public/.asset/gamedata/core.games.jsonc` 
+
+`dist/modsharp-public/.asset/gamedata/engine.games.jsonc` 
+
+`dist/modsharp-public/.asset/gamedata/EntityEnhancement.games.jsonc` 
+
+`dist/modsharp-public/.asset/gamedata/log.games.jsonc` 
+
+`dist/modsharp-public/.asset/gamedata/server.games.jsonc` 
+
+`dist/modsharp-public/.asset/gamedata/tier0.games.jsonc`
+
 ## How to create SKILL for regular function
 
 * Always make sure you have ida-pro-mcp server running.
