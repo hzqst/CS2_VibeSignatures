@@ -1,6 +1,6 @@
 ---
-name: find-CSource2GameEntities_CheckTransmit
-description: Find and identify the CSource2GameEntities vtable CheckTransmit virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2GameEntities::CheckTransmit function by searching for the assertion string pattern and analyzing xrefs.
+name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
+description: Find and identify the CSource2GameEntities::CheckTransmit (virtual function) and CCheckTransmitInfo (struct) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2GameEntities::CheckTransmit function by searching for the assertion string pattern and analyzing xrefs.
 ---
 
 # Find CSource2GameEntities::CheckTransmit
@@ -81,6 +81,63 @@ VTable parameters:
 - `vtable_name`: `CSource2GameEntities`
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
+
+### 8. Look for code pattern that access CCheckTransmitInfo::m_nPlayerSlot
+
+Look for following code pattern in `CSource2GameEntities_CheckTransmit`
+
+Windows:
+
+```c
+    do
+    {
+        pInfo = a2[v24];
+        v36 = sub_180BC3D60(*(_DWORD *)(pInfo + 576));
+        if ( !v36 || v36 != v31 )
+        {
+            v37 = 0LL;
+            if ( v34 > 0 )
+            {
+            do
+            {
+                v38 = *(_QWORD *)pInfo;
+                sub_1811957A0(*(_QWORD *)&v77[8 * v37++], &v85);
+                *(_DWORD *)(v38 + 4 * ((__int64)v85 >> 5)) &= ~(1 << (v85 & 0x1F));
+            }
+            while ( v37 < v34 );
+            v31 = v68;
+            }
+        }
+        ++v24;
+    }
+    while ( v24 < v7 );
+```
+
+Linux:
+
+```c
+  do
+  {
+    v20 = *(_QWORD *)(a2 + 8 * v19);
+    v21 = sub_15CC080(*(unsigned int *)(v20 + 576));
+    LOWORD(v22) = v147 & 0x7FFF;
+    if ( !v21 )
+      goto LABEL_33;
+    v23 = (int)v162;
+```
+
+where `a2` is `CCheckTransmitInfo** ppInfoList`, `a3` is ` int infoCount`
+
+the `*(int *)(v20 + 576)` is `CCheckTransmitInfo::m_nPlayerSlot`
+
+* The offset 576 (0x240) can change on game update.
+
+### 9. Write Struct Members for CCheckTransmitInfo as YAML
+
+**ALWAYS** Use SKILL `/write-struct-as-yaml` to write CCheckTransmitInfo's struct member information:
+
+For `CCheckTransmitInfo.{platform}.yaml`:
+- Offset `0x240`: `m_nPlayerSlot` (size 4)
 
 ## Function Characteristics
 

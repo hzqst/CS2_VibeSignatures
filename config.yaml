@@ -263,9 +263,10 @@ modules:
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
         max_retries: 6
 
-      - name: find-CSource2GameEntities_CheckTransmit
+      - name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
         expected_output:
           - CSource2GameEntities_CheckTransmit.{platform}.yaml
+          - CCheckTransmitInfo.{platform}.yaml
         expected_input:
           - CSource2GameEntities_vtable.{platform}.yaml
         prerequisite:
