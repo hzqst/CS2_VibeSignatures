@@ -28,7 +28,7 @@ Before using this skill, you should have:
 mcp__ida-pro-mcp__py_eval code="""
 import idaapi
 import os
-import re
+import yaml
 
 # === REQUIRED: Replace these values ===
 struct_name = "<struct_name>"           # e.g., "CBaseEntity"
@@ -54,31 +54,35 @@ yaml_path = os.path.join(dir_path, f"{struct_name}.{platform}.yaml")
 existing_entries = {}  # member_name -> (offset, size)
 if os.path.exists(yaml_path):
     with open(yaml_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            # Parse format: "0xOFFSET: member_name [size]"
-            match = re.match(r'^(0x[0-9A-Fa-f]+):\s+(\S+)(?:\s+(\d+))?$', line)
-            if match:
-                offset_str, name, size_str = match.groups()
-                offset = int(offset_str, 16)
-                size = int(size_str) if size_str else None
+        data = yaml.safe_load(f)
+        if data:
+            for offset_key, value in data.items():
+                # Parse offset from key (e.g., "0x278")
+                offset = int(offset_key, 16) if isinstance(offset_key, str) else offset_key
+                # Parse value: "member_name [size]"
+                parts = str(value).split()
+                name = parts[0]
+                size = int(parts[1]) if len(parts) > 1 else None
                 existing_entries[name] = (offset, size)
 
 # Merge new members (overwrite by member_name)
 for offset, name, size in members:
     existing_entries[name] = (offset, size)
 
-# Sort by offset and write
+# Sort by offset and build output dict
 sorted_entries = sorted(existing_entries.items(), key=lambda x: x[1][0])
 
+# Build ordered dict for YAML output
+output_data = {}
+for name, (offset, size) in sorted_entries:
+    key = f"0x{offset:X}"
+    if size and size > 0:
+        output_data[key] = f"{name} {size}"
+    else:
+        output_data[key] = name
+
 with open(yaml_path, 'w', encoding='utf-8') as f:
-    for name, (offset, size) in sorted_entries:
-        if size and size > 0:
-            f.write(f"0x{offset:X}: {name} {size}\\n")
-        else:
-            f.write(f"0x{offset:X}: {name}\\n")
+    yaml.dump(output_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
 print(f"Written to: {yaml_path}")
 print(f"Total members: {len(sorted_entries)}")
