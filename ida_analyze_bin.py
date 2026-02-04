@@ -19,7 +19,7 @@ Usage:
 Requirements:
     pip install pyyaml
     uv (for running idalib-mcp)
-    claude CLI or codex CLI (codex.cmd on Windows)
+    claude CLI or codex CLI
 
 Output:
     bin/14134/engine/CServerSideClient_IsHearingClient.linux.yaml
