@@ -16,6 +16,11 @@ modules:
         prerequisite:
           - find-CServerSideClient_vtable
 
+      - name: find-CGameResourceService_BuildResourceManifest
+        expected_output:
+          - CGameResourceService.{platform}.yaml
+          - CGameResourceService_BuildResourceManifest.{platform}.yaml
+
     symbols:
       - name: CServerSideClient_vtable
         catagory: vtable
@@ -24,6 +29,22 @@ modules:
         catagory: vfunc
         alias:
           - IsHearingClient
+
+      - name: CGameResourceService_BuildResourceManifest
+        catagory: func
+        alias:
+          - CGameResourceService::BuildResourceManifest
+          - BuildResourceManifest
+
+      - name: CGameResourceService
+        catagory: struct
+
+      - name: CGameResourceService_m_pEntitySystem
+        catagory: structmember
+        struct: CGameResourceService
+        member: m_pEntitySystem
+        alias:
+          - GameEntitySystem
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
@@ -650,9 +671,6 @@ modules:
       - name: CSkeletonInstance
         catagory: struct
 
-      - name: CCheckTransmitInfo
-        catagory: struct
-
       - name: CPointTeleport_Teleport
         catagory: vfunc
         alias:
@@ -662,6 +680,9 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::Teleport
+
+      - name: CCheckTransmitInfo
+        catagory: struct
 
       - name: CCheckTransmitInfo_m_nPlayerSlot
         catagory: structmember
