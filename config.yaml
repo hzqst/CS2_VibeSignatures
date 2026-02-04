@@ -650,6 +650,9 @@ modules:
       - name: CSkeletonInstance
         catagory: struct
 
+      - name: CCheckTransmitInfo
+        catagory: struct
+
       - name: CPointTeleport_Teleport
         catagory: vfunc
         alias:
@@ -659,3 +662,11 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::Teleport
+
+      - name: CCheckTransmitInfo_m_nPlayerSlot
+        catagory: structmember
+        struct: CCheckTransmitInfo
+        member: m_nPlayerSlot
+        alias:
+          - CCheckTransmitInfo::m_nPlayerSlot
+          - CheckTransmitPlayerSlot

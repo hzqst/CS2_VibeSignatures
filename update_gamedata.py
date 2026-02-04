@@ -215,6 +215,40 @@ def load_yaml_data(yaml_path):
         return yaml.safe_load(f)
 
 
+def parse_struct_yaml(yaml_data):
+    """
+    Parse struct YAML data to extract member offsets.
+
+    YAML format: {'0x240': 'm_nPlayerSlot 4', ...}
+    Where key is hex offset, value is "member_name size"
+
+    Args:
+        yaml_data: Dictionary from YAML file
+
+    Returns:
+        Dictionary mapping member names to their offsets (as integers)
+    """
+    if not yaml_data:
+        return {}
+
+    members = {}
+    for offset_str, value in yaml_data.items():
+        # Parse offset (hex string like '0x240')
+        if isinstance(offset_str, str) and offset_str.startswith("0x"):
+            offset = int(offset_str, 16)
+        else:
+            offset = int(offset_str)
+
+        # Parse value: "member_name size" or just "member_name"
+        if isinstance(value, str):
+            parts = value.split()
+            if parts:
+                member_name = parts[0]
+                members[member_name] = offset
+
+    return members
+
+
 def build_function_library_map(config):
     """
     Build a mapping from function names to library names.
@@ -408,6 +442,9 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
     yaml_data = {}
     missing_symbols = []
 
+    # Cache for loaded struct YAML files to avoid re-reading
+    struct_cache = {}  # {(module_name, struct_name, platform): parsed_members}
+
     for module in config.get("modules", []):
         module_name = module.get("name")
         if not module_name:
@@ -418,27 +455,70 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
             if not func_name:
                 continue
 
+            category = symbol.get("catagory")
+
             yaml_data[func_name] = {
                 "library": module_name,
-                "category": symbol.get("catagory")
+                "category": category
             }
 
-            for platform in platforms:
-                yaml_path = os.path.join(
-                    bin_dir, gamever, module_name, f"{func_name}.{platform}.yaml"
-                )
-                data = load_yaml_data(yaml_path)
-                if data:
-                    yaml_data[func_name][platform] = data
-                else:
-                    if debug:
-                        missing_symbols.append({
-                            "name": func_name,
-                            "library": module_name,
-                            "platform": platform,
-                            "path": yaml_path
-                        })
-                    print(f"  Warning: YAML not found: {yaml_path}")
+            # Handle structmember type differently
+            if category == "structmember":
+                struct_name = symbol.get("struct")
+                member_name = symbol.get("member")
+
+                if not struct_name or not member_name:
+                    print(f"  Warning: structmember {func_name} missing struct or member field")
+                    continue
+
+                for platform in platforms:
+                    cache_key = (module_name, struct_name, platform)
+
+                    # Load and cache struct YAML if not already cached
+                    if cache_key not in struct_cache:
+                        yaml_path = os.path.join(
+                            bin_dir, gamever, module_name, f"{struct_name}.{platform}.yaml"
+                        )
+                        data = load_yaml_data(yaml_path)
+                        if data:
+                            struct_cache[cache_key] = parse_struct_yaml(data)
+                        else:
+                            struct_cache[cache_key] = None
+                            if debug:
+                                missing_symbols.append({
+                                    "name": struct_name,
+                                    "library": module_name,
+                                    "platform": platform,
+                                    "path": yaml_path
+                                })
+                            print(f"  Warning: Struct YAML not found: {yaml_path}")
+
+                    # Extract member offset from cached struct data
+                    struct_members = struct_cache.get(cache_key)
+                    if struct_members and member_name in struct_members:
+                        yaml_data[func_name][platform] = {
+                            "struct_member_offset": struct_members[member_name]
+                        }
+                    elif struct_members:
+                        print(f"  Warning: Member {member_name} not found in {struct_name}")
+            else:
+                # Original logic for func/vfunc/struct types
+                for platform in platforms:
+                    yaml_path = os.path.join(
+                        bin_dir, gamever, module_name, f"{func_name}.{platform}.yaml"
+                    )
+                    data = load_yaml_data(yaml_path)
+                    if data:
+                        yaml_data[func_name][platform] = data
+                    else:
+                        if debug:
+                            missing_symbols.append({
+                                "name": func_name,
+                                "library": module_name,
+                                "platform": platform,
+                                "path": yaml_path
+                            })
+                        print(f"  Warning: YAML not found: {yaml_path}")
 
     return yaml_data, missing_symbols
 
@@ -525,18 +605,30 @@ def update_counterstrikesharp(yaml_data, func_lib_map, platforms, script_dir, al
                             "platform": platform
                         })
 
-        # Update offsets (vfunc_index)
+        # Update offsets (vfunc_index or struct_member_offset)
         if "offsets" in entry:
             for platform in platforms:
-                if platform in yaml_entry and "vfunc_index" in yaml_entry[platform]:
-                    entry["offsets"][platform] = yaml_entry[platform]["vfunc_index"]
-                    updated_count += 1
-                    if debug:
-                        updated_symbols.append({
-                            "name": func_name,
-                            "type": "offset",
-                            "platform": platform
-                        })
+                if platform in yaml_entry:
+                    # Check for vfunc_index (virtual function offset)
+                    if "vfunc_index" in yaml_entry[platform]:
+                        entry["offsets"][platform] = yaml_entry[platform]["vfunc_index"]
+                        updated_count += 1
+                        if debug:
+                            updated_symbols.append({
+                                "name": func_name,
+                                "type": "offset",
+                                "platform": platform
+                            })
+                    # Check for struct_member_offset (struct member offset)
+                    elif "struct_member_offset" in yaml_entry[platform]:
+                        entry["offsets"][platform] = yaml_entry[platform]["struct_member_offset"]
+                        updated_count += 1
+                        if debug:
+                            updated_symbols.append({
+                                "name": func_name,
+                                "type": "struct_offset",
+                                "platform": platform
+                            })
 
     # Write back
     with open(gamedata_path, "w", encoding="utf-8") as f:
@@ -651,16 +743,28 @@ def update_cs2fixes(yaml_data, func_lib_map, platforms, script_dir, alias_to_nam
 
         # Update platform offsets
         for platform in platforms:
-            if platform in yaml_entry and "vfunc_index" in yaml_entry[platform]:
-                # CS2Fixes uses string values for offsets
-                entry[platform] = str(yaml_entry[platform]["vfunc_index"])
-                updated_count += 1
-                if debug:
-                    updated_symbols.append({
-                        "name": func_name,
-                        "type": "offset",
-                        "platform": platform
-                    })
+            if platform in yaml_entry:
+                # Check for vfunc_index (virtual function offset)
+                if "vfunc_index" in yaml_entry[platform]:
+                    # CS2Fixes uses string values for offsets
+                    entry[platform] = str(yaml_entry[platform]["vfunc_index"])
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "offset",
+                            "platform": platform
+                        })
+                # Check for struct_member_offset (struct member offset)
+                elif "struct_member_offset" in yaml_entry[platform]:
+                    entry[platform] = str(yaml_entry[platform]["struct_member_offset"])
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "struct_offset",
+                            "platform": platform
+                        })
 
     # Write back with BOM
     # Use vdf.dumps() to get string, then manually fix escaped backslashes
@@ -780,16 +884,28 @@ def update_cs2kz(yaml_data, func_lib_map, platforms, script_dir, alias_to_name_m
 
         # Update platform offsets
         for platform in platforms:
-            if platform in yaml_entry and "vfunc_index" in yaml_entry[platform]:
-                # CS2KZ uses string values for offsets (same as CS2Fixes)
-                entry[platform] = str(yaml_entry[platform]["vfunc_index"])
-                updated_count += 1
-                if debug:
-                    updated_symbols.append({
-                        "name": func_name,
-                        "type": "offset",
-                        "platform": platform
-                    })
+            if platform in yaml_entry:
+                # Check for vfunc_index (virtual function offset)
+                if "vfunc_index" in yaml_entry[platform]:
+                    # CS2KZ uses string values for offsets (same as CS2Fixes)
+                    entry[platform] = str(yaml_entry[platform]["vfunc_index"])
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "offset",
+                            "platform": platform
+                        })
+                # Check for struct_member_offset (struct member offset)
+                elif "struct_member_offset" in yaml_entry[platform]:
+                    entry[platform] = str(yaml_entry[platform]["struct_member_offset"])
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "struct_offset",
+                            "platform": platform
+                        })
 
     # Write back with BOM
     # Use vdf.dumps() to get string, then manually fix escaped backslashes
@@ -966,15 +1082,27 @@ def update_swiftlys2_offsets(yaml_data, func_lib_map, platforms, off_path, alias
 
         # Update platform offsets
         for platform in platforms:
-            if platform in yaml_entry and "vfunc_index" in yaml_entry[platform]:
-                entry[platform] = yaml_entry[platform]["vfunc_index"]
-                updated_count += 1
-                if debug:
-                    updated_symbols.append({
-                        "name": func_name,
-                        "type": "offset",
-                        "platform": platform
-                    })
+            if platform in yaml_entry:
+                # Check for vfunc_index (virtual function offset)
+                if "vfunc_index" in yaml_entry[platform]:
+                    entry[platform] = yaml_entry[platform]["vfunc_index"]
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "offset",
+                            "platform": platform
+                        })
+                # Check for struct_member_offset (struct member offset)
+                elif "struct_member_offset" in yaml_entry[platform]:
+                    entry[platform] = yaml_entry[platform]["struct_member_offset"]
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "struct_offset",
+                            "platform": platform
+                        })
 
     # Write back
     save_jsonc(off_path, offsets)
@@ -1092,15 +1220,27 @@ def update_plugify(yaml_data, func_lib_map, platforms, script_dir, alias_to_name
             plugify_platform = platform_map.get(platform)
             if not plugify_platform:
                 continue
-            if platform in yaml_entry and "vfunc_index" in yaml_entry[platform]:
-                entry[plugify_platform] = yaml_entry[platform]["vfunc_index"]
-                updated_count += 1
-                if debug:
-                    updated_symbols.append({
-                        "name": func_name,
-                        "type": "offset",
-                        "platform": platform
-                    })
+            if platform in yaml_entry:
+                # Check for vfunc_index (virtual function offset)
+                if "vfunc_index" in yaml_entry[platform]:
+                    entry[plugify_platform] = yaml_entry[platform]["vfunc_index"]
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "offset",
+                            "platform": platform
+                        })
+                # Check for struct_member_offset (struct member offset)
+                elif "struct_member_offset" in yaml_entry[platform]:
+                    entry[plugify_platform] = yaml_entry[platform]["struct_member_offset"]
+                    updated_count += 1
+                    if debug:
+                        updated_symbols.append({
+                            "name": func_name,
+                            "type": "struct_offset",
+                            "platform": platform
+                        })
 
     # Write back
     save_jsonc(gamedata_path, gamedata)
