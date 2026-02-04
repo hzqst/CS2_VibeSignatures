@@ -82,6 +82,10 @@ modules:
         expected_output:
           - CBaseTrigger_vtable.{platform}.yaml
 
+      - name: find-CPointTeleport_vtable
+        expected_output:
+          - CPointTeleport_vtable.{platform}.yaml
+
       - name: find-CBaseEntity_TakeDamageOld
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
@@ -324,7 +328,12 @@ modules:
           - CGameSceneNode_GetSkeletonInstance.{platform}.yaml
           - CBaseAnimGraph.{platform}.yaml
           - CSkeletonInstance.{platform}.yaml
-          
+
+      - name: find-CPointTeleport_Teleport-AND-CBaseEntity_Teleport
+        expected_output:
+          - CPointTeleport_Teleport.{platform}.yaml
+          - CBaseEntity_Teleport.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -360,6 +369,9 @@ modules:
         catagory: vtable
 
       - name: CBaseTrigger_vtable
+        catagory: vtable
+
+      - name: CPointTeleport_vtable
         catagory: vtable
 
       - name: CTakeDamageInfo_vtable
@@ -608,3 +620,13 @@ modules:
 
       - name: CSkeletonInstance
         catagory: struct
+
+      - name: CPointTeleport_Teleport
+        catagory: vfunc
+        alias:
+          - CPointTeleport::Teleport
+
+      - name: CBaseEntity_Teleport
+        catagory: vfunc
+        alias:
+          - CBaseEntity::Teleport
