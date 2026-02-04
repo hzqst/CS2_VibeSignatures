@@ -1,36 +1,37 @@
 # ida_analyze_bin
 
 ## 概述
-用于批量分析 CS2 二进制文件的命令行编排脚本，读取 config.yaml 后按模块/平台启动 idalib-mcp，并用 Claude/Codex 运行技能，产出各技能的 yaml 结果。
+面向 CS2 二进制分析的命令行编排脚本：读取 config.yaml 的模块/技能配置，按平台与依赖顺序启动 idalib-mcp，并调用 Claude/Codex 执行技能、生成 yaml 结果并汇总统计。
 
 ## 职责
-- 解析命令行与配置，确定平台、模块与技能依赖顺序（含循环依赖告警）。
-- 根据 expected_output 是否存在决定跳过/执行技能，并支持每个 skill 的 max_retries。
-- 启动/等待 idalib-mcp MCP 服务，执行技能并校验输出 yaml。
-- 通过 MCP 发送 idc.qexit(0) 关闭 IDA，必要时强制 kill。
+- 解析命令行与 config.yaml，构建模块/技能列表与平台过滤。
+- 对技能进行拓扑排序并根据 expected_output 判断跳过/执行。
+- 启动与等待 idalib-mcp MCP 服务，按重试策略运行技能并校验输出。
+- 通过 MCP 触发 IDA 退出并在必要时强制终止，输出汇总结果/退出码。
 
 ## 涉及文件 (不要带行号)
 - ida_analyze_bin.py
 - config.yaml
+- .claude/skills/<skill>/SKILL.md
 
 ## 架构
-主流程 main：parse_args -> parse_config -> 遍历 modules 与 platforms -> get_binary_path -> process_binary -> 汇总统计并根据失败退出码。
-process_binary：按 prerequisite 做拓扑排序 -> 展开 expected_output 的 `{platform}` 并拼到 binary 目录 -> 已存在则跳过 -> 启动 idalib-mcp -> 逐个 run_skill -> finally 调用 quit_ida_gracefully。
-run_skill：根据 agent 名称选择 claude 或 codex CLI；claude 使用 `-p /{skill}` 且带 session-id/resume；codex 走 `.claude/skills/{skill}/SKILL.md`。
+主流程 main：parse_args -> parse_config -> 遍历 modules/platforms -> get_binary_path -> process_binary -> 统计成功/失败/跳过并根据失败数退出。
+process_binary：构建 skill_map -> topological_sort_skills(Kahn)（检测循环依赖并警告）-> 展开 expected_output 的 `{platform}` 并拼到 binary_dir -> 若全部存在则跳过 -> 启动 start_idalib_mcp(uv run idalib-mcp ...) 并 wait_for_port -> 逐个 run_skill -> finally 调用 quit_ida_gracefully。
+run_skill：基于 agent 名称选择 claude/codex；claude 使用 `-p /{skill}`、`--agent sig-finder`、`--allowedTools mcp__ida-pro-mcp__*` 并用 session-id/resume 支持重试；codex 使用 `codex exec "Run SKILL: .claude/skills/{skill}/SKILL.md"`。执行后按 expected_yaml_paths 校验输出是否生成。
+quit_ida_gracefully：MCP py_eval 执行 `idc.qexit(0)`（5s 超时）-> 等待进程退出 -> 超时则 kill。
 
 ## 依赖
 - PyYAML（yaml.safe_load）
-- mcp（ClientSession、streamablehttp_client）与 asyncio
+- mcp（ClientSession、streamable_http）与 asyncio
 - uv + idalib-mcp（`uv run idalib-mcp ...`）
-- Claude CLI 或 Codex CLI（由 `-agent` 传入）
+- Claude CLI 或 Codex CLI
 
 ## 注意事项
-- expected_output 会按 binary_dir + `{platform}` 展开；全部存在才跳过该 skill。
-- `expected_input` 仅在配置解析中保留，目前未在执行路径中使用。
-- `max_retries` 可在 skill 级别覆盖全局 `-maxretry`。
-- MCP 启动等待超时受 `MCP_STARTUP_TIMEOUT` 影响；失败会直接终止该二进制处理。
-- 命令行参数文档与实现存在不一致：脚本头部写 `-idaargs`/默认 agent=codex，但 `parse_args` 实际是 `-ida_args` 且默认 `claude`。
-- agent 名称必须包含 `claude` 或 `codex`，否则直接失败。
+- get_binary_path 仅取 module_path 的文件名，实际路径固定为 `{bindir}/{gamever}/{module_name}/{filename}`，不会保留配置中的子目录。
+- expected_output 会先替换 `{platform}` 并拼到 binary_dir；只有全部存在才会跳过该技能。
+- expected_input 仅在配置解析中保留，当前执行路径未使用。
+- agent 名称必须包含 `claude` 或 `codex`，否则 run_skill 直接失败。
+- MCP 启动等待超时由 `MCP_STARTUP_TIMEOUT=120s` 控制；单技能超时 `SKILL_TIMEOUT=600s`。
 
 ## 调用方（可选）
 - 命令行直接执行 `ida_analyze_bin.py`
