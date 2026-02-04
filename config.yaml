@@ -319,6 +319,12 @@ modules:
           - find-CBaseTrigger_vtable
           - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch
 
+      - name: find-CGameSceneNode_GetSkeletonInstance
+        expected_output:
+          - CGameSceneNode_GetSkeletonInstance.{platform}.yaml
+          - CBaseAnimGraph.{platform}.yaml
+          - CSkeletonInstance.{platform}.yaml
+          
     symbols:
       - name: CSource2Server_vtable
         catagory: vtable
@@ -591,3 +597,14 @@ modules:
         catagory: vfunc
         alias:
           - CBaseTrigger::EndTouch
+
+      - name: CGameSceneNode_GetSkeletonInstance
+        catagory: vfunc
+        alias:
+          - CGameSceneNode::GetSkeletonInstance
+
+      - name: CBaseAnimGraph
+        catagory: struct
+
+      - name: CSkeletonInstance
+        catagory: struct
