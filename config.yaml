@@ -227,6 +227,7 @@ modules:
           - FireBullets.{platform}.yaml
           - TraceAttack.{platform}.yaml
           - CTakeDamageInfo.{platform}.yaml
+        max_retries: 6
 
       - name: find-GetCSWeaponDataFromKey
         expected_output:
@@ -500,6 +501,9 @@ modules:
         catagory: vfunc
         alias:
           - CCSPlayerPawnBase::PostThink
+          - CCSPlayerPawn::PostThink
+          - CCSPlayerPawn_PostThink
+          - PostThink
 
       - name: CGameRules_ClientSettingsChanged
         catagory: vfunc
@@ -645,28 +649,33 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::StartTouch
+          - StartTouch
 
       - name: CBaseEntity_Touch
         catagory: vfunc
         alias:
           - CBaseEntity::Touch
+          - Touch
 
       - name: CBaseEntity_EndTouch
         catagory: vfunc
         alias:
           - CBaseEntity::EndTouch
+          - EndTouch
 
       - name: CBaseEntity_IsPlayerPawn
         catagory: vfunc
         alias:
           - CBaseEntity::IsPlayerPawn
           - IsEntityPawn
+          - IsPlayerPawn
 
       - name: CBaseEntity_IsPlayerController
         catagory: vfunc
         alias:
           - CBaseEntity::IsPlayerController
           - IsEntityController
+          - IsPlayerController
 
       - name: CBaseTrigger_StartTouch
         catagory: vfunc
@@ -698,6 +707,7 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::Teleport
+          - Teleport
 
       - name: CCheckTransmitInfo
         catagory: struct
