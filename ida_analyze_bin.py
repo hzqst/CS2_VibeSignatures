@@ -13,7 +13,7 @@ Usage:
     -bindir: Directory containing downloaded binaries (default: bin)
     -platform: Platforms to analyze, comma-separated (default: windows,linux)
     -agent: Agent to use for analysis: codex or claude (default: codex)
-    -idaargs: Additional arguments for idalib-mcp (optional)
+    -ida_args: Additional arguments for idalib-mcp (optional)
     -debug: Enable debug output
 
 Requirements:
