@@ -1,4 +1,5 @@
 vtable_class: CTakeDamageInfo
+vtable_symbol: _ZTV15CTakeDamageInfo + 0x10
 vtable_va: '0x215f528'
 vtable_rva: '0x215f528'
 vtable_size: '0x18'

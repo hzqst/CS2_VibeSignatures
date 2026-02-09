@@ -1,4 +1,5 @@
 vtable_class: CTakeDamageInfo
+vtable_symbol: ??_7CTakeDamageInfo@@6B@
 vtable_va: '0x181533588'
 vtable_rva: '0x1533588'
 vtable_size: '0x18'

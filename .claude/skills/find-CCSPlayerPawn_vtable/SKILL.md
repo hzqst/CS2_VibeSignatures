@@ -18,9 +18,9 @@ Use `/get-vtable-address` skill with `CCSPlayerPawn`:
 ```
 
 This will return:
-- `vtableAddress`: The address of the vtable
-- `sizeInBytes`: Total size of the vtable in bytes
-- `numberOfVirtualFunctions`: Count of virtual function entries
+- `vtable_va`: The address of the vtable
+- `vtable_size`: Total size of the vtable in bytes
+- `vtable_numvfuncs`: Count of virtual function entries
 
 ### 2. Write VTable Info as YAML
 

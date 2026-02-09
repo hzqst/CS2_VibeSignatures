@@ -20,6 +20,12 @@ Before using this skill, you should have:
 | `vtable_class` | Class name for the vtable | `CSource2Server` |
 | `vtable_va` | Virtual address of the vtable | `0x182B8D9D8` |
 
+## Optional Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `vtable_symbol` | The IDA symbol name for the vtable | "??_7CBaseEntity@@6B@" or "_ZTV11CBaseEntity + 0x10" |
+
 ## Method
 
 ```python
@@ -31,8 +37,12 @@ import os
 import yaml
 
 # === REQUIRED: Replace these values ===
-vtable_class = "<vtable_class>"     # e.g., "CSource2Server"
+vtable_class = "<vtable_class>"     # e.g., "CBaseEntity"
 vtable_va = <vtable_va>             # e.g., 0x182B8D9D8
+# ======================================
+
+# === OPTIONAL: Replace these values ===
+vtable_symbol = "<vtable_symbol>"     # e.g., "??_7CBaseEntity@@6B@" or "_ZTV11CBaseEntity + 0x10"
 # ======================================
 
 input_file = idaapi.get_input_file_path()
@@ -80,6 +90,7 @@ vtable_size = count * ptr_size
 # Build YAML data structure
 yaml_data = {
     'vtable_class': vtable_class,
+    'vtable_symbol': vtable_symbol,
     'vtable_va': hex(vtable_va),
     'vtable_rva': hex(vtable_rva),
     'vtable_size': hex(vtable_size),

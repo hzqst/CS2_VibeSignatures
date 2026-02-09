@@ -18,14 +18,17 @@ Use `/get-vtable-address` skill with `CBaseEntity`:
 ```
 
 This will return:
-- `vtableAddress`: The address of the vtable
-- `sizeInBytes`: Total size of the vtable in bytes
-- `numberOfVirtualFunctions`: Count of virtual function entries
+- `vtable_class`: `CBaseEntity`
+- `vtable_symbol`: `??_7CBaseEntity@@6B@` or `_ZTV11CBaseEntity + 0x10`, depending on platform.
+- `vtable_va`: The address of the vtable
+- `vtable_size`: Total size of the vtable in bytes
+- `vtable_numvfuncs`: Count of virtual function entries
 
 ### 2. Write VTable Info as YAML
 
 Use `/write-vtable-as-yaml` skill with:
 - `vtable_class`: `CBaseEntity`
+- `vtable_symbol`: `??_7CBaseEntity@@6B@` or `_ZTV11CBaseEntity + 0x10`, depending on platform.
 - `vtable_va`: The vtable address from step 1
 
 ## VTable Symbol Patterns
@@ -48,8 +51,18 @@ The output YAML filename depends on the platform:
 
 ```yaml
 vtable_class: CBaseEntity
-vtable_va: 0x216d960      # Virtual address - changes with game updates
-vtable_rva: 0x216d960     # Relative virtual address - changes with game updates
-vtable_size: 0x778        # VTable size in bytes - changes with game updates
-vtable_numvfunc: 239      # Number of virtual functions - changes with game updates
+vtable_symbol: ??_7CBaseEntity@@6B@   # The address of symbol "??_7CBaseEntity@@6B@" in IDA is the start address of CBaseEntity's vtable.
+vtable_va: '0x1816f2a10'   # Virtual address - changes with game updates
+vtable_rva: '0x16f2a10'    # Relative virtual address - changes with game updates
+vtable_size: '0x770'       # VTable size in bytes - changes with game updates
+vtable_numvfunc: 238       # Number of virtual functions - changes with game updates
+```
+
+```yaml
+vtable_class: CBaseEntity
+vtable_symbol: _ZTV11CBaseEntity + 0x10  # The address of symbol "_ZTV11CBaseEntity" in IDA, with "+ 0x10" offset, is the start address of CBaseEntity's vtable.
+vtable_va: '0x216df80'      # Virtual address - changes with game updates
+vtable_rva: '0x216df80'     # Relative virtual address - changes with game updates
+vtable_size: '0x778'        # VTable size in bytes - changes with game updates
+vtable_numvfunc: 239        # Number of virtual functions - changes with game updates
 ```
