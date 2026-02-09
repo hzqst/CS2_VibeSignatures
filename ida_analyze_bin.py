@@ -553,6 +553,19 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
     try:
         # Process each skill: try preprocess first, then run_skill if needed
         for skill_name, expected_outputs, skill_max_retries in skills_to_process:
+            # Check if all expected_input files are available before running the skill
+            skill = skill_map[skill_name]
+            expected_inputs = [
+                os.path.join(binary_dir, f.replace("{platform}", platform))
+                for f in skill.get("expected_input", [])
+            ]
+            missing_inputs = [p for p in expected_inputs if not os.path.exists(p)]
+            if missing_inputs:
+                fail_count += 1
+                missing_names = [os.path.basename(p) for p in missing_inputs]
+                print(f"  Failed: {skill_name} (missing expected_input: {', '.join(missing_names)})")
+                continue
+
             # Try preprocessing (signature reuse) if old binary dir is available
             if old_binary_dir:
                 old_yaml_map = {}
