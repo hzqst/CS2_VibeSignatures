@@ -24,7 +24,7 @@ Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using 
    mcp__ida-pro-mcp__decompile addr="<function_addr>"
    ```
 
-   The target function should contain code similar to:
+   The target function sub_XXXXXXXX should contain code similar to:
    ```cpp
    if ( (_DWORD)PlayerInfo != -1 )
        v4 = (_DWORD)PlayerInfo - 1;
@@ -35,7 +35,7 @@ Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using 
 
    You should also see references to `oldname`, `newname` and `player_changename` within the function.
 
-4. Rename the function:
+4. Rename the function sub_XXXXXXXX to CGameRules_ClientSettingsChanged:
    ```
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CGameRules_ClientSettingsChanged"}]}
    ```
