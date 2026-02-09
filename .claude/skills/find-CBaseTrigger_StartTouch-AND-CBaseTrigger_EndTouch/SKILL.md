@@ -100,7 +100,6 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<CBaseTrigger_EndTouch_addr>"
 
 ### 6. Generate Signature for CBaseTrigger_StartTouch
 
-**DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CBaseTrigger_StartTouch.
 
 ### 7. Write CBaseTrigger_StartTouch as YAML
@@ -119,7 +118,6 @@ VTable parameters:
 
 ### 8. Generate Signature for CBaseTrigger_EndTouch
 
-**DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CBaseTrigger_EndTouch.
 
 ### 9. Write CBaseTrigger_EndTouch as YAML

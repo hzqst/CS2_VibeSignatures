@@ -75,7 +75,6 @@ Locate `GiveNamedItem`, `UTIL_CreateEntityByName` and `CBaseEntity_DispatchSpawn
 
 8. Generate and validate unique signature for `GiveNamedItem`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 9. Write IDA analysis output for `GiveNamedItem` as YAML beside the binary:
@@ -91,7 +90,6 @@ Locate `GiveNamedItem`, `UTIL_CreateEntityByName` and `CBaseEntity_DispatchSpawn
 
 10. Generate and validate unique signature for `UTIL_CreateEntityByName`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 11. Write IDA analysis output for `UTIL_CreateEntityByName` as YAML beside the binary:
@@ -107,7 +105,6 @@ Locate `GiveNamedItem`, `UTIL_CreateEntityByName` and `CBaseEntity_DispatchSpawn
 
 12. Generate and validate unique signature for `CBaseEntity_DispatchSpawn`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 13. Write IDA analysis output for `CBaseEntity_DispatchSpawn` as YAML beside the binary:

@@ -37,7 +37,6 @@ Locate `UTIL_ClientPrintAll` in CS2 server.dll or server.so using IDA Pro MCP to
 
 6. Generate and validate unique signature:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 7. Write IDA analysis output as YAML beside the binary:

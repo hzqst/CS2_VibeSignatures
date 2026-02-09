@@ -86,7 +86,6 @@ Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server
 
 7. Generate and validate unique signature for `Host_Say`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 8. Write IDA analysis output for `Host_Say` as YAML beside the binary:
@@ -102,7 +101,6 @@ Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server
 
 9. Generate and validate unique signature for `UTIL_SayTextFilter`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 10. Write IDA analysis output for `UTIL_SayTextFilter` as YAML beside the binary:
@@ -118,7 +116,6 @@ Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server
 
 11. Generate and validate unique signature for `UTIL_SayTextFilter2`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 12. Write IDA analysis output for `UTIL_SayTextFilter2` as YAML beside the binary:

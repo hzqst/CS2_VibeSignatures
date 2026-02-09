@@ -98,7 +98,6 @@ VTable class name: `CCSPlayer_WeaponServices`
 
 ### 9. Generate and validate unique signature
 
-**DO NOT** use `find_bytes` as it won't work for function.
 
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 

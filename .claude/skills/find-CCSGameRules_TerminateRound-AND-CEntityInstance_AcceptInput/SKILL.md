@@ -76,7 +76,6 @@ Locate `CCSGameRules_TerminateRound` and `CEntityInstance_AcceptInput` in CS2 `s
 
 7. Generate and validate unique signature for `CCSGameRules_TerminateRound`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 8. Write IDA analysis output for `CCSGameRules_TerminateRound` as YAML beside the binary:
@@ -92,7 +91,6 @@ Locate `CCSGameRules_TerminateRound` and `CEntityInstance_AcceptInput` in CS2 `s
 
 9. Generate and validate unique signature for `CEntityInstance_AcceptInput`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 10. Write IDA analysis output for `CEntityInstance_AcceptInput` as YAML beside the binary:

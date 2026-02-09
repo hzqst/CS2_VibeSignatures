@@ -49,7 +49,6 @@ Locate `CEntityIOOutput_FireOutputInternal` in CS2 server.dll or server.so using
 
 7. Generate and validate unique signature:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 8. Write IDA analysis output as YAML beside the binary:

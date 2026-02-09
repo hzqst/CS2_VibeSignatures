@@ -56,7 +56,6 @@ mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<function_addr>", "name": "CCS
 
 ### 5. Generate and Validate Unique Signature
 
-  **DO NOT** use `find_bytes` as it won't work for function.
   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 ### 6. Write IDA analysis output as YAML beside the binary

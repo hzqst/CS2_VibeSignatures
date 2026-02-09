@@ -44,7 +44,6 @@ Locate `CBasePlayerController_SetPlayerName` in CS2 server.dll or server.so usin
 
 8. Generate and validate unique signature:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 9. Write IDA analysis output as YAML beside the binary:

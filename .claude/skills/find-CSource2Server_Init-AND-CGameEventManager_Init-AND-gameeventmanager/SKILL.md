@@ -59,7 +59,6 @@ VTable class name: `CSource2Server`
 
 ### 6. Generate and validate unique signature for CSource2Server_Init
 
-**DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CSource2Server_Init.
 
 ### 7. Write IDA analysis output for CSource2Server_Init as YAML beside the binary
@@ -78,7 +77,6 @@ VTable parameters (when this is a virtual function):
 
 ### 8. Generate and validate unique signature for CGameEventManager_Init
 
-**DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CGameEventManager_Init.
 
 ### 9. Write IDA analysis output for CGameEventManager_Init as YAML beside the binary
@@ -92,7 +90,6 @@ Required parameters:
 
 ### 10. Generate and validate unique signature for gameeventmanager
 
-   **DO NOT** use `find_bytes` as it won't work for code pattern.
    **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: gameeventmanager.
 
 ### 11. Write IDA analysis output for `gameeventmanager` as YAML beside the binary:

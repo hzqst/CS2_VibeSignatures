@@ -53,7 +53,6 @@ Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_p
 
 7. Generate and validate unique signature for `IGameSystem_InitAllSystems`:
 
-   **DO NOT** use `find_bytes` as it won't work for function.
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
 8. Write IDA analysis output for `IGameSystem_InitAllSystems` as YAML beside the binary:
@@ -69,7 +68,6 @@ Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_p
 
 9. Generate and validate unique signature for `IGameSystem_InitAllSystems_pFirst`:
 
-   **DO NOT** use `find_bytes` as it won't work for code pattern.
    **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: IGameSystem_InitAllSystems_pFirst.
 
 10. Write IDA analysis output for `IGameSystem_InitAllSystems_pFirst` as YAML beside the binary:

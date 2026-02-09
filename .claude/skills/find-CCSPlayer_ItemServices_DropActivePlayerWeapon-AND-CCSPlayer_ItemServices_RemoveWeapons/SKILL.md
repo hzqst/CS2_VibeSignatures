@@ -312,7 +312,6 @@ Run for both functions:
 
 ### 7. Generate Signatures
 
-**DO NOT** use `find_bytes` as it won't work for functions.
 
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate robust signatures for both functions.
 
