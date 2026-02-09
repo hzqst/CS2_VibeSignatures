@@ -1,0 +1,7 @@
+func_va: 0x180a30890
+func_rva: 0xa30890
+func_size: 0xc99
+func_sig: 40 55 57 41 56 48 8D AC 24 C0 FE FF FF 48 81 EC 40 02 00 00 48 83 79 38 00 4C 8B F2 48 8B F9 75 05 E8 ?? ?? ?? ??
+vtable_name: CCSPlayer_WeaponServices
+vfunc_offset: 0xc8
+vfunc_index: 25

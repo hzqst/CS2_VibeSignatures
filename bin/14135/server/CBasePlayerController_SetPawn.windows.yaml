@@ -1,0 +1,4 @@
+func_va: 0x180a8fc80
+func_rva: 0xa8fc80
+func_size: 0x528
+func_sig: 44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ?? ?? ?? ?? 48 8D 99 ?? ?? ?? ?? 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ?? 4D 85 D2 74 ?? 41 83 FB FE 74 ??

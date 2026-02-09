@@ -1,0 +1,7 @@
+func_va: 0x180c9fe40
+func_rva: 0xc9fe40
+func_size: 0x4bb
+func_sig: 40 55 53 56 48 8D 6C 24 E0 48 81 EC 20 01 00 00 48 8B F2 4C 89 A4 24 48 01 00 00 33 D2 48 8D 4D D0 45 33 C0 E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 D0 48 8D 55 50 48 8B 05 ?? ?? ?? ??
+vtable_name: CGameRules
+vfunc_offset: 0x210
+vfunc_index: 66

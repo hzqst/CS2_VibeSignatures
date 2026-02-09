@@ -1,0 +1,7 @@
+func_va: 0x180bebe90
+func_rva: 0xbebe90
+func_size: 0x11c
+func_sig: 40 53 55 57 48 81 EC 60 01 00 00 48 8B 01 41 0F B6 F8 0F B6 EA 48 8B D9 FF 90 ?? ?? ?? ?? 84 C0 0F 84 ?? ?? ?? ?? 48 8B 53 10 48 8D 8C 24 80 01 00 00
+vtable_name: CBasePlayerPawn
+vfunc_offset: 0xc80
+vfunc_index: 400

@@ -1,0 +1,24 @@
+vtable_class: CSource2GameEntities
+vtable_symbol: off_181721760
+vtable_va: '0x181721760'
+vtable_rva: '0x1721760'
+vtable_size: '0x88'
+vtable_numvfunc: 17
+vtable_entries:
+  0: '0x180c8fa90'
+  1: '0x180c8faf0'
+  2: '0x180c8f860'
+  3: '0x180c8fa60'
+  4: '0x180c90700'
+  5: '0x180c8f870'
+  6: '0x180c8f880'
+  7: '0x180c8fa80'
+  8: '0x180c8fb30'
+  9: '0x180c8f890'
+  10: '0x180c8f910'
+  11: '0x180c90740'
+  12: '0x180c8fb90'
+  13: '0x180c90460'
+  14: '0x180c90490'
+  15: '0x180c90530'
+  16: '0x180c90590'
