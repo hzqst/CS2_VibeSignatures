@@ -174,7 +174,6 @@ Prompt:
 ```bash
 Prompt:
    Generate a robust signature for this function
-   -- **DO NOT** use `find_bytes` as it won't work for function.
    -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
 
@@ -456,7 +455,6 @@ Prompt:
 ```bash
 Prompt:
    Generate a robust signature for this function
-   -- **DO NOT** use `find_bytes` as it won't work for function.
    -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
 
@@ -529,7 +527,6 @@ rename "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )" to "for ( i = IGameSyst
 ```bash
 Prompt:
    Generate a robust signature for IGameSystem_InitAllSystems
-   -- **DO NOT** use `find_bytes` as it won't work for code.
    -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for IGameSystem_InitAllSystems.
 ```
 
@@ -545,7 +542,6 @@ Prompt:
 ```bash
 Prompt:
    Generate a robust signature for IGameSystem_InitAllSystems_pFirst
-   -- **DO NOT** use `find_bytes` as it won't work for code.
    -- **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for IGameSystem_InitAllSystems_pFirst.
 ```
 

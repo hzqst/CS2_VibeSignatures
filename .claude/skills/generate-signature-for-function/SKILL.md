@@ -168,7 +168,3 @@ When analyzing function bytes, consider these instruction patterns:
 | `48 8D 0D XX XX XX XX` | LEA with RIP-relative | Wildcard the 4 offset bytes |
 | `FF 15 XX XX XX XX` | Indirect call via IAT | Wildcard the 4 offset bytes |
 | `48 8B 05 XX XX XX XX` | MOV from global | Wildcard the 4 offset bytes |
-
-## Important
-
-**DO NOT** use `find_bytes` to validate signatures - it doesn't work reliably for function pattern matching. Always use the `py_eval` method with mask support above.

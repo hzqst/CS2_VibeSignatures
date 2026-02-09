@@ -230,7 +230,3 @@ Use this table to determine `instr_length` and `offset_position` for common GV a
 | `F2 0F 10 05 XX XX XX XX` | `movsd xmm0, [rip+XX]` | 8 | 4 | Load double from GV |
 | `0F B6 05 XX XX XX XX` | `movzx eax, byte [rip+XX]` | 7 | 3 | Load byte from GV (zero-extend) |
 | `0F BE 05 XX XX XX XX` | `movsx eax, byte [rip+XX]` | 7 | 3 | Load byte from GV (sign-extend) |
-
-## Important
-
-**DO NOT** use `find_bytes` to validate signatures - it doesn't work reliably for code pattern matching. Always use the `py_eval` method with mask support above.

@@ -259,7 +259,6 @@ mcp__ida-pro-mcp__rename batch={"func": [
 
 ### 10. Generate Signatures for All Functions
 
-**DO NOT** use `find_bytes` as it won't work for function.
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for each function.
 
 #### Signature Guidance
