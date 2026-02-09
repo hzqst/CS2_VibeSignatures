@@ -17,16 +17,12 @@ Use `/get-vtable-address` skill with `CCSPlayer_ItemServices`:
 /get-vtable-address CCSPlayer_ItemServices
 ```
 
-This will return:
-- `vtable_va`: The address of the vtable
-- `vtable_size`: Total size of the vtable in bytes
-- `vtable_numvfuncs`: Count of virtual function entries
-
 ### 2. Write VTable Info as YAML
 
 Use `/write-vtable-as-yaml` skill with:
 - `vtable_class`: `CCSPlayer_ItemServices`
 - `vtable_va`: The vtable address from step 1
+- `vtable_symbol`: The vtable symbol from step 1
 
 ## VTable Symbol Patterns
 
@@ -45,11 +41,3 @@ The vtable uses Itanium C++ ABI name mangling:
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_ItemServices_vtable.windows.yaml`
 - `server.so` / `libserver.so` → `CCSPlayer_ItemServices_vtable.linux.yaml`
-
-```yaml
-vtable_class: CCSPlayer_ItemServices
-vtable_va: 0x221d120      # Virtual address - changes with game updates
-vtable_rva: 0x221d120     # Relative virtual address - changes with game updates
-vtable_size: 0xc8         # VTable size in bytes - changes with game updates
-vtable_numvfunc: 25       # Number of virtual functions - changes with game updates
-```

@@ -17,16 +17,12 @@ Use `/get-vtable-address` skill with `CPointTeleport`:
 /get-vtable-address CPointTeleport
 ```
 
-This will return:
-- `vtable_va`: The address of the vtable
-- `vtable_size`: Total size of the vtable in bytes
-- `vtable_numvfuncs`: Count of virtual function entries
-
 ### 2. Write VTable Info as YAML
 
 Use `/write-vtable-as-yaml` skill with:
 - `vtable_class`: `CPointTeleport`
 - `vtable_va`: The vtable address from step 1
+- `vtable_symbol`: The vtable symbol from step 1
 
 ## VTable Symbol Patterns
 
@@ -45,11 +41,3 @@ The vtable uses Itanium C++ ABI name mangling:
 The output YAML filename depends on the platform:
 - `server.dll` → `CPointTeleport_vtable.windows.yaml`
 - `server.so` / `libserver.so` → `CPointTeleport_vtable.linux.yaml`
-
-```yaml
-vtable_class: CPointTeleport
-vtable_va: 0x18175fa00    # Virtual address - changes with game updates
-vtable_rva: 0x175fa00     # Relative virtual address - changes with game updates
-vtable_size: 0x770        # VTable size in bytes - changes with game updates
-vtable_numvfunc: 238      # Number of virtual functions - changes with game updates
-```
