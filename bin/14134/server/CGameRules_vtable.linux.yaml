@@ -1,0 +1,26 @@
+vtable_class: CGameRules
+vtable_symbol: _ZTV10CGameRules + 0x10
+vtable_va: '0x2262760'
+vtable_rva: '0x2262760'
+vtable_size: '0x98'
+vtable_numvfunc: 19
+vtable_entries:
+  0: '0x16e6950'
+  1: '0x1179ec0'
+  2: '0x16e2e20'
+  3: '0x1179ed0'
+  4: '0x1179ee0'
+  5: '0x1179ef0'
+  6: '0x1179f00'
+  7: '0x16e2e30'
+  8: '0x16e2e40'
+  9: '0x1179f10'
+  10: '0x1179f20'
+  11: '0x1179f30'
+  12: '0x16e2e50'
+  13: '0x1179f40'
+  14: '0x1179f50'
+  15: '0x16e6670'
+  16: '0x1179f60'
+  17: '0x16e2e60'
+  18: '0x1179f70'
