@@ -1,4 +1,7 @@
-func_va: 0x133993f
-func_rva: 0x133993f
-func_size: 0xd
-func_sig: E8 ?? ?? ?? ?? 5D 48 85 C0 0F 95 C0 C3 CC CC CC CC 45 31 C9
+func_va: '0x1339920'
+func_rva: '0x1339920'
+func_size: '0xf'
+func_sig: 45 31 C9 45 31 C0 31 C9 31 D2 E9 ?? ?? ?? ?? CC 55 45 31 C9
+vtable_name: CCSPlayer_ItemServices
+vfunc_offset: '0xa0'
+vfunc_index: 20
