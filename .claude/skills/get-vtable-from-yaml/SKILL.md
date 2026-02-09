@@ -53,6 +53,7 @@ else:
 Example YAML content:
 ```yaml
 vtable_class: CCSPlayerController
+vtable_symbol: _ZTV19CCSPlayerController
 vtable_va: 0x221fc80
 vtable_rva: 0x221fc80
 vtable_size: 0xd60
