@@ -40,7 +40,7 @@ try:
     import yaml
     import asyncio
     from mcp import ClientSession
-    from mcp.client.streamable_http import streamablehttp_client
+    from mcp.client.streamable_http import streamable_http_client
 except ImportError as e:
     print(f"Error: Missing required dependency: {e.name}")
     print("Please install required packages: pip install pyyaml mcp")
@@ -69,7 +69,7 @@ async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     server_url = f"http://{host}:{port}/mcp"
 
     try:
-        async with streamablehttp_client(server_url) as (read_stream, write_stream, _):
+        async with streamable_http_client(server_url) as (read_stream, write_stream, _):
             async with ClientSession(read_stream, write_stream) as session:
                 await session.initialize()
                 await session.call_tool(name="py_eval", arguments={"code": "import idc; idc.qexit(0)"})
