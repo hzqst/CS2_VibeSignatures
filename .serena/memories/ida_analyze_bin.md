@@ -1,37 +1,59 @@
 # ida_analyze_bin
 
 ## 概述
-面向 CS2 二进制分析的命令行编排脚本：读取 config.yaml 的模块/技能配置，按平台与依赖顺序启动 idalib-mcp，并调用 Claude/Codex 执行技能、生成 yaml 结果并汇总统计。
+`ida_analyze_bin.py` 是IDA二进制分析总编排脚本：按 `config.yaml` 的模块/技能配置遍历平台二进制，先尝试通过 `ida_skill_preprocessor` 复用旧版本签名快速生成 YAML，失败时再回退到 Claude/Codex 执行技能。
 
 ## 职责
-- 解析命令行与 config.yaml，构建模块/技能列表与平台过滤。
-- 对技能进行拓扑排序并根据 expected_output 判断跳过/执行。
-- 启动与等待 idalib-mcp MCP 服务，按重试策略运行技能并校验输出。
-- 通过 MCP 触发 IDA 退出并在必要时强制终止，输出汇总结果/退出码。
+- 解析命令行参数并规范化平台/模块过滤（含 `-oldgamever` 推断、`-maxretry`、`-modules`）。
+- 读取 `config.yaml`，提取模块与技能元数据（`expected_output` / `expected_input` / `prerequisite` / `max_retries`）。
+- 对技能按依赖做拓扑排序，按输出文件存在性决定跳过或执行。
+- 启动并等待 `idalib-mcp`，对每个技能执行“预处理优先、Agent 回退”的双阶段流程。
+- 汇总成功/失败/跳过数量，统一关闭 IDA 进程并以失败数决定退出码。
 
 ## 涉及文件 (不要带行号)
 - ida_analyze_bin.py
+- ida_skill_preprocessor.py
 - config.yaml
 - .claude/skills/<skill>/SKILL.md
 
 ## 架构
-主流程 main：parse_args -> parse_config -> 遍历 modules/platforms -> get_binary_path -> process_binary -> 统计成功/失败/跳过并根据失败数退出。
-process_binary：构建 skill_map -> topological_sort_skills(Kahn)（检测循环依赖并警告）-> 展开 expected_output 的 `{platform}` 并拼到 binary_dir -> 若全部存在则跳过 -> 启动 start_idalib_mcp(uv run idalib-mcp ...) 并 wait_for_port -> 逐个 run_skill -> finally 调用 quit_ida_gracefully。
-run_skill：基于 agent 名称选择 claude/codex；claude 使用 `-p /{skill}`、`--agent sig-finder`、`--allowedTools mcp__ida-pro-mcp__*` 并用 session-id/resume 支持重试；codex 使用 `codex exec "Run SKILL: .claude/skills/{skill}/SKILL.md"`。执行后按 expected_yaml_paths 校验输出是否生成。
-quit_ida_gracefully：MCP py_eval 执行 `idc.qexit(0)`（5s 超时）-> 等待进程退出 -> 超时则 kill。
+主入口 `main`：
+1. `parse_args`：解析参数，平台仅允许 `windows/linux`；`oldgamever` 未显式给定时会尝试 `int(gamever)-1`，传 `none` 可禁用旧版本复用。
+2. `parse_config`：读取模块和技能配置，保留每个技能的依赖与重试参数。
+3. 逐模块逐平台处理：
+   - 通过 `get_binary_path` 生成 `{bindir}/{gamever}/{module}/{filename}`。
+   - 若存在 `oldgamever` 目录，则构造 `old_binary_dir` 用于签名复用。
+   - 调用 `process_binary` 执行该二进制的全部技能。
+4. 输出总计并在 `total_fail > 0` 时 `sys.exit(1)`。
+
+`process_binary` 核心流程：
+- `topological_sort_skills`（Kahn）得到技能顺序。
+- 展开 `expected_output` 里的 `{platform}` 并拼接到 `binary_dir`；若输出全存在则跳过。
+- 仅当有待处理技能时才 `start_idalib_mcp`。
+- 对每个技能：
+  - 若有 `old_binary_dir`，先构造 `old_yaml_map` 并调用 `preprocess_single_skill_via_mcp(...)`。
+  - 预处理成功则直接记成功；失败则调用 `run_skill(...)` 走 Agent。
+- `finally` 中调用 `quit_ida_gracefully`：优先 MCP `py_eval(idc.qexit(0))`，超时后 `kill`。
+
+`run_skill` 流程：
+- 根据 `agent` 名称包含关系分派：
+  - Claude：`-p /{skill}` + `--agent sig-finder` + `--allowedTools mcp__ida-pro-mcp__*`，并用 `--session-id/--resume` 做重试续跑。
+  - Codex：`codex exec "Run SKILL: .claude/skills/{skill}/SKILL.md"`。
+- 每次尝试均校验退出码和 `expected_yaml_paths` 是否全部落盘；失败按 `max_retries` 重试。
 
 ## 依赖
-- PyYAML（yaml.safe_load）
-- mcp（ClientSession、streamable_http）与 asyncio
-- uv + idalib-mcp（`uv run idalib-mcp ...`）
-- Claude CLI 或 Codex CLI
+- PyYAML（`yaml.safe_load`）
+- asyncio + mcp Python SDK（`ClientSession`、`streamable_http_client`）
+- `uv` + `idalib-mcp`（本地 MCP 服务）
+- Claude CLI 或 Codex CLI（按 `-agent` 选择）
 
 ## 注意事项
-- get_binary_path 仅取 module_path 的文件名，实际路径固定为 `{bindir}/{gamever}/{module_name}/{filename}`，不会保留配置中的子目录。
-- expected_output 会先替换 `{platform}` 并拼到 binary_dir；只有全部存在才会跳过该技能。
-- expected_input 仅在配置解析中保留，当前执行路径未使用。
-- agent 名称必须包含 `claude` 或 `codex`，否则 run_skill 直接失败。
-- MCP 启动等待超时由 `MCP_STARTUP_TIMEOUT=120s` 控制；单技能超时 `SKILL_TIMEOUT=600s`。
+- 默认 `agent` 为 `claude`（不是 `codex`）。
+- `get_binary_path` 只取配置路径的文件名，不保留原子目录层级。
+- `expected_input` 在配置解析中保留，但当前执行路径未使用。
+- 仅当 `old_binary_dir` 存在时才会触发签名复用预处理；否则直接走 Agent。
+- 技能级 `max_retries` 可覆盖命令行 `-maxretry`。
+- 若 MCP 启动失败，当前二进制所有待处理技能都记为失败。
 
 ## 调用方（可选）
 - 命令行直接执行 `ida_analyze_bin.py`
