@@ -17,11 +17,6 @@ Use `/get-vtable-address` skill with `CServerSideClient`:
 /get-vtable-address CServerSideClient
 ```
 
-This will return:
-- `vtable_va`: The address of the vtable
-- `vtable_size`: Total size of the vtable in bytes
-- `vtable_numvfuncs`: Count of virtual function entries
-
 ### 2. Write VTable Info as YAML
 
 Use `/write-vtable-as-yaml` skill with:
