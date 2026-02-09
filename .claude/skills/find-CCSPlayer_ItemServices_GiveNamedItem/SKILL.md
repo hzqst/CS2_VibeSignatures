@@ -27,23 +27,16 @@ mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
 
 This identifies the main `GiveNamedItem` function that uses this string.
 
-### 3. Locate CCSPlayer_ItemServices vtable
+### 3. Read CCSPlayer_ItemServices vtable information from yaml
 
-Search for the vtable symbol:
+**ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSPlayer_ItemServices`.
 
-**For Linux (server.so):**
-```
-mcp__ida-pro-mcp__find_regex pattern="vtable.*CCSPlayer_ItemServices"
-```
+If the skill returns an error, **STOP** and report to user.
 
-Look for `_ZTV22CCSPlayer_ItemServices`
-
-**For Windows (server.dll):**
-```
-mcp__ida-pro-mcp__find_regex pattern="CCSPlayer_ItemServices.*vftable"
-```
-
-Look for `??_7CCSPlayer_ItemServices@@6B@`
+Otherwise, extract these values for subsequent steps:
+- `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
+- `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
+- `vtable_entries`: An array of virtual functions starting from vtable[0]
 
 ### 4. Read vtable entries at indices 18-24
 
@@ -78,16 +71,16 @@ For EACH function from step 5, determine whether:
 The target function will be the FIRST wrapper that directly calls `GiveNamedItem`. Look for decompiled code like:
 
 ```c
-__int64 __fastcall sub_XXXXXX(__int64 a1, char *a2, double a3, float a4)
+__int64 __fastcall sub_XXXXXX(__int64 a1, char *a2, double a3, float a4) //This is actually the vfunc "CCSPlayer_ItemServices::GiveNamedItem", or what we called "CCSPlayer_ItemServices_GiveNamedItem"
 {
-  return GiveNamedItem(a1, a2, 0, 0, 0, 0, a3, a4);
+  return GiveNamedItem(a1, a2, 0, 0, 0, 0, a3, a4);//It calls a regular function "GiveNamedItem"
 }
 ```
 
 ### 7. Rename the function
 
 ```
-mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CCSPlayer_ItemServices_GiveNamedItem"}]}
+mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr_sub_XXXXXX>", "name": "CCSPlayer_ItemServices_GiveNamedItem"}]}
 ```
 
 ### 8. Find vtable offset and index
@@ -98,18 +91,7 @@ VTable class name: `CCSPlayer_WeaponServices`
 
 ### 9. Generate and validate unique signature
 
-
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
-
-Expected signature pattern (may vary):
-```
-45 31 C9 45 31 C0 31 C9 31 D2 E9 ?? ?? ?? ?? CC 55 45 31 C9
-```
-
-This represents:
-- `xor r9d, r9d; xor r8d, r8d; xor ecx, ecx; xor edx, edx` - Clearing parameters
-- `jmp GiveNamedItem` - Jump to actual implementation (offset wildcarded)
-- Padding and start of next function for uniqueness
 
 ### 10. Write IDA analysis output as YAML
 

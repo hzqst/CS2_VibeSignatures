@@ -68,17 +68,12 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CB
 
 ### 6. Write IDA analysis output as YAML beside the binary
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CBasePlayerController_SetPawn`
 - `func_addr`: The function address from step 3
 - `func_sig`: The validated signature from step 5
-
-VTable parameters:
-- `vtable_name`: `CBasePlayerController`
-- `vfunc_index`: The vtable index from step 2
-- `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
 
 ## Function Characteristics
 
