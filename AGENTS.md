@@ -14,7 +14,7 @@ This file provides guidance and important rules working with code in this reposi
 
 #### Source File Entry Points When Memories Are Insufficient (On-Demand Querying and Reading)
 - Download CS2 binaries: `download_bin.py`
-- Analyzes CS2 binary files, processes modules and symbols defined in config.yaml. and generate yaml for them:`ida_analyze_bin.py`
+- Analyzes CS2 binary files, processes modules and symbols defined in config.yaml. and generate yaml for them:`ida_analyze_bin.py`, `ida_skill_preprocessor.py`
 - Bump generated yaml into gamedata json / txt: `update_gamedata.py`
 
 ## IDA Pro MCP Tools Reference
