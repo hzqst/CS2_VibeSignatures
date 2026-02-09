@@ -372,9 +372,17 @@ async def _preprocess_func_sig_via_mcp(
         )
 
         if not os.path.exists(vtable_yaml_path):
+            # Generate vtable YAML on-the-fly via py_eval
+            vtable_gen_data = await _preprocess_vtable_via_mcp(
+                session, vtable_name, image_base, platform, debug
+            )
+            if vtable_gen_data is None:
+                if debug:
+                    print(f"    Preprocess: vtable YAML not found and generation failed: {os.path.basename(vtable_yaml_path)}")
+                return None
+            write_vtable_yaml(vtable_yaml_path, vtable_gen_data)
             if debug:
-                print(f"    Preprocess: vtable YAML not found: {os.path.basename(vtable_yaml_path)}")
-            return None
+                print(f"    Preprocess: generated vtable YAML: {os.path.basename(vtable_yaml_path)}")
 
         try:
             with open(vtable_yaml_path, "r", encoding="utf-8") as vf:
