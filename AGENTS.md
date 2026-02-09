@@ -4,15 +4,15 @@ This file provides guidance and important rules working with code in this reposi
 
 ## Important rules
 
-### When agent running SKILLS: find-*
+### When coding / building plan
+
+ - **ALWAYS** call Serena's `activate_project` on agent startup
+
+### When running SKILLS: find-*
 
  - **NEVER** stop half-way even the step indicates a success, until you finish **ALL** tasks.
 
  - No need to call Serena's `activate_project` on agent startup
-
-### When coding with agent
-
- - **ALWAYS** call Serena's `activate_project` on agent startup
 
 ## IDA Pro MCP Tools Reference
 
