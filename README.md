@@ -80,6 +80,8 @@ python download_bin.py -gamever 14134
 
 2. Run `python ida_analyze_bin.py -gamever=14134 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
+* Signatures from `from bin/{previous_gamever}/{module}/*.{platform}.yaml` will be used to find functions directly through mcp call before actually running SKILL(s). No LLM token will be consumed in this case.
+
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
