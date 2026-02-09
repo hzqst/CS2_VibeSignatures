@@ -49,8 +49,8 @@
   "CGameEventManager_Init": {
     "signatures": {
       "library": "server",
-      "windows": "40 53 48 83 EC 20 48 8B 01 48 8B D9 FF 50 10 48 8B 03 48 8D 15 ? ? ? ? 45 33 C0 48 8B CB FF 50 08 48 8B 03 48 8D 15 ? ? ? ? 45 33 C0 48 8B CB FF 50 08",
-      "linux": "55 48 89 E5 53 48 89 FB 48 83 EC 08 48 8B 07 FF 50 18 48 8B 03 48 89 DF 31 D2 48 8D 35 ? ? ? ? FF 50 10 48 8B 03 48 89 DF 31 D2 48 8D 35 ? ? ? ? FF 50 10"
+      "windows": "40 53 48 83 EC 20 48 8B 01 48 8B D9 FF 50 10 48 8B 03 48 8D 15 ? ? ? ? 45 33 C0 48 8B CB FF 50 08 48 8B 03 48 8D 15 ? ? ? ? 45 33 C0 48 8B CB FF 50 08 48 8B 03 48 8D 15 ? ? ? ?",
+      "linux": "55 48 89 E5 53 48 89 FB 48 83 EC 08 48 8B 07 FF 50 18 48 8B 03 48 89 DF 31 D2 48 8D 35 ? ? ? ? FF 50 10 48 8B 03 48 89 DF 31 D2 48 8D 35 ? ? ? ? FF 50 10 48 8B 03 48 89 DF BA 01 00 00"
     }
   },
   "GiveNamedItem": {
@@ -70,8 +70,8 @@
   "CBaseModelEntity_SetModel": {
     "signatures": {
       "library": "server",
-      "windows": "CC CC CC CC CC CC CC CC 40 53 48 83 EC 20 48 8B D9 4C 8B C2 48 8B 0D ? ? ? ? 48 8D 54 24 40 48 8B 01 FF 50 60 48 8B 44 24 40 48 8D 54 24 48 48 8B CB 48 89 44 24 48 E8 ? ? ? ?",
-      "linux": "55 48 89 E5 41 54 53 48 85 FF 74 ? 80 3F 00 48 89 FB 74 ? 49 89 F4 E8 ? ? ? ? 48 85 C0 74 ? 80 38 00 74 ? 48 8D 35 ? ? ? ? 48 89 C7 E8 ? ? ? ? 89 C2 49 8B 04 24 85 D2 75 ?"
+      "windows": "40 53 48 83 EC 20 48 8B D9 4C 8B C2 48 8B 0D ? ? ? ? 48 8D 54 24 40 48 8B 01 FF 50 60 48 8B 44 24 40 48 8D 54 24 48 48 8B CB 48 89 44 24 48 E8 ? ? ? ? 48 83 C4 20 5B C3 CC CC CC CC CC 48 89 5C 24",
+      "linux": "55 48 89 F2 48 89 E5 53 48 89 FB 48 8D 7D E0 48 83 EC 18 48 8D 05 ? ? ? ? 48 8B 30 48 8B 06 FF 50 68 48 8B 45 E0 48 8D 75 E8 48 89 DF 48 89 45 E8 E8 ? ? ? ? 48 8B 5D F8 C9 C3 CC CC CC 55"
     }
   },
   "CCSPlayer_WeaponServices_CanUse": {
@@ -97,7 +97,7 @@
   },
   "CCSPlayer_ItemServices_GiveNamedItem": {
     "offsets": {
-      "windows": 20,
+      "windows": 19,
       "linux": 20
     }
   },
@@ -123,7 +123,7 @@
     "signatures": {
       "library": "server",
       "windows": "48 8B C4 4C 89 48 20 48 89 48 08 55 56 41 56 41 57 48 8D 68 A9 48 81 EC E8 00 00 00 4C 8D B1 ? ? ? ? 0F 29 70 B8 41 83 3E 00 41 8B F0 0F 28 F1 4C 8B F9 0F 85 ? ? ? ? 48 8B 0D ? ? ? ?",
-      "linux": "48 8D 35 ? ? ? ? 48 89 95 18 FF FF FF BA 01 00 00 00 89 8D 14 FF FF FF 48 8B 38 48 8B 07 FF 90 C8 00 00 00 41 8B 86 D0 0D 00 00"
+      "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC C8 00 00 00 48 8D 05 ? ? ? ? F3 0F 11 85 30 FF FF FF 89 B5 38 FF FF FF F3 0F 10 05 ? ? ? ? 48 8D 35 ? ? ? ?"
     }
   },
   "CCSGameRules_FindPickerEntity": {
@@ -261,8 +261,8 @@
   "CheckTransmit": {
     "signatures": {
       "library": "server",
-      "windows": "48 8B C4 4C 89 48 20 48 89 50 10 48 89 48 08 55 48 8D A8 ? ? ? ? 48 81 EC ? ? ? ? 48 89 58 F0 48 89 70 E8 48 89 78 E0 33 FF 4C 89 60 D8 4C 89 68 D0 4C 8B E9 48 8D 0D ? ? ? ?",
-      "linux": "55 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ? ? ? ? 41 55 41 89 D5 41 54 53 48 81 EC 68 01 00 00"
+      "windows": "48 8B C4 4C 89 48 20 48 89 50 10 48 89 48 08 55 48 8D A8 E8 F6 FF FF 48 81 EC 10 0A 00 00 48 89 58 F0 48 89 70 E8 48 89 78 E0 33 FF 4C 89 60 D8 4C 89 68 D0 4C 8B E9 48 8D 0D ? ? ? ?",
+      "linux": "55 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ? ? ? ? 41 55 41 89 D5 41 54 53 48 81 EC ? ? ? ? 48 89 B5 ? ? ? ? BE FF FF FF FF 48 89 8D ? ? ? ?"
     }
   },
   "CheckTransmitPlayerSlot": {

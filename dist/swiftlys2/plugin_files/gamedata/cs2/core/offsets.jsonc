@@ -52,7 +52,7 @@
         "linux": 24
     },
     "CCSPlayer_ItemServices::GiveNamedItem": {
-        "windows": 20,
+        "windows": 19,
         "linux": 20
     },
     "CCSPlayer_WeaponServices::CanUse": {
