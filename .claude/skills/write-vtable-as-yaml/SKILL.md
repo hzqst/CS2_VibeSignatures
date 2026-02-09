@@ -24,7 +24,7 @@ Before using this skill, you should have:
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
-| `vtable_symbol` | The IDA symbol name for the vtable | "??_7CBaseEntity@@6B@" or "_ZTV11CBaseEntity + 0x10" |
+| `vtable_symbol` | The IDA symbol name for the vtable | "??_7CBaseEntity@@6B@" |
 
 ## Method
 
@@ -42,7 +42,7 @@ vtable_va = <vtable_va>             # e.g., 0x182B8D9D8
 # ======================================
 
 # === OPTIONAL: Replace these values ===
-vtable_symbol = "<vtable_symbol>"     # e.g., "??_7CBaseEntity@@6B@" or "_ZTV11CBaseEntity + 0x10"
+vtable_symbol = "<vtable_symbol>"     # e.g., "??_7CBaseEntity@@6B@" or "_ZTV11CBaseEntity + 0x10" or "off_180XXXXXX"
 # ======================================
 
 input_file = idaapi.get_input_file_path()
