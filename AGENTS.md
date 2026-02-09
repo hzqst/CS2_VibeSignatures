@@ -2,17 +2,20 @@
 
 This file provides guidance and important rules working with code in this repository.
 
-## Important rules
-
 ### When coding / building plan
 
  - **ALWAYS** call Serena's `activate_project` on agent startup
+ - Use a progressive disclosure approach for agent coding in this repository: start from high-level information in Serena memories, and only locate/read specific files or symbols when necessary to avoid expanding too much context at once.
 
-### When running SKILLS: find-*
+#### Serena memories (Keep context clean)
+1. Use `list_memories` first to browse existing memories in the current project (do not read all memories by default).
+2. Only when needed, use `read_memory` to load a specific memory precisely (on-demand loading).
+3. If memory content is insufficient or outdated, fall back to reading repository files or use Serena's symbol/search capabilities for targeted lookup, and maintain memory content with `write_memory` / `edit_memory` / `delete_memory`.
 
- - **NEVER** stop half-way even the step indicates a success, until you finish **ALL** tasks.
-
- - No need to call Serena's `activate_project` on agent startup
+#### Source File Entry Points When Memories Are Insufficient (On-Demand Querying and Reading)
+- Download CS2 binaries: `download_bin.py`
+- Analyzes CS2 binary files, processes modules and symbols defined in config.yaml. and generate yaml for them:`ida_analyze_bin.py`
+- Bump generated yaml into gamedata json / txt: `update_gamedata.py`
 
 ## IDA Pro MCP Tools Reference
 
