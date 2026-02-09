@@ -1,4 +1,5 @@
 vtable_class: CPointTeleport
+vtable_symbol: ??_7CPointTeleport@@6B@
 vtable_va: '0x18175fa00'
 vtable_rva: '0x175fa00'
 vtable_size: '0x770'

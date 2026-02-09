@@ -116,16 +116,16 @@ Examples:
 
 ## Output YAML Format
 
-`CSource2Server_vtable.windows.yaml` - Example for CSource2Server vtable on linux:
+`CSource2Server_vtable.windows.yaml` - Example for CSource2Server vtable on Windows:
 
 ```yaml
 vtable_class: CSource2Server
-vtable_symbol: ??_7CSource2Server@@6B@
-vtable_va: 0x182B8D9D8      # Virtual address - changes with game updates
-vtable_rva: 0x2B8D9D8       # Relative virtual address (VA - image base) - changes with game updates
-vtable_size: 0x2D8          # VTable size in bytes - changes with game updates
-vtable_numvfunc: 97         # Number of virtual functions - changes with game updates
-vtable_entries:             # Every virtual functions starting from vtable[0]
+vtable_symbol: off_180XXXXXX # Symbol in IDA to CSource2Server's vtable
+vtable_va: 0x182B8D9D8       # Virtual address - changes with game updates
+vtable_rva: 0x2B8D9D8        # Relative virtual address (VA - image base) - changes with game updates
+vtable_size: 0x2D8           # VTable size in bytes - changes with game updates
+vtable_numvfunc: 97          # Number of virtual functions - changes with game updates
+vtable_entries:              # Every virtual functions starting from vtable[0]
   0: 0x180C87B20             # vtable[0] - changes with game updates
   1: 0x180C87FA0             # vtable[1] - changes with game updates
   2: 0x180C87FF0             # vtable[2] - changes with game updates
@@ -135,7 +135,7 @@ vtable_entries:             # Every virtual functions starting from vtable[0]
 
 ```yaml
 vtable_class: CSource2Server
-vtable_symbol: _ZTV14CSource2Server + 0x10
+vtable_symbol: _ZTV14CSource2Server + 0x10 # Symbol in IDA to CSource2Server's vtable
 vtable_va: '0x2261dd8'       # Virtual address - changes with game updates
 vtable_rva: '0x2261dd8'      # Relative virtual address (VA - image base) - changes with game updates
 vtable_size: '0x310'         # VTable size in bytes - changes with game updates

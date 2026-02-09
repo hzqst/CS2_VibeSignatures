@@ -1,4 +1,5 @@
 vtable_class: CCSPlayer_WeaponServices
+vtable_symbol: ??_7CCSPlayer_WeaponServices@@6B@
 vtable_va: '0x1816bada8'
 vtable_rva: '0x16bada8'
 vtable_size: '0x130'

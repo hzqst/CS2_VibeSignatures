@@ -1,4 +1,5 @@
 vtable_class: CCSPlayerPawn
+vtable_symbol: ??_7CCSPlayerPawn@@6B@
 vtable_va: '0x1815347f8'
 vtable_rva: '0x15347f8'
 vtable_size: '0xd50'
