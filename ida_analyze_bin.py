@@ -9,6 +9,7 @@ Usage:
     python ida_analyze_bin.py -gamever=14134 [-platform=windows,linux] [-agent=codex]
 
     -gamever: Game version subdirectory name (required)
+    -oldgamever: Old game version for signature reuse (default: gamever - 1)
     -configyaml: Path to config.yaml file (default: config.yaml)
     -bindir: Directory containing downloaded binaries (default: bin)
     -platform: Platforms to analyze, comma-separated (default: windows,linux)
@@ -28,6 +29,7 @@ Output:
 """
 
 import argparse
+import json
 import os
 import socket
 import subprocess
@@ -118,6 +120,241 @@ def quit_ida_gracefully(process, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=Fal
             pass
 
 
+def parse_mcp_result(result):
+    """Parse CallToolResult content to Python object."""
+    if result.content:
+        text = result.content[0].text
+        try:
+            return json.loads(text)
+        except (json.JSONDecodeError, TypeError):
+            return text
+    return None
+
+
+def write_func_yaml(path, data):
+    """Write function/vfunc YAML in the same format as write-func-as-yaml skill."""
+    ordered_keys = [
+        "func_va", "func_rva", "func_size", "func_sig",
+        "vtable_name", "vfunc_offset", "vfunc_index",
+    ]
+    with open(path, "w", encoding="utf-8") as f:
+        for key in ordered_keys:
+            if key in data:
+                f.write(f"{key}: {data[key]}\n")
+
+
+async def preprocess_skills_via_mcp(
+    host, port, skills_to_preprocess, old_binary_dir, new_binary_dir, platform, debug=False
+):
+    """
+    Attempt to pre-process skills by reusing old-version func_sig signatures.
+
+    Connects to IDA MCP, searches each old signature in the new binary via find_bytes.
+    For unique matches, builds new YAML data (func_va, func_rva, func_size, func_sig).
+    For vfuncs, additionally cross-references with the new vtable YAML for vfunc_offset/index.
+
+    Args:
+        host: MCP server host
+        port: MCP server port
+        skills_to_preprocess: list of (skill_name, expected_outputs_new_paths, old_yaml_map)
+            old_yaml_map: dict mapping new_yaml_path -> old_yaml_path
+        old_binary_dir: directory containing old version YAML files
+        new_binary_dir: directory for new version YAML outputs
+        platform: "windows" or "linux"
+        debug: enable debug output
+
+    Returns:
+        dict mapping skill_name -> True (all outputs pre-processed) / False (failed)
+    """
+    server_url = f"http://{host}:{port}/mcp"
+    results = {}
+
+    try:
+        async with streamable_http_client(server_url) as (read_stream, write_stream, _):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+
+                # Get image_base once
+                ib_result = await session.call_tool(
+                    name="py_eval",
+                    arguments={"code": "hex(idaapi.get_imagebase())"}
+                )
+                ib_data = parse_mcp_result(ib_result)
+                if isinstance(ib_data, dict):
+                    image_base = int(ib_data.get("result", "0x0"), 16)
+                else:
+                    image_base = int(str(ib_data), 16) if ib_data else 0
+
+                for skill_name, expected_outputs, old_yaml_map in skills_to_preprocess:
+                    skill_success = True
+                    pending_yamls = {}  # new_path -> new_data
+
+                    for new_path in expected_outputs:
+                        old_path = old_yaml_map.get(new_path)
+
+                        # Check if old YAML exists
+                        if not old_path or not os.path.exists(old_path):
+                            if debug:
+                                print(f"    Preprocess: no old YAML for {os.path.basename(new_path)}")
+                            skill_success = False
+                            break
+
+                        # Read old YAML
+                        try:
+                            with open(old_path, "r", encoding="utf-8") as f:
+                                old_data = yaml.safe_load(f)
+                        except Exception:
+                            skill_success = False
+                            break
+
+                        if not old_data or not isinstance(old_data, dict):
+                            skill_success = False
+                            break
+
+                        func_sig = old_data.get("func_sig")
+                        if not func_sig:
+                            if debug:
+                                print(f"    Preprocess: no func_sig in {os.path.basename(old_path)}")
+                            skill_success = False
+                            break
+
+                        # Search signature in new binary via MCP find_bytes
+                        try:
+                            fb_result = await session.call_tool(
+                                name="find_bytes",
+                                arguments={"patterns": [func_sig], "limit": 2}
+                            )
+                            fb_data = parse_mcp_result(fb_result)
+                        except Exception as e:
+                            if debug:
+                                print(f"    Preprocess: find_bytes error: {e}")
+                            skill_success = False
+                            break
+
+                        # Parse find_bytes result: list of {pattern, matches, n, ...}
+                        if not isinstance(fb_data, list) or len(fb_data) == 0:
+                            skill_success = False
+                            break
+
+                        entry = fb_data[0]
+                        matches = entry.get("matches", [])
+                        match_count = entry.get("n", len(matches))
+
+                        if match_count != 1:
+                            if debug:
+                                print(f"    Preprocess: {os.path.basename(old_path)} sig matched {match_count} (need 1)")
+                            skill_success = False
+                            break
+
+                        match_addr = matches[0]  # hex string like "0x180bb1470"
+
+                        # Get function info from match address via py_eval
+                        py_code = (
+                            f"import idaapi, json\n"
+                            f"addr = {match_addr}\n"
+                            f"f = idaapi.get_func(addr)\n"
+                            f"if f and f.start_ea == addr:\n"
+                            f"    json.dumps({{'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea)}})\n"
+                            f"else:\n"
+                            f"    json.dumps(None)\n"
+                        )
+                        try:
+                            fi_result = await session.call_tool(
+                                name="py_eval",
+                                arguments={"code": py_code}
+                            )
+                            fi_data = parse_mcp_result(fi_result)
+                        except Exception as e:
+                            if debug:
+                                print(f"    Preprocess: py_eval error: {e}")
+                            skill_success = False
+                            break
+
+                        # Parse py_eval result
+                        func_info = None
+                        if isinstance(fi_data, dict):
+                            result_str = fi_data.get("result", "")
+                            if result_str:
+                                try:
+                                    func_info = json.loads(result_str)
+                                except (json.JSONDecodeError, TypeError):
+                                    pass
+
+                        if not func_info:
+                            if debug:
+                                print(f"    Preprocess: could not get func info at {match_addr}")
+                            skill_success = False
+                            break
+
+                        func_va_hex = func_info["func_va"]
+                        func_va_int = int(func_va_hex, 16)
+                        func_size_hex = func_info["func_size"]
+
+                        # Build new YAML data
+                        new_data = {
+                            "func_va": func_va_hex,
+                            "func_rva": hex(func_va_int - image_base),
+                            "func_size": func_size_hex,
+                            "func_sig": func_sig,
+                        }
+
+                        # For vfunc: cross-reference with vtable YAML
+                        if "vtable_name" in old_data:
+                            vtable_name = old_data["vtable_name"]
+                            vtable_yaml_path = os.path.join(
+                                new_binary_dir,
+                                f"{vtable_name}_vtable.{platform}.yaml"
+                            )
+
+                            if not os.path.exists(vtable_yaml_path):
+                                if debug:
+                                    print(f"    Preprocess: vtable YAML not found: {os.path.basename(vtable_yaml_path)}")
+                                skill_success = False
+                                break
+
+                            try:
+                                with open(vtable_yaml_path, "r", encoding="utf-8") as vf:
+                                    vtable_data = yaml.safe_load(vf)
+                            except Exception:
+                                skill_success = False
+                                break
+
+                            vtable_entries = vtable_data.get("vtable_entries", {})
+                            found_index = None
+                            for idx, entry_addr in vtable_entries.items():
+                                if int(str(entry_addr), 16) == func_va_int:
+                                    found_index = int(idx)
+                                    break
+
+                            if found_index is None:
+                                if debug:
+                                    print(f"    Preprocess: {func_va_hex} not in {vtable_name} vtable entries")
+                                skill_success = False
+                                break
+
+                            new_data["vtable_name"] = vtable_name
+                            new_data["vfunc_offset"] = hex(found_index * 8)
+                            new_data["vfunc_index"] = found_index
+
+                        pending_yamls[new_path] = new_data
+
+                    # Write all YAMLs only if ALL outputs succeeded
+                    if skill_success and len(pending_yamls) == len(expected_outputs):
+                        for path, data in pending_yamls.items():
+                            write_func_yaml(path, data)
+                        results[skill_name] = True
+                        if debug:
+                            print(f"    Preprocess: {skill_name} - all {len(pending_yamls)} outputs written")
+                    else:
+                        results[skill_name] = False
+
+    except Exception as e:
+        if debug:
+            print(f"  Preprocess MCP connection error: {e}")
+
+    return results
+
+
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -169,6 +406,11 @@ def parse_args():
         default=3,
         help="Maximum number of retry attempts for skill execution (default: 3)"
     )
+    parser.add_argument(
+        "-oldgamever",
+        default=None,
+        help="Old game version for signature reuse (default: gamever - 1). Set to 'none' to disable."
+    )
 
     args = parser.parse_args()
 
@@ -184,6 +426,15 @@ def parse_args():
         args.module_filter = None  # None means all modules
     else:
         args.module_filter = [m.strip() for m in args.modules.split(",") if m.strip()]
+
+    # Resolve oldgamever
+    if args.oldgamever is None:
+        try:
+            args.oldgamever = str(int(args.gamever) - 1)
+        except ValueError:
+            args.oldgamever = None
+    elif args.oldgamever.lower() == "none":
+        args.oldgamever = None
 
     return args
 
@@ -472,7 +723,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
     return False
 
 
-def process_binary(binary_path, skills, agent, host, port, ida_args, platform, debug=False, max_retries=3):
+def process_binary(binary_path, skills, agent, host, port, ida_args, platform, debug=False, max_retries=3, old_binary_dir=None):
     """
     Process a single binary file.
 
@@ -486,6 +737,7 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
         platform: Platform name (e.g., "windows", "linux")
         debug: Enable debug output
         max_retries: Default maximum number of retry attempts for skill execution
+        old_binary_dir: Directory containing old version YAML files for signature reuse
 
     Returns:
         Tuple of (success_count, fail_count, skip_count)
@@ -532,7 +784,45 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
         return 0, len(skills_to_process), skip_count
 
     try:
-        # Process each skill
+        # --- Pre-processing phase: reuse old signatures ---
+        if old_binary_dir:
+            preprocess_info = []
+            for skill_name, expected_outputs, skill_max_retries in skills_to_process:
+                old_yaml_map = {}
+                for new_path in expected_outputs:
+                    filename = os.path.basename(new_path)
+                    old_path = os.path.join(old_binary_dir, filename)
+                    old_yaml_map[new_path] = old_path
+                preprocess_info.append((skill_name, expected_outputs, old_yaml_map))
+
+            print(f"\n  Pre-processing: attempting signature reuse from {old_binary_dir}")
+            try:
+                preprocess_results = asyncio.run(
+                    preprocess_skills_via_mcp(
+                        host, port, preprocess_info,
+                        old_binary_dir, binary_dir, platform, debug
+                    )
+                )
+            except Exception as e:
+                if debug:
+                    print(f"  Pre-processing error: {e}")
+                preprocess_results = {}
+
+            # Filter out successfully pre-processed skills
+            remaining_skills = []
+            for item in skills_to_process:
+                skill_name = item[0]
+                if preprocess_results.get(skill_name):
+                    success_count += 1
+                    print(f"  Pre-processed: {skill_name} (signature reuse)")
+                else:
+                    remaining_skills.append(item)
+            skills_to_process = remaining_skills
+
+            if not skills_to_process:
+                print(f"  All remaining skills pre-processed via signature reuse")
+
+        # Process each skill that was not pre-processed
         for skill_name, expected_outputs, skill_max_retries in skills_to_process:
             print(f"  Processing skill: {skill_name}")
 
@@ -557,6 +847,7 @@ def main():
     config_path = args.configyaml
     bin_dir = args.bindir
     gamever = args.gamever
+    oldgamever = args.oldgamever
     platforms = args.platforms
     module_filter = args.module_filter
     agent = args.agent
@@ -572,6 +863,7 @@ def main():
     print(f"Config file: {config_path}")
     print(f"Binary directory: {bin_dir}")
     print(f"Game version: {gamever}")
+    print(f"Old game version: {oldgamever or '(disabled)'}")
     print(f"Platforms: {', '.join(platforms)}")
     print(f"Modules filter: {args.modules}")
     print(f"Agent: {agent}")
@@ -634,11 +926,22 @@ def main():
                 total_skip += len(skills)
                 continue
 
+            # Compute old binary dir for signature reuse
+            old_binary_dir = None
+            if oldgamever:
+                old_binary_path = get_binary_path(bin_dir, oldgamever, module_name, module_path)
+                candidate_dir = os.path.dirname(old_binary_path)
+                if os.path.isdir(candidate_dir):
+                    old_binary_dir = candidate_dir
+                elif debug:
+                    print(f"  Old version directory not found: {candidate_dir}")
+
             # Process binary
             success, fail, skip = process_binary(
                 binary_path, skills, agent,
                 DEFAULT_HOST, DEFAULT_PORT, ida_args, platform, debug,
-                max_retries=args.maxretry
+                max_retries=args.maxretry,
+                old_binary_dir=old_binary_dir
             )
             total_success += success
             total_fail += fail
