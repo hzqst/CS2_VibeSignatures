@@ -88,6 +88,16 @@ import ida_segment
 
 func_addr = <func_addr>
 
+# Validate func_addr is a function start address
+func = idaapi.get_func(func_addr)
+if func is None or func.start_ea != func_addr:
+    print("FAILED: The input func_addr is not a valid function start address!")
+    if func is not None:
+        print(f"  func_addr {hex(func_addr)} is inside function at {hex(func.start_ea)}, please use {hex(func.start_ea)} instead.")
+    else:
+        print(f"  func_addr {hex(func_addr)} does not belong to any known function.")
+    raise SystemExit
+
 # YOUR GENERATED SIGNATURE HERE (space-separated hex with ?? for wildcards)
 signature_str = "<YOUR_SIGNATURE>"  # e.g., "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??"
 
