@@ -13,6 +13,7 @@ Used by ida_analyze_bin.py as a fast path before invoking full agent-based analy
 
 import json
 import os
+from ida_analyze_util import parse_mcp_result
 
 try:
     import yaml
@@ -127,16 +128,6 @@ else:
     })
 '''
 
-
-def parse_mcp_result(result):
-    """Parse CallToolResult content to Python object."""
-    if result.content:
-        text = result.content[0].text
-        try:
-            return json.loads(text)
-        except (json.JSONDecodeError, TypeError):
-            return text
-    return None
 
 
 def _is_vtable_output(filename):
