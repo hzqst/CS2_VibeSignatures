@@ -411,7 +411,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
     Returns:
         True if successful, False otherwise
     """
-    session_id = str(uuid.uuid4())
+    claude_session_id = str(uuid.uuid4())
 
     for attempt in range(max_retries):
         is_retry = attempt > 0
@@ -428,12 +428,18 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
                    ]
             # Add session management flags
             if is_retry:
-                cmd.extend(["--resume", session_id])
+                cmd.extend(["--resume", claude_session_id])
             else:
-                cmd.extend(["--session-id", session_id])
+                cmd.extend(["--session-id", claude_session_id])
+            retry_target_desc = f"session {claude_session_id}"
         elif is_codex_agent:
             skill_path = f".claude/skills/{skill_name}/SKILL.md"
-            cmd = [agent, "exec", f"Run SKILL: {skill_path}"]
+            skill_prompt = f"Run SKILL: {skill_path}"
+            if is_retry:
+                cmd = [agent, "exec", "resume", "--last", skill_prompt]
+            else:
+                cmd = [agent, "exec", skill_prompt]
+            retry_target_desc = "the latest codex session (--last)"
         else:
             print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
             return False
@@ -458,7 +464,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
                 if not debug and result.stderr:
                     print(f"    stderr: {result.stderr[:500]}")
                 if attempt < max_retries - 1:
-                    print(f"    Retrying with session {session_id}...")
+                    print(f"    Retrying with {retry_target_desc}...")
                 continue
 
             # Verify all yaml files were generated if expected_yaml_paths is provided
@@ -467,7 +473,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
                 if missing_files:
                     print(f"    Error: Expected yaml files not generated: {missing_files}")
                     if attempt < max_retries - 1:
-                        print(f"    Retrying with session {session_id}...")
+                        print(f"    Retrying with {retry_target_desc}...")
                     continue
 
             return True
@@ -475,7 +481,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
         except subprocess.TimeoutExpired:
             print(f"    Error: Skill execution timeout ({SKILL_TIMEOUT} seconds)")
             if attempt < max_retries - 1:
-                print(f"    Retrying with session {session_id}...")
+                print(f"    Retrying with {retry_target_desc}...")
             continue
         except FileNotFoundError:
             print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
@@ -483,7 +489,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
         except Exception as e:
             print(f"    Error executing skill: {e}")
             if attempt < max_retries - 1:
-                print(f"    Retrying with session {session_id}...")
+                print(f"    Retrying with {retry_target_desc}...")
             continue
 
     print(f"    Failed after {max_retries} attempts")

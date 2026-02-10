@@ -2,7 +2,11 @@
 
 This file provides guidance and important rules working with code in this repository.
 
-### When coding / building plan
+## When running SKILLs for automation
+
+ - **DO NOT** call Serena's `activate_project` on agent startup as we don't need it for automation.
+
+## When coding / building plan
 
  - **ALWAYS** call Serena's `activate_project` on agent startup
  - Use a progressive disclosure approach for agent coding in this repository: start from high-level information in Serena memories, and only locate/read specific files or symbols when necessary to avoid expanding too much context at once.
