@@ -4,7 +4,7 @@ This file provides guidance and important rules working with code in this reposi
 
 ## When running SKILLs for automation
 
- - **DO NOT** call Serena's `activate_project` on agent startup as we don't need it for automation.
+ - **DO NOT** call Serena's mcp tools as we don't need it for automation.
 
 ## When coding / building plan
 
