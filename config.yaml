@@ -103,6 +103,10 @@ modules:
         expected_output:
           - CBaseTrigger_vtable.{platform}.yaml
 
+      - name: find-CTriggerPush_vtable
+        expected_output:
+          - CTriggerPush_vtable.{platform}.yaml
+
       - name: find-CPointTeleport_vtable
         expected_output:
           - CPointTeleport_vtable.{platform}.yaml
@@ -338,6 +342,14 @@ modules:
         prerequisite:
           - find-CBaseEntity_vtable
         max_retries: 6
+
+      - name: find-CTriggerPush_Touch
+        expected_output:
+          - CTriggerPush_Touch.{platform}.yaml
+        expected_input:
+          - CTriggerPush_vtable.{platform}.yaml
+        prerequisite:
+          - find-CTriggerPush_vtable
 
       - name: find-CBaseEntity_IsPlayerPawn
         expected_output:

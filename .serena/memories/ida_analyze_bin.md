@@ -52,6 +52,7 @@
 - `get_binary_path` 只取配置路径的文件名，不保留原子目录层级。
 - `expected_input` 在 `process_binary` 中会在执行技能前检查：展开 `{platform}` 后拼接 `binary_dir`，若有文件缺失则记为失败并输出缺失文件名提示。
 - 仅当 `old_binary_dir` 存在时才会触发签名复用预处理；否则直接走 Agent SKILL。
+- `preprocess_single_skill_via_mcp` 当前为脚本分发模式：按 skill 名动态加载 `ida_preprocessor_scripts/{skill_name}.py` 的 `preprocess_skill`，脚本缺失或失败时回退 Agent。
 - 技能级 `max_retries` 可覆盖命令行 `-maxretry`。
 - 若 MCP 启动失败，当前二进制所有待处理技能都记为失败。
 
