@@ -698,6 +698,8 @@ modules:
 
       - name: LegacyGameEventListener
         catagory: func
+        alias:
+          - GetLegacyGameEventListener
 
       - name: CBaseEntity_StartTouch
         catagory: vfunc
@@ -722,12 +724,12 @@ modules:
         alias:
           - CTriggerPush::Touch
           - TriggerPush_Touch
-          
+
       - name: CBaseEntity_SetGroundEntity
         catagory: func
         alias:
           - SetGroundEntity
-          
+
       - name: CBaseEntity_IsPlayerPawn
         catagory: vfunc
         alias:
