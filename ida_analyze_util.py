@@ -539,19 +539,19 @@ async def preprocess_gv_sig_via_mcp(
 
     # Resolve gv_va from instruction metadata via py_eval
     py_code = (
-        f"import ida_bytes, json\\n"
-        f"sig_addr = {match_addr}\\n"
-        f"inst_addr = sig_addr + {gv_inst_offset}\\n"
-        f"inst_length = {gv_inst_length}\\n"
-        f"inst_disp = {gv_inst_disp}\\n"
-        f"inst_bytes = ida_bytes.get_bytes(inst_addr, inst_length)\\n"
-        f"if not inst_bytes or len(inst_bytes) < inst_disp + 4:\\n"
-        f"    result = json.dumps(None)\\n"
-        f"else:\\n"
-        f"    disp_u32 = ida_bytes.get_dword(inst_addr + inst_disp)\\n"
-        f"    disp_i32 = disp_u32 - 0x100000000 if (disp_u32 & 0x80000000) else disp_u32\\n"
-        f"    gv_addr = (inst_addr + inst_length + disp_i32) & 0xFFFFFFFFFFFFFFFF\\n"
-        f"    result = json.dumps({{'gv_va': hex(gv_addr), 'gv_sig_va': hex(sig_addr)}})\\n"
+        f"import ida_bytes, json\n"
+        f"sig_addr = {match_addr}\n"
+        f"inst_addr = sig_addr + {gv_inst_offset}\n"
+        f"inst_length = {gv_inst_length}\n"
+        f"inst_disp = {gv_inst_disp}\n"
+        f"inst_bytes = ida_bytes.get_bytes(inst_addr, inst_length)\n"
+        f"if not inst_bytes or len(inst_bytes) < inst_disp + 4:\n"
+        f"    result = json.dumps(None)\n"
+        f"else:\n"
+        f"    disp_bytes = inst_bytes[inst_disp:inst_disp + 4]\n"
+        f"    disp_i32 = int.from_bytes(disp_bytes, 'little', signed=True)\n"
+        f"    gv_addr = (inst_addr + inst_length + disp_i32) & 0xFFFFFFFFFFFFFFFF\n"
+        f"    result = json.dumps({{'gv_va': hex(gv_addr), 'gv_sig_va': hex(sig_addr)}})\n"
     )
 
     try:
@@ -568,6 +568,10 @@ async def preprocess_gv_sig_via_mcp(
     # Parse py_eval result
     gv_info = None
     if isinstance(gv_data, dict):
+        stderr_text = gv_data.get("stderr", "")
+        if stderr_text and debug:
+            print("    Preprocess: py_eval stderr:")
+            print(stderr_text.strip())
         result_str = gv_data.get("result", "")
         if result_str:
             try:
