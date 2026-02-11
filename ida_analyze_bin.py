@@ -29,6 +29,7 @@ Output:
 """
 
 import argparse
+import json
 import os
 import socket
 import subprocess
@@ -412,7 +413,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
         True if successful, False otherwise
     """
     claude_session_id = str(uuid.uuid4())
-    codex_system_prompt = None
+    codex_developer_instructions = None
 
     if "codex" in agent.lower():
         system_prompt_path = Path(".claude/agents/sig-finder.md")
@@ -442,6 +443,8 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
             print(f"    Error: Codex system prompt is empty in {system_prompt_path}")
             return False
 
+        codex_developer_instructions = f"developer_instructions={json.dumps(codex_system_prompt)}"
+
     for attempt in range(max_retries):
         is_retry = attempt > 0
 
@@ -465,9 +468,9 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
             skill_path = f".claude/skills/{skill_name}/SKILL.md"
             skill_prompt = f"Run SKILL: {skill_path}"
             if is_retry:
-                cmd = [agent, "exec", "resume", "--last", "--system", codex_system_prompt, skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "exec", "resume", "--last", skill_prompt]
             else:
-                cmd = [agent, "exec", "--system", codex_system_prompt, skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "exec", skill_prompt]
             retry_target_desc = "the latest codex session (--last)"
         else:
             print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
@@ -482,6 +485,12 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
             if system_arg_index < len(cmd):
                 display_cmd = cmd.copy()
                 display_cmd[system_arg_index] = "<sig-finder-system-prompt>"
+
+        for idx, arg in enumerate(cmd[:-1]):
+            if arg == "-c" and cmd[idx + 1].startswith("developer_instructions="):
+                if display_cmd is cmd:
+                    display_cmd = cmd.copy()
+                display_cmd[idx + 1] = "developer_instructions=<sig-finder-system-prompt>"
 
         print(f"    {retry_str}Running {attempt_str}: {' '.join(display_cmd)}")
 
