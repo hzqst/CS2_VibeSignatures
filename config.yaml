@@ -197,9 +197,9 @@ modules:
         expected_output:
           - CCSPlayerPawnBase_PostThink.{platform}.yaml
         expected_input:
-          - CCSPlayerPawnBase_vtable.{platform}.yaml
+          - CCSPlayerPawn_vtable.{platform}.yaml
         prerequisite:
-          - find-CCSPlayerPawnBase_vtable
+          - find-CCSPlayerPawn_vtable
 
       - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
         expected_output:
