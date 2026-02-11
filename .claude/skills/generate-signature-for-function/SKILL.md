@@ -7,7 +7,7 @@ description: |
 
 # Generate Signature for Function
 
-Generate a unique hex byte signature for a function that can be used for pattern scanning.
+Generate a unique hex byte signature for a function using fully programmatic wildcard detection — no manual byte analysis required.
 
 ## Prerequisites
 
@@ -16,136 +16,127 @@ Generate a unique hex byte signature for a function that can be used for pattern
 
 ## Method
 
-### 1. Get Function Bytes and Disassembly
+### 1. Collect Instruction Data with Auto-Wildcarding
 
-First, retrieve the raw bytes and disassembly to understand the function structure.
+Use a single `py_eval` call to decode instructions, programmatically determine wildcard positions based on operand types and branch instructions, and output the full signature token string.
 
 **Note**: The input address may be in the middle of a function. The script automatically resolves it to the actual function start.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
-import ida_bytes
-import idaapi
+import idaapi, ida_bytes, idautils, ida_ua, json
 
 input_addr = <func_addr>
+max_sig_bytes = 96
+max_instructions = 64
 
 # Resolve to actual function start (input may be in the middle of a function)
 func = idaapi.get_func(input_addr)
-if func:
-    func_addr = func.start_ea
-    if func_addr != input_addr:
-        print(f"Resolved {hex(input_addr)} -> function start at {hex(func_addr)}")
-else:
-    func_addr = input_addr
-    print(f"Warning: {hex(input_addr)} is not inside a known function, using as-is")
-
-# Get first 64 bytes of function
-raw_bytes = ida_bytes.get_bytes(func_addr, 64)
-print("Function address:", hex(func_addr))
-print("Function bytes:", ' '.join(f'{b:02X}' for b in raw_bytes))
-"""
-```
-
-Also get disassembly for context (use the resolved function address from above):
-```
-mcp__ida-pro-mcp__disasm addr="<resolved_func_addr>" max_instructions=15
-```
-
-### 2. Analyze and Generate Signature (LLM Task)
-
-**YOU (the LLM) must analyze the bytes and disassembly to create a signature.**
-
-When analyzing, consider:
-- **Opcodes** (instruction bytes): Usually stable, keep as-is
-- **Immediates/Offsets**: Often change between builds, use `??` wildcards
-- **Register encodings**: Usually stable unless compiler changes register allocation
-- **Relocation addresses**: Always use `??` wildcards (4 bytes for 32-bit, 8 for 64-bit)
-- **Displacement values in memory operands**: May change, consider wildcarding, **ESPECIALLY** with E8 call, E9 jmp
-
-Example analysis:
-```
-Bytes: 48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 12 34 56 00
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^
-       Prologue - stable opcodes                           Call with relative offset - wildcard it
-
-Result: 48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??
-```
-
-**Generate a signature that is:**
-- Long enough to be unique (typically 16-32 bytes)
-- Uses `??` for bytes that may change between binary updates
-- Starts from function entry point
-
-### 3. Validate Signature Uniqueness
-
-Test that YOUR generated signature matches ONLY this function:
-
-```python
-mcp__ida-pro-mcp__py_eval code="""
-import idaapi
-import ida_bytes
-import ida_segment
-
-func_addr = <func_addr>
-
-# Validate func_addr is a function start address
-func = idaapi.get_func(func_addr)
-if func is None or func.start_ea != func_addr:
-    print("FAILED: The input func_addr is not a valid function start address!")
-    if func is not None:
-        print(f"  func_addr {hex(func_addr)} is inside function at {hex(func.start_ea)}, please use {hex(func.start_ea)} instead.")
-    else:
-        print(f"  func_addr {hex(func_addr)} does not belong to any known function.")
+if not func:
+    print(json.dumps({"error": f"{hex(input_addr)} is not inside a known function"}))
     raise SystemExit
 
-# YOUR GENERATED SIGNATURE HERE (space-separated hex with ?? for wildcards)
-signature_str = "<YOUR_SIGNATURE>"  # e.g., "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??"
+func_addr = func.start_ea
+if func_addr != input_addr:
+    print(f"NOTE: Resolved {hex(input_addr)} -> function start at {hex(func_addr)}")
 
-# IDA pattern syntax uses single '?' wildcard tokens (not '??').
-pattern_str = " ".join("?" if p == "??" else p for p in signature_str.split())
+limit_end = min(func.end_ea, func_addr + max_sig_bytes)
+sig_tokens = []
+cursor = func_addr
+inst_count = 0
 
-# Get .text segment bounds
-seg = ida_segment.get_segm_by_name(".text")
-start = seg.start_ea
-end = seg.end_ea
+while cursor < func.end_ea and cursor < limit_end and inst_count < max_instructions:
+    insn = idautils.DecodeInstruction(cursor)
+    if not insn or insn.size <= 0:
+        break
+    raw = ida_bytes.get_bytes(cursor, insn.size)
+    if not raw:
+        break
 
-# Compile pattern and search using IDA's native binary search (fast, avoids get_bytes() timeouts)
-pat = ida_bytes.compiled_binpat_vec_t()
-ida_bytes.parse_binpat_str(pat, start, pattern_str, 16)
+    # Determine wildcard byte positions within this instruction
+    wild = set()
 
-flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
-matches = []
+    # Auto-wildcard volatile operand bytes (imm/near/far/mem/displ)
+    for op in insn.ops:
+        op_type = int(op.type)
+        if op_type == int(idaapi.o_void):
+            continue
+        if op_type in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):
+            offb = int(op.offb)
+            if offb > 0 and offb < insn.size:
+                dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                if dsz <= 0:
+                    dsz = insn.size - offb
+                end = min(insn.size, offb + dsz)
+                for i in range(offb, end):
+                    wild.add(i)
+            offo = int(op.offo)
+            if offo > 0 and offo < insn.size:
+                dsz2 = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                if dsz2 <= 0:
+                    dsz2 = insn.size - offo
+                end2 = min(insn.size, offo + dsz2)
+                for i in range(offo, end2):
+                    wild.add(i)
 
-res = ida_bytes.bin_search3(start, end, pat, flags)
-ea = res[0] if isinstance(res, tuple) else res  # IDA 9 may return (ea, idx)
-while ea != idaapi.BADADDR:
-    matches.append(ea)
-    res = ida_bytes.bin_search3(ea + 1, end, pat, flags)
-    ea = res[0] if isinstance(res, tuple) else res
+    # Special handling for call/jump instructions
+    b0 = raw[0]
+    if b0 in (0xE8, 0xE9, 0xEB):  # CALL rel32, JMP rel32, JMP rel8
+        for i in range(1, insn.size):
+            wild.add(i)
+    elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:  # Jcc rel32
+        for i in range(2, insn.size):
+            wild.add(i)
+    elif 0x70 <= b0 <= 0x7F:  # Jcc rel8
+        for i in range(1, insn.size):
+            wild.add(i)
 
-print(f"Signature matches: {len(matches)}")
-for m in matches:
-    print(hex(m))
+    # Build tokens for this instruction
+    for idx in range(insn.size):
+        sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
 
-if len(matches) == 1 and matches[0] == func_addr:
-    print("SUCCESS: Signature is unique and matches target function!")
-elif len(matches) == 1 and matches[0] != func_addr:
-    print("WARNING: Signature matches but at different address ! You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
-elif len(matches) > 1:
-    print("FAILED: Signature not unique, need longer pattern.")
-elif len(matches) == 0:
-    print("FAILED: Found nothing with this signature. You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
+    cursor += insn.size
+    inst_count += 1
 
+sig_full = " ".join(sig_tokens)
+print(json.dumps({
+    "func_va": hex(func_addr),
+    "func_size": hex(func.end_ea - func_addr),
+    "total_bytes": len(sig_tokens),
+    "sig_full": sig_full
+}))
 """
 ```
 
-### 4. Iterate if Needed
+### 2. Validate Signature Uniqueness with Progressive Prefix
 
-If the signature is not unique:
-1. Extend the signature length, maybe include some preceding padding, or even bytes from next function, to make it unique.
-2. Re-validate until unique
+From the `sig_full` string in the JSON output, test with `find_bytes` to find the shortest unique prefix.
 
-### 5. Continue with Unfinished Tasks
+**Start with ~16 bytes prefix, extend if not unique:**
+
+```
+mcp__ida-pro-mcp__find_bytes patterns=["<first_N_tokens_from_sig_full>"] limit=2
+```
+
+Check the result:
+- If `n == 1` and match address equals `func_addr` → **SUCCESS**: signature is unique
+- If `n > 1` → Extend the signature (add more tokens) and retry
+- If `n == 0` → Something is wrong; verify the tokens against func_addr
+
+**Recommended flow:**
+1. Split `sig_full` by spaces into token array
+2. Try first 16 tokens joined by spaces → `find_bytes patterns=["<16_tokens>"] limit=2`
+3. If 2+ matches, try first 24 tokens, then 32, etc.
+4. If 1 match at target address → done, use this as the final signature
+
+### 3. Iterate if Needed
+
+If the signature is not unique even with all available tokens:
+1. Increase `max_sig_bytes` and re-run Step 1 to collect more bytes
+2. Consider including bytes beyond the function boundary
+3. Re-validate until unique
+
+### 4. Continue with Unfinished Tasks
 
 If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
@@ -153,28 +144,4 @@ If we are called by a task from a task list / parent SKILL, restore and continue
 
 Signature format: space-separated hex bytes with `??` for wildcards.
 
-Example: `48 89 5C 24 08 48 89 74 24 10 57 48 83 EC ?? 48 8B F9 E8 ?? ?? ?? ??`
-
-## Signature Analysis Guidelines for LLM
-
-When analyzing function bytes, consider these instruction patterns:
-
-### Bytes to Keep (Usually Stable)
-- **Function prologues**: `48 89 5C 24` (mov [rsp+x], rbx), `55` (push rbp), `48 83 EC` (sub rsp)
-- **Opcode bytes**: The actual instruction opcodes
-- **ModR/M bytes**: Register-to-register operations
-- **Fixed immediate values**: Constants that are part of the algorithm
-
-### Bytes to Wildcard (May Change)
-- **Relative call/jump offsets**: 4 bytes after `E8` (call) or `E9` (jmp) - these are relative addresses
-- **Absolute addresses**: Any pointer/address in code
-- **Stack offsets in large functions**: May change with local variable layout
-- **String/data references**: Offsets to .rdata/.data sections
-
-### Common Patterns
-| Pattern | Meaning | Wildcard? |
-|---------|---------|-----------|
-| `E8 XX XX XX XX` | Relative call | Wildcard the 4 offset bytes |
-| `48 8D 0D XX XX XX XX` | LEA with RIP-relative | Wildcard the 4 offset bytes |
-| `FF 15 XX XX XX XX` | Indirect call via IAT | Wildcard the 4 offset bytes |
-| `48 8B 05 XX XX XX XX` | MOV from global | Wildcard the 4 offset bytes |
+Example: `48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC ?? 48 8B F9 E8 ?? ?? ?? ??`
