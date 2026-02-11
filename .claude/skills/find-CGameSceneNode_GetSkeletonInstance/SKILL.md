@@ -38,9 +38,22 @@ Expected result: Find the function that references the string
 Decompile the referencing function and look for this code pattern:
 
 ```c
-    DevMsg("[%s] playing sequence [%s] at time [%f]\n", v16, v15, v14);
+  if ( (unsigned __int8)sub_18119C7E0(*(_QWORD *)(a1 + 16), v14) )
+  {
+    sub_180878540(&v76, *(unsigned int *)(*(_QWORD *)(a1 + 16) + 56LL));
+    sub_18019D560(&v76);
+    v15 = &unk_181524F70;
+    if ( *a3 )
+      v15 = *a3;
+    v16 = sub_18119C290(*(_QWORD *)(a2 + 16));
+    DevMsg("[%s] playing sequence [%s] at time [%f]\n", v16, v15, v4);
   }
-  v17 = sub_XXXXXXXX(a2);  // This is CBaseAnimGraph_GetAnimationController
+  v17 = CBaseAnimGraph_GetAnimationController(a2);// This is CBaseAnimGraph_GetAnimationController
+  if ( *(int *)(v17 + 704) <= 0 && *(_BYTE *)(v17 + 24) == 4 )
+  {
+    *(_BYTE *)(sub_180A6D880(a2) + 748) = 0;
+    v18 = sub_180A6D210(a2);
+    v19 = 0LL;
 ```
 
 The function called immediately after the DevMsg block is `CBaseAnimGraph_GetAnimationController`.
@@ -109,7 +122,7 @@ The `CGameSceneNode_GetSkeletonInstance` function:
 ## VTable Information
 
 - **VTable Name**: `CGameSceneNode`
-- **VTable Offset**: `0x40`
+- **VTable Offset**: `0x40` (change on game update)
 - **VTable Index**: `8`
 
 ## Related Struct Offsets
@@ -127,6 +140,8 @@ The output YAML filenames depend on the platform:
 
 ### CGameSceneNode_GetSkeletonInstance.{platform}.yaml
 
+Example output:
+
 ```yaml
 vtable_name: CGameSceneNode
 vfunc_offset: 0x40
@@ -135,11 +150,15 @@ vfunc_index: 8
 
 ### CBaseAnimGraph.{platform}.yaml
 
+Example output:
+
 ```yaml
 0x278: m_skeletonInstance 8
 ```
 
 ### CSkeletonInstance.{platform}.yaml
+
+Example output:
 
 ```yaml
 0x3A0: m_animationController 8
