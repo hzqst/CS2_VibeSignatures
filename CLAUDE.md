@@ -153,3 +153,59 @@ Read bytes from multiple addresses simultaneously:
     {"addr": "0x140003000", "size": 8}
   ]
 }
+```
+
+### ida-pro-mcp.int_convert Usage
+
+`int_convert` converts numbers between different formats (hex, decimal, binary, ASCII).
+
+#### Parameter Structure
+
+```json
+{
+  "inputs": {
+    "text": "0x41424344",  // Number string to convert (hex, decimal, or binary)
+    "size": 4              // Byte size for conversion (omit for auto-detect)
+  }
+}
+```
+
+#### Single Conversion Example
+
+Convert a hex number:
+
+```json
+{
+  "inputs": {
+    "text": "0x41424344"
+  }
+}
+```
+
+Returns decimal, hexadecimal, bytes (little-endian), binary, and ASCII representation (if printable).
+
+#### Multiple Conversions Example
+
+Convert multiple numbers simultaneously:
+
+```json
+{
+  "inputs": [
+    {"text": "0xFF"},
+    {"text": "12345"},
+    {"text": "0b11001100"}
+  ]
+}
+```
+
+#### With Explicit Size
+
+Force a specific byte size for the conversion:
+
+```json
+{
+  "inputs": {
+    "text": "0x90",
+    "size": 4
+  }
+}
