@@ -618,7 +618,8 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
                 print(f"  Failed: {skill_name} (missing expected_input: {', '.join(missing_names)})")
                 continue
 
-            # Try preprocessing (signature reuse) if old binary dir is available
+            # Try preprocessing first. Some preprocessors can run without old YAMLs.
+            old_yaml_map = None
             if old_binary_dir:
                 old_yaml_map = {}
                 for new_path in expected_outputs:
@@ -626,38 +627,41 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
                     old_path = os.path.join(old_binary_dir, filename)
                     old_yaml_map[new_path] = old_path
 
+            try:
+                preprocess_ok = asyncio.run(
+                    preprocess_single_skill_via_mcp(
+                        host, port, skill_name, expected_outputs, old_yaml_map,
+                        binary_dir, platform, debug
+                    )
+                )
+            except Exception as e:
+                if debug:
+                    print(f"  Pre-processing error for {skill_name}: {e}")
+                preprocess_ok = False
+
+            if preprocess_ok:
+                postprocess_ok = False
                 try:
-                    preprocess_ok = asyncio.run(
-                        preprocess_single_skill_via_mcp(
-                            host, port, skill_name, expected_outputs, old_yaml_map,
-                            binary_dir, platform, debug
+                    postprocess_ok = asyncio.run(
+                        postprocess_single_skill_via_mcp(
+                            host, port, skill_name, expected_outputs, debug
                         )
                     )
                 except Exception as e:
                     if debug:
-                        print(f"  Pre-processing error for {skill_name}: {e}")
-                    preprocess_ok = False
+                        print(f"  Postprocess error for {skill_name}: {e}")
 
-                if preprocess_ok:
-                    postprocess_ok = False
-                    try:
-                        postprocess_ok = asyncio.run(
-                            postprocess_single_skill_via_mcp(
-                                host, port, skill_name, expected_outputs, debug
-                            )
-                        )
-                    except Exception as e:
-                        if debug:
-                            print(f"  Postprocess error for {skill_name}: {e}")
-
-                    if postprocess_ok:
-                        success_count += 1
+                if postprocess_ok:
+                    success_count += 1
+                    if old_binary_dir:
                         print(f"  Pre-processed: {skill_name} (signature reuse)")
                     else:
-                        removed = remove_invalid_yaml_outputs(expected_outputs, debug)
-                        fail_count += 1
-                        print(f"  Pre-processed but postprocess failed: {skill_name} (removed {removed} yaml)")
-                    continue
+                        print(f"  Pre-processed: {skill_name}")
+                else:
+                    removed = remove_invalid_yaml_outputs(expected_outputs, debug)
+                    fail_count += 1
+                    print(f"  Pre-processed but postprocess failed: {skill_name} (removed {removed} yaml)")
+                continue
 
             print(f"  Processing skill: {skill_name}")
 
