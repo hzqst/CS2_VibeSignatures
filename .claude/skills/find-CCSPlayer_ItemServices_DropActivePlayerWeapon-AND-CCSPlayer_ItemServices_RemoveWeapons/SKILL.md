@@ -339,7 +339,7 @@ Required parameters:
 VTable parameters:
 - `vtable_name`: `CCSPlayer_ItemServices`
 - `vfunc_offset`: The offset from step 6
-- `vfunc_index`: The index from step 6 (expected: 23)
+- `vfunc_index`: The index from step 6
 
 For RemoveWeapons:
 
@@ -351,7 +351,7 @@ Required parameters:
 VTable parameters:
 - `vtable_name`: `CCSPlayer_ItemServices`
 - `vfunc_offset`: The offset from step 6
-- `vfunc_index`: The index from step 6 (expected: 24)
+- `vfunc_index`: The index from step 6 (expected: DropActivePlayerWeapon's vfunc index + 1)
 
 ## Function Characteristics Summary
 
