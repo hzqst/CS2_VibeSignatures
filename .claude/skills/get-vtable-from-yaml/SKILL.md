@@ -36,8 +36,6 @@ if os.path.exists(yaml_path):
     print(f"YAML_EXISTS: True")
 else:
     print(f"ERROR: Required file {class_name}_vtable.{platform}.yaml not found.")
-    print(f"Expected path: {yaml_path}")
-    print(f"Please run `/write-vtable-as-yaml` with class_name={class_name} first to generate the vtable YAML file.")
 """
 ```
 
