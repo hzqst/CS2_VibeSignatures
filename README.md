@@ -27,10 +27,10 @@ Let's locate `CBaseModelEntity_SetModel` for example.
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14134
+python download_bin.py -gamever 14135
 ```
 
-2. Open `CS2_VibeSignatures/bin/14134/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
+2. Open `CS2_VibeSignatures/bin/14135/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
 
 3. Let claude / codex do everything for you
 
@@ -77,17 +77,17 @@ prompt:
 1. Download CS2 binaries
 
 ```bash
-python download_bin.py -gamever 14134
+python download_bin.py -gamever 14135
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14134 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
+2. Run `python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
 * Signatures from `from bin/{previous_gamever}/{module}/*.{platform}.yaml` will be used to find functions directly through mcp call before actually running SKILL(s). No LLM token will be consumed in this case.
 
 ## How to convert generated yaml to gamedata json / txt
 
 ```bash
-python update_gamedata.py -gamever 14134 [-debug]
+python update_gamedata.py -gamever 14135 [-debug]
 ```
 
 ### Current supported gamedata distribution
@@ -336,7 +336,7 @@ Prompt:
  - Let's say `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
  - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in `find-CCSPlayerController_Respawn.py`
- 
+
  * The preprocessor script will be used when signature from older version of game is available.
 
 8. Add your SKILL to `config.yaml`, in `skills`.
