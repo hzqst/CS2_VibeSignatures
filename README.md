@@ -12,11 +12,13 @@ Feel free to contribute your SKILLS with PR!
 
 2. claude / codex
 
-3. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
+3. [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md), can be installed from claude marketplace.
 
-4. [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md), can be installed from claude marketplace.
+4. IDA Pro 9.0+
 
-5. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
+5. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
+
+6. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
 ## How to find and generate signatures for specified function or variable
 
@@ -130,6 +132,35 @@ python update_gamedata.py -gamever 14134 [-debug]
 
 `dist/cs2surf/gamedata/cs2surf-core.games.jsonc` 
 
+## How to create SKILL for vtable
+
+`CCSPlayerPawn` for example.
+
+1. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py`
+
+ - Let's say `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
+
+ - Don't forget to change `TARGET_CLASS_NAME = "CBaseEntity"` to `TARGET_CLASS_NAME = "CCSPlayerPawn"` in `find-CCSPlayerPawn_vtable.py`
+
+ * no LLM needed when finding vtable. everything done in the preprocessor script.
+
+2. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CCSPlayerPawn_vtable
+        expected_output:
+          - CCSPlayerPawn_vtable.{platform}.yaml
+```
+
+3. Add the new symbol to `config.yaml`, in `symbols`.
+
+```yaml
+      - name: CCSPlayerPawn_vtable
+        catagory: vtable
+```
+
 ## How to create SKILL for regular function
 
 * Always make sure you have ida-pro-mcp server running.
@@ -196,7 +227,15 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
-6. Add your SKILL to `config.yaml`, in `skills`.
+6. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py`
+
+ - Let's say `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
+
+ - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CBaseModelEntity_SetModel"` in `find-CBaseModelEntity_SetModel.py`
+
+ * The preprocessor script will be used when signature from older version of game is available.
+
+7. Add your SKILL to `config.yaml`, in `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -206,198 +245,13 @@ Prompt:
           - CBaseModelEntity_SetModel.{platform}.yaml
 ```
 
-7. Add the new symbol to `config.yaml`, in `symbols`.
+8. Add the new symbol to `config.yaml`, in `symbols`.
 
 ```yaml
       - name: CBaseModelEntity_SetModel
         catagoty: func
         alias:
           - CBaseModelEntity::SetModel
-```
-
-## How to create SKILL for interface vtable
-
-* Always make sure you have ida-pro-mcp server running.
-
-1. Vibe all the way down to get what you want, `CSource2GameEntities_vtable` for example.
-
-* For `server.dll`:
-
-```bash
-Prompt: 
-  - Search for the Source2GameEntities interface identifier:
-
-  mcp__ida-pro-mcp__find_regex pattern="Source2GameEntities001"
-```
-
-```bash
-Prompt: 
-  - Find functions that reference this string:
-
-    mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
-
-    Look for a small function (~0x1a bytes) that:
-    - Loads the interface string into r8
-    - Loads an implementation function into rdx
-    - Loads a global pointer into rcx
-    - Jumps to a registration function
-```
-
-
-```bash
-Prompt: 
-
-  - Identify Interface Implementation Function
-
-    Decompile the small registration wrapper to find the interface implementation function:
-
-    mcp__ida-pro-mcp__decompile addr="<wrapper_func_addr>"
-
-    The implementation function (e.g., `sub_180XXXXXX`) simply returns a pointer to the static instance.
-
-```
-
-```bash
-Prompt: 
-
- - Rename Interface Implementation
-
-  mcp__ida-pro-mcp__rename batch={"func": {"addr": "<impl_func_addr>", "name": "GetSource2GameEntities"}}
-
-```
-
-```bash
-Prompt: 
-
-  - Decompile to Find Static Instance
-
-    mcp__ida-pro-mcp__decompile addr="<impl_func_addr>"
-
-    The function returns `&s_Source2GameEntities` - rename this:
-
-    mcp__ida-pro-mcp__rename batch={"data": {"old": "off_181XXXXXX", "new": "s_Source2GameEntities"}}
-```
-
-```bash
-Prompt: 
-
-  - Find VTable by Reading the Pointer s_Source2GameEntities Points To
-
-    Use `get_global_value` to get the address of `s_Source2GameEntities`, then read 8 bytes (64-bit pointer) at that address:
-
-    mcp__ida-pro-mcp__get_bytes regions={"addr": "<s_Source2GameEntities_addr>", "size": 8}
-
-    The returned bytes are in little-endian format. Convert them to get the vtable address.
-
-    Example:
-    - Bytes: `0x90 0xd1 0x71 0x81 0x01 0x00 0x00 0x00`
-    - Reversed (little-endian): `0x18171D190`
-```
-
-```bash
-Prompt: 
-
-  - Rename VTable
-
-    Use `func` rename with the vtable address:
-
-    mcp__ida-pro-mcp__rename batch={"func": {"addr": "<vtable_addr>", "name": "CSource2GameEntities_vtable"}}
-
-    Example:
-    mcp__ida-pro-mcp__rename batch={"func": {"addr": "0x18171D190", "name": "CSource2GameEntities_vtable"}}
-
-```
-
-* For `libserver.so`:
-
-```bash
-Prompt: 
-  - Search for Source2GameEntities VTable Symbol
-
-    mcp__ida-pro-mcp__list_globals queries={"filter": "_ZTV*Source2GameEntities*"}
-
-    Look for `_ZTV*Source2GameEntities` - this is the mangled vtable symbol.
-```
-
-2. Write YAML
-
-```bash
-Prompt:
-  - **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the vtable analysis results into yaml.
-```
-
-3. Create SKILL
-
-```bash
-Prompt:
- - /skill-creator Create project-level skill "find-CSource2GameEntities_vtable" in **ENGLISH** according to what we just did.
- - Don't pack skill.
- - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for: @.claude/skills/find-CSource2Server_vtable/SKILL.md as references.
-```
-
-4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
-
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
-
-```yaml
-      - name: find-CSource2Server_vtable
-        expected_output:
-          - CSource2Server_vtable.{platform}.yaml
-```
-
-5. Add the new symbol to `config.yaml`, in `symbols`.
-
-```yaml
-      - name: CSource2Server_vtable
-        catagory: vtable
-```
-
-## How to create SKILL for vtable
-
-* Always make sure you have ida-pro-mcp server running.
-
-1. Vibe all the way down to get what you want, `CCSPlayerPawn_vtable` for example.
-
-```bash
-Prompt: 
- - **ALWAYS** Use SKILL: `/get-vtable-address` to find vtable for `CCSPlayerPawn`.
-```
-
-* For interface vtable like Source2Server, see `.claude/skills/find-CSource2Server_vtable/SKILL.md`
-
-2. Write YAML
-
-```bash
-Prompt:
-  - **ALWAYS** Use SKILL `/write-vtable-as-yaml` to write the analysis results into yaml.
-```
-
-3. Create SKILL
-
-```bash
-Prompt:
- - /skill-creator Create project-level skill "find-CCSPlayerPawn_vtable" in **ENGLISH** according to what we just did.
- - Don't pack skill.
- - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for: @.claude/skills/find-CGameRules_vtable/SKILL.md as references.
-```
-
-4. Don't forget to add your SKILL to `config.yaml`, in `skills`.
-
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
-
-```yaml
-      - name: find-CCSPlayerPawn_vtable
-        expected_output:
-          - CCSPlayerPawn_vtable.{platform}.yaml
-```
-
-5. Add the new symbol to `config.yaml`, in `symbols`.
-
-```yaml
-      - name: CCSPlayerPawn_vtable
-        catagory: vtable
 ```
 
 ## How to create SKILL for virtual function
@@ -477,7 +331,15 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
-7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py`
+
+ - Let's say `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+
+ - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in `find-CCSPlayerController_Respawn.py`
+ 
+ * The preprocessor script will be used when signature from older version of game is available.
+
+8. Add your SKILL to `config.yaml`, in `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -491,7 +353,7 @@ Prompt:
           - find-CCSPlayerController_vtable
 ```
 
-8. Add the new symbol to `config.yaml`, in `symbols`.
+9. Add the new symbol to `config.yaml`, in `symbols`.
 
 ```yaml
       - name: CCSPlayerController_Respawn
