@@ -10,7 +10,7 @@
         },
         "IsEntityPawn": {
             "windows": 168,
-            "linux": 166
+            "linux": 167
         },
         "IsEntityController": {
             "windows": 173,
