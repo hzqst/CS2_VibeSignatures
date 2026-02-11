@@ -320,13 +320,13 @@ async def preprocess_func_sig_via_mcp(
 
     # Get function info from match address via py_eval
     py_code = (
-        f"import idaapi, json\\n"
-        f"addr = {match_addr}\\n"
-        f"f = idaapi.get_func(addr)\\n"
-        f"if f and f.start_ea == addr:\\n"
-        f"    result = json.dumps({{'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea)}})\\n"
-        f"else:\\n"
-        f"    result = json.dumps(None)\\n"
+        f"import idaapi, json\n"
+        f"addr = {match_addr}\n"
+        f"f = idaapi.get_func(addr)\n"
+        f"if f and f.start_ea == addr:\n"
+        f"    result = json.dumps({{'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea)}})\n"
+        f"else:\n"
+        f"    result = json.dumps(None)\n"
     )
     try:
         fi_result = await session.call_tool(
