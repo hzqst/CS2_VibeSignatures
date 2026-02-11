@@ -435,6 +435,300 @@ async def preprocess_func_sig_via_mcp(
     return new_data
 
 
+async def preprocess_gen_func_sig_via_mcp(
+    session,
+    func_va,
+    image_base,
+    min_sig_bytes=6,
+    max_sig_bytes=96,
+    max_instructions=64,
+    extra_wildcard_offsets=None,
+    debug=False,
+):
+    """
+    Generate a shortest unique function-head signature for a known function address.
+
+    The generated signature always starts at the function entry (func start address),
+    never from the middle of a function. The routine progressively searches for the
+    shortest prefix that still uniquely resolves to the target function.
+
+    Wildcards:
+    - Auto wildcard: volatile operand bytes (imm/near/far/mem/displ) and branch/call
+      relative offsets are wildcarded programmatically.
+    - Extra wildcard: caller may provide additional byte offsets (relative to func head)
+      via extra_wildcard_offsets.
+
+    Args:
+        session: Active MCP ClientSession.
+        func_va: Function virtual address (int or hex string) and must be function head.
+        image_base: Binary image base address (int).
+        min_sig_bytes: Minimum signature prefix length to try.
+        max_sig_bytes: Maximum bytes collected from function head.
+        max_instructions: Max instructions collected from function head.
+        extra_wildcard_offsets: Optional iterable of extra wildcard offsets.
+        debug: Enable debug output.
+
+    Returns:
+        Dict with function YAML data (func_va, func_rva, func_size, func_sig),
+        or None on failure.
+    """
+
+    def _parse_int(value):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError("empty integer string")
+            return int(raw, 0)
+        return int(value)
+
+    def _parse_addr(value):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            return int(value.strip(), 0)
+        return int(value)
+
+    try:
+        func_va_int = _parse_int(func_va)
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid func_va: {func_va}")
+        return None
+
+    try:
+        min_sig_bytes = max(1, int(min_sig_bytes))
+        max_sig_bytes = max(1, int(max_sig_bytes))
+        max_instructions = max(1, int(max_instructions))
+    except Exception:
+        if debug:
+            print("    Preprocess: invalid signature generation limits")
+        return None
+
+    extra_wildcard_set = set()
+    if extra_wildcard_offsets:
+        try:
+            for offset in extra_wildcard_offsets:
+                parsed = _parse_int(offset)
+                if parsed >= 0:
+                    extra_wildcard_set.add(parsed)
+        except Exception:
+            if debug:
+                print("    Preprocess: invalid extra_wildcard_offsets")
+            return None
+
+    py_code = (
+        "import idaapi, ida_bytes, idautils, ida_ua, json\n"
+        f"target_ea = {func_va_int}\n"
+        f"max_sig_bytes = {max_sig_bytes}\n"
+        f"max_instructions = {max_instructions}\n"
+        "f = idaapi.get_func(target_ea)\n"
+        "if not f or f.start_ea != target_ea:\n"
+        "    result = json.dumps(None)\n"
+        "else:\n"
+        "    limit_end = min(f.end_ea, target_ea + max_sig_bytes)\n"
+        "    insts = []\n"
+        "    cursor = target_ea\n"
+        "    total = 0\n"
+        "    while cursor < f.end_ea and cursor < limit_end and len(insts) < max_instructions:\n"
+        "        insn = idautils.DecodeInstruction(cursor)\n"
+        "        if not insn or insn.size <= 0:\n"
+        "            break\n"
+        "        raw = ida_bytes.get_bytes(cursor, insn.size)\n"
+        "        if not raw:\n"
+        "            break\n"
+        "        wild = set()\n"
+        "        for op in insn.ops:\n"
+        "            op_type = int(op.type)\n"
+        "            if op_type == int(idaapi.o_void):\n"
+        "                continue\n"
+        "            if op_type in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):\n"
+        "                offb = int(op.offb)\n"
+        "                if offb > 0 and offb < insn.size:\n"
+        "                    dsz = ida_ua.get_dtype_size(op.dtyp)\n"
+        "                    if dsz <= 0:\n"
+        "                        dsz = insn.size - offb\n"
+        "                    end = min(insn.size, offb + dsz)\n"
+        "                    for i in range(offb, end):\n"
+        "                        wild.add(i)\n"
+        "                offo = int(op.offo)\n"
+        "                if offo > 0 and offo < insn.size:\n"
+        "                    dsz2 = ida_ua.get_dtype_size(op.dtyp)\n"
+        "                    if dsz2 <= 0:\n"
+        "                        dsz2 = insn.size - offo\n"
+        "                    end2 = min(insn.size, offo + dsz2)\n"
+        "                    for i in range(offo, end2):\n"
+        "                        wild.add(i)\n"
+        "        b0 = raw[0]\n"
+        "        if b0 in (0xE8, 0xE9, 0xEB):\n"
+        "            for i in range(1, insn.size):\n"
+        "                wild.add(i)\n"
+        "        elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:\n"
+        "            for i in range(2, insn.size):\n"
+        "                wild.add(i)\n"
+        "        elif 0x70 <= b0 <= 0x7F:\n"
+        "            for i in range(1, insn.size):\n"
+        "                wild.add(i)\n"
+        "        insts.append({'ea': hex(cursor), 'size': insn.size, 'bytes': raw.hex(), 'wild': sorted(wild)})\n"
+        "        cursor += insn.size\n"
+        "        total += insn.size\n"
+        "        if total >= max_sig_bytes:\n"
+        "            break\n"
+        "    result = json.dumps({'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea), 'insts': insts})\n"
+    )
+
+    try:
+        fi_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code},
+        )
+        fi_data = parse_mcp_result(fi_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: py_eval error while generating func_sig: {e}")
+        return None
+
+    func_info = None
+    if isinstance(fi_data, dict):
+        stderr_text = fi_data.get("stderr", "")
+        if stderr_text and debug:
+            print("    Preprocess: py_eval stderr:")
+            print(stderr_text.strip())
+        result_str = fi_data.get("result", "")
+        if result_str:
+            try:
+                func_info = json.loads(result_str)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if not isinstance(func_info, dict):
+        if debug:
+            print(f"    Preprocess: could not resolve function head at {hex(func_va_int)}")
+        return None
+
+    insts = func_info.get("insts", [])
+    if not isinstance(insts, list) or len(insts) == 0:
+        if debug:
+            print(f"    Preprocess: no instruction bytes available at {hex(func_va_int)}")
+        return None
+
+    sig_tokens = []
+    for inst in insts:
+        try:
+            inst_size = int(inst.get("size", 0))
+            inst_hex = str(inst.get("bytes", ""))
+            if inst_size <= 0 or len(inst_hex) != inst_size * 2:
+                if debug:
+                    print("    Preprocess: malformed instruction bytes from py_eval")
+                return None
+
+            inst_bytes = [int(inst_hex[i:i + 2], 16) for i in range(0, len(inst_hex), 2)]
+            inst_wild = set()
+            for item in inst.get("wild", []):
+                pos = int(item)
+                if 0 <= pos < inst_size:
+                    inst_wild.add(pos)
+        except Exception:
+            if debug:
+                print("    Preprocess: failed to decode instruction bytes for func_sig")
+            return None
+
+        base_offset = len(sig_tokens)
+        for rel_idx, value in enumerate(inst_bytes):
+            abs_off = base_offset + rel_idx
+            use_wild = (rel_idx in inst_wild) or (abs_off in extra_wildcard_set)
+            sig_tokens.append("??" if use_wild else f"{value:02X}")
+
+    if len(sig_tokens) == 0:
+        if debug:
+            print(f"    Preprocess: empty signature token stream at {hex(func_va_int)}")
+        return None
+
+    search_start = min_sig_bytes
+    if search_start > len(sig_tokens):
+        search_start = len(sig_tokens)
+
+    best_sig = None
+    for prefix_len in range(search_start, len(sig_tokens) + 1):
+        prefix_tokens = sig_tokens[:prefix_len]
+
+        # Skip signatures that are all wildcards.
+        if all(token == "??" for token in prefix_tokens):
+            continue
+
+        candidate_sig = " ".join(prefix_tokens)
+        try:
+            fb_result = await session.call_tool(
+                name="find_bytes",
+                arguments={"patterns": [candidate_sig], "limit": 2},
+            )
+            fb_data = parse_mcp_result(fb_result)
+        except Exception as e:
+            if debug:
+                print(f"    Preprocess: find_bytes error while testing generated sig: {e}")
+            return None
+
+        if not isinstance(fb_data, list) or len(fb_data) == 0:
+            continue
+
+        entry = fb_data[0]
+        matches = entry.get("matches", [])
+        match_count = entry.get("n", len(matches))
+
+        if match_count != 1 or not matches:
+            continue
+
+        try:
+            match_addr = _parse_addr(matches[0])
+        except Exception:
+            continue
+
+        # Signature must resolve to the target function head, not middle/function body.
+        if match_addr != func_va_int:
+            continue
+
+        best_sig = candidate_sig
+        break
+
+    if not best_sig:
+        if debug:
+            print(
+                "    Preprocess: failed to generate a unique function-head signature "
+                f"for {hex(func_va_int)}"
+            )
+        return None
+
+    try:
+        resolved_func_va = str(func_info["func_va"])
+        resolved_func_va_int = int(resolved_func_va, 16)
+        resolved_func_size = str(func_info["func_size"])
+    except Exception:
+        if debug:
+            print("    Preprocess: invalid func info returned from py_eval")
+        return None
+
+    if resolved_func_va_int != func_va_int:
+        if debug:
+            print(
+                "    Preprocess: function head mismatch while generating func_sig "
+                f"({hex(resolved_func_va_int)} != {hex(func_va_int)})"
+            )
+        return None
+
+    if debug:
+        print(
+            "    Preprocess: generated shortest unique func_sig "
+            f"({len(best_sig.split())} bytes) for {hex(func_va_int)}"
+        )
+
+    return {
+        "func_va": resolved_func_va,
+        "func_rva": hex(resolved_func_va_int - image_base),
+        "func_size": resolved_func_size,
+        "func_sig": best_sig,
+    }
+
 async def preprocess_gv_sig_via_mcp(
     session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
 ):
