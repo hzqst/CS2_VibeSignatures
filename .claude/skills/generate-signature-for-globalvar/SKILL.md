@@ -7,7 +7,7 @@ description: |
 
 # Generate Signature for Global Variable
 
-Generate a unique hex byte signature that locates an **instruction accessing a global variable**. Users can then resolve the actual global variable address at runtime by parsing the instruction's RIP-relative offset.
+Generate a unique hex byte signature that locates an **instruction accessing a global variable** using fully programmatic wildcard detection — no manual byte analysis required.
 
 ## Core Concept
 
@@ -35,100 +35,210 @@ Where:
 
 ## Method
 
-### 1. Find an instruction that has ref to this global variable
+### 1. Find GV-Accessing Instructions and Generate Signature Tokens
 
-- Find an instruction that has reference to this global variable, for example:
+Use a single `py_eval` call to:
+- Find instructions that reference the GV via `DataRefsTo`
+- Verify each instruction actually resolves to the target GV via RIP-relative displacement
+- Collect instruction stream with auto-wildcarding for each candidate
+- Output candidates with full signature tokens and metadata
 
-`48 8B 1D XX XX XX XX     mov rbx, cs:qword_XXXXXX`.
-
-### 2. Analyze and Generate Signature (LLM Task)
-
-**YOU (the LLM) must analyze the bytes and disassembly to create a signature.**
-
-When analyzing, consider:
-- **Opcodes** (instruction bytes): Usually stable, keep as-is
-- **Immediates/Offsets**: Often change between builds, use `??` wildcards
-- **Register encodings**: Usually stable unless compiler changes register allocation
-- **Relocation addresses**: Always use `??` wildcards (4 bytes for 32-bit, 8 for 64-bit)
-- **Displacement values in memory operands**: May change, consider wildcarding, **ESPECIALLY** with E8 call, E9 jmp, jnz, jz, je, jne, other conditional branching...
-
-Example analysis:
-```
-.text:00000001804F3DF3 48 8B 1D 2E 93 88 01                                mov     rbx, cs:IGameSystem_InitAllSystems_pFirst
-.text:00000001804F3DFA 48 85 DB                                            test    rbx, rbx
-.text:00000001804F3DFD 0F 84 A4 00 00 00                                   jz      loc_1804F3EA7
-.text:00000001804F3E03 BD FF FF 00 00                                      mov     ebp, 0FFFFh
-```
-
-Expected Result: `48 8B 1D ?? ?? ?? ?? 48 85 DB 0F ?? ?? ?? ?? BD FF FF 00 00`
-
-**Generate a signature that is:**
-- Long enough to be unique (typically 16-32 bytes)
-- Uses `??` for bytes that may change between binary updates
-- **Includes the GV-accessing instruction** (the instruction with RIP-relative offset to the GV)
-
-**IMPORTANT:** Record the offset from signature start to the GV-accessing instruction. This is needed for runtime resolution.
-
-### 3. Validate Signature Uniqueness
-
-Test that YOUR generated signature matches ONLY this function:
+**Note**: If you already know the GV-accessing instruction address, set `target_inst = <inst_addr>` to skip candidate discovery. If you know the containing function, set `target_func = <func_addr>` to restrict search to that function.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
-import idaapi
-import ida_bytes
-import ida_segment
+import idaapi, ida_bytes, idautils, ida_ua, json
 
-func_addr = <func_addr>
+target_gv = <gv_addr>
+target_inst = None       # Set to instruction address if known, e.g. 0x1804F3DF3
+target_func = None       # Set to function address to restrict search, e.g. 0x1804F3DA0
+max_sig_bytes = 96
+max_instructions = 64
+max_candidates = 32
 
-# YOUR GENERATED SIGNATURE HERE (space-separated hex with ?? for wildcards)
-signature_str = "<YOUR_SIGNATURE>"  # e.g., "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F9 E8 ?? ?? ?? ??"
+def _resolve_disp_off(insn_ea, insn, raw):
+    \"\"\"Find the RIP-relative displacement offset that resolves to target_gv.\"\"\"
+    cand_offsets = set()
+    for op in insn.ops:
+        op_type = int(op.type)
+        if op_type == int(idaapi.o_void):
+            continue
+        offb = int(getattr(op, 'offb', 0))
+        offo = int(getattr(op, 'offo', 0))
+        if offb > 0 and offb + 4 <= insn.size:
+            cand_offsets.add(offb)
+        if offo > 0 and offo + 4 <= insn.size:
+            cand_offsets.add(offo)
 
-# IDA pattern syntax uses single '?' wildcard tokens (not '??').
-pattern_str = " ".join("?" if p == "??" else p for p in signature_str.split())
+    for off in sorted(cand_offsets):
+        disp_i32 = int.from_bytes(raw[off:off + 4], 'little', signed=True)
+        resolved = (insn_ea + insn.size + disp_i32) & 0xFFFFFFFFFFFFFFFF
+        if resolved == target_gv:
+            return off
+    return None
 
-# Get .text segment bounds
-seg = ida_segment.get_segm_by_name(".text")
-start = seg.start_ea
-end = seg.end_ea
+def _collect_sig_stream(inst_ea, disp_off):
+    \"\"\"Collect instruction stream with auto-wildcarding starting from inst_ea.\"\"\"
+    f = idaapi.get_func(inst_ea)
+    if not f:
+        return None
 
-# Compile pattern and search using IDA's native binary search (fast, avoids get_bytes() timeouts)
-pat = ida_bytes.compiled_binpat_vec_t()
-ida_bytes.parse_binpat_str(pat, start, pattern_str, 16)
+    limit_end = min(f.end_ea, inst_ea + max_sig_bytes)
+    sig_tokens = []
+    cursor = inst_ea
+    first_len = None
 
-flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
-matches = []
+    while cursor < f.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_bytes:
+        insn = idautils.DecodeInstruction(cursor)
+        if not insn or insn.size <= 0:
+            break
+        raw = ida_bytes.get_bytes(cursor, insn.size)
+        if not raw:
+            break
 
-res = ida_bytes.bin_search3(start, end, pat, flags)
-ea = res[0] if isinstance(res, tuple) else res  # IDA 9 may return (ea, idx)
-while ea != idaapi.BADADDR:
-    matches.append(ea)
-    res = ida_bytes.bin_search3(ea + 1, end, pat, flags)
-    ea = res[0] if isinstance(res, tuple) else res
+        # Determine wildcard byte positions within this instruction
+        wild = set()
 
-print(f"Signature matches: {len(matches)}")
-for m in matches:
-    print(hex(m))
+        # Auto-wildcard volatile operand bytes (imm/near/far/mem/displ)
+        for op in insn.ops:
+            op_type = int(op.type)
+            if op_type == int(idaapi.o_void):
+                continue
+            if op_type in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):
+                offb = int(getattr(op, 'offb', 0))
+                if offb > 0 and offb < insn.size:
+                    dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                    if dsz <= 0:
+                        dsz = insn.size - offb
+                    end = min(insn.size, offb + dsz)
+                    for i in range(offb, end):
+                        wild.add(i)
+                offo = int(getattr(op, 'offo', 0))
+                if offo > 0 and offo < insn.size:
+                    dsz2 = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                    if dsz2 <= 0:
+                        dsz2 = insn.size - offo
+                    end2 = min(insn.size, offo + dsz2)
+                    for i in range(offo, end2):
+                        wild.add(i)
 
-if len(matches) == 1 and matches[0] == func_addr:
-    print("SUCCESS: Signature is unique and matches target function!")
-elif len(matches) == 1 and matches[0] != func_addr:
-    print("WARNING: Signature matches but at different address ! You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
-elif len(matches) > 1:
-    print("FAILED: Signature not unique, need longer pattern.")
-elif len(matches) == 0:
-    print("FAILED: Found nothing with this signature. You should re-generate a valid signature that exactly matches the {hex(func_addr)} !")
+        # Special handling for call/jump instructions
+        b0 = raw[0]
+        if b0 in (0xE8, 0xE9, 0xEB):  # CALL rel32, JMP rel32, JMP rel8
+            for i in range(1, insn.size):
+                wild.add(i)
+        elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:  # Jcc rel32
+            for i in range(2, insn.size):
+                wild.add(i)
+        elif 0x70 <= b0 <= 0x7F:  # Jcc rel8
+            for i in range(1, insn.size):
+                wild.add(i)
 
+        # For the first instruction (GV-accessing), ensure disp bytes are wildcarded
+        if cursor == inst_ea:
+            first_len = insn.size
+            for i in range(disp_off, min(insn.size, disp_off + 4)):
+                wild.add(i)
+
+        # Build tokens for this instruction
+        for idx in range(insn.size):
+            sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
+
+        cursor += insn.size
+
+    if not sig_tokens or first_len is None:
+        return None
+
+    return {
+        "gv_inst_va": hex(inst_ea),
+        "gv_inst_length": first_len,
+        "gv_inst_disp": disp_off,
+        "total_bytes": len(sig_tokens),
+        "sig_full": " ".join(sig_tokens),
+    }
+
+# --- Discover candidate GV-accessing instructions ---
+candidates = []
+seen = set()
+
+def _try_add(inst_ea):
+    if inst_ea in seen:
+        return
+    seen.add(inst_ea)
+
+    insn = idautils.DecodeInstruction(inst_ea)
+    if not insn or insn.size <= 0:
+        return
+    raw = ida_bytes.get_bytes(inst_ea, insn.size)
+    if not raw:
+        return
+
+    disp_off = _resolve_disp_off(inst_ea, insn, raw)
+    if disp_off is None:
+        return
+
+    result = _collect_sig_stream(inst_ea, disp_off)
+    if result is not None:
+        candidates.append(result)
+
+if target_inst is not None:
+    _try_add(target_inst)
+elif target_func is not None:
+    f = idaapi.get_func(target_func)
+    if f:
+        ea = f.start_ea
+        while ea < f.end_ea and len(candidates) < max_candidates:
+            flags = ida_bytes.get_full_flags(ea)
+            if ida_bytes.is_code(flags):
+                _try_add(ea)
+            next_ea = ida_bytes.next_head(ea, f.end_ea)
+            if next_ea == idaapi.BADADDR or next_ea <= ea:
+                break
+            ea = next_ea
+else:
+    for ref in idautils.DataRefsTo(target_gv):
+        if len(candidates) >= max_candidates:
+            break
+        flags = ida_bytes.get_full_flags(ref)
+        if not ida_bytes.is_code(flags):
+            continue
+        _try_add(ref)
+
+print(json.dumps(candidates))
 """
 ```
 
-### 4. Iterate if Needed
+### 2. Validate Signature Uniqueness with Progressive Prefix
 
-If the signature is not unique:
-1. Extend the signature length, maybe include some preceding padding, or even bytes from next function, to make it unique.
-2. Re-validate until unique
+For each candidate from the JSON output, test with `find_bytes` to find the shortest unique prefix.
 
-### 5. Continue with Unfinished Tasks
+**Start with ~16 bytes prefix, extend if not unique:**
+
+```
+mcp__ida-pro-mcp__find_bytes patterns=["<first_N_tokens_from_sig_full>"] limit=2
+```
+
+Check the result:
+- If `n == 1` and match address equals `gv_inst_va` → **SUCCESS**: signature is unique
+- If `n > 1` → Extend the signature (add more tokens) and retry
+- If `n == 0` → Something is wrong; try next candidate
+
+**Recommended flow:**
+1. Pick the first candidate from the output
+2. Split its `sig_full` by spaces into token array
+3. Try first 16 tokens → `find_bytes patterns=["<16_tokens>"] limit=2`
+4. If 2+ matches, try 24 tokens, then 32, etc.
+5. If 1 match at `gv_inst_va` → done, use this candidate
+6. If cannot find unique prefix, move to the next candidate
+
+### 3. Iterate if Needed
+
+If no candidate produces a unique signature:
+1. Increase `max_sig_bytes` and re-run Step 1
+2. Consider specifying a different `target_func` to find more candidates
+3. Re-validate until unique
+
+### 4. Continue with Unfinished Tasks
 
 If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
@@ -140,9 +250,9 @@ Provide the following information for runtime GV resolution:
 
 1. **gv_sig**: Space-separated hex bytes with `??` for wildcards
 1. **gv_sig_va**: The virtual address that the signature matches
-2. **gv_inst_offset**: Offset (in bytes) from signature start to the GV-accessing instruction
-3. **gv_inst_length**: Total length of the GV-accessing instruction (for RIP calculation)
-4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction
+2. **gv_inst_offset**: Always `0` (signature starts at the GV-accessing instruction)
+3. **gv_inst_length**: Total length of the GV-accessing instruction (from candidate metadata)
+4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction (from candidate metadata)
 
 ### Example Output
 
@@ -172,61 +282,3 @@ inst_addr = scan_result + inst_offset
 rip_offset = struct.unpack('<i', memory[inst_addr + inst_disp : inst_addr + inst_disp + 4])[0]
 gv_address = inst_addr + inst_length + rip_offset
 ```
-
-## Signature Analysis Guidelines for LLM
-
-When analyzing function bytes, consider these instruction patterns:
-
-### Bytes to Keep (Usually Stable)
-- **Function prologues**: `48 89 5C 24` (mov [rsp+x], rbx), `55` (push rbp), `48 83 EC` (sub rsp)
-- **Opcode bytes**: The actual instruction opcodes
-- **ModR/M bytes**: Register-to-register operations
-- **Fixed immediate values**: Constants that are part of the algorithm
-
-### Bytes to Wildcard (May Change)
-- **Relative call/jump offsets**: 4 bytes after `E8` (call) or `E9` (jmp) - these are relative addresses
-- **Absolute addresses**: Any pointer/address in code
-- **Stack offsets in large functions**: May change with local variable layout
-- **String/data references**: Offsets to .rdata/.data sections
-
-### Common Patterns
-| Pattern | Meaning | Wildcard? |
-|---------|---------|-----------|
-| `E8 XX XX XX XX` | Relative call | Wildcard the 4 offset bytes |
-| `48 8D 0D XX XX XX XX` | LEA with RIP-relative | Wildcard the 4 offset bytes |
-| `FF 15 XX XX XX XX` | Indirect call via IAT | Wildcard the 4 offset bytes |
-| `48 8B 05 XX XX XX XX` | MOV from global | Wildcard the 4 offset bytes |
-
-### GV-Accessing Instruction Reference (x86-64)
-
-Use this table to determine `instr_length` and `offset_position` for common GV access patterns:
-
-| Opcode Pattern | Example Disasm | instr_length | offset_position | Notes |
-|----------------|----------------|--------------|-----------------|-------|
-| `48 8B 05 XX XX XX XX` | `mov rax, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `48 8B 0D XX XX XX XX` | `mov rcx, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `48 8B 15 XX XX XX XX` | `mov rdx, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `48 8B 1D XX XX XX XX` | `mov rbx, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `48 8B 35 XX XX XX XX` | `mov rsi, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `48 8B 3D XX XX XX XX` | `mov rdi, [rip+XX]` | 7 | 3 | Load 64-bit from GV |
-| `4C 8B 05 XX XX XX XX` | `mov r8, [rip+XX]` | 7 | 3 | Load 64-bit from GV (r8-r15) |
-| `48 8D 05 XX XX XX XX` | `lea rax, [rip+XX]` | 7 | 3 | Load address of GV |
-| `48 8D 0D XX XX XX XX` | `lea rcx, [rip+XX]` | 7 | 3 | Load address of GV |
-| `48 8D 15 XX XX XX XX` | `lea rdx, [rip+XX]` | 7 | 3 | Load address of GV |
-| `48 8D 1D XX XX XX XX` | `lea rbx, [rip+XX]` | 7 | 3 | Load address of GV |
-| `48 89 05 XX XX XX XX` | `mov [rip+XX], rax` | 7 | 3 | Store 64-bit to GV |
-| `48 89 0D XX XX XX XX` | `mov [rip+XX], rcx` | 7 | 3 | Store 64-bit to GV |
-| `48 89 15 XX XX XX XX` | `mov [rip+XX], rdx` | 7 | 3 | Store 64-bit to GV |
-| `48 89 1D XX XX XX XX` | `mov [rip+XX], rbx` | 7 | 3 | Store 64-bit to GV |
-| `8B 05 XX XX XX XX` | `mov eax, [rip+XX]` | 6 | 2 | Load 32-bit from GV (no REX) |
-| `8B 0D XX XX XX XX` | `mov ecx, [rip+XX]` | 6 | 2 | Load 32-bit from GV (no REX) |
-| `89 05 XX XX XX XX` | `mov [rip+XX], eax` | 6 | 2 | Store 32-bit to GV (no REX) |
-| `48 83 3D XX XX XX XX YY` | `cmp qword [rip+XX], YY` | 8 | 3 | Compare GV with imm8 |
-| `48 39 05 XX XX XX XX` | `cmp [rip+XX], rax` | 7 | 3 | Compare GV with reg |
-| `48 C7 05 XX XX XX XX YY YY YY YY` | `mov qword [rip+XX], imm32` | 11 | 3 | Store imm32 to GV |
-| `C7 05 XX XX XX XX YY YY YY YY` | `mov dword [rip+XX], imm32` | 10 | 2 | Store imm32 to GV (no REX) |
-| `F3 0F 10 05 XX XX XX XX` | `movss xmm0, [rip+XX]` | 8 | 4 | Load float from GV |
-| `F3 0F 11 05 XX XX XX XX` | `movss [rip+XX], xmm0` | 8 | 4 | Store float to GV |
-| `F2 0F 10 05 XX XX XX XX` | `movsd xmm0, [rip+XX]` | 8 | 4 | Load double from GV |
-| `0F B6 05 XX XX XX XX` | `movzx eax, byte [rip+XX]` | 7 | 3 | Load byte from GV (zero-extend) |
-| `0F BE 05 XX XX XX XX` | `movsx eax, byte [rip+XX]` | 7 | 3 | Load byte from GV (sign-extend) |
