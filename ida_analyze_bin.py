@@ -468,9 +468,9 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
             skill_path = f".claude/skills/{skill_name}/SKILL.md"
             skill_prompt = f"Run SKILL: {skill_path}"
             if is_retry:
-                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "exec", "resume", "--last", skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", "resume", "--last", skill_prompt]
             else:
-                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "exec", skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", skill_prompt]
             retry_target_desc = "the latest codex session (--last)"
         else:
             print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
