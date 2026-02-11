@@ -7,7 +7,7 @@ description: |
 
 # Generate Signature for Global Variable
 
-Generate a unique hex byte signature that locates an **instruction accessing a global variable** using fully programmatic wildcard detection — no manual byte analysis required.
+Generate a unique hex byte signature that locates an **instruction accessing a global variable** using fully programmatic wildcard detection and validation — no manual byte analysis required.
 
 ## Core Concept
 
@@ -35,29 +35,38 @@ Where:
 
 ## Method
 
-### 1. Find GV-Accessing Instructions and Generate Signature Tokens
+### 1. Generate and Validate Signature (Single Step)
 
-Use a single `py_eval` call to:
-- Find instructions that reference the GV via `DataRefsTo`
-- Verify each instruction actually resolves to the target GV via RIP-relative displacement
-- Collect instruction stream with auto-wildcarding for each candidate
-- Output candidates with full signature tokens and metadata
+Use a single `py_eval` call that:
+- Discovers candidate instructions accessing the GV via `DataRefsTo`
+- Verifies each candidate resolves to the target GV via RIP-relative displacement
+- Collects instruction stream with auto-wildcarding for each candidate
+- Tracks instruction boundaries so prefixes always cover complete instructions
+- Progressively tests at each instruction boundary via `bin_search3`
+- Outputs the shortest unique signature with full metadata
 
-**Note**: If you already know the GV-accessing instruction address, set `target_inst = <inst_addr>` to skip candidate discovery. If you know the containing function, set `target_func = <func_addr>` to restrict search to that function.
+**Note**: If you already know the GV-accessing instruction address, set `target_inst = <inst_addr>`. If you know the containing function, set `target_func = <func_addr>`.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
-import idaapi, ida_bytes, idautils, ida_ua, json
+import idaapi, ida_bytes, idautils, ida_ua, ida_segment, json
 
 target_gv = <gv_addr>
 target_inst = None       # Set to instruction address if known, e.g. 0x1804F3DF3
 target_func = None       # Set to function address to restrict search, e.g. 0x1804F3DA0
+min_sig_bytes = 8
 max_sig_bytes = 96
 max_instructions = 64
 max_candidates = 32
 
+# --- Search bounds ---
+seg = ida_segment.get_segm_by_name(".text")
+if seg:
+    search_start, search_end = seg.start_ea, seg.end_ea
+else:
+    search_start, search_end = idaapi.cvar.inf.min_ea, idaapi.cvar.inf.max_ea
+
 def _resolve_disp_off(insn_ea, insn, raw):
-    \"\"\"Find the RIP-relative displacement offset that resolves to target_gv.\"\"\"
     cand_offsets = set()
     for op in insn.ops:
         op_type = int(op.type)
@@ -77,14 +86,14 @@ def _resolve_disp_off(insn_ea, insn, raw):
             return off
     return None
 
-def _collect_sig_stream(inst_ea, disp_off):
-    \"\"\"Collect instruction stream with auto-wildcarding starting from inst_ea.\"\"\"
+def _collect_and_validate(inst_ea, disp_off):
     f = idaapi.get_func(inst_ea)
     if not f:
         return None
 
     limit_end = min(f.end_ea, inst_ea + max_sig_bytes)
     sig_tokens = []
+    inst_boundaries = []
     cursor = inst_ea
     first_len = None
 
@@ -96,10 +105,8 @@ def _collect_sig_stream(inst_ea, disp_off):
         if not raw:
             break
 
-        # Determine wildcard byte positions within this instruction
         wild = set()
 
-        # Auto-wildcard volatile operand bytes (imm/near/far/mem/displ)
         for op in insn.ops:
             op_type = int(op.type)
             if op_type == int(idaapi.o_void):
@@ -122,46 +129,71 @@ def _collect_sig_stream(inst_ea, disp_off):
                     for i in range(offo, end2):
                         wild.add(i)
 
-        # Special handling for call/jump instructions
         b0 = raw[0]
-        if b0 in (0xE8, 0xE9, 0xEB):  # CALL rel32, JMP rel32, JMP rel8
+        if b0 in (0xE8, 0xE9, 0xEB):
             for i in range(1, insn.size):
                 wild.add(i)
-        elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:  # Jcc rel32
+        elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:
             for i in range(2, insn.size):
                 wild.add(i)
-        elif 0x70 <= b0 <= 0x7F:  # Jcc rel8
+        elif 0x70 <= b0 <= 0x7F:
             for i in range(1, insn.size):
                 wild.add(i)
 
-        # For the first instruction (GV-accessing), ensure disp bytes are wildcarded
         if cursor == inst_ea:
             first_len = insn.size
             for i in range(disp_off, min(insn.size, disp_off + 4)):
                 wild.add(i)
 
-        # Build tokens for this instruction
         for idx in range(insn.size):
             sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
 
+        inst_boundaries.append(len(sig_tokens))
         cursor += insn.size
 
     if not sig_tokens or first_len is None:
         return None
 
-    return {
-        "gv_inst_va": hex(inst_ea),
-        "gv_inst_length": first_len,
-        "gv_inst_disp": disp_off,
-        "total_bytes": len(sig_tokens),
-        "sig_full": " ".join(sig_tokens),
-    }
+    # --- Progressive search at instruction boundaries ---
+    for boundary in inst_boundaries:
+        if boundary < min_sig_bytes:
+            continue
+
+        prefix_tokens = sig_tokens[:boundary]
+        if all(t == "??" for t in prefix_tokens):
+            continue
+
+        pattern_str = " ".join("?" if t == "??" else t for t in prefix_tokens)
+        pat = ida_bytes.compiled_binpat_vec_t()
+        ida_bytes.parse_binpat_str(pat, search_start, pattern_str, 16)
+        flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
+
+        matches = []
+        res = ida_bytes.bin_search3(search_start, search_end, pat, flags)
+        ea = res[0] if isinstance(res, tuple) else res
+        while ea != idaapi.BADADDR and len(matches) < 2:
+            matches.append(ea)
+            res = ida_bytes.bin_search3(ea + 1, search_end, pat, flags)
+            ea = res[0] if isinstance(res, tuple) else res
+
+        if len(matches) == 1 and matches[0] == inst_ea:
+            return {
+                "gv_sig": " ".join(prefix_tokens),
+                "sig_bytes": boundary,
+                "gv_sig_va": hex(inst_ea),
+                "gv_inst_length": first_len,
+                "gv_inst_disp": disp_off,
+            }
+
+    return None
 
 # --- Discover candidate GV-accessing instructions ---
-candidates = []
+candidates_tried = 0
+best = None
 seen = set()
 
-def _try_add(inst_ea):
+def _try_candidate(inst_ea):
+    global candidates_tried, best
     if inst_ea in seen:
         return
     seen.add(inst_ea)
@@ -177,68 +209,67 @@ def _try_add(inst_ea):
     if disp_off is None:
         return
 
-    result = _collect_sig_stream(inst_ea, disp_off)
+    candidates_tried += 1
+    result = _collect_and_validate(inst_ea, disp_off)
     if result is not None:
-        candidates.append(result)
+        if best is None or result["sig_bytes"] < best["sig_bytes"]:
+            best = result
 
 if target_inst is not None:
-    _try_add(target_inst)
+    _try_candidate(target_inst)
 elif target_func is not None:
     f = idaapi.get_func(target_func)
     if f:
         ea = f.start_ea
-        while ea < f.end_ea and len(candidates) < max_candidates:
+        while ea < f.end_ea and candidates_tried < max_candidates:
             flags = ida_bytes.get_full_flags(ea)
             if ida_bytes.is_code(flags):
-                _try_add(ea)
+                _try_candidate(ea)
+                if best is not None:
+                    break
             next_ea = ida_bytes.next_head(ea, f.end_ea)
             if next_ea == idaapi.BADADDR or next_ea <= ea:
                 break
             ea = next_ea
 else:
     for ref in idautils.DataRefsTo(target_gv):
-        if len(candidates) >= max_candidates:
+        if candidates_tried >= max_candidates:
             break
         flags = ida_bytes.get_full_flags(ref)
         if not ida_bytes.is_code(flags):
             continue
-        _try_add(ref)
+        _try_candidate(ref)
+        if best is not None:
+            break
 
-print(json.dumps(candidates))
+if best:
+    best["gv_va"] = hex(target_gv)
+    best["gv_rva"] = hex(target_gv - idaapi.get_imagebase())
+    best["gv_inst_offset"] = 0
+    best["status"] = "success"
+    print(json.dumps(best))
+else:
+    print(json.dumps({
+        "gv_va": hex(target_gv),
+        "candidates_tried": candidates_tried,
+        "error": "no unique gv-access signature found",
+        "status": "failed"
+    }))
 """
 ```
 
-### 2. Validate Signature Uniqueness with Progressive Prefix
+**Result handling:**
+- `status == "success"` → Use `gv_sig` and metadata directly
+- `status == "failed"` → See Step 2
 
-For each candidate from the JSON output, test with `find_bytes` to find the shortest unique prefix.
+### 2. Iterate if Needed
 
-**Start with ~16 bytes prefix, extend if not unique:**
+If Step 1 returns `status: "failed"`:
+1. Increase `max_sig_bytes` (e.g., to 192) and re-run Step 1
+2. Specify a different `target_func` to find more candidates
+3. Re-run until unique
 
-```
-mcp__ida-pro-mcp__find_bytes patterns=["<first_N_tokens_from_sig_full>"] limit=2
-```
-
-Check the result:
-- If `n == 1` and match address equals `gv_inst_va` → **SUCCESS**: signature is unique
-- If `n > 1` → Extend the signature (add more tokens) and retry
-- If `n == 0` → Something is wrong; try next candidate
-
-**Recommended flow:**
-1. Pick the first candidate from the output
-2. Split its `sig_full` by spaces into token array
-3. Try first 16 tokens → `find_bytes patterns=["<16_tokens>"] limit=2`
-4. If 2+ matches, try 24 tokens, then 32, etc.
-5. If 1 match at `gv_inst_va` → done, use this candidate
-6. If cannot find unique prefix, move to the next candidate
-
-### 3. Iterate if Needed
-
-If no candidate produces a unique signature:
-1. Increase `max_sig_bytes` and re-run Step 1
-2. Consider specifying a different `target_func` to find more candidates
-3. Re-validate until unique
-
-### 4. Continue with Unfinished Tasks
+### 3. Continue with Unfinished Tasks
 
 If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
@@ -251,8 +282,8 @@ Provide the following information for runtime GV resolution:
 1. **gv_sig**: Space-separated hex bytes with `??` for wildcards
 1. **gv_sig_va**: The virtual address that the signature matches
 2. **gv_inst_offset**: Always `0` (signature starts at the GV-accessing instruction)
-3. **gv_inst_length**: Total length of the GV-accessing instruction (from candidate metadata)
-4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction (from candidate metadata)
+3. **gv_inst_length**: Total length of the GV-accessing instruction (from output metadata)
+4. **gv_inst_disp**: Position of the 4-byte RIP-relative offset within the instruction (from output metadata)
 
 ### Example Output
 

@@ -21,7 +21,8 @@ Generate a unique hex byte signature for a function using fully programmatic wil
 Use a single `py_eval` call that:
 - Resolves the input address to the actual function start
 - Decodes instructions and programmatically determines wildcard positions
-- Progressively tests increasing prefix lengths via `bin_search3`
+- Tracks instruction boundaries so prefixes always cover complete instructions
+- Progressively tests at each instruction boundary via `bin_search3`
 - Outputs the shortest unique signature directly
 
 **Note**: The input address may be in the middle of a function. The script automatically resolves it to the actual function start.
@@ -48,6 +49,7 @@ if func_addr != input_addr:
 # --- Collect instruction bytes with auto-wildcarding ---
 limit_end = min(func.end_ea, func_addr + max_sig_bytes)
 sig_tokens = []
+inst_boundaries = []  # cumulative byte count at end of each instruction
 cursor = func_addr
 
 while cursor < func.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_bytes:
@@ -98,6 +100,7 @@ while cursor < func.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_
     for idx in range(insn.size):
         sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
 
+    inst_boundaries.append(len(sig_tokens))
     cursor += insn.size
 
 if not sig_tokens:
@@ -111,12 +114,14 @@ if seg:
 else:
     search_start, search_end = idaapi.cvar.inf.min_ea, idaapi.cvar.inf.max_ea
 
-# --- Progressive prefix search for shortest unique signature ---
+# --- Progressive search at instruction boundaries only ---
 best_sig = None
-start_len = min(min_sig_bytes, len(sig_tokens))
 
-for prefix_len in range(start_len, len(sig_tokens) + 1):
-    prefix_tokens = sig_tokens[:prefix_len]
+for boundary in inst_boundaries:
+    if boundary < min_sig_bytes:
+        continue
+
+    prefix_tokens = sig_tokens[:boundary]
     if all(t == "??" for t in prefix_tokens):
         continue
 
