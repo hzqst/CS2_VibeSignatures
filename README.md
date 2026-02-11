@@ -4,7 +4,17 @@ Several scripts and prompts are included to generate signatures via Agent SKILLS
 
 Our goal is to update signatures/offsets without human involved.
 
-Feel free to contribute your SKILLS with PR!
+Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json` can be updated automatically with this project.
+
+* Signatures from old version of game will be used when available - to save as many tokens as possible.
+
+* Avg cost for the first run: ~ 30$ for claude sonnet, or ~ 15$ for codex-5.3-high
+
+* Avg time consume for the first run: 30mins ~ 60mins, depending on the model you are using.
+
+* Avg time consume for the second run, when signatures from old version are available: 5mins ~ 15mins, depending on how many signatures are gone after game update.
+
+* Feel free to contribute your SKILLS with PR!
 
 ## Requirements
 
