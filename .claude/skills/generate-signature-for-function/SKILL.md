@@ -7,7 +7,7 @@ description: |
 
 # Generate Signature for Function
 
-Generate a unique hex byte signature for a function using fully programmatic wildcard detection — no manual byte analysis required.
+Generate a unique hex byte signature for a function using fully programmatic wildcard detection and validation — no manual byte analysis required.
 
 ## Prerequisites
 
@@ -16,36 +16,41 @@ Generate a unique hex byte signature for a function using fully programmatic wil
 
 ## Method
 
-### 1. Collect Instruction Data with Auto-Wildcarding
+### 1. Generate and Validate Signature (Single Step)
 
-Use a single `py_eval` call to decode instructions, programmatically determine wildcard positions based on operand types and branch instructions, and output the full signature token string.
+Use a single `py_eval` call that:
+- Resolves the input address to the actual function start
+- Decodes instructions and programmatically determines wildcard positions
+- Progressively tests increasing prefix lengths via `bin_search3`
+- Outputs the shortest unique signature directly
 
 **Note**: The input address may be in the middle of a function. The script automatically resolves it to the actual function start.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
-import idaapi, ida_bytes, idautils, ida_ua, json
+import idaapi, ida_bytes, idautils, ida_ua, ida_segment, json
 
 input_addr = <func_addr>
+min_sig_bytes = 6
 max_sig_bytes = 96
 max_instructions = 64
 
-# Resolve to actual function start (input may be in the middle of a function)
+# --- Resolve to actual function start ---
 func = idaapi.get_func(input_addr)
 if not func:
-    print(json.dumps({"error": f"{hex(input_addr)} is not inside a known function"}))
+    print(json.dumps({"error": f"{hex(input_addr)} is not inside a known function", "status": "failed"}))
     raise SystemExit
 
 func_addr = func.start_ea
 if func_addr != input_addr:
     print(f"NOTE: Resolved {hex(input_addr)} -> function start at {hex(func_addr)}")
 
+# --- Collect instruction bytes with auto-wildcarding ---
 limit_end = min(func.end_ea, func_addr + max_sig_bytes)
 sig_tokens = []
 cursor = func_addr
-inst_count = 0
 
-while cursor < func.end_ea and cursor < limit_end and inst_count < max_instructions:
+while cursor < func.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_bytes:
     insn = idautils.DecodeInstruction(cursor)
     if not insn or insn.size <= 0:
         break
@@ -53,7 +58,6 @@ while cursor < func.end_ea and cursor < limit_end and inst_count < max_instructi
     if not raw:
         break
 
-    # Determine wildcard byte positions within this instruction
     wild = set()
 
     # Auto-wildcard volatile operand bytes (imm/near/far/mem/displ)
@@ -81,62 +85,91 @@ while cursor < func.end_ea and cursor < limit_end and inst_count < max_instructi
 
     # Special handling for call/jump instructions
     b0 = raw[0]
-    if b0 in (0xE8, 0xE9, 0xEB):  # CALL rel32, JMP rel32, JMP rel8
+    if b0 in (0xE8, 0xE9, 0xEB):
         for i in range(1, insn.size):
             wild.add(i)
-    elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:  # Jcc rel32
+    elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:
         for i in range(2, insn.size):
             wild.add(i)
-    elif 0x70 <= b0 <= 0x7F:  # Jcc rel8
+    elif 0x70 <= b0 <= 0x7F:
         for i in range(1, insn.size):
             wild.add(i)
 
-    # Build tokens for this instruction
     for idx in range(insn.size):
         sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
 
     cursor += insn.size
-    inst_count += 1
 
-sig_full = " ".join(sig_tokens)
-print(json.dumps({
-    "func_va": hex(func_addr),
-    "func_size": hex(func.end_ea - func_addr),
-    "total_bytes": len(sig_tokens),
-    "sig_full": sig_full
-}))
+if not sig_tokens:
+    print(json.dumps({"error": f"no instruction bytes at {hex(func_addr)}", "status": "failed"}))
+    raise SystemExit
+
+# --- Search bounds ---
+seg = ida_segment.get_segm_by_name(".text")
+if seg:
+    search_start, search_end = seg.start_ea, seg.end_ea
+else:
+    search_start, search_end = idaapi.cvar.inf.min_ea, idaapi.cvar.inf.max_ea
+
+# --- Progressive prefix search for shortest unique signature ---
+best_sig = None
+start_len = min(min_sig_bytes, len(sig_tokens))
+
+for prefix_len in range(start_len, len(sig_tokens) + 1):
+    prefix_tokens = sig_tokens[:prefix_len]
+    if all(t == "??" for t in prefix_tokens):
+        continue
+
+    pattern_str = " ".join("?" if t == "??" else t for t in prefix_tokens)
+    pat = ida_bytes.compiled_binpat_vec_t()
+    ida_bytes.parse_binpat_str(pat, search_start, pattern_str, 16)
+    flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
+
+    matches = []
+    res = ida_bytes.bin_search3(search_start, search_end, pat, flags)
+    ea = res[0] if isinstance(res, tuple) else res
+    while ea != idaapi.BADADDR and len(matches) < 2:
+        matches.append(ea)
+        res = ida_bytes.bin_search3(ea + 1, search_end, pat, flags)
+        ea = res[0] if isinstance(res, tuple) else res
+
+    if len(matches) == 1 and matches[0] == func_addr:
+        best_sig = " ".join(prefix_tokens)
+        break
+
+if best_sig:
+    print(json.dumps({
+        "func_va": hex(func_addr),
+        "func_rva": hex(func_addr - idaapi.get_imagebase()),
+        "func_size": hex(func.end_ea - func_addr),
+        "func_sig": best_sig,
+        "sig_bytes": len(best_sig.split()),
+        "status": "success"
+    }))
+else:
+    print(json.dumps({
+        "func_va": hex(func_addr),
+        "func_size": hex(func.end_ea - func_addr),
+        "total_tokens": len(sig_tokens),
+        "sig_full": " ".join(sig_tokens),
+        "error": "no unique prefix found within collected bytes",
+        "status": "failed"
+    }))
 """
 ```
 
-### 2. Validate Signature Uniqueness with Progressive Prefix
+**Result handling:**
+- `status == "success"` → Use `func_sig` directly as the final signature
+- `status == "failed"` → See Step 2
 
-From the `sig_full` string in the JSON output, test with `find_bytes` to find the shortest unique prefix.
+### 2. Iterate if Needed
 
-**Start with ~16 bytes prefix, extend if not unique:**
-
-```
-mcp__ida-pro-mcp__find_bytes patterns=["<first_N_tokens_from_sig_full>"] limit=2
-```
-
-Check the result:
-- If `n == 1` and match address equals `func_addr` → **SUCCESS**: signature is unique
-- If `n > 1` → Extend the signature (add more tokens) and retry
-- If `n == 0` → Something is wrong; verify the tokens against func_addr
-
-**Recommended flow:**
-1. Split `sig_full` by spaces into token array
-2. Try first 16 tokens joined by spaces → `find_bytes patterns=["<16_tokens>"] limit=2`
-3. If 2+ matches, try first 24 tokens, then 32, etc.
-4. If 1 match at target address → done, use this as the final signature
-
-### 3. Iterate if Needed
-
-If the signature is not unique even with all available tokens:
-1. Increase `max_sig_bytes` and re-run Step 1 to collect more bytes
+If Step 1 returns `status: "failed"`:
+1. Increase `max_sig_bytes` (e.g., to 192) and re-run Step 1
 2. Consider including bytes beyond the function boundary
-3. Re-validate until unique
+3. Re-run until unique
 
-### 4. Continue with Unfinished Tasks
+### 3. Continue with Unfinished Tasks
 
 If we are called by a task from a task list / parent SKILL, restore and continue with the unfinished tasks.
 
