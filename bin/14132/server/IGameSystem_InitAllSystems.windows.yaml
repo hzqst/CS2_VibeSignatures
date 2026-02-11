@@ -1,0 +1,4 @@
+func_va: '0x1804f3dd0'
+func_rva: '0x4f3dd0'
+func_size: '0x329'
+func_sig: 48 89 5C 24 ?? 55 56 57 48 83 EC ?? 48 8D 05 ?? ?? ?? ??

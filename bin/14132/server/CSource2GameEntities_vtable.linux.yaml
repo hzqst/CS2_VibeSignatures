@@ -1,0 +1,27 @@
+vtable_class: CSource2GameEntities
+vtable_symbol: _ZTV20CSource2GameEntities + 0x10
+vtable_va: '0x22602b0'
+vtable_rva: '0x22602b0'
+vtable_size: '0xa0'
+vtable_numvfunc: 20
+vtable_entries:
+  0: '0x16e7870'
+  1: '0x16e7c30'
+  2: '0x16e2100'
+  3: '0x16e2fe0'
+  4: '0x16e4af0'
+  5: '0x16e2110'
+  6: '0x16e2120'
+  7: '0x16e2130'
+  8: '0x16e4000'
+  9: '0x16e2140'
+  10: '0x16e2150'
+  11: '0x16eb300'
+  12: '0x16eb3b0'
+  13: '0x1721040'
+  14: '0x16e3c40'
+  15: '0x16e5f80'
+  16: '0x16e4120'
+  17: '0x16e6970'
+  18: '0x16e5570'
+  19: '0x16e4080'

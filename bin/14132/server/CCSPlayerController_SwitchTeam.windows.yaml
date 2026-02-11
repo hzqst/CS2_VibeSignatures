@@ -1,0 +1,4 @@
+func_va: '0x1809ba100'
+func_rva: '0x9ba100'
+func_size: '0x268'
+func_sig: 40 53 57 48 81 EC ?? ?? ?? ?? 48 8B D9 8B FA

@@ -1,0 +1,6 @@
+func_va: '0xc93340'
+func_rva: '0xc93340'
+func_size: '0x252'
+vtable_name: CBaseTrigger
+vfunc_offset: '0x490'
+vfunc_index: 146

@@ -1,0 +1,9 @@
+func_va: '0x1803c7c70'
+func_rva: '0x3c7c70'
+func_size: '0x56'
+func_sig: 40 57 48 83 EC 20 48 8B 81 78 02 00 00 48 8B FA 48 8B 48 38 48 85 C9 74
+  ?? 48 89 5C 24 30 E8 ?? ?? ?? ?? 48 8B D8 48 85 C0 74 ?? 48 8B 10 48 8B C8 FF 92
+  B0 04 00 00 84 C0 74 ?? 4C 8B 03 48 8B D7 48 8B CB 41 FF 90 98 04 00 00
+vtable_name: CBaseEntity
+vfunc_offset: '0x498'
+vfunc_index: 147
