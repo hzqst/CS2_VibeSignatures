@@ -1,6 +1,6 @@
 # CS2 VibeSignatures
 
-Several scripts and prompts are included to generate signatures via Agent SKILLS.
+To generate signatures/offsets for CS2 via Agent SKILLS & MCP Calls.
 
 Our goal is to update signatures/offsets without human involved.
 
@@ -8,7 +8,7 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 
 * Signatures from old version of game will be used when available - to save as many tokens as possible.
 
-* Avg cost for the first run: ~ 30$ for claude sonnet, or ~ 15$ for codex-5.3-high
+* Avg cost for the first run: ~ 30$ for claude sonnet 4.5, or ~ 15$ for codex-5.3-high
 
 * Avg time consume for the first run: 30mins ~ 60mins, depending on the model you are using.
 
@@ -476,3 +476,23 @@ Mitigation: You should run `pip install .` and `python py-activate-idalib.py` un
 ### Could not find idalib64.dll in .........
 
 Mitigation: Try `set IDADIR=C:\Program Files\IDA Professional 9.0` or add `IDADIR=C:\Program Files\IDA Professional 9.0` to your system environment.
+
+## Jenkins References
+
+```bash
+@echo Download latest game binaries
+
+python download_bin.py -gamever %CS2_GAMEVER%
+```
+
+```bash
+@echo Analyze with Claude and IDA-Pro-MCP
+
+python ida_analyze_bin.py -gamever %CS2_GAMEVER% -agent=claude.cmd -platform %CS2_PLATFORM% -debug
+```
+
+```bash
+@echo Sync symbol yamls to gamedata
+
+python update_gamedata.py -gamever %CS2_GAMEVER% -debug
+```
