@@ -614,6 +614,7 @@ async def preprocess_gen_func_sig_via_mcp(
         return None
 
     sig_tokens = []
+    inst_boundaries = []
     for inst in insts:
         try:
             inst_size = int(inst.get("size", 0))
@@ -640,17 +641,20 @@ async def preprocess_gen_func_sig_via_mcp(
             use_wild = (rel_idx in inst_wild) or (abs_off in extra_wildcard_set)
             sig_tokens.append("??" if use_wild else f"{value:02X}")
 
-    if len(sig_tokens) == 0:
+        # Growth step must align to the next full instruction boundary.
+        inst_boundaries.append(len(sig_tokens))
+
+    if len(sig_tokens) == 0 or len(inst_boundaries) == 0:
         if debug:
             print(f"    Preprocess: empty signature token stream at {hex(func_va_int)}")
         return None
 
     search_start = min_sig_bytes
-    if search_start > len(sig_tokens):
-        search_start = len(sig_tokens)
 
     best_sig = None
-    for prefix_len in range(search_start, len(sig_tokens) + 1):
+    for prefix_len in inst_boundaries:
+        if prefix_len < search_start:
+            continue
         prefix_tokens = sig_tokens[:prefix_len]
 
         # Skip signatures that are all wildcards.
@@ -1039,6 +1043,7 @@ async def preprocess_gen_gv_sig_via_mcp(
             continue
 
         sig_tokens = []
+        inst_boundaries = []
         malformed = False
         for inst in insts:
             try:
@@ -1064,14 +1069,17 @@ async def preprocess_gen_gv_sig_via_mcp(
                 use_wild = (rel_idx in inst_wild) or (abs_off in extra_wildcard_set)
                 sig_tokens.append("??" if use_wild else f"{value:02X}")
 
-        if malformed or len(sig_tokens) == 0:
+            # Growth step must align to the next full instruction boundary.
+            inst_boundaries.append(len(sig_tokens))
+
+        if malformed or len(sig_tokens) == 0 or len(inst_boundaries) == 0:
             continue
 
         search_start = min_sig_bytes
-        if search_start > len(sig_tokens):
-            search_start = len(sig_tokens)
 
-        for prefix_len in range(search_start, len(sig_tokens) + 1):
+        for prefix_len in inst_boundaries:
+            if prefix_len < search_start:
+                continue
             prefix_tokens = sig_tokens[:prefix_len]
 
             if all(token == "??" for token in prefix_tokens):
@@ -1310,4 +1318,3 @@ async def preprocess_gv_sig_via_mcp(
         "gv_inst_length": gv_inst_length,
         "gv_inst_disp": gv_inst_disp,
     }
-
