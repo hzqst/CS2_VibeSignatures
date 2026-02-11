@@ -348,7 +348,9 @@ modules:
           - CTriggerPush_Touch.{platform}.yaml
         expected_input:
           - CTriggerPush_vtable.{platform}.yaml
+          - CBaseEntity_Touch.{platform}.yaml
         prerequisite:
+          - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch
           - find-CTriggerPush_vtable
 
       - name: find-CBaseEntity_IsPlayerPawn

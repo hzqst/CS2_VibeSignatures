@@ -1,7 +1,6 @@
 ---
 name: find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
-description: |
-  Find and identify CBaseTrigger_StartTouch and CBaseTrigger_EndTouch virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CBaseTrigger touch handler functions by using vtable information and inherited vtable indices from CBaseEntity.
+description: Find and identify CBaseTrigger_StartTouch and CBaseTrigger_EndTouch virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CBaseTrigger touch handler functions by using vtable information and inherited vtable indices from CBaseEntity.
 ---
 
 # Find CBaseTrigger_StartTouch and CBaseTrigger_EndTouch

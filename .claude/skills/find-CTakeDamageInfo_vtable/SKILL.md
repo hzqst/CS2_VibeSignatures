@@ -1,11 +1,6 @@
 ---
 name: find-CTakeDamageInfo_vtable
 description: Find and identify the CTakeDamageInfo vtable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CTakeDamageInfo virtual function table by searching for the mangled vtable symbol name.
-expected_output:
-  - name: CTakeDamageInfo_vtable
-    category: vtable
-    files:
-      - CTakeDamageInfo_vtable.{platform}.yaml
 ---
 
 # Find CTakeDamageInfo_vtable

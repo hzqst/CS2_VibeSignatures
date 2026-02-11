@@ -1,7 +1,6 @@
 ---
 name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
-description: |
-  Find and identify the CSource2Server_Init, CGameEventManager_Init and gameeventmanager in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
+description: Find and identify the CSource2Server_Init, CGameEventManager_Init and gameeventmanager in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
 ---
 
 # Find CSource2Server_Init
