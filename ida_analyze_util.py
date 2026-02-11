@@ -178,6 +178,26 @@ def write_func_yaml(path, data):
             allow_unicode=False,
         )
 
+def write_gv_yaml(path, data):
+    """Write global-variable YAML with the same key set and key order as write-globalvar-as-yaml; scalar quoting/styling is handled by PyYAML."""
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to write global-variable YAML")
+
+    ordered_keys = [
+        "gv_va", "gv_rva", "gv_sig", "gv_sig_va",
+        "gv_inst_offset", "gv_inst_length", "gv_inst_disp",
+    ]
+    payload = {key: data[key] for key in ordered_keys if key in data}
+
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(
+            payload,
+            f,
+            sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=False,
+        )
+
 async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, debug=False):
     """
     Preprocess a vtable output by looking up the class vtable via py_eval.
@@ -414,4 +434,169 @@ async def preprocess_func_sig_via_mcp(
 
     return new_data
 
+
+async def preprocess_gv_sig_via_mcp(
+    session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
+):
+    """
+    Preprocess a global-variable output by reusing old-version gv_sig signature.
+
+    Searches the old signature in the new binary via find_bytes.
+    For unique matches, resolves gv_va from RIP-relative instruction metadata
+    (gv_inst_offset, gv_inst_length, gv_inst_disp) and builds new YAML data.
+
+    Args:
+        session: Active MCP ClientSession
+        new_path: Full path to expected output YAML
+        old_path: Full path to old version YAML (may be None)
+        image_base: Binary image base address (int)
+        new_binary_dir: Directory for new version outputs (reserved)
+        platform: "windows" or "linux" (reserved)
+        debug: Enable debug output
+
+    Returns:
+        Dict with global-variable YAML data, or None on failure
+    """
+    _ = new_binary_dir, platform  # Reserved for future platform-specific behavior.
+
+    if yaml is None:
+        if debug:
+            print("    Preprocess: PyYAML is required for gv_sig preprocessing")
+        return None
+
+    # Check if old YAML exists
+    if not old_path or not os.path.exists(old_path):
+        if debug:
+            print(f"    Preprocess: no old YAML for {os.path.basename(new_path)}")
+        return None
+
+    # Read old YAML
+    try:
+        with open(old_path, "r", encoding="utf-8") as f:
+            old_data = yaml.safe_load(f)
+    except Exception:
+        return None
+
+    if not old_data or not isinstance(old_data, dict):
+        return None
+
+    gv_sig = old_data.get("gv_sig")
+    if not gv_sig:
+        if debug:
+            print(f"    Preprocess: no gv_sig in {os.path.basename(old_path)}")
+        return None
+
+    def _parse_int_field(value, field_name):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError(f"empty {field_name}")
+            return int(raw, 0)
+        return int(value)
+
+    try:
+        gv_inst_offset = _parse_int_field(old_data.get("gv_inst_offset"), "gv_inst_offset")
+        gv_inst_length = _parse_int_field(old_data.get("gv_inst_length"), "gv_inst_length")
+        gv_inst_disp = _parse_int_field(old_data.get("gv_inst_disp"), "gv_inst_disp")
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid gv instruction metadata in {os.path.basename(old_path)}")
+        return None
+
+    if gv_inst_offset < 0 or gv_inst_length <= 0 or gv_inst_disp < 0:
+        if debug:
+            print(f"    Preprocess: invalid gv instruction values in {os.path.basename(old_path)}")
+        return None
+
+    # Search signature in new binary via MCP find_bytes
+    try:
+        fb_result = await session.call_tool(
+            name="find_bytes",
+            arguments={"patterns": [gv_sig], "limit": 2}
+        )
+        fb_data = parse_mcp_result(fb_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: find_bytes error: {e}")
+        return None
+
+    # Parse find_bytes result: list of {pattern, matches, n, ...}
+    if not isinstance(fb_data, list) or len(fb_data) == 0:
+        return None
+
+    entry = fb_data[0]
+    matches = entry.get("matches", [])
+    match_count = entry.get("n", len(matches))
+
+    if match_count != 1:
+        if debug:
+            print(f"    Preprocess: {os.path.basename(old_path)} gv sig matched {match_count} (need 1)")
+        return None
+
+    match_addr = matches[0]  # hex string like "0x1804f3df3"
+
+    # Resolve gv_va from instruction metadata via py_eval
+    py_code = (
+        f"import ida_bytes, json\\n"
+        f"sig_addr = {match_addr}\\n"
+        f"inst_addr = sig_addr + {gv_inst_offset}\\n"
+        f"inst_length = {gv_inst_length}\\n"
+        f"inst_disp = {gv_inst_disp}\\n"
+        f"inst_bytes = ida_bytes.get_bytes(inst_addr, inst_length)\\n"
+        f"if not inst_bytes or len(inst_bytes) < inst_disp + 4:\\n"
+        f"    result = json.dumps(None)\\n"
+        f"else:\\n"
+        f"    disp_u32 = ida_bytes.get_dword(inst_addr + inst_disp)\\n"
+        f"    disp_i32 = disp_u32 - 0x100000000 if (disp_u32 & 0x80000000) else disp_u32\\n"
+        f"    gv_addr = (inst_addr + inst_length + disp_i32) & 0xFFFFFFFFFFFFFFFF\\n"
+        f"    result = json.dumps({{'gv_va': hex(gv_addr), 'gv_sig_va': hex(sig_addr)}})\\n"
+    )
+
+    try:
+        gv_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code}
+        )
+        gv_data = parse_mcp_result(gv_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: py_eval error: {e}")
+        return None
+
+    # Parse py_eval result
+    gv_info = None
+    if isinstance(gv_data, dict):
+        result_str = gv_data.get("result", "")
+        if result_str:
+            try:
+                gv_info = json.loads(result_str)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if not gv_info:
+        if debug:
+            print(f"    Preprocess: could not resolve global variable at {match_addr}")
+        return None
+
+    try:
+        gv_va_hex = str(gv_info["gv_va"])
+        gv_va_int = int(gv_va_hex, 16)
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid gv_va parsed from {match_addr}")
+        return None
+
+    gv_sig_va_hex = str(gv_info.get("gv_sig_va", match_addr))
+
+    return {
+        "gv_va": gv_va_hex,
+        "gv_rva": hex(gv_va_int - image_base),
+        "gv_sig": gv_sig,
+        "gv_sig_va": gv_sig_va_hex,
+        "gv_inst_offset": gv_inst_offset,
+        "gv_inst_length": gv_inst_length,
+        "gv_inst_disp": gv_inst_disp,
+    }
 
