@@ -2,8 +2,9 @@ func_va: '0x1727880'
 func_rva: '0x1727880'
 func_size: '0x11bf'
 func_sig: 55 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ?? ?? ?? ?? 41 55 41 89 D5 41
-  54 53 48 81 EC ?? ?? ?? ?? 48 89 B5 ?? ?? ?? ?? BE FF FF FF FF 48 89 8D ?? ?? ??
-  ??
+  54 53 48 81 EC 68 01 00 00 48 89 B5 C0 FE FF FF BE FF FF FF FF 48 89 8D B8 FE FF
+  FF 4C 89 85 90 FE FF FF 4C 89 8D C8 FE FF FF E8 ?? ?? ?? ?? 4C 8B 95 B8 FE FF FF
+  48 85 C0 0F 84 ?? ?? ?? ??
 vtable_name: CSource2GameEntities
 vfunc_offset: '0x68'
 vfunc_index: 13
