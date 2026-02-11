@@ -209,3 +209,55 @@ Force a specific byte size for the conversion:
     "size": 4
   }
 }
+```
+
+### ida-pro-mcp.get_int Usage
+
+`get_int` reads integer values from memory addresses. Use `ty` to specify the integer type including signedness and byte order.
+
+#### Type Format
+
+`ty` follows the pattern `{sign}{bits}{endian}`:
+
+- **sign**: `i` (signed) or `u` (unsigned)
+- **bits**: `8`, `16`, `32`, `64`
+- **endian** (optional): `le` (little-endian, default) or `be` (big-endian)
+
+Examples: `i8`, `u64`, `i16le`, `i16be`, `u32be`
+
+#### Parameter Structure
+
+```json
+{
+  "queries": {
+    "addr": "0x12345678",  // Address to read from (hex or decimal)
+    "ty": "u32"            // Integer type (i8/u64/i16le/i16be/etc)
+  }
+}
+```
+
+#### Single Read Example
+
+Read an unsigned 32-bit integer:
+
+```json
+{
+  "queries": {
+    "addr": "0x140001000",
+    "ty": "u32"
+  }
+}
+```
+
+#### Multiple Reads Example
+
+Read multiple integers simultaneously:
+
+```json
+{
+  "queries": [
+    {"addr": "0x140001000", "ty": "u32"},
+    {"addr": "0x140001004", "ty": "i16le"},
+    {"addr": "0x140001008", "ty": "u64"}
+  ]
+}
