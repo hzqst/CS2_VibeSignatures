@@ -138,6 +138,10 @@ modules:
       - name: find-CCSGameRules_FindPickerEntity
         expected_output:
           - CCSGameRules_FindPickerEntity.{platform}.yaml
+        expected_input:
+          - CCSGameRules_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSGameRules_vtable
 
       - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
         expected_output:
