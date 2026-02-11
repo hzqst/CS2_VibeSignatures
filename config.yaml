@@ -161,9 +161,13 @@ modules:
         expected_output:
           - CCSPlayer_WeaponServices_CanUse.{platform}.yaml
         expected_input:
-          - CCSPlayer_WeaponServices_vbatle.{platform}.yaml
+          - CCSPlayer_WeaponServices_vtable.{platform}.yaml
         prerequisite:
           - find-CCSPlayer_WeaponServices_vtable
+
+      - name: find-CCSPlayer_WeaponServices_Weapon_GetSlot
+        expected_output:
+          - CCSPlayer_WeaponServices_Weapon_GetSlot.{platform}.yaml
 
       - name: find-CCSPlayerController_ChangeTeam
         expected_output:
@@ -493,6 +497,11 @@ modules:
         catagory: vfunc
         alias:
           - CCSPlayer_WeaponServices::CanUse
+
+      - name: CCSPlayer_WeaponServices_Weapon_GetSlot
+        catagory: func
+        alias:
+          - CCSPlayer_WeaponServices_Weapon_GetSlot
 
       - name: CCSPlayerController_ChangeTeam
         catagory: vfunc
