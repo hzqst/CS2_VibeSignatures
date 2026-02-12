@@ -152,7 +152,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
  * no LLM needed when finding vtable. everything done in the preprocessor script.
 
-2. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+2. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -241,7 +241,7 @@ Prompt:
 
  * The preprocessor script will be used when signature from older version of game is available.
 
-7. Add your SKILL to `config.yaml`, in `skills`.
+7. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -343,7 +343,7 @@ Prompt:
 
  * The preprocessor script will be used when signature from older version of game is available.
 
-8. Add your SKILL to `config.yaml`, in `skills`.
+8. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -430,7 +430,7 @@ Prompt:
  - **ALWAYS** check for @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager.md as references.
 ```
 
-7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
+7. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
