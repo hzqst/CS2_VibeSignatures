@@ -37,11 +37,11 @@ Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA
 
 6. Generate and validate unique signature:
 
-   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CCSPlayerController_ChangeTeam`.
 
 7. Write IDA analysis output as YAML beside the binary:
 
-   **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
+   **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CCSPlayerController_ChangeTeam`.
 
    Required parameters:
    - `func_name`: `CCSPlayerController_ChangeTeam`

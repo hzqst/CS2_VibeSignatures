@@ -128,6 +128,10 @@ modules:
           - CBaseModelEntity_SetModel.{platform}.yaml
           - CBaseEntity_SetGravityScale.{platform}.yaml
 
+      - name: find-CTriggerGravity_GravityTouch
+        expected_output:
+          - CTriggerGravity_GravityTouch.{platform}.yaml
+
       - name: find-CBasePlayerController_HandleCommand_JoinTeam
         expected_output:
           - CBasePlayerController_HandleCommand_JoinTeam.{platform}.yaml
@@ -357,6 +361,10 @@ modules:
         expected_output:
           - CBaseEntity_EmitSoundFilter.{platform}.yaml
 
+      - name: find-CBaseEntity_EmitSoundParams
+        expected_output:
+          - CBaseEntity_EmitSoundParams.{platform}.yaml
+
       - name: find-CBasePlayerPawn_CommitSuicide
         expected_output:
           - CBasePlayerPawn_CommitSuicide.{platform}.yaml
@@ -519,6 +527,11 @@ modules:
         catagory: func
         alias:
           - CBaseEntity::SetGravityScale
+
+      - name: CTriggerGravity_GravityTouch
+        catagory: func
+        alias:
+          - CTriggerGravity::GravityTouch
 
       - name: CBasePlayerController_HandleCommand_JoinTeam
         catagory: func
@@ -732,6 +745,11 @@ modules:
         catagory: func
         alias:
           - CBaseEntity::EmitSoundFilter
+
+      - name: CBaseEntity_EmitSoundParams
+        catagory: func
+        alias:
+          - CBaseEntity::EmitSoundParams
 
       - name: CBasePlayerPawn_CommitSuicide
         catagory: vfunc
