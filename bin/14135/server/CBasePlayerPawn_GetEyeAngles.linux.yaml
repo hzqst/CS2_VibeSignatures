@@ -1,0 +1,7 @@
+func_name: CBasePlayerPawn_GetEyeAngles
+func_va: '0x1419860'
+func_rva: '0x1419860'
+func_size: '0x1c'
+vtable_name: CBasePlayerPawn
+vfunc_offset: '0x5d0'
+vfunc_index: 186

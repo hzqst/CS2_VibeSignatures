@@ -56,7 +56,7 @@ mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<function_addr>", "name": "CCS
 
 ### 5. Generate and Validate Unique Signature
 
-  **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+  **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CCSPlayerPawnBase_PostThink`.
 
 ### 6. Write IDA analysis output as YAML beside the binary
 

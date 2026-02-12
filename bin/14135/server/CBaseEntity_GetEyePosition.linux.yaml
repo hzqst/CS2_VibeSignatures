@@ -1,0 +1,7 @@
+func_name: CBaseEntity_GetEyePosition
+func_va: '0x9b7530'
+func_rva: '0x9b7530'
+func_size: '0x43'
+vtable_name: CBaseEntity
+vfunc_offset: '0x5c8'
+vfunc_index: 185

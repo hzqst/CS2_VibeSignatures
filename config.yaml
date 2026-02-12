@@ -384,7 +384,19 @@ modules:
       - name: find-CBaseEntity_IsAlive-AND-CBasePlayerPawn_GetEyePosition
         expected_output:
           - CBaseEntity_IsAlive.{platform}.yaml
+          - CBaseEntity_GetEyePosition.{platform}.yaml
           - CBasePlayerPawn_GetEyePosition.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+          - CBasePlayerPawn_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+          - find-CBasePlayerPawn_vtable
+
+      - name: find-CBasePlayerPawn_GetEyeAngles
+        expected_output:
+          - CBaseEntity_GetEyeAngles.{platform}.yaml
+          - CBasePlayerPawn_GetEyeAngles.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
           - CBasePlayerPawn_vtable.{platform}.yaml
@@ -791,6 +803,21 @@ modules:
         catagory: vfunc
         alias:
           - CBasePlayerPawn::GetEyePosition
+
+      - name: CBaseEntity_GetEyePosition
+        catagory: vfunc
+        alias:
+          - CBaseEntity::GetEyePosition
+
+      - name: CBasePlayerPawn_GetEyeAngles
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::GetEyeAngles
+
+      - name: CBaseEntity_GetEyeAngles
+        catagory: vfunc
+        alias:
+          - CBaseEntity::GetEyeAngles
 
       - name: CBaseEntity_IsAlive
         catagory: vfunc
