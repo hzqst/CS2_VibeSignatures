@@ -289,10 +289,19 @@ modules:
           - CCSPlayer_ItemServices_RemoveWeapons.{platform}.yaml
         expected_input:
           - CCSPlayerStateDeathAnim_vtable.{platform}.yaml
-          - CCSPlayer_ItemServices.{platform}.yaml
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
         prerequisite:
           - find-CCSPlayerStateDeathAnim_vtable
-          - find-CCSPlayer_ItemServices
+          - find-CCSPlayer_ItemServices_vtable
+        max_retries: 4
+
+      - name: find-CCSPlayer_WeaponServices_SelectItem
+        expected_output:
+          - CCSPlayer_WeaponServices_SelectItem.{platform}.yaml
+        expected_input:
+          - CCSPlayer_WeaponServices_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_WeaponServices_vtable
         max_retries: 4
 
       - name: find-NetworkStateChanged
@@ -729,15 +738,30 @@ modules:
         alias:
           - CBasePlayerPawn::RemovePlayerItem
 
+      - name: CBasePlayerPawn_DropActivePlayerWeapon
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::DropActivePlayerWeapon
+
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
         catagory: vfunc
         alias:
           - CCSPlayer_ItemServices::DropActivePlayerWeapon
 
+      - name: CCSPlayer_WeaponServices_DropWeapon
+        catagory: vfunc
+        alias:
+          - CCSPlayer_WeaponServices::DropWeapon
+
       - name: CCSPlayer_ItemServices_RemoveWeapons
         catagory: vfunc
         alias:
           - CCSPlayer_ItemServices::RemoveWeapons
+
+      - name: CCSPlayer_WeaponServices_SelectItem
+        catagory: vfunc
+        alias:
+          - CCSPlayer_WeaponServices::SelectItem
 
       - name: CEntityIOOutput_FireOutputInternal
         catagory: func
