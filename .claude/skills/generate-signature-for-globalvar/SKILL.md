@@ -51,210 +51,190 @@ Use a single `py_eval` call that:
 mcp__ida-pro-mcp__py_eval code="""
 import idaapi, ida_bytes, idautils, ida_ua, ida_segment, json
 
-target_gv = <gv_addr>
-target_inst = None       # Set to instruction address if known, e.g. 0x1804F3DF3
-target_func = None       # Set to function address to restrict search, e.g. 0x1804F3DA0
-min_sig_bytes = 8
-max_sig_bytes = 96
-max_instructions = 64
-max_candidates = 32
+def main():
+    target_gv = <gv_addr>
+    target_inst = None       # Set to instruction address if known, e.g. 0x1804F3DF3
+    target_func = None       # Set to function address to restrict search, e.g. 0x1804F3DA0
+    min_sig_bytes = 8
+    max_sig_bytes = 96
+    max_instructions = 64
+    max_candidates = 32
 
-# --- Search bounds ---
-seg = ida_segment.get_segm_by_name(".text")
-if seg:
-    search_start, search_end = seg.start_ea, seg.end_ea
-else:
-    search_start, search_end = idaapi.cvar.inf.min_ea, idaapi.cvar.inf.max_ea
+    # --- Search bounds ---
+    seg = ida_segment.get_segm_by_name(".text")
+    if seg:
+        search_start, search_end = seg.start_ea, seg.end_ea
+    else:
+        search_start, search_end = idaapi.cvar.inf.min_ea, idaapi.cvar.inf.max_ea
 
-def _resolve_disp_off(insn_ea, insn, raw):
-    cand_offsets = set()
-    for op in insn.ops:
-        op_type = int(op.type)
-        if op_type == int(idaapi.o_void):
-            continue
-        offb = int(getattr(op, 'offb', 0))
-        offo = int(getattr(op, 'offo', 0))
-        if offb > 0 and offb + 4 <= insn.size:
-            cand_offsets.add(offb)
-        if offo > 0 and offo + 4 <= insn.size:
-            cand_offsets.add(offo)
-
-    for off in sorted(cand_offsets):
-        disp_i32 = int.from_bytes(raw[off:off + 4], 'little', signed=True)
-        resolved = (insn_ea + insn.size + disp_i32) & 0xFFFFFFFFFFFFFFFF
-        if resolved == target_gv:
-            return off
-    return None
-
-def _collect_and_validate(inst_ea, disp_off):
-    f = idaapi.get_func(inst_ea)
-    if not f:
-        return None
-
-    limit_end = min(f.end_ea, inst_ea + max_sig_bytes)
-    sig_tokens = []
-    inst_boundaries = []
-    cursor = inst_ea
-    first_len = None
-
-    while cursor < f.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_bytes:
-        insn = idautils.DecodeInstruction(cursor)
-        if not insn or insn.size <= 0:
-            break
-        raw = ida_bytes.get_bytes(cursor, insn.size)
-        if not raw:
-            break
-
-        wild = set()
-
+    def resolve_disp_off(insn_ea, insn, raw):
+        cand_offsets = set()
         for op in insn.ops:
-            op_type = int(op.type)
-            if op_type == int(idaapi.o_void):
+            if int(op.type) == int(idaapi.o_void):
                 continue
-            if op_type in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):
-                offb = int(getattr(op, 'offb', 0))
-                if offb > 0 and offb < insn.size:
-                    dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
-                    if dsz <= 0:
-                        dsz = insn.size - offb
-                    end = min(insn.size, offb + dsz)
-                    for i in range(offb, end):
-                        wild.add(i)
-                offo = int(getattr(op, 'offo', 0))
-                if offo > 0 and offo < insn.size:
-                    dsz2 = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
-                    if dsz2 <= 0:
-                        dsz2 = insn.size - offo
-                    end2 = min(insn.size, offo + dsz2)
-                    for i in range(offo, end2):
-                        wild.add(i)
-
-        b0 = raw[0]
-        if b0 in (0xE8, 0xE9, 0xEB):
-            for i in range(1, insn.size):
-                wild.add(i)
-        elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:
-            for i in range(2, insn.size):
-                wild.add(i)
-        elif 0x70 <= b0 <= 0x7F:
-            for i in range(1, insn.size):
-                wild.add(i)
-
-        if cursor == inst_ea:
-            first_len = insn.size
-            for i in range(disp_off, min(insn.size, disp_off + 4)):
-                wild.add(i)
-
-        for idx in range(insn.size):
-            sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
-
-        inst_boundaries.append(len(sig_tokens))
-        cursor += insn.size
-
-    if not sig_tokens or first_len is None:
+            offb = int(getattr(op, 'offb', 0))
+            offo = int(getattr(op, 'offo', 0))
+            if offb > 0 and offb + 4 <= insn.size:
+                cand_offsets.add(offb)
+            if offo > 0 and offo + 4 <= insn.size:
+                cand_offsets.add(offo)
+        for off in sorted(cand_offsets):
+            disp_i32 = int.from_bytes(raw[off:off + 4], 'little', signed=True)
+            resolved = (insn_ea + insn.size + disp_i32) & 0xFFFFFFFFFFFFFFFF
+            if resolved == target_gv:
+                return off
         return None
 
-    # --- Progressive search at instruction boundaries ---
-    for boundary in inst_boundaries:
-        if boundary < min_sig_bytes:
-            continue
-
-        prefix_tokens = sig_tokens[:boundary]
-        if all(t == "??" for t in prefix_tokens):
-            continue
-
-        pattern_str = " ".join("?" if t == "??" else t for t in prefix_tokens)
-        pat = ida_bytes.compiled_binpat_vec_t()
-        ida_bytes.parse_binpat_str(pat, search_start, pattern_str, 16)
-        flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
-
-        matches = []
-        res = ida_bytes.bin_search3(search_start, search_end, pat, flags)
-        ea = res[0] if isinstance(res, tuple) else res
-        while ea != idaapi.BADADDR and len(matches) < 2:
-            matches.append(ea)
-            res = ida_bytes.bin_search3(ea + 1, search_end, pat, flags)
-            ea = res[0] if isinstance(res, tuple) else res
-
-        if len(matches) == 1 and matches[0] == inst_ea:
-            return {
-                "gv_sig": " ".join(prefix_tokens),
-                "sig_bytes": boundary,
-                "gv_sig_va": hex(inst_ea),
-                "gv_inst_length": first_len,
-                "gv_inst_disp": disp_off,
-            }
-
-    return None
-
-# --- Discover candidate GV-accessing instructions ---
-candidates_tried = 0
-best = None
-seen = set()
-
-def _try_candidate(inst_ea):
-    global candidates_tried, best
-    if inst_ea in seen:
-        return
-    seen.add(inst_ea)
-
-    insn = idautils.DecodeInstruction(inst_ea)
-    if not insn or insn.size <= 0:
-        return
-    raw = ida_bytes.get_bytes(inst_ea, insn.size)
-    if not raw:
-        return
-
-    disp_off = _resolve_disp_off(inst_ea, insn, raw)
-    if disp_off is None:
-        return
-
-    candidates_tried += 1
-    result = _collect_and_validate(inst_ea, disp_off)
-    if result is not None:
-        if best is None or result["sig_bytes"] < best["sig_bytes"]:
-            best = result
-
-if target_inst is not None:
-    _try_candidate(target_inst)
-elif target_func is not None:
-    f = idaapi.get_func(target_func)
-    if f:
-        ea = f.start_ea
-        while ea < f.end_ea and candidates_tried < max_candidates:
-            flags = ida_bytes.get_full_flags(ea)
-            if ida_bytes.is_code(flags):
-                _try_candidate(ea)
-                if best is not None:
-                    break
-            next_ea = ida_bytes.next_head(ea, f.end_ea)
-            if next_ea == idaapi.BADADDR or next_ea <= ea:
+    def collect_and_validate(inst_ea, disp_off):
+        f = idaapi.get_func(inst_ea)
+        if not f:
+            return None
+        limit_end = min(f.end_ea, inst_ea + max_sig_bytes)
+        sig_tokens = []
+        inst_boundaries = []
+        cursor = inst_ea
+        first_len = None
+        while cursor < f.end_ea and cursor < limit_end and len(sig_tokens) < max_sig_bytes:
+            insn = idautils.DecodeInstruction(cursor)
+            if not insn or insn.size <= 0:
                 break
-            ea = next_ea
-else:
-    for ref in idautils.DataRefsTo(target_gv):
-        if candidates_tried >= max_candidates:
-            break
-        flags = ida_bytes.get_full_flags(ref)
-        if not ida_bytes.is_code(flags):
-            continue
-        _try_candidate(ref)
-        if best is not None:
-            break
+            raw = ida_bytes.get_bytes(cursor, insn.size)
+            if not raw:
+                break
+            wild = set()
+            for op in insn.ops:
+                ot = int(op.type)
+                if ot == int(idaapi.o_void):
+                    continue
+                if ot in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):
+                    offb = int(getattr(op, 'offb', 0))
+                    if offb > 0 and offb < insn.size:
+                        dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                        if dsz <= 0:
+                            dsz = insn.size - offb
+                        for i in range(offb, min(insn.size, offb + dsz)):
+                            wild.add(i)
+                    offo = int(getattr(op, 'offo', 0))
+                    if offo > 0 and offo < insn.size:
+                        dsz2 = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))
+                        if dsz2 <= 0:
+                            dsz2 = insn.size - offo
+                        for i in range(offo, min(insn.size, offo + dsz2)):
+                            wild.add(i)
+            b0 = raw[0]
+            if b0 in (0xE8, 0xE9, 0xEB):
+                for i in range(1, insn.size):
+                    wild.add(i)
+            elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:
+                for i in range(2, insn.size):
+                    wild.add(i)
+            elif 0x70 <= b0 <= 0x7F:
+                for i in range(1, insn.size):
+                    wild.add(i)
+            if cursor == inst_ea:
+                first_len = insn.size
+                for i in range(disp_off, min(insn.size, disp_off + 4)):
+                    wild.add(i)
+            for idx in range(insn.size):
+                sig_tokens.append("??" if idx in wild else f"{raw[idx]:02X}")
+            inst_boundaries.append(len(sig_tokens))
+            cursor += insn.size
+        if not sig_tokens or first_len is None:
+            return None
+        for boundary in inst_boundaries:
+            if boundary < min_sig_bytes:
+                continue
+            prefix_tokens = sig_tokens[:boundary]
+            if all(t == "??" for t in prefix_tokens):
+                continue
+            pattern_str = " ".join("?" if t == "??" else t for t in prefix_tokens)
+            pat = ida_bytes.compiled_binpat_vec_t()
+            ida_bytes.parse_binpat_str(pat, search_start, pattern_str, 16)
+            flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
+            matches = []
+            res = ida_bytes.bin_search3(search_start, search_end, pat, flags)
+            ea = res[0] if isinstance(res, tuple) else res
+            while ea != idaapi.BADADDR and len(matches) < 2:
+                matches.append(ea)
+                res = ida_bytes.bin_search3(ea + 1, search_end, pat, flags)
+                ea = res[0] if isinstance(res, tuple) else res
+            if len(matches) == 1 and matches[0] == inst_ea:
+                return {
+                    "gv_sig": " ".join(prefix_tokens),
+                    "sig_bytes": boundary,
+                    "gv_sig_va": hex(inst_ea),
+                    "gv_inst_length": first_len,
+                    "gv_inst_disp": disp_off,
+                }
+        return None
 
-if best:
-    best["gv_va"] = hex(target_gv)
-    best["gv_rva"] = hex(target_gv - idaapi.get_imagebase())
-    best["gv_inst_offset"] = 0
-    best["status"] = "success"
-    print(json.dumps(best))
-else:
-    print(json.dumps({
-        "gv_va": hex(target_gv),
-        "candidates_tried": candidates_tried,
-        "error": "no unique gv-access signature found",
-        "status": "failed"
-    }))
+    # --- Discover candidate GV-accessing instructions ---
+    candidates_tried = 0
+    best = None
+    seen = set()
+
+    def try_candidate(iea):
+        nonlocal candidates_tried, best
+        if iea in seen:
+            return
+        seen.add(iea)
+        insn = idautils.DecodeInstruction(iea)
+        if not insn or insn.size <= 0:
+            return
+        raw = ida_bytes.get_bytes(iea, insn.size)
+        if not raw:
+            return
+        doff = resolve_disp_off(iea, insn, raw)
+        if doff is None:
+            return
+        candidates_tried += 1
+        result = collect_and_validate(iea, doff)
+        if result is not None:
+            if best is None or result["sig_bytes"] < best["sig_bytes"]:
+                best = result
+
+    if target_inst is not None:
+        try_candidate(target_inst)
+    elif target_func is not None:
+        f = idaapi.get_func(target_func)
+        if f:
+            ea = f.start_ea
+            while ea < f.end_ea and candidates_tried < max_candidates:
+                fl = ida_bytes.get_full_flags(ea)
+                if ida_bytes.is_code(fl):
+                    try_candidate(ea)
+                    if best is not None:
+                        break
+                nea = ida_bytes.next_head(ea, f.end_ea)
+                if nea == idaapi.BADADDR or nea <= ea:
+                    break
+                ea = nea
+    else:
+        for ref in idautils.DataRefsTo(target_gv):
+            if candidates_tried >= max_candidates:
+                break
+            fl = ida_bytes.get_full_flags(ref)
+            if not ida_bytes.is_code(fl):
+                continue
+            try_candidate(ref)
+            if best is not None:
+                break
+
+    if best:
+        best["gv_va"] = hex(target_gv)
+        best["gv_rva"] = hex(target_gv - idaapi.get_imagebase())
+        best["gv_inst_offset"] = 0
+        best["status"] = "success"
+        print(json.dumps(best))
+    else:
+        print(json.dumps({
+            "gv_va": hex(target_gv),
+            "candidates_tried": candidates_tried,
+            "error": "no unique gv-access signature found",
+            "status": "failed"
+        }))
+
+main()
 """
 ```
 
