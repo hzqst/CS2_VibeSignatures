@@ -1,11 +1,11 @@
 ---
-name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
-description: Find and identify the CSource2Server_Init, CGameEventManager_Init and gameeventmanager in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
+name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager
+description: Find and identify the CSource2Server_Init, CGameEventManager_Init, gameeventmanager, s_GameEventManagerin CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
 ---
 
 # Find CSource2Server_Init
 
-Locate `CSource2Server_Init`, `CGameEventManager_Init` and `gameeventmanager` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CSource2Server_Init`, `CGameEventManager_Init`, `gameeventmanager`, `s_GameEventManager` in CS2 server.dll or server.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -33,21 +33,46 @@ COM_TimestampedLog("gameeventmanager->Init()");
 sub_XXXXXXXXXX((__int64)off_XXXXXXXX); //This is CGameEventManager_Init(gameeventmanager);
 ```
 
-### 4. Rename the function and global variable
+### 4. Rename the functions and global variables
 
-Rename the function:
+#### Rename the function:
 ```
 mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CSource2Server_Init"}]}
 ```
 
-Rename the game event manager pointer (if found):
+#### Rename the caller of `gameeventmanager` to `CGameEventManager_Init` (if found):
+```
+mcp__ida-pro-mcp__rename batch={"data": {"old": "sub_XXXXXXXXXX", "new": "CGameEventManager_Init"}}
+```
+
+#### Rename the game event manager pointer (if found):
 ```
 mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "gameeventmanager"}}
 ```
 
-Rename the caller of `gameeventmanager` to `CGameEventManager_Init` (if found):
+#### Rename the global class instance to s_GameEventManager (if found):
+
+The pointer `gameeventmanager` points to a global class instance which is actually `s_GameEventManager`:
+
 ```
-mcp__ida-pro-mcp__rename batch={"data": {"old": "sub_XXXXXXXXXX", "new": "CGameEventManager_Init"}}
+.data:0000000181B89710 off_181B89710   dq offset off_181B8AAD0
+```
+
+```
+.data:0000000181B8CAB0 gameeventmanager   dq offset s_GameEventManager
+```
+
+This can be verified by checking `off_181B8AAD0`, it should points to "const CGameEventManager::`vftable'":
+
+```
+.data:0000000181B8AAD0 off_181B8AAD0   dq offset ??_7CGameEventManager@@6B@
+.data:0000000181B8AAD0                                         ; DATA XREF: sub_1800D2C10+5E↑o
+.data:0000000181B8AAD0                                         ; sub_180B46B50+2E↑o ...
+.data:0000000181B8AAD0                                         ; const CGameEventManager::`vftable'
+```
+
+```
+mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "s_GameEventManager"}}
 ```
 
 ### 5. Find VTable and Calculate Offset
@@ -97,8 +122,25 @@ Required parameters:
 
    Required parameters:
    - `gv_name`: `gameeventmanager`
-   - `gv_addr`: The global variable address from step 3 / step 4
+   - `gv_addr`: The global variable address from step 4
    - `gv_sig`: The validated signature from step 10
+   - `gv_sig_va`: The virtual address that signature matches
+   - `gv_inst_offset`: Offset from signature start to GV-accessing instruction
+   - `gv_inst_length`: Length of the GV-accessing instruction
+   - `gv_inst_disp`: Displacement offset within the instruction
+
+### 12. Generate and validate unique signature for s_GameEventManager
+
+   **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: gameeventmanager.
+
+### 13. Write IDA analysis output for `s_GameEventManager` as YAML beside the binary:
+
+   **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results.
+
+   Required parameters:
+   - `gv_name`: `s_GameEventManager`
+   - `gv_addr`: The global variable address from step 4
+   - `gv_sig`: The validated signature from step 12
    - `gv_sig_va`: The virtual address that signature matches
    - `gv_inst_offset`: Offset from signature start to GV-accessing instruction
    - `gv_inst_length`: Length of the GV-accessing instruction
@@ -180,26 +222,17 @@ The output YAML filename for CSource2Server_Init depends on the platform:
 - `server.dll` → `CSource2Server_Init.windows.yaml`
 - `server.so` / `libserver.so` → `CSource2Server_Init.linux.yaml`
 
-```yaml
-func_va: 0x180c87700      # Virtual address of the function - changes with game updates
-func_rva: 0xc87700        # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x1e9          # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - changes with game updates
-vtable_name: CSource2Server
-vfunc_offset: 0x18        # Offset from vtable start - changes with game updates
-vfunc_index: 3            # vtable[3] - changes with game updates
-```
-
 The output YAML filename for CGameEventManager_Init depends on the platform:
 - `server.dll` → `CGameEventManager_Init.windows.yaml`
 - `server.so` → `CGameEventManager_Init.linux.yaml`
 
-```yaml
-func_va: 0x14ff3e0         # Virtual address of the function - This can change when game updates.
-func_rva: 0x14ff3e0        # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x56            # Function size in bytes - This can change when game updates.
-func_sig: 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 8b 07 ff 50 18 48 8b 03 48 89 df 31 d2 48 8d 35 ?? ?? ?? ?? ff 50 10 48 8b 03 48 89 df 31 d2 48 8d 35 ?? ?? ?? ?? ff 50 10  # Unique byte signature for pattern scanning - This can change when game updates.
-```
+The output YAML filename for gameeventmanager depends on the platform:
+- `server.dll` → `gameeventmanager.windows.yaml`
+- `server.so` → `gameeventmanager.linux.yaml`
+
+The output YAML filename for s_GameEventManager depends on the platform:
+- `server.dll` → `s_GameEventManager.windows.yaml`
+- `server.so` → `s_GameEventManager.linux.yaml`
 
 ## Related Globals
 

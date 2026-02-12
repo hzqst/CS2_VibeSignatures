@@ -15,7 +15,7 @@ TARGET_FUNCTION_NAMES = [
     "CSource2Server_Init",
     "CGameEventManager_Init",
 ]
-TARGET_GLOBALVAR_NAME = "gameeventmanager"
+TARGET_GLOBALVAR_NAME = "gameeventmanager" #TODO: s_GameEventManager too
 
 
 async def preprocess_skill(

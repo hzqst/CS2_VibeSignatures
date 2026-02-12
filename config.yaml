@@ -209,11 +209,12 @@ modules:
         prerequisite:
           - find-CCSPlayerPawn_vtable
 
-      - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager
+      - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager
         expected_output:
           - CSource2Server_Init.{platform}.yaml
           - CGameEventManager_Init.{platform}.yaml
           - gameeventmanager.{platform}.yaml
+          - s_GameEventManager.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
         prerequisite:
@@ -575,6 +576,9 @@ modules:
           - CGameEventManager::Init
 
       - name: gameeventmanager
+        catagory: gv
+
+      - name: s_GameEventManager
         catagory: gv
 
       - name: CTakeDamageInfo
