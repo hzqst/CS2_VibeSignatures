@@ -38,8 +38,8 @@
             },
             "CSource2Server::Init": {
                 "library": "server",
-                "win64": "48 83 EC 28 48 83 3D ? ? ? ? 00 74 07 33 C9 E8 ? ? ? ? FF 15 ? ? ? ? 45 33 C0 BA E6 B4 D6 34 48 8B 08 4C 8B 49 30 48 8B C8 41 FF D1 85 C0 74 07 C6 05 ? ? ? ? 01 48 8D 0D ? ? ? ? FF 15 ? ? ? ?",
-                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC 08 48 8D 05 ? ? ? ? 48 83 38 00 74 07 31 FF E8 ? ? ? ? E8 ? ? ? ? 31 D2 BE E6 B4 D6 34"
+                "win64": "48 83 EC ? 48 83 3D ? ? ? ? ? 74 ? 33 C9 E8 ? ? ? ? FF 15 ? ? ? ?",
+                "linuxsteamrt64": "55 48 89 E5 41 55 41 54 53 48 83 EC ? 48 8D 05 ? ? ? ? 48 83 38 ?"
             },
             "CEntityInstance::AcceptInput": {
                 "library": "server",

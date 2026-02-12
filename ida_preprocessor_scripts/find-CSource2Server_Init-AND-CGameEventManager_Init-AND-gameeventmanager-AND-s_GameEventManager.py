@@ -15,7 +15,7 @@ TARGET_FUNCTION_NAMES = [
     "CSource2Server_Init",
     "CGameEventManager_Init",
 ]
-TARGET_GLOBALVAR_NAME = "gameeventmanager" #TODO: s_GameEventManager too
+TARGET_GLOBALVAR_NAMES = ["gameeventmanager", "s_GameEventManager"]
 
 
 async def preprocess_skill(
@@ -35,10 +35,11 @@ async def preprocess_skill(
         f"{func_name}.{platform}.yaml": ("func", func_name)
         for func_name in TARGET_FUNCTION_NAMES
     }
-    expected_by_filename[f"{TARGET_GLOBALVAR_NAME}.{platform}.yaml"] = ("gv", TARGET_GLOBALVAR_NAME)
+    for gv_name in TARGET_GLOBALVAR_NAMES:
+        expected_by_filename[f"{gv_name}.{platform}.yaml"] = ("gv", gv_name)
 
     matched_func_outputs = {}
-    matched_gv_output = None
+    matched_gv_outputs = {}
     for path in expected_outputs:
         basename = os.path.basename(path)
         item = expected_by_filename.get(basename)
@@ -49,13 +50,13 @@ async def preprocess_skill(
         if kind == "func":
             matched_func_outputs[name] = path
         else:
-            matched_gv_output = path
+            matched_gv_outputs[name] = path
 
-    if len(matched_func_outputs) != len(TARGET_FUNCTION_NAMES) or matched_gv_output is None:
+    missing_func_names = [name for name in TARGET_FUNCTION_NAMES if name not in matched_func_outputs]
+    missing_gv_names = [name for name in TARGET_GLOBALVAR_NAMES if name not in matched_gv_outputs]
+    if missing_func_names or missing_gv_names:
         if debug:
-            missing = [name for name in TARGET_FUNCTION_NAMES if name not in matched_func_outputs]
-            if matched_gv_output is None:
-                missing.append(TARGET_GLOBALVAR_NAME)
+            missing = missing_func_names + missing_gv_names
             print(
                 "    Preprocess: expected outputs missing for "
                 f"{', '.join(missing)}"
@@ -84,23 +85,27 @@ async def preprocess_skill(
         if debug:
             print(f"    Preprocess: generated {func_name}.{platform}.yaml")
 
-    gv_old_path = (old_yaml_map or {}).get(matched_gv_output)
-    gv_data = await preprocess_gv_sig_via_mcp(
-        session=session,
-        new_path=matched_gv_output,
-        old_path=gv_old_path,
-        image_base=image_base,
-        new_binary_dir=new_binary_dir,
-        platform=platform,
-        debug=debug,
-    )
-    if gv_data is None:
-        if debug:
-            print(f"    Preprocess: failed to locate {TARGET_GLOBALVAR_NAME}")
-        return False
+    for gv_name in TARGET_GLOBALVAR_NAMES:
+        target_output = matched_gv_outputs[gv_name]
+        gv_old_path = (old_yaml_map or {}).get(target_output)
 
-    write_gv_yaml(matched_gv_output, gv_data)
-    if debug:
-        print(f"    Preprocess: generated {TARGET_GLOBALVAR_NAME}.{platform}.yaml")
+        gv_data = await preprocess_gv_sig_via_mcp(
+            session=session,
+            new_path=target_output,
+            old_path=gv_old_path,
+            image_base=image_base,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+
+        if gv_data is None:
+            if debug:
+                print(f"    Preprocess: failed to locate {gv_name}")
+            return False
+
+        write_gv_yaml(target_output, gv_data)
+        if debug:
+            print(f"    Preprocess: generated {gv_name}.{platform}.yaml")
 
     return True
