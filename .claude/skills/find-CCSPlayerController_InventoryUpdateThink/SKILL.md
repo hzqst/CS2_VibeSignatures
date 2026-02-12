@@ -132,13 +132,6 @@ The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerController_InventoryUpdateThink.windows.yaml`
 - `server.so` / `libserver.so` → `CCSPlayerController_InventoryUpdateThink.linux.yaml`
 
-```yaml
-func_va: 0x132C520        # Virtual address - changes with game updates
-func_rva: 0x132C520       # Relative virtual address (VA - image base)
-func_size: 0xC            # Function size in bytes (typically 12 for wrapper)
-func_sig: 48 8B BF B8 0A 00 00 E9  # Unique byte signature
-```
-
 ## Notes
 
 - This is NOT a virtual function, so no vtable information is needed

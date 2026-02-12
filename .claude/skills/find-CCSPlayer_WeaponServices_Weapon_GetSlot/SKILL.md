@@ -73,10 +73,3 @@ MoveToInitialEncounter: Can't find battlefront!
 The output YAML filename depends on the platform:
 - `server.dll` -> `CCSPlayer_WeaponServices_Weapon_GetSlot.windows.yaml`
 - `server.so` -> `CCSPlayer_WeaponServices_Weapon_GetSlot.linux.yaml`
-
-```yaml
-func_va: 0x180B84780     # Virtual address - changes with game updates
-func_rva: 0xB84780       # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0xF0          # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - changes with game updates
-```

@@ -4,3 +4,4 @@ func_size: '0x131'
 func_sig: 48 89 5C 24 10 48 89 6C 24 18 56 41 56 41 57 48 83 EC 50 48 C7 44 24 70
   00 00 00 00 49 8B F1 48 8D 1D ?? ?? ?? ?? 41 8B E8 44 8B FA 4C 8B F1 4D 85 C9 74
   64 49 8B 49 08 48 85 C9 74 5B 48 8D 05
+func_name: CGameResourceService_BuildResourceManifest

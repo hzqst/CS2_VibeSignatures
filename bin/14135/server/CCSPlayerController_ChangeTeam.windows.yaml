@@ -7,3 +7,4 @@ func_sig: 48 8B C4 53 55 57 48 81 EC 80 00 00 00 0F B6 A9 44 03 00 00 8B FA 48 8
 vtable_name: CCSPlayerController
 vfunc_offset: '0x330'
 vfunc_index: 102
+func_name: CCSPlayerController_ChangeTeam

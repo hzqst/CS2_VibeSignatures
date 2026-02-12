@@ -147,16 +147,6 @@ The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_ItemServices_GiveNamedItem.windows.yaml`
 - `server.so` → `CCSPlayer_ItemServices_GiveNamedItem.linux.yaml`
 
-```yaml
-func_va: 0x13378a0          # Virtual address - Changes with game updates
-func_rva: 0x13378a0         # Relative virtual address (VA - image base) - Changes with game updates
-func_size: 0xf              # Function size in bytes - Changes with game updates
-func_sig: 45 31 C9 45 31 C0 31 C9 31 D2 E9 ?? ?? ?? ?? CC 55 45 31 C9  # Unique byte signature
-vtable_name: CCSPlayer_ItemServices
-vfunc_offset: 0xb0          # Offset from vtable start - Changes with game updates
-vfunc_index: 20             # vtable[20] - Changes with game updates
-```
-
 ## Related Functions
 
 Other vtable entries at indices 18-24 include:

@@ -2,3 +2,4 @@ func_va: '0x1500800'
 func_rva: '0x1500800'
 func_size: '0x21'
 func_sig: 48 89 FE 48 85 FF
+func_name: UTIL_Remove

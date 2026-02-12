@@ -1,4 +1,8 @@
-func_va: 0x1d4cd10
-func_rva: 0x1d4cd10
-func_size: 0x6e
-func_sig: 55 48 89 F0 48 89 E5 41 57 49 89 FF 41 56 48 8D 7D ?? 45 89 CE 41 55 4D 89 C5 41 54 49 89 CC 53 48 89 D3 48 83 EC 18 48 8D 15 ?? ?? ?? ?? 48 8B 32 48 89 C2 E8 ?? ?? ?? ?? 48 8B 45 ?? 48 8D 75 ?? 45 89 F1 49 8B 7F 10 4D 89 E8 4C 89 E1 48 89 DA 48 89 45 ?? 6A 00 FF 75 10 E8 ?? ?? ?? ??
+func_va: 30723344
+func_rva: 30723344
+func_size: 110
+func_sig: 55 48 89 F0 48 89 E5 41 57 49 89 FF 41 56 48 8D 7D ?? 45 89 CE 41 55 4D
+  89 C5 41 54 49 89 CC 53 48 89 D3 48 83 EC 18 48 8D 15 ?? ?? ?? ?? 48 8B 32 48 89
+  C2 E8 ?? ?? ?? ?? 48 8B 45 ?? 48 8D 75 ?? 45 89 F1 49 8B 7F 10 4D 89 E8 4C 89 E1
+  48 89 DA 48 89 45 ?? 6A 00 FF 75 10 E8 ?? ?? ?? ??
+func_name: CEntityInstance_AcceptInput

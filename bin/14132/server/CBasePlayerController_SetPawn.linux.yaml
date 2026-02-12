@@ -2,3 +2,4 @@ func_va: '0x1447450'
 func_rva: '0x1447450'
 func_size: '0x53c'
 func_sig: 55 48 8D 87 ?? ?? ?? ?? 48 89 E5 41 57 41 89 CF
+func_name: CBasePlayerController_SetPawn

@@ -1,4 +1,6 @@
-func_va: 0xe36de0
-func_rva: 0xe36de0
-func_size: 0x168
-func_sig: 55 48 89 E5 41 57 41 56 49 89 F6 BE FF FF FF FF 41 55 49 89 D5 41 54 53 48 89 FB 48 8D 3D ?? ?? ?? ?? 48 83 EC 28 C7 45 C8 FF FF FF FF E8 ?? ?? ?? ??
+func_va: 14904800
+func_rva: 14904800
+func_size: 360
+func_sig: 55 48 89 E5 41 57 41 56 49 89 F6 BE FF FF FF FF 41 55 49 89 D5 41 54 53
+  48 89 FB 48 8D 3D ?? ?? ?? ?? 48 83 EC 28 C7 45 C8 FF FF FF FF E8 ?? ?? ?? ??
+func_name: CBaseEntity_EmitSoundFilter

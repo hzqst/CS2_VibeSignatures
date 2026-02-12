@@ -95,13 +95,3 @@ This string is used to look up weapon data in a hash map/dictionary structure, a
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_WeaponServices_CanUse.windows.yaml`
 - `server.so` → `CCSPlayer_WeaponServices_CanUse.linux.yaml`
-
-```yaml
-func_va: 0x13cc6a0           # Virtual address - changes with game updates
-func_rva: 0x13cc6a0          # Relative virtual address - changes with game updates
-func_size: 0x3af             # Function size in bytes - changes with game updates
-func_sig: 55 48 8D 15 ?? ?? ?? ?? ...  # Unique byte signature - changes with game updates
-vtable_name: CCSPlayer_WeaponServices
-vfunc_offset: 0xd0           # Offset from vtable start - changes with game updates
-vfunc_index: 26              # vtable[26] - changes with game updates
-```

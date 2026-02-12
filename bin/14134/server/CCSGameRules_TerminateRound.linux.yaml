@@ -1,4 +1,6 @@
-func_va: 0x11c86d4
-func_rva: 0x11c86d4
-func_size: 0x1c95
-func_sig: 48 8D 35 ?? ?? ?? ?? 48 89 95 18 FF FF FF BA 01 00 00 00 89 8D 14 FF FF FF 48 8B 38 48 8B 07 FF 90 C8 00 00 00 41 8B 86 D0 0D 00 00
+func_va: 18646740
+func_rva: 18646740
+func_size: 7317
+func_sig: 48 8D 35 ?? ?? ?? ?? 48 89 95 18 FF FF FF BA 01 00 00 00 89 8D 14 FF FF
+  FF 48 8B 38 48 8B 07 FF 90 C8 00 00 00 41 8B 86 D0 0D 00 00
+func_name: CCSGameRules_TerminateRound

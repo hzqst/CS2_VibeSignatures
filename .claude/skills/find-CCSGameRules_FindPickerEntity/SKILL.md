@@ -110,13 +110,3 @@ The function checks these vtable entries:
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSGameRules_FindPickerEntity.windows.yaml`
 - `server.so` → `CCSGameRules_FindPickerEntity.linux.yaml`
-
-```yaml
-func_va: 0x16f8ca0       # Virtual address - changes with game updates
-func_rva: 0x16f8ca0      # Relative virtual address - changes with game updates
-func_size: 0x3a1         # Function size in bytes - changes with game updates
-func_sig: 55 48 89 E5 41 57 41 56 ...  # Unique byte signature - changes with game updates
-vtable_name: CCSGameRules
-vfunc_offset: 0xe0       # Offset from vtable start - changes with game updates
-vfunc_index: 26          # vtable[26] - changes with game updates
-```

@@ -74,10 +74,3 @@ Required parameters:
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_SetGroundEntity.windows.yaml`
 - `server.so` / `libserver.so` → `CBaseEntity_SetGroundEntity.linux.yaml`
-
-```yaml
-func_va: '0x180d16070'     # Virtual address - changes with game updates
-func_rva: '0xd16070'       # Relative virtual address (VA - image base) - changes with game updates
-func_size: '0x33b'         # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX   # Unique byte signature for pattern scanning - changes with game updates
-```

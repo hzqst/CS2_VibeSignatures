@@ -1,4 +1,6 @@
-func_va: 0x1809aa350
-func_rva: 0x9aa350
-func_size: 0xc
-func_sig: 48 8B 89 ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 40 53 48 83 EC 20 48 8B D9
+func_va: 6452585296
+func_rva: 10134352
+func_size: 12
+func_sig: 48 8B 89 ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 40 53 48 83 EC 20 48 8B
+  D9
+func_name: CCSPlayerController_InventoryUpdateThink

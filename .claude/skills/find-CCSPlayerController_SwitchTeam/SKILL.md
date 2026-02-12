@@ -94,10 +94,3 @@ __int64 CCSPlayerController_SwitchTeam(__int64 this, unsigned int team_id)
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerController_SwitchTeam.windows.yaml`
 - `server.so` → `CCSPlayerController_SwitchTeam.linux.yaml`
-
-```yaml
-func_va: 0x137A0A0       # Virtual address of the function - This can change when game updates.
-func_rva: 0x137A0A0      # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x5d          # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - This can change when game updates.
-```

@@ -78,10 +78,3 @@ Common model paths that reference this function:
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseModelEntity_SetModel.windows.yaml`
 - `server.so` → `CBaseModelEntity_SetModel.linux.yaml`
-
-```yaml
-func_va: 0x142de40       # Virtual address of the function - This can change when game updates.
-func_rva: 0x142de40      # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x3d          # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - This can change when game updates.
-```

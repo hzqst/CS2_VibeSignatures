@@ -98,10 +98,3 @@ Locate `CBaseEntity_TakeDamageOld` in CS2 server.dll or server.so using IDA Pro 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_TakeDamageOld.windows.yaml`
 - `server.so` → `CBaseEntity_TakeDamageOld.linux.yaml`
-
-```yaml
-func_va: 0x180XXXXXX      # Virtual address of the function - This can change when game updates.
-func_rva: 0xXXXXXX        # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xXXX          # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-```

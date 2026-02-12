@@ -7,3 +7,4 @@ func_sig: 40 55 53 56 48 8D 6C 24 E0 48 81 EC 20 01 00 00 48 8B F2 4C 89 A4 24 4
 vtable_name: CGameRules
 vfunc_offset: '0x210'
 vfunc_index: 66
+func_name: CGameRules_ClientSettingsChanged

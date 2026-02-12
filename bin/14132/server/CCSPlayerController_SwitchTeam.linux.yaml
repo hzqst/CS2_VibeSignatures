@@ -1,4 +1,5 @@
-func_va: 0x137a4e0
-func_rva: 0x137a4e0
-func_size: 0x5d
+func_va: 20423904
+func_rva: 20423904
+func_size: 93
 func_sig: 55 48 89 E5 41 54 49 89 FC 89 F7
+func_name: CCSPlayerController_SwitchTeam

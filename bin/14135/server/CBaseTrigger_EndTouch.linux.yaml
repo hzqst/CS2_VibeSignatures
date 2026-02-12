@@ -6,3 +6,4 @@ func_sig: 48 85 F6 74 0B E9 ?? ?? ?? ?? 66 0F 1F 44 00 00 C3 CC CC CC CC CC CC C
 vtable_name: CBaseTrigger
 vfunc_offset: '0x4a0'
 vfunc_index: 148
+func_name: CBaseTrigger_EndTouch

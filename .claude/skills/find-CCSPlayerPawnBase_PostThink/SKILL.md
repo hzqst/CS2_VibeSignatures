@@ -98,16 +98,6 @@ The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerPawnBase_PostThink.windows.yaml`
 - `server.so` / `libserver.so` → `CCSPlayerPawnBase_PostThink.linux.yaml`
 
-```yaml
-func_va: 0xA58DE0        # Virtual address of the function - changes with game updates
-func_rva: 0xA58DE0       # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x86A         # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - changes with game updates
-vtable_name: CCSPlayerPawn
-vfunc_offset: 0xB98      # Offset from vtable start - changes with game updates
-vfunc_index: 371         # vtable index - changes with game updates
-```
-
 ## Related Functions
 
 - `sub_1387560` - Check if in buy zone

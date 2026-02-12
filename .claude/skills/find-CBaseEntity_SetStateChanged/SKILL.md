@@ -94,16 +94,6 @@ The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_SetStateChanged.windows.yaml`
 - `server.so` / `libserver.so` → `CBaseEntity_SetStateChanged.linux.yaml`
 
-```yaml
-func_va: 0x180168DC0     # Virtual address - changes with game updates
-func_rva: 0x168DC0       # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x142         # Function size in bytes - changes with game updates
-func_sig: 48 8B C4 56 48 81 EC 40 01 00 00 83 3A 00 48 8B F1 48 89 68 10 48 8B EA 48 89 78 18 74 ?? 4C 8B C2 48 8B D1 48 83 C1 40 E8 ?? ?? ?? ??
-vtable_name: CBaseEntity
-vfunc_offset: 0xD8       # Offset from vtable start - changes with game updates
-vfunc_index: 27          # vtable index - changes with game updates
-```
-
 ## Related Functions
 
 - `CNetworkTransmitComponent::StateChanged` - Internal state change handler

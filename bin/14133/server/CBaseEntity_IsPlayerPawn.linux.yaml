@@ -1,4 +1,5 @@
-func_va: 0x9b56e0
-func_rva: 0x9b56e0
-func_size: 0xb
+func_va: 10180320
+func_rva: 10180320
+func_size: 11
 func_sig: 80 BF C0 05 00 00 00 0F 94 C0 C3
+func_name: CBaseEntity_IsPlayerPawn

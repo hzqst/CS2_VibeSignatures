@@ -331,16 +331,6 @@ The output YAML filenames depend on the platform:
 - `server.dll` -> `CBaseEntity_StartTouch.windows.yaml`, `CBaseEntity_Touch.windows.yaml`, `CBaseEntity_EndTouch.windows.yaml`
 - `server.so` -> `CBaseEntity_StartTouch.linux.yaml`, `CBaseEntity_Touch.linux.yaml`, `CBaseEntity_EndTouch.linux.yaml`
 
-```yaml
-func_va: 0x180XXXXXX      # Virtual address - changes with game updates
-func_rva: 0xXXXXXX        # Relative virtual address - changes with game updates
-func_size: 0xXX           # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX  # Unique byte signature - changes with game updates
-vtable_name: CBaseEntity
-vfunc_offset: 0x498       # Offset from vtable start - changes with game updates
-vfunc_index: 147          # vtable index - changes with game updates
-```
-
 ## DLL Information
 
 - **DLL**: `server.dll` (Windows) / `server.so` (Linux)

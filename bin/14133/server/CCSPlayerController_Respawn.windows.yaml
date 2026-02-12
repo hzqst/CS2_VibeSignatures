@@ -1,7 +1,9 @@
-func_va: 0x1809b90f0
-func_rva: 0x9b90f0
-func_size: 0x129
-func_sig: 48 89 5C 24 10 48 89 74 24 18 57 48 83 EC 30 F3 0F 10 0D ?? ?? ?? ?? 48 8B D9 48 8D 4C 24 40 E8 ?? ?? ?? ??
+func_va: 6452646128
+func_rva: 10195184
+func_size: 297
+func_sig: 48 89 5C 24 10 48 89 74 24 18 57 48 83 EC 30 F3 0F 10 0D ?? ?? ?? ?? 48
+  8B D9 48 8D 4C 24 40 E8 ?? ?? ?? ??
 vtable_name: CCSPlayerController
-vfunc_offset: 0x880
+vfunc_offset: 2176
 vfunc_index: 272
+func_name: CCSPlayerController_Respawn

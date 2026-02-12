@@ -114,10 +114,3 @@ Key identifying features:
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerController_SetPawn.windows.yaml`
 - `server.so` → `CBasePlayerController_SetPawn.linux.yaml`
-
-```yaml
-func_va: 0x1445610         # Virtual address of the function - changes with game updates
-func_rva: 0x1445610        # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x53c           # Function size in bytes - changes with game updates
-func_sig: 55 48 8D 87 C0 07 00 00 48 89 E5 41 57 41 89 CF 41 56 41 55 45 89 CD 41 54 49 89 F4 53 48 89 FB 48 83 EC 68 8B 8F C0 07 00 00 44 89 45 80 48 89 45 88 83 F9 FF 0F 84 ?? ?? ?? ?? 48 8B 35 ?? ?? ?? ??
-```

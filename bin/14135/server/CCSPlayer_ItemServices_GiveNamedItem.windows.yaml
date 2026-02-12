@@ -7,3 +7,4 @@ func_sig: 48 83 EC 38 48 C7 44 24 28 00 00 00 00 45 33 C9 45 33 C0 C6 44 24 20 0
 vtable_name: CCSPlayer_ItemServices
 vfunc_offset: '0x98'
 vfunc_index: 19
+func_name: CCSPlayer_ItemServices_GiveNamedItem

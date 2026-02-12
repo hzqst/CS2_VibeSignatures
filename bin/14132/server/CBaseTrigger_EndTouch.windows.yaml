@@ -4,3 +4,4 @@ func_size: '0x217'
 vtable_name: CBaseTrigger
 vfunc_offset: '0x4a8'
 vfunc_index: 149
+func_name: CBaseTrigger_EndTouch

@@ -87,10 +87,3 @@ The function is called when destroying a weapon from a player's inventory. The c
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerPawn_RemovePlayerItem.windows.yaml`
 - `server.so` → `CBasePlayerPawn_RemovePlayerItem.linux.yaml`
-
-```yaml
-func_va: 0x180A1B5A0   # Virtual address of the function - This can change when game updates.
-func_rva: 0xA1B5A0     # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xXXX       # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-```

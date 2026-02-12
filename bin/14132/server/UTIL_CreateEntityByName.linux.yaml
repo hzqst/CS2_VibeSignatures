@@ -2,3 +2,4 @@ func_va: '0x15004c0'
 func_rva: '0x15004c0'
 func_size: '0x2e'
 func_sig: 48 8D 05 ?? ?? ?? ?? 55 48 89 FA
+func_name: UTIL_CreateEntityByName

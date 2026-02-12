@@ -3,3 +3,4 @@ func_rva: '0x9983b0'
 func_size: '0x106c'
 func_sig: 44 89 44 24 ?? 48 89 54 24 ?? 48 89 4C 24 ?? 55 53 56 57 41 55 41 56 41
   57 48 8B EC
+func_name: CCSPlayer_ItemServices_CanAcquire

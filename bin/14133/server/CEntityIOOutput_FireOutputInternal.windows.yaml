@@ -1,4 +1,6 @@
-func_va: 0x181188cf0
-func_rva: 0x1188cf0
-func_size: 0x3a2
-func_sig: 4C 89 4C 24 20 48 89 4C 24 08 53 56 57 41 55 41 56 41 57 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 4D 8B F0
+func_va: 6460837104
+func_rva: 18386160
+func_size: 930
+func_sig: 4C 89 4C 24 20 48 89 4C 24 08 53 56 57 41 55 41 56 41 57 48 81 EC ?? ??
+  ?? ?? 48 8B 05 ?? ?? ?? ?? 4D 8B F0
+func_name: CEntityIOOutput_FireOutputInternal

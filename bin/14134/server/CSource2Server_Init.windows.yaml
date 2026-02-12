@@ -1,7 +1,9 @@
-func_va: 0x180c884e0
-func_rva: 0xc884e0
-func_size: 0x1e9
-func_sig: 48 83 EC 28 48 83 3D ?? ?? ?? ?? 00 74 07 33 C9 E8 ?? ?? ?? ?? FF 15 ?? ?? ?? ?? 45 33 C0 BA E6 B4 D6 34
+func_va: 6455592160
+func_rva: 13141216
+func_size: 489
+func_sig: 48 83 EC 28 48 83 3D ?? ?? ?? ?? 00 74 07 33 C9 E8 ?? ?? ?? ?? FF 15 ??
+  ?? ?? ?? 45 33 C0 BA E6 B4 D6 34
 vtable_name: CSource2Server
-vfunc_offset: 0x18
+vfunc_offset: 24
 vfunc_index: 3
+func_name: CSource2Server_Init

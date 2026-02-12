@@ -5,3 +5,4 @@ func_sig: 48 89 5C 24 ?? 56 48 83 EC ?? 80 79 ?? ??
 vtable_name: CCSPlayer_ItemServices
 vfunc_offset: '0xb8'
 vfunc_index: 23
+func_name: CCSPlayer_ItemServices_RemoveWeapons

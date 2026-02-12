@@ -1,7 +1,9 @@
-func_va: 0x180a19bd0
-func_rva: 0xa19bd0
-func_size: 0x239
-func_sig: 48 89 5C 24 10 48 89 6C 24 18 56 57 41 56 48 83 EC 30 48 8B 01 48 8B FA 48 8B D9 FF 90 E0 00
+func_va: 6453042128
+func_rva: 10591184
+func_size: 569
+func_sig: 48 89 5C 24 10 48 89 6C 24 18 56 57 41 56 48 83 EC 30 48 8B 01 48 8B FA
+  48 8B D9 FF 90 E0 00
 vtable_name: CCSPlayer_WeaponServices
-vfunc_offset: 0xb8
+vfunc_offset: 184
 vfunc_index: 23
+func_name: CCSPlayer_WeaponServices_CanUse

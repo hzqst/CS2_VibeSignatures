@@ -5,3 +5,4 @@ func_sig: 48 89 5C 24 ?? 48 89 6C 24 ?? 56 48 83 EC ?? 8B EA 48 8B F1
 vtable_name: CPointTeleport
 vfunc_offset: '0x60'
 vfunc_index: 12
+func_name: CPointTeleport_Teleport

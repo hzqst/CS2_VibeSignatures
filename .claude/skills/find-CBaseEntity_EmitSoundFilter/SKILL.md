@@ -73,10 +73,3 @@ v30 = CBaseEntity_EmitSoundFilter(qword_XXXXXX, v29, &v32);
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_EmitSoundFilter.windows.yaml`
 - `server.so` → `CBaseEntity_EmitSoundFilter.linux.yaml`
-
-```yaml
-func_va: 0x18054C450   # Virtual address of the function - This can change when game updates.
-func_rva: 0x54C450     # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x1a3       # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - This can change when game updates.
-```

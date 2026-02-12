@@ -1,4 +1,6 @@
-func_va: 0x181170ed0
-func_rva: 0x1170ed0
-func_size: 0x281
-func_sig: 48 89 5C 24 18 4C 89 4C 24 20 48 89 4C 24 08 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20 49 8B F9 4C 8B C9 41 BD FF 7F 00 00
+func_va: 6460739280
+func_rva: 18288336
+func_size: 641
+func_sig: 48 89 5C 24 18 4C 89 4C 24 20 48 89 4C 24 08 55 56 57 41 54 41 55 41 56
+  41 57 48 83 EC 20 49 8B F9 4C 8B C9 41 BD FF 7F 00 00
+func_name: CEntitySystem_AddEntityIOEvent

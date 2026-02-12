@@ -1,4 +1,7 @@
-func_va: 0x137a400
-func_rva: 0x137a400
-func_size: 0xe11
-func_sig: 55 48 89 E5 41 57 41 56 41 55 41 54 41 89 F4 53 48 89 FB 48 81 EC 48 01 00 00 48 8D 05 ?? ?? ?? ?? 89 95 BC FE FF FF 48 8D 15 ?? ?? ?? ?? 4C 8B 28 49 8B 45 00 4C 89 EF 48 8B 80 C0 03 00 00
+func_va: 20423680
+func_rva: 20423680
+func_size: 3601
+func_sig: 55 48 89 E5 41 57 41 56 41 55 41 54 41 89 F4 53 48 89 FB 48 81 EC 48 01
+  00 00 48 8D 05 ?? ?? ?? ?? 89 95 BC FE FF FF 48 8D 15 ?? ?? ?? ?? 4C 8B 28 49 8B
+  45 00 4C 89 EF 48 8B 80 C0 03 00 00
+func_name: CBasePlayerController_HandleCommand_JoinTeam

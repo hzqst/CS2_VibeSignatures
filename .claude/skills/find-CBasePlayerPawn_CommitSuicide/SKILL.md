@@ -164,13 +164,3 @@ The function can be uniquely identified by:
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerPawn_CommitSuicide.windows.yaml`
 - `server.so` → `CBasePlayerPawn_CommitSuicide.linux.yaml`
-
-```yaml
-func_va: 0x1625080         # Virtual address of the function - This can change when game updates.
-func_rva: 0x1625080        # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xba            # Function size in bytes - This can change when game updates.
-func_sig: 55 31 F6 48 89 E5 41 56 41 55 41 54 4C 8D A7 90 08 00 00 53 48 89 FB 4C 89 E7 E8 ?? ?? ?? ?? 48 8B 03 48 89 DF FF 90 F8 0B 00 00 4C 89 E7 49 89 C5 E8 ?? ?? ?? ?? 4C 89 E7 49 89 C6 E8 ?? ?? ?? ??
-vtable_name: CBasePlayerPawn
-vfunc_offset: 0xc78        # Offset from vtable start - This can change when game updates.
-vfunc_index: 400           # IDA vtable index (array index 399) - This can change when game updates.
-```

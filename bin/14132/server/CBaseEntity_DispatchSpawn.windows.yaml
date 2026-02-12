@@ -3,3 +3,4 @@ func_rva: '0xbb08f0'
 func_size: '0xc1'
 func_sig: 48 89 5C 24 ?? 57 48 83 EC ?? 48 8B DA 48 8B F9 48 85 C9 0F 84 ?? ?? ??
   ?? 48 85 D2
+func_name: CBaseEntity_DispatchSpawn

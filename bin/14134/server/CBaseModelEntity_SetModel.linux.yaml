@@ -3,3 +3,4 @@ func_rva: '0x142fb00'
 func_size: '0x3d'
 func_sig: 65 D8 EB 95 55 48 89 F2 48 89 E5 53 48 89 FB 48 8D 7D E0 48 83 EC 18 48
   8D 05 ?? ?? ?? ?? 48 8B 30 48 8B 06 FF 50 68 48 8B 45 E0
+func_name: CBaseModelEntity_SetModel

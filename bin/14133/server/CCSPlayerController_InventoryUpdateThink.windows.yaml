@@ -1,4 +1,5 @@
-func_va: 0x1809a9ec0
-func_rva: 0x9a9ec0
-func_size: 0xc
+func_va: 6452584128
+func_rva: 10133184
+func_size: 12
 func_sig: 48 8B 89 E0 07 00 00 E9 ?? ?? ?? ??
+func_name: CCSPlayerController_InventoryUpdateThink

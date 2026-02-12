@@ -2,3 +2,4 @@ func_va: '0x180a8ca10'
 func_rva: '0xa8ca10'
 func_size: '0x3f'
 func_sig: 48 83 EC ?? 48 85 D2 74 ?? 48 89 5C 24 ??
+func_name: CBasePlayerController_SetPlayerName

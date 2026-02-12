@@ -182,30 +182,6 @@ The output YAML filenames depend on the platform:
 - `server.dll` → `CBaseTrigger_StartTouch.windows.yaml`, `CBaseTrigger_EndTouch.windows.yaml`
 - `server.so` → `CBaseTrigger_StartTouch.linux.yaml`, `CBaseTrigger_EndTouch.linux.yaml`
 
-### CBaseTrigger_StartTouch.{platform}.yaml
-
-```yaml
-func_va: 0x1803c81f0      # Virtual address - changes with game updates
-func_rva: 0x3c81f0        # Relative virtual address - changes with game updates
-func_size: 0x20b          # Function size in bytes - changes with game updates
-func_sig: 40 57 41 56 48 83 EC 28 48 8B 01 4C 8B F2 48 8B F9 FF 90 ?? ?? 00 00 84 C0 0F 84 ?? ?? ?? ??  # Unique signature - changes with game updates
-vtable_name: CBaseTrigger
-vfunc_offset: 0x498       # Offset from vtable start - changes with game updates
-vfunc_index: 147          # vtable[147] - changes with game updates
-```
-
-### CBaseTrigger_EndTouch.{platform}.yaml
-
-```yaml
-func_va: 0x1803af3a0      # Virtual address - changes with game updates
-func_rva: 0x3af3a0        # Relative virtual address - changes with game updates
-func_size: 0x217          # Function size in bytes - changes with game updates
-func_sig: 48 85 D2 0F 84 ?? ?? ?? ?? 53 55 48 83 EC 28 4C 8B 42 10 48 8B EA 48 8B D9 4D 85 C0 74 ??  # Unique signature - changes with game updates
-vtable_name: CBaseTrigger
-vfunc_offset: 0x4a8       # Offset from vtable start - changes with game updates
-vfunc_index: 149          # vtable[149] - changes with game updates
-```
-
 ## Notes
 
 - These are virtual functions inherited from `CBaseEntity` and overridden in `CBaseTrigger`

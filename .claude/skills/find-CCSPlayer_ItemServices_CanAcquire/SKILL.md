@@ -110,11 +110,4 @@ The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_ItemServices_CanAcquire.windows.yaml`
 - `server.so` → `CCSPlayer_ItemServices_CanAcquire.linux.yaml`
 
-```yaml
-func_va: 0x1339cd0          # Virtual address of the function - changes with game updates
-func_rva: 0x1339cd0         # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x62c            # Function size in bytes - changes with game updates
-func_sig: 55 48 89 E5 ...   # Unique byte signature for pattern scanning - changes with game updates
-```
-
 Note: No vtable information is included as this is not a virtual function.

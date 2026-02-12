@@ -2,3 +2,4 @@ func_va: '0x18099ea70'
 func_rva: '0x99ea70'
 func_size: '0x1322'
 func_sig: 48 89 54 24 ?? 55 56 41 57
+func_name: TraceAttack

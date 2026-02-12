@@ -2,3 +2,4 @@ func_va: '0x1802875b0'
 func_rva: '0x2875b0'
 func_size: '0xa7c'
 func_sig: 48 8B C4 4C 89 48 ?? 48 89 50 ?? 55 53 41 54
+func_name: FireBullets

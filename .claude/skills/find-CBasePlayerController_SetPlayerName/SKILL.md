@@ -88,12 +88,3 @@ The surrounding function also handles `fov_desired` cvar (clamps FOV between 1-1
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerController_SetPlayerName.windows.yaml`
 - `server.so` → `CBasePlayerController_SetPlayerName.linux.yaml`
-
-```yaml
-func_va: 0x180A8CA10   # Virtual address of the function - This can change when game updates.
-func_rva: 0xA8CA10     # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x3F        # Function size in bytes - This can change when game updates.
-func_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00  # Unique byte signature for pattern scanning.
-```
-
-Note: This is NOT a virtual function, so there are no `vfunc_*` fields.
