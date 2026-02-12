@@ -146,9 +146,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 `CCSPlayerPawn` for example.
 
-1. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py`
-
- - Let's say `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
+1. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py` as `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
  - Don't forget to change `TARGET_CLASS_NAME = "CBaseEntity"` to `TARGET_CLASS_NAME = "CCSPlayerPawn"` in `find-CCSPlayerPawn_vtable.py`
 
@@ -237,9 +235,7 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
-6. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py`
-
- - Let's say `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
+6. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
 
  - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CBaseModelEntity_SetModel"` in `find-CBaseModelEntity_SetModel.py`
 
@@ -341,9 +337,7 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
-7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py`
-
- - Let's say `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
  - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in `find-CCSPlayerController_Respawn.py`
 
