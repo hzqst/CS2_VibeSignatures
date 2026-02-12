@@ -365,6 +365,10 @@ modules:
         expected_output:
           - CBaseEntity_EmitSoundParams.{platform}.yaml
 
+      - name: find-CBaseEntity_SetMoveType
+        expected_output:
+          - CBaseEntity_SetMoveType.{platform}.yaml
+
       - name: find-CBasePlayerPawn_CommitSuicide
         expected_output:
           - CBasePlayerPawn_CommitSuicide.{platform}.yaml
@@ -376,6 +380,17 @@ modules:
       - name: find-CBasePlayerPawn_RemovePlayerItem
         expected_output:
           - CBasePlayerPawn_RemovePlayerItem.{platform}.yaml
+
+      - name: find-CBaseEntity_IsAlive-AND-CBasePlayerPawn_GetEyePosition
+        expected_output:
+          - CBaseEntity_IsAlive.{platform}.yaml
+          - CBasePlayerPawn_GetEyePosition.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+          - CBasePlayerPawn_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+          - find-CBasePlayerPawn_vtable
 
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
@@ -751,6 +766,11 @@ modules:
         alias:
           - CBaseEntity::EmitSoundParams
 
+      - name: CBaseEntity_SetMoveType
+        catagory: func
+        alias:
+          - CBaseEntity::SetMoveType
+
       - name: CBasePlayerPawn_CommitSuicide
         catagory: vfunc
         alias:
@@ -766,6 +786,16 @@ modules:
         catagory: vfunc
         alias:
           - CBasePlayerPawn::DropActivePlayerWeapon
+
+      - name: CBasePlayerPawn_GetEyePosition
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::GetEyePosition
+
+      - name: CBaseEntity_IsAlive
+        catagory: vfunc
+        alias:
+          - CBaseEntity::IsAlive
 
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
         catagory: vfunc
