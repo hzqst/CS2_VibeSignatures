@@ -95,10 +95,3 @@ The `CEntityIdentity_AcceptInput` function:
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntityIdentity_AcceptInput.windows.yaml`
 - `server.so` / `libserver.so` → `CEntityIdentity_AcceptInput.linux.yaml`
-
-```yaml
-func_va: 0x18119BA20    # Virtual address - changes with game updates
-func_rva: 0x119BA20     # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x47D        # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX   # Unique byte signature for pattern scanning - changes with game updates
-```

@@ -14,7 +14,6 @@ Locate `CBaseEntity_SetGroundEntity` in CS2 server.dll or server.so using IDA Pr
 **ALWAYS** Use SKILL `/get-func-from-yaml` with `func_name=CTriggerPush_Touch`.
 
 If the skill returns an error, stop and report to user.
-Otherwise, extract `func_va` for the next step.
 
 ### 2. Decompile CTriggerPush_Touch
 

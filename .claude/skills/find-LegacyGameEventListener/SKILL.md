@@ -90,10 +90,3 @@ The function performs bounds checking:
 The output YAML filename depends on the platform:
 - `server.dll` → `LegacyGameEventListener.windows.yaml`
 - `server.so` → `LegacyGameEventListener.linux.yaml`
-
-```yaml
-func_va: 0x180b0eb70   # Virtual address of the function - This can change when game updates.
-func_rva: 0xb0eb70     # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x23        # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-```

@@ -90,10 +90,3 @@ sub     rsp, 38h
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_ClientPrintAll.windows.yaml`
 - `server.so` → `UTIL_ClientPrintAll.linux.yaml`
-
-```yaml
-func_va: 0x18BD940       # Virtual address of the function - changes with game updates
-func_rva: 0x18BD940      # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x85          # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - changes with game updates
-```

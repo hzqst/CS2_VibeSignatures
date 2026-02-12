@@ -42,16 +42,18 @@ else:
 ### 2. Handle Result
 
 **If YAML exists** (`FUNC_YAML_EXISTS: True`), extract available values from the output:
+- `func_name`: Function name (if present)
 - `func_va`: Function virtual address (if present)
 - `func_rva`: Function relative virtual address (if present)
 - `func_size`: Function size in bytes (if present)
 - `func_sig`: Function signature bytes (if present)
-- `vtable_name`: Related vtable class name (optional, virtual-function YAML)
-- `vfunc_offset`: Offset from vtable start (optional, virtual-function YAML)
-- `vfunc_index`: Index in vtable (optional, virtual-function YAML)
+- `vtable_name`: Related vtable class name (optional, virtual-function YAML only)
+- `vfunc_offset`: Offset from vtable start (optional, virtual-function YAML only)
+- `vfunc_index`: Index in vtable (optional, virtual-function YAML only)
 
 Example YAML content:
 ```yaml
+func_name: CCSPlayerController_Respawn
 func_va: 0x180A8CA10
 func_rva: 0xA8CA10
 func_size: 0x3F
@@ -88,6 +90,7 @@ Otherwise, extract `func_va`, `func_sig`, and other available fields for subsequ
 
 | Field | Description | Example |
 |-------|-------------|---------|
+| `func_name` | Function name | `CCSPlayerController_Respawn` |
 | `func_va` | Virtual address of function (optional in some virtual-function YAML) | `0x180A8CA10` |
 | `func_rva` | Relative virtual address (optional) | `0xA8CA10` |
 | `func_size` | Function size in bytes (optional) | `0x3F` |

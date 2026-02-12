@@ -91,13 +91,3 @@ And contains string references related to player name changes:
 The output YAML filename depends on the platform:
 - `server.dll` → `CGameRules_ClientSettingsChanged.windows.yaml`
 - `server.so` → `CGameRules_ClientSettingsChanged.linux.yaml`
-
-```yaml
-func_va: 0x180XXXXXX      # Virtual address of the function - This can change when game updates.
-func_rva: 0xXXXXXX        # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xXXX          # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-vtable_name: CGameRules   # (if virtual function)
-vfunc_offset: 0xXXX       # Offset from vtable start - This can change when game updates. (if virtual function)
-vfunc_index: XX           # vtable[XX] - This can change when game updates. (if virtual function)
-```

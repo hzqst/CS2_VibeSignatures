@@ -80,10 +80,3 @@ do {
 The output YAML filename depends on the platform:
 - `server.dll` → `CGameEntitySystem_FindEntityByClassName.windows.yaml`
 - `server.so` → `CGameEntitySystem_FindEntityByClassName.linux.yaml`
-
-```yaml
-func_va: 0x180B0CAA0     # Virtual address - changes with game updates
-func_rva: 0xB0CAA0       # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x25           # Function size in bytes - changes with game updates
-func_sig: 48 83 EC ?? 45 33 C9 C6 44 24 ?? ?? 48 8D 4C 24 ??  # Unique byte signature
-```

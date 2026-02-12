@@ -96,10 +96,3 @@ The function is referenced in projectile creation functions. Search for any of t
 The output YAML filename depends on the platform:
 - `server.dll` → `GetCSWeaponDataFromKey.windows.yaml`
 - `server.so` → `GetCSWeaponDataFromKey.linux.yaml`
-
-```yaml
-func_va: 0x1804F8590   # Virtual address of the function - This can change when game updates.
-func_rva: 0x4F8590     # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xB7        # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-```

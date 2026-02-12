@@ -85,10 +85,3 @@ The function is identified by finding code that:
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntitySystem_AddEntityIOEvent.windows.yaml`
 - `server.so` → `CEntitySystem_AddEntityIOEvent.linux.yaml`
-
-```yaml
-func_va: 0x181170ed0   # Virtual address of the function - This can change when game updates.
-func_rva: 0x1170ed0    # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x1e3       # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - This can change when game updates.
-```

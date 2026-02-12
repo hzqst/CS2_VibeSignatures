@@ -88,10 +88,3 @@ CGameEntitySystem_FindEntityByName(
 The output YAML filename depends on the platform:
 - `server.dll` → `CGameEntitySystem_FindEntityByName.windows.yaml`
 - `server.so` → `CGameEntitySystem_FindEntityByName.linux.yaml`
-
-```yaml
-func_va: 0x180B0D000     # Virtual address - changes with game updates
-func_rva: 0xB0D000       # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x7E           # Function size in bytes - changes with game updates
-func_sig: 48 81 EC ?? ?? ?? ?? 4D 85 C0 75 ??  # Unique byte signature
-```

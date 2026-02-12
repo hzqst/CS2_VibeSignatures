@@ -89,10 +89,3 @@ This string appears in a helper function that validates entity outputs. The call
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntityIOOutput_FireOutputInternal.windows.yaml`
 - `server.so` → `CEntityIOOutput_FireOutputInternal.linux.yaml`
-
-```yaml
-func_va: 0x181188cf0   # Virtual address of the function - This can change when game updates.
-func_rva: 0x1188cf0    # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x18d       # Function size in bytes - This can change when game updates.
-func_sig: XX XX XX XX XX # Unique byte signature for pattern scanning - This can change when game updates.
-```

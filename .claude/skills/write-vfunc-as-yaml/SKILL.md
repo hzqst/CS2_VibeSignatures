@@ -74,6 +74,7 @@ if func_addr is not None:
     func = idaapi.get_func(func_addr)
     func_size = func.size() if func else 0
     func_rva = func_addr - image_base
+    data['func_name'] = func_name
     data['func_va'] = hex(func_addr)
     data['func_rva'] = hex(func_rva)
     data['func_size'] = hex(func_size)
@@ -105,6 +106,7 @@ Examples:
 
 Full output (with `func_addr` and `func_sig` provided):
 ```yaml
+func_name: CCSPlayerController_ChangeTeam
 func_va: 0x180999830      # Virtual address - changes with game updates (optional)
 func_rva: 0x999830        # Relative virtual address (VA - image base) - changes with game updates (optional)
 func_size: 0x301          # Function size in bytes - changes with game updates (optional)
@@ -116,6 +118,7 @@ vfunc_index: 102          # vtable[102] - changes with game updates
 
 Minimal output (with `func_addr=None` and `func_sig=None`):
 ```yaml
+func_name: CCSPlayerController_ChangeTeam
 vtable_name: CCSPlayerController
 vfunc_offset: 0x330       # Offset from vtable start - changes with game updates
 vfunc_index: 102          # vtable[102] - changes with game updates

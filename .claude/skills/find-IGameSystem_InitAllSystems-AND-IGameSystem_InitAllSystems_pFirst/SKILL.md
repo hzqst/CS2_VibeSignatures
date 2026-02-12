@@ -117,27 +117,6 @@ The output YAML filename depends on the platform:
 - `server.dll` → `IGameSystem_InitAllSystems.windows.yaml`, `IGameSystem_InitAllSystems_pFirst.windows.yaml`
 - `server.so` → `IGameSystem_InitAllSystems.linux.yaml`, `IGameSystem_InitAllSystems_pFirst.linux.yaml`
 
-### Function YAML (IGameSystem_InitAllSystems)
-
-```yaml
-func_va: 0x1804F3DC0      # Virtual address of the function - changes with game updates
-func_rva: 0x4F3DC0        # Relative virtual address (VA - image base) - changes with game updates
-func_size: 0x329          # Function size in bytes - changes with game updates
-func_sig: XX XX XX XX XX  # Unique byte signature for pattern scanning - changes with game updates
-```
-
-### Global Variable YAML (IGameSystem_InitAllSystems_pFirst)
-
-```yaml
-gv_va: 0x181d7d128        # Global variable virtual address - changes with game updates
-gv_rva: 0x1d7d128         # Relative virtual address (VA - image base) - changes with game updates
-gv_sig: 48 8B 1D ?? ?? ?? ?? 48 85 DB 0F 84 ?? ?? ?? ?? BD FF FF 00 00
-gv_sig_va: 0x1804f3df3    # The virtual address that signature matches
-gv_inst_offset: 0         # GV instruction starts at signature start
-gv_inst_length: 7         # 48 8B 1D XX XX XX XX = 7 bytes
-gv_inst_disp: 3           # Displacement offset starts at position 3 (after 48 8B 1D)
-```
-
 ## Runtime Resolution
 
 At runtime, after pattern scan finds the signature:

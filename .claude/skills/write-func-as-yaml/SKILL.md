@@ -53,6 +53,7 @@ else:
 func_rva = func_addr - image_base
 
 data = {
+    'func_name': func_name,
     'func_va': hex(func_addr),
     'func_rva': hex(func_rva),
     'func_size': hex(func_size),
@@ -81,6 +82,7 @@ Examples:
 ## Output YAML Format
 
 ```yaml
+func_name: CBaseModelEntity_SetModel
 func_va: 0x180A8CA10   # Virtual address - changes with game updates
 func_rva: 0xA8CA10     # Relative virtual address (VA - image base) - changes with game updates
 func_size: 0x3F        # Function size in bytes - changes with game updates

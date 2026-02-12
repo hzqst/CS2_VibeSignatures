@@ -206,20 +206,3 @@ For `CTakeDamageInfo.{platform}.yaml`:
 | Debug string path | `C:\buildworker\csgo_rel_win64\...` | `/build/src/game/server/...` |
 | Entry size in loop | 480 bytes | 480 bytes |
 | HitGroupInfo offset | 0x68 (104) | 0x68 (104) |
-
-## Output YAML Format
-
-### TraceAttack.{platform}.yaml
-
-```yaml
-func_va: 0x18099FAC0      # Virtual address - changes with game updates
-func_rva: 0x99FAC0        # Relative virtual address - changes with game updates
-func_size: 0x1322         # Function size in bytes - changes with game updates
-func_sig: 48 8B C4 ...    # Unique byte signature - changes with game updates
-```
-
-### CTakeDamageInfo.{platform}.yaml
-
-```yaml
-0x68: HitGroupInfo 8
-```

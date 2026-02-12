@@ -120,21 +120,5 @@ if (v16)
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
-- `engine2.dll` → `CGameResourceService_BuildResourceManifest.windows.yaml`
-- `libengine2.so` → `CGameResourceService_BuildResourceManifest.linux.yaml`
-
-### Example Output
-
-```yaml
-func_va: 0x1801b4f10       # Virtual address - changes with game updates
-func_rva: 0x1b4f10         # Relative virtual address - changes with game updates
-func_size: 0x131           # Function size in bytes - changes with game updates
-func_sig: 48 89 5C 24 ...  # Unique byte signature - changes with game updates
-```
-
-### Struct Member YAML
-
-`CGameResourceService.{platform}.yaml`:
-```yaml
-0x58: m_pEntitySystem 8
-```
+- `engine2.dll` → `CGameResourceService_BuildResourceManifest.windows.yaml`, `CGameResourceService.windows.yaml`
+- `libengine2.so` → `CGameResourceService_BuildResourceManifest.linux.yaml`, `CGameResourceService.linux.yaml`

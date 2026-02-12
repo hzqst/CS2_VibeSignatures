@@ -157,15 +157,3 @@ For `CCheckTransmitInfo.{platform}.yaml`:
 The output YAML filename depends on the platform:
 - `server.dll` → `CSource2GameEntities_CheckTransmit.windows.yaml`
 - `server.so` → `CSource2GameEntities_CheckTransmit.linux.yaml`
-
-### Example Output
-
-```yaml
-func_va: 0x180c8b2b0       # Virtual address - changes with game updates
-func_rva: 0xc8b2b0         # Relative virtual address - changes with game updates
-func_size: 0x8c1           # Function size in bytes - changes with game updates
-func_sig: 48 8B C4 ...     # Unique byte signature - changes with game updates
-vtable_name: CSource2GameEntities
-vfunc_offset: 0x60         # Offset from vtable start - changes with game updates
-vfunc_index: 12            # vtable index - changes with game updates
-```

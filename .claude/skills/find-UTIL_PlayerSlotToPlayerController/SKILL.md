@@ -94,10 +94,3 @@ Locate `UTIL_PlayerSlotToPlayerController` in CS2 server.dll or server.so using 
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_PlayerSlotToPlayerController.windows.yaml`
 - `server.so` → `UTIL_PlayerSlotToPlayerController.linux.yaml`
-
-```yaml
-func_va: 0x180XXXXXX      # Virtual address of the function - This can change when game updates.
-func_rva: 0xXXXXXX        # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0xXX           # Function size in bytes - This can change when game updates.
-func_sig: XX XX ?? ?? XX  # Unique byte signature with wildcards for RIP-relative addresses
-```

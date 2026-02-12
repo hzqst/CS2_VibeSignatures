@@ -113,16 +113,6 @@ The output YAML filename depends on the platform:
 - `server.dll` -> `CTriggerPush_Touch.windows.yaml`
 - `server.so` -> `CTriggerPush_Touch.linux.yaml`
 
-```yaml
-func_va: 0x180e23c20      # Virtual address - changes with game updates
-func_rva: 0xe23c20        # Relative virtual address - changes with game updates
-func_size: 0x42a          # Function size in bytes - changes with game updates
-func_sig: 40 55 53 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 02 48 8B F9 48 8B CA 48 8B DA FF 90 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 03 48 8B CB FF 90 ?? ?? ?? ??  # Unique signature - changes with game updates
-vtable_name: CTriggerPush
-vfunc_offset: 0x4a0       # Offset from vtable start - changes with game updates
-vfunc_index: 148          # vtable[148] - changes with game updates
-```
-
 ## Notes
 
 - This is a virtual function inherited from `CBaseEntity::Touch` and overridden in `CTriggerPush`

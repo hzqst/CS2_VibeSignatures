@@ -82,10 +82,3 @@ Among the caller functions to the internal spawn function, identify the semantic
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_CreateEntityByName.windows.yaml`
 - `server.so` → `UTIL_CreateEntityByName.linux.yaml`
-
-```yaml
-func_va: 0x14fe680        # Virtual address of the function - This can change when game updates.
-func_rva: 0x14fe680       # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x2e           # Function size in bytes - This can change when game updates.
-func_sig: 48 8D 05 ?? ?? ?? ?? 55 48 89 FA 41 89 F0 48 89 E5 48 83 EC 08 41 B9 FF FF FF FF 31 C9 BE FF FF FF FF 48 8B 38 6A 00 E8 ?? ?? ?? ?? C9 C3  # Unique byte signature
-```

@@ -81,10 +81,3 @@ sub_14FE9C0(a1);  // <- This is UTIL_Remove
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_Remove.windows.yaml`
 - `server.so` → `UTIL_Remove.linux.yaml`
-
-```yaml
-func_va: 0x14fe9c0       # Virtual address of the function - This can change when game updates.
-func_rva: 0x14fe9c0      # Relative virtual address (VA - image base) - This can change when game updates.
-func_size: 0x21          # Function size in bytes - This can change when game updates.
-func_sig: 48 89 FE 48 85 FF 74 18 48 8D 05 ?? ?? ?? ?? 48 8B 38 E9 ?? ?? ?? ??  # Unique byte signature for pattern scanning
-```
