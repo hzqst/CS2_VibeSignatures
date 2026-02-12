@@ -381,7 +381,7 @@ modules:
         expected_output:
           - CBasePlayerPawn_RemovePlayerItem.{platform}.yaml
 
-      - name: find-CBaseEntity_IsAlive-AND-CBasePlayerPawn_GetEyePosition
+      - name: find-CBaseEntity_IsAlive-AND-CBaseEntity_GetEyePosition-AND-CBasePlayerPawn_GetEyePosition
         expected_output:
           - CBaseEntity_IsAlive.{platform}.yaml
           - CBaseEntity_GetEyePosition.{platform}.yaml

@@ -1,14 +1,14 @@
 ---
-name: find-CBaseEntity_IsAlive-AND-CBasePlayerPawn_GetEyePosition
+name: find-CBaseEntity_IsAlive-AND-CBaseEntity_GetEyePosition-AND-CBasePlayerPawn_GetEyePosition
 description: |
-  Find and identify the CBaseEntity_IsAlive and CBasePlayerPawn_GetEyePosition virtual functions in CS2 binary using IDA Pro MCP.
+  Find and identify the CBaseEntity_IsAlive, CBaseEntity_GetEyePosition and CBasePlayerPawn_GetEyePosition virtual functions in CS2 binary using IDA Pro MCP.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate these functions.
   CBaseEntity_IsAlive checks m_lifeState == 0 (LIFE_ALIVE).
   CBasePlayerPawn_GetEyePosition retrieves the player eye position via camera services.
   Trigger: CBaseEntity_IsAlive, CBasePlayerPawn_GetEyePosition, IsAlive, GetEyePosition
 ---
 
-# CBaseEntity_IsAlive & CBasePlayerPawn_GetEyePosition Function Location Workflow
+# CBaseEntity_IsAlive & CBaseEntity_GetEyePosition & CBasePlayerPawn_GetEyePosition Function Location Workflow
 
 ## Overview
 
@@ -82,7 +82,11 @@ Where:
 - `<OFFSET_A>` is the vtable offset for `CBaseEntity_IsAlive` (the alive check, called first, returns early if false)
 - `<OFFSET_B>` is the vtable offset for `CBasePlayerPawn_GetEyePosition` (called with an output Vector pointer)
 
-### 4. Load CBasePlayerPawn VTable, and CBaseEntity VTable
+### 4. Generate vfunc offset signatures for CBaseEntity_IsAlive and CBasePlayerPawn_GetEyePosition
+
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_IsAlive` and `CBasePlayerPawn_GetEyePosition`, with `inst_addr` and `vfunc_offset` from step 3
+
+### 5. Load CBasePlayerPawn VTable, and CBaseEntity VTable
 
 **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBasePlayerPawn` and with `class_name=CBaseEntity`
 
@@ -90,7 +94,7 @@ If the skill returns an error, **STOP** and report to user.
 
 Otherwise, extract `vtable_va`, `vtable_numvfunc` and `vtable_entries` for subsequent steps.
 
-### 5. Calculate VTable Indices
+### 6. Calculate VTable Indices
 
 From the offsets found in step 3, calculate vtable indices:
 
@@ -103,7 +107,7 @@ Look up the function addresses from : `CBaseEntity vtable_entries[index]`
 
 Look up the function addresses from : `CBasePlayerPawn vtable_entries[index]`
 
-### 6. Verify Functions
+### 7. Verify Functions
 
 Decompile both functions to verify:
 
@@ -128,7 +132,7 @@ __int64 __fastcall CBasePlayerPawn_GetEyePosition(__int64 a1, __int64 a2)
 }
 ```
 
-### 7. Rename Functions
+### 8. Rename Functions
 
 ```
 mcp__ida-pro-mcp__rename(batch={"func": [
@@ -138,41 +142,43 @@ mcp__ida-pro-mcp__rename(batch={"func": [
 ]})
 ```
 
-### 8. Generate Signature for CBasePlayerPawn_GetEyePosition
+### 9. Generate Signature for CBasePlayerPawn_GetEyePosition
 
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CBasePlayerPawn_GetEyePosition`.
 
-Note: `CBaseEntity_IsAlive` does NOT need a signature (it is too small/generic; use vtable index only).
+Note: `CBaseEntity_IsAlive` does NOT need a function signature (it is too small/generic).
 
-Note: `CBaseEntity_GetEyePosition` does NOT need a signature (it is too small/generic; use vtable index only).
+Note: `CBaseEntity_GetEyePosition` does NOT need a function signature (it is too small/generic).
 
-### 9. Write IDA Analysis Output as YAML
+### 10. Write IDA Analysis Output as YAML
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for BOTH functions.
 
 **CBaseEntity_IsAlive** (no signature):
 - `func_name`: `CBaseEntity_IsAlive`
-- `func_addr`: The function address from step 5
+- `func_addr`: The function address from step 6
 - `func_sig`: `None` (omit — function is too small for a unique signature)
 - `vtable_name`: `CBaseEntity`
 - `vfunc_offset`: `<OFFSET_A>` from step 3
-- `vfunc_index`: `<OFFSET_A> / 8` from step 5
+- `vfunc_index`: `<OFFSET_A> / 8` from step 6
+- `vfunc_sig`: CBaseEntity_IsAlive's `<vfunc_sig>` from step 4
 
 **CBaseEntity_GetEyePosition** (with signature):
 - `func_name`: `CBaseEntity_GetEyePosition`
-- `func_addr`: The function address from step 5
+- `func_addr`: The function address from step 6
 - `func_sig`: `None` (omit — function is too small for a unique signature)
 - `vtable_name`: `CBaseEntity`
 - `vfunc_offset`: `<OFFSET_B>` from step 3
-- `vfunc_index`: `<OFFSET_B> / 8` from step 5
+- `vfunc_index`: `<OFFSET_B> / 8` from step 6
+- `vfunc_sig`: CBaseEntity_GetEyePosition's `<vfunc_sig>` from step 4
 
 **CBasePlayerPawn_GetEyePosition** (with signature):
 - `func_name`: `CBasePlayerPawn_GetEyePosition`
-- `func_addr`: The function address from step 5
-- `func_sig`: The validated signature from step 8
+- `func_addr`: The function address from step 6
+- `func_sig`: The validated signature from step 9
 - `vtable_name`: `CBasePlayerPawn`
 - `vfunc_offset`: `<OFFSET_B>` from step 3
-- `vfunc_index`: `<OFFSET_B> / 8` from step 5
+- `vfunc_index`: `<OFFSET_B> / 8` from step 6
 
 ## Function Characteristics
 
