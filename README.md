@@ -148,7 +148,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 1. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py` as `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
- - Don't forget to change `TARGET_CLASS_NAME = "CBaseEntity"` to `TARGET_CLASS_NAME = "CCSPlayerPawn"` in `find-CCSPlayerPawn_vtable.py`
+ - Don't forget to change `TARGET_CLASS_NAME = "CBaseEntity"` to `TARGET_CLASS_NAME = "CCSPlayerPawn"` in the new preprocessor script.
 
  * no LLM needed when finding vtable. everything done in the preprocessor script.
 
@@ -237,7 +237,7 @@ Prompt:
 
 6. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
 
- - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CBaseModelEntity_SetModel"` in `find-CBaseModelEntity_SetModel.py`
+ - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CBaseModelEntity_SetModel"` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 
@@ -339,7 +339,7 @@ Prompt:
 
 7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
- - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in `find-CCSPlayerController_Respawn.py`
+ - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 
