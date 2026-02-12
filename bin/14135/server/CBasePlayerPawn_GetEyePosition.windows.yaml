@@ -7,3 +7,4 @@ func_sig: 48 89 5C 24 ?? 57 48 83 EC ?? 48 8B F9 48 8B DA 48 8B 89 ?? ?? ?? ?? 4
 vtable_name: CBasePlayerPawn
 vfunc_offset: '0x5d0'
 vfunc_index: 186
+vfunc_sig: FF 90 D0 05 00 00 F2 0F 10 44 24 ?? 48 8B 77 ??
