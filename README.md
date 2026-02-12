@@ -433,7 +433,7 @@ Prompt:
  - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for: @.claude/skills/find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2/SKILL.md AND @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager.md as references.
+ - **ALWAYS** check for @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager.md as references.
 ```
 
 7. Don't forget to add your SKILL to `config.yaml`, in `skills`.
