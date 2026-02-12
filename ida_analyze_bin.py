@@ -456,7 +456,8 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
             cmd = [agent,
                    "-p", f"/{skill_name}",
                    "--agent", "sig-finder",
-                   "--allowedTools", "mcp__ida-pro-mcp__*"
+                   "--allowedTools", "mcp__ida-pro-mcp__*",
+                   "--settings", '{"alwaysThinkingEnabled": false}',
                    ]
             # Add session management flags
             if is_retry:
