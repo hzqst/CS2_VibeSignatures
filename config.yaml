@@ -111,6 +111,14 @@ modules:
         expected_output:
           - CPointTeleport_vtable.{platform}.yaml
 
+      - name: find-CTakeDamageInfo_vtable
+        expected_output:
+          - CTakeDamageInfo_vtable.{platform}.yaml
+
+      - name: find-CCSPlayerStateDeathAnim_vtable
+        expected_output:
+          - CCSPlayerStateDeathAnim_vtable.{platform}.yaml
+
       - name: find-CBaseEntity_TakeDamageOld
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
@@ -231,10 +239,6 @@ modules:
           - find-CGameRules_vtable
           - find-CCSGameRules_vtable
 
-      - name: find-CTakeDamageInfo_vtable
-        expected_output:
-          - CTakeDamageInfo_vtable.{platform}.yaml
-
       - name: find-CTakeDamageInfo_GetWeaponName
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
@@ -265,14 +269,30 @@ modules:
         prerequisite:
           - find-CBaseEntity_vtable
 
-      - name: find-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_RemoveWeapons
+      - name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_WeaponServices_DropWeapon
         expected_output:
+          - CBasePlayerPawn_DropActivePlayerWeapon.{platform}.yaml
           - CCSPlayer_ItemServices_DropActivePlayerWeapon.{platform}.yaml
+          - CCSPlayer_WeaponServices_DropWeapon.{platform}.yaml
+        expected_input:
+          - CBasePlayerPawn_vtable.{platform}.yaml
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
+          - CCSPlayer_WeaponServices_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBasePlayerPawn_vtable
+          - find-CCSPlayer_ItemServices_vtable
+          - find-CCSPlayer_WeaponServices_vtable
+        max_retries: 6
+
+      - name: find-CCSPlayer_ItemServices_RemoveWeapons
+        expected_output:
           - CCSPlayer_ItemServices_RemoveWeapons.{platform}.yaml
         expected_input:
-          - CCSPlayer_ItemServices_vtable.{platform}.yaml
+          - CCSPlayerStateDeathAnim_vtable.{platform}.yaml
+          - CCSPlayer_ItemServices.{platform}.yaml
         prerequisite:
-          - find-CCSPlayer_ItemServices_vtable
+          - find-CCSPlayerStateDeathAnim_vtable
+          - find-CCSPlayer_ItemServices
         max_retries: 4
 
       - name: find-NetworkStateChanged
@@ -470,6 +490,9 @@ modules:
         catagory: vtable
 
       - name: CTakeDamageInfo_vtable
+        catagory: vtable
+
+      - name: CCSPlayerStateDeathAnim_vtable
         catagory: vtable
 
       - name: CBaseEntity_TakeDamageOld
