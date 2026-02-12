@@ -8,6 +8,7 @@ from ida_analyze_util import preprocess_func_sig_via_mcp, write_func_yaml
 
 TARGET_FUNCTION_NAMES = [
     "CBaseModelEntity_SetModel",
+    "CBaseEntity_SetGravityScale",
 ]
 
 

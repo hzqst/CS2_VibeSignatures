@@ -123,9 +123,10 @@ modules:
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
 
-      - name: find-CBaseModelEntity_SetModel
+      - name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
         expected_output:
           - CBaseModelEntity_SetModel.{platform}.yaml
+          - CBaseEntity_SetGravityScale.{platform}.yaml
 
       - name: find-CBasePlayerController_HandleCommand_JoinTeam
         expected_output:
@@ -513,6 +514,11 @@ modules:
         catagory: func
         alias:
           - CBaseModelEntity::SetModel
+
+      - name: CBaseEntity_SetGravityScale
+        catagory: func
+        alias:
+          - CBaseEntity::SetGravityScale
 
       - name: CBasePlayerController_HandleCommand_JoinTeam
         catagory: func
