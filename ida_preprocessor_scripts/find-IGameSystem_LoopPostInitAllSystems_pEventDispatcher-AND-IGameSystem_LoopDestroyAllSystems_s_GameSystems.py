@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst skill."""
+"""Preprocess script for find-IGameSystem_LoopPostInitAllSystems_pEventDispatcher-AND-IGameSystem_LoopDestroyAllSystems_s_GameSystems skill."""
 
 import os
 
@@ -12,9 +12,9 @@ from ida_analyze_util import (
 
 
 TARGET_FUNCTION_NAMES = [
-    "IGameSystem_InitAllSystems"
+
 ]
-TARGET_GLOBALVAR_NAMES = ["IGameSystem_InitAllSystems_pFirst"]
+TARGET_GLOBALVAR_NAMES = ["IGameSystem_LoopPostInitAllSystems_pEventDispatcher", "IGameSystem_LoopDestroyAllSystems_s_GameSystems"]
 
 
 async def preprocess_skill(

@@ -1,0 +1,7 @@
+gv_va: '0x181b18148'
+gv_rva: '0x1b18148'
+gv_sig: 8B 05 ?? ?? ?? ?? 83 E8 ?? 48 63 D8 78 ?? 48 8B FB
+gv_sig_va: '0x1804f9f7c'
+gv_inst_offset: 0
+gv_inst_length: 6
+gv_inst_disp: 2

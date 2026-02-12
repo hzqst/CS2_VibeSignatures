@@ -308,6 +308,12 @@ modules:
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
         max_retries: 6
 
+      - name: find-IGameSystem_LoopPostInitAllSystems_pEventDispatcher-AND-IGameSystem_LoopDestroyAllSystems_s_GameSystems
+        expected_output:
+          - IGameSystem_LoopPostInitAllSystems_pEventDispatcher.{platform}.yaml
+          - IGameSystem_LoopDestroyAllSystems_s_GameSystems.{platform}.yaml
+        max_retries: 4
+        
       - name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
         expected_output:
           - CSource2GameEntities_CheckTransmit.{platform}.yaml
@@ -663,6 +669,18 @@ modules:
         alias:
           - IGameSystem::InitAllSystems::pFirst
           - IGameSystem::InitAllSystems->pFirst
+
+      - name: IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+        catagory: gv
+        alias:
+          - IGameSystem::LoopPostInitAllSystems::pEventDispatcher
+          - IGameSystem::LoopPostInitAllSystems->pEventDispatcher
+
+      - name: IGameSystem_LoopDestroyAllSystems_s_GameSystems
+        catagory: gv
+        alias:
+          - IGameSystem::LoopDestroyAllSystems::s_GameSystems
+          - IGameSystem::LoopDestroyAllSystems->s_GameSystems
 
       - name: CSource2GameEntities_CheckTransmit
         catagory: vfunc
