@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CBaseEntity_IsAlive-AND-CBasePlayerPawn_GetEyePosition skill."""
+"""Preprocess script for find-CBaseEntity_IsAlive-AND-CBaseEntity_GetEyePosition-AND-CBasePlayerPawn_GetEyePosition skill."""
 
 import os
 
@@ -7,6 +7,8 @@ from ida_analyze_util import preprocess_func_sig_via_mcp, write_func_yaml
 
 
 TARGET_FUNCTION_NAMES = [
+    "CBaseEntity_IsAlive",
+    "CBaseEntity_GetEyePosition",
     "CBasePlayerPawn_GetEyePosition",
 ]
 
