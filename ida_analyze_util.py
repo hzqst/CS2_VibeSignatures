@@ -1496,6 +1496,230 @@ async def preprocess_gv_sig_via_mcp(
     }
 
 
+async def preprocess_index_based_vfunc_via_mcp(
+    session,
+    target_func_name,
+    target_output,
+    old_yaml_map,
+    new_binary_dir,
+    platform,
+    image_base,
+    base_vfunc_name,
+    inherit_vtable_class,
+    relative_index_offset=0,
+    generate_func_sig=True,
+    debug=False,
+):
+    """Resolve an inherited virtual function by base-class vfunc_index + vtable lookup.
+
+    Reads ``{base_vfunc_name}.{platform}.yaml`` to obtain the base vfunc_index,
+    then reads ``{inherit_vtable_class}_vtable.{platform}.yaml`` to look up the
+    function address at ``base_index + relative_index_offset``.
+
+    If an old YAML exists for the target, its ``func_sig`` is reused.  Otherwise
+    (or when no old YAML is available), a new ``func_sig`` is generated via
+    ``preprocess_gen_func_sig_via_mcp`` when *generate_func_sig* is True.
+
+    Args:
+        session: Active MCP ClientSession.
+        target_func_name: Human-readable name for debug messages.
+        target_output: Full path to the expected output YAML.
+        old_yaml_map: Mapping from new output path to old version path (may be None).
+        new_binary_dir: Directory containing per-binary YAML files.
+        platform: ``"windows"`` or ``"linux"``.
+        image_base: Binary image base address (int).
+        base_vfunc_name: YAML stem of the base-class vfunc (e.g. ``"CBaseEntity_Touch"``).
+        inherit_vtable_class: Class name whose vtable is looked up
+            (e.g. ``"CTriggerPush"``).
+        relative_index_offset: Offset added to the base vfunc_index (default 0).
+        generate_func_sig: Whether to generate a new func_sig when none can be
+            reused from old YAML (default True).
+        debug: Enable debug output.
+
+    Returns:
+        Dict with function YAML data ready for ``write_func_yaml``, or None on
+        failure.
+    """
+    if yaml is None:
+        if debug:
+            print("    Preprocess: PyYAML is required for index-based vfunc preprocessing")
+        return None
+
+    def _read_yaml(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return yaml.safe_load(f)
+        except Exception:
+            return None
+
+    def _parse_int(value):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError("empty integer string")
+            return int(raw, 0)
+        return int(value)
+
+    # 1. Read base vfunc YAML to get vfunc_index
+    base_vfunc_path = os.path.join(
+        new_binary_dir,
+        f"{base_vfunc_name}.{platform}.yaml",
+    )
+    base_vfunc_data = _read_yaml(base_vfunc_path)
+    if not isinstance(base_vfunc_data, dict):
+        if debug:
+            print(
+                "    Preprocess: failed to read base vfunc YAML: "
+                f"{os.path.basename(base_vfunc_path)}"
+            )
+        return None
+
+    try:
+        base_index = _parse_int(base_vfunc_data.get("vfunc_index"))
+    except Exception:
+        if debug:
+            print(
+                "    Preprocess: invalid vfunc_index in "
+                f"{os.path.basename(base_vfunc_path)}"
+            )
+        return None
+
+    # 2. Read inherit-class vtable YAML
+    vtable_path = os.path.join(
+        new_binary_dir,
+        f"{inherit_vtable_class}_vtable.{platform}.yaml",
+    )
+    vtable_data = _read_yaml(vtable_path)
+    if not isinstance(vtable_data, dict):
+        if debug:
+            print(
+                "    Preprocess: failed to read vtable YAML: "
+                f"{os.path.basename(vtable_path)}"
+            )
+        return None
+
+    raw_entries = vtable_data.get("vtable_entries", {})
+    if not isinstance(raw_entries, dict):
+        if debug:
+            print(
+                "    Preprocess: invalid vtable_entries in "
+                f"{inherit_vtable_class}_vtable YAML"
+            )
+        return None
+
+    vtable_entries = {}
+    for idx, addr in raw_entries.items():
+        try:
+            vtable_entries[int(idx)] = str(addr)
+        except (TypeError, ValueError):
+            if debug:
+                print(f"    Preprocess: invalid vtable entry index: {idx}")
+            return None
+
+    # 3. Look up target function address
+    target_index = base_index + relative_index_offset
+    target_addr_hex = vtable_entries.get(target_index)
+    if not target_addr_hex:
+        if debug:
+            print(
+                f"    Preprocess: {inherit_vtable_class} vtable missing index "
+                f"{target_index} for {target_func_name}"
+            )
+        return None
+
+    # 4. Query function info via py_eval
+    py_code = (
+        "import idaapi, json\n"
+        f"addr = {target_addr_hex}\n"
+        "f = idaapi.get_func(addr)\n"
+        "if f and f.start_ea == addr:\n"
+        "    result = json.dumps({'func_va': hex(f.start_ea), "
+        "'func_size': hex(f.end_ea - f.start_ea)})\n"
+        "else:\n"
+        "    result = json.dumps(None)\n"
+    )
+
+    try:
+        result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code},
+        )
+        result_data = parse_mcp_result(result)
+    except Exception:
+        if debug:
+            print(f"    Preprocess: py_eval error for {target_func_name}")
+        return None
+
+    func_info = None
+    if isinstance(result_data, dict):
+        result_str = result_data.get("result", "")
+        if result_str:
+            try:
+                func_info = json.loads(result_str)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if not isinstance(func_info, dict):
+        if debug:
+            print(f"    Preprocess: failed to query function info for {target_func_name}")
+        return None
+
+    func_va_hex = func_info.get("func_va")
+    func_size_hex = func_info.get("func_size")
+    if not func_va_hex or not func_size_hex:
+        if debug:
+            print(f"    Preprocess: incomplete function info for {target_func_name}")
+        return None
+
+    try:
+        func_va_int = int(str(func_va_hex), 16)
+    except (TypeError, ValueError):
+        if debug:
+            print(f"    Preprocess: invalid func_va for {target_func_name}: {func_va_hex}")
+        return None
+
+    # 5. Build payload
+    payload = {
+        "func_va": str(func_va_hex),
+        "func_rva": hex(func_va_int - image_base),
+        "func_size": str(func_size_hex),
+        "vtable_name": inherit_vtable_class,
+        "vfunc_offset": hex(target_index * 8),
+        "vfunc_index": target_index,
+    }
+
+    # 6. Try to reuse old func_sig
+    old_path = (old_yaml_map or {}).get(target_output)
+    old_func_sig = None
+    if old_path and os.path.exists(old_path):
+        old_data = _read_yaml(old_path)
+        if isinstance(old_data, dict):
+            sig = old_data.get("func_sig")
+            if sig:
+                old_func_sig = str(sig)
+
+    if old_func_sig:
+        payload["func_sig"] = old_func_sig
+    elif generate_func_sig:
+        gen_data = await preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va=func_va_int,
+            image_base=image_base,
+            debug=debug,
+        )
+        if gen_data and gen_data.get("func_sig"):
+            payload["func_sig"] = gen_data["func_sig"]
+        elif debug:
+            print(
+                f"    Preprocess: func_sig generation failed for "
+                f"{target_func_name} at {func_va_hex}"
+            )
+
+    return payload
+
+
 # ---------------------------------------------------------------------------
 # Common preprocess_skill template
 # ---------------------------------------------------------------------------

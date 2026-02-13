@@ -8,7 +8,11 @@ TARGET_FUNCTION_NAMES = [
     "CSource2Server_Init",
     "CGameEventManager_Init",
 ]
-TARGET_GLOBALVAR_NAMES = ["gameeventmanager", "s_GameEventManager"]
+
+TARGET_GLOBALVAR_NAMES = [
+    "gameeventmanager", 
+    "s_GameEventManager"
+]
 
 
 async def preprocess_skill(
