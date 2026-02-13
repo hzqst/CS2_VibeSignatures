@@ -81,44 +81,44 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "off_XXXXXXXX", "new": "s_GameEv
 
 VTable class name: `CSource2Server`
 
-### 6. Generate and validate unique signature for CSource2Server_Init
+### 6. Generate and validate unique signature for CSource2Server_Init, CGameEventManager_Init
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CSource2Server_Init.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CSource2Server_Init` and `CGameEventManager_Init`.
 
-### 7. Write IDA analysis output for CSource2Server_Init as YAML beside the binary
+### 7. Write IDA analysis output as YAML beside the binary
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for CSource2Server_Init.
+  **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CSource2Server_Init` and `CGameEventManager_Init`.
 
-Required parameters:
-- `func_name`: `CSource2Server_Init`
-- `func_addr`: The function address of CSource2Server_Initfrom step 3
-- `func_sig`: The validated signature from step 6
+  #### For `CSource2Server_Init`:
 
-VTable parameters (when this is a virtual function):
-- `vtable_name`: `CSource2Server`
-- `vfunc_offset`: The offset from step 5
-- `vfunc_index`: The index from step 5
+  Required parameters:
+  - `func_name`: `CSource2Server_Init`
+  - `func_addr`: The function address of `CSource2Server_Init` from step 3
+  - `func_sig`: The validated signature from step 6
 
-### 8. Generate and validate unique signature for CGameEventManager_Init
+  VTable parameters (when this is a virtual function):
+  - `vtable_name`: `CSource2Server`
+  - `vfunc_offset`: The offset from step 5
+  - `vfunc_index`: The index from step 5
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CGameEventManager_Init.
+  **ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results for `CGameEventManager_Init`.
 
-### 9. Write IDA analysis output for CGameEventManager_Init as YAML beside the binary
+  #### For `CGameEventManager_Init`:
 
-**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results for CGameEventManager_Init.
+  Required parameters:
+  - `func_name`: `CGameEventManager_Init`
+  - `func_addr`: The function address of `CGameEventManager_Init` from step 3
+  - `func_sig`: The validated signature from step 6
 
-Required parameters:
-- `func_name`: `CGameEventManager_Init`
-- `func_addr`: The function address of CGameEventManager_Init from step 3
-- `func_sig`: The validated signature from step 8
+### 8. Generate and validate unique signature for gameeventmanager and s_GameEventManager
 
-### 10. Generate and validate unique signature for gameeventmanager
+   **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for: `gameeventmanager` and `s_GameEventManager`.
 
-   **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: gameeventmanager.
+### 9. Write IDA analysis output for `gameeventmanager` as YAML beside the binary:
 
-### 11. Write IDA analysis output for `gameeventmanager` as YAML beside the binary:
+   **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results for `gameeventmanager` and `s_GameEventManager`.
 
-   **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results.
+  #### For `gameeventmanager`:
 
    Required parameters:
    - `gv_name`: `gameeventmanager`
@@ -129,13 +129,7 @@ Required parameters:
    - `gv_inst_length`: Length of the GV-accessing instruction
    - `gv_inst_disp`: Displacement offset within the instruction
 
-### 12. Generate and validate unique signature for s_GameEventManager
-
-   **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for the global variable: gameeventmanager.
-
-### 13. Write IDA analysis output for `s_GameEventManager` as YAML beside the binary:
-
-   **ALWAYS** Use SKILL `/write-globalvar-as-yaml` to write the analysis results.
+  #### For `s_GameEventManager`:
 
    Required parameters:
    - `gv_name`: `s_GameEventManager`

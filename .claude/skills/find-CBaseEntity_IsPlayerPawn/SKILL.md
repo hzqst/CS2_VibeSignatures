@@ -57,7 +57,7 @@ mcp__ida-pro-mcp__decompile addr="<sub_XXXXXXX_address>"
 Look for this code pattern:
 
 ```c
-if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v3 + 1344LL))(v3)  // <-- 1344 is IsPlayerPawn vtable offset
+if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v3 + 1344LL))(v3)  // <-- 1344 is CBaseEntity_IsPlayerPawn vtable offset
     && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v4 + 3344LL))(v4)
     && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v4 + 3208LL))(v4) )
 {
@@ -66,20 +66,25 @@ if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v3 + 1344LL))(v3)  
 }
 ```
 
-Extract the **first vtable offset** from this pattern (e.g., `1344`). This is the `CBaseEntity::IsPlayerPawn` vtable offset.
+Extract the **first vtable offset** from this pattern (e.g., `1344`). This is the `CBaseEntity_IsPlayerPawn` vtable offset.
 
 Calculate:
 - **VTable Offset**: The value from the pattern (e.g., 1344 = 0x540)
 - **VTable Index**: offset / 8 (e.g., 1344 / 8 = **168**)
 
-### 5. Write Analysis Results as YAML
+### 5. Generate vfunc offset signatures for CBaseEntity_IsPlayerPawn
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_IsPlayerPawn`, with `inst_addr` and `vfunc_offset` from step 4
+
+### 6. Write Analysis Results as YAML
+
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CBaseEntity_IsPlayerPawn`.
+
+#### For `CBaseEntity_IsPlayerPawn`:
 
 Required parameters:
 - `func_name`: `CBaseEntity_IsPlayerPawn`
-- `func_addr`: Leave empty, because we don't need it
-- `func_sig`: Leave empty, because we don't need it
+- `vfunc_sig`: CBaseEntity_IsPlayerPawn's `<vfunc_sig>` from step 5
 
 VTable parameters:
 - `vtable_name`: `CBaseEntity`
@@ -111,4 +116,3 @@ vfunc_offset: 1344
 ## Notes
 
 - This is a simple virtual function that just return either true or false.
-- There is no need to make a signature for it.

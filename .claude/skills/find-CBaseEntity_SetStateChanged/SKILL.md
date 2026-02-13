@@ -53,7 +53,7 @@ VTable class name: `CBaseEntity`
 
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-### 7. Write IDA Analysis Output as YAML
+### 6. Write IDA Analysis Output as YAML
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CBaseEntity_SetStateChanged`.
 

@@ -60,6 +60,7 @@ else:
 gv_rva = gv_addr - image_base
 
 data = {
+    'gv_name': gv_name,
     'gv_va': hex(gv_addr),
     'gv_rva': hex(gv_rva),
     'gv_sig': gv_sig,
