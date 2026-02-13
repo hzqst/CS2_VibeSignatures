@@ -3,7 +3,7 @@
 
 from ida_analyze_util import preprocess_common_skill
 
-TARGET_CLASS_NAME = "CCSGameRules"
+TARGET_CLASS_NAMES = ["CCSGameRules"]
 
 
 async def preprocess_skill(
@@ -14,7 +14,7 @@ async def preprocess_skill(
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
-        vtable_class_names=[TARGET_CLASS_NAME],
+        vtable_class_names=TARGET_CLASS_NAMES,
         platform=platform,
         image_base=image_base,
         debug=debug,
