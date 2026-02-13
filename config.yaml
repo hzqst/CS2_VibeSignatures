@@ -79,6 +79,19 @@ modules:
         expected_output:
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
 
+      - name: find-CCSPlayer_MovementServices_vtable
+        expected_output:
+          - CCSPlayer_MovementServices_vtable.{platform}.yaml
+
+      - name: find-CCSPlayer_MovementServices_ProcessMovement-AND-CCSPlayer_MovementServices_CheckMovingGround
+        expected_output:
+          - CCSPlayer_MovementServices_ProcessMovement.{platform}.yaml
+          - CCSPlayer_MovementServices_CheckMovingGround.{platform}.yaml
+        expected_input:
+          - CCSPlayer_MovementServices_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_MovementServices_vtable
+
       - name: find-CBaseEntity_vtable
         expected_output:
           - CBaseEntity_vtable.{platform}.yaml
@@ -590,6 +603,21 @@ modules:
 
       - name: CCSPlayer_WeaponServices_vtable
         catagory: vtable
+
+      - name: CCSPlayer_MovementServices_vtable
+        catagory: vtable
+
+      - name: CCSPlayer_MovementServices_ProcessMovement
+        catagory: func
+        alias:
+          - CCSPlayer_MovementServices::ProcessMovement
+          - ProcessMovement
+
+      - name: CCSPlayer_MovementServices_CheckMovingGround
+        catagory: vfunc
+        alias:
+          - CCSPlayer_MovementServices::CheckMovingGround
+          - CheckMovingGround
 
       - name: CBaseEntity_vtable
         catagory: vtable
