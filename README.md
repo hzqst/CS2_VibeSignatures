@@ -235,9 +235,9 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md as references.
 ```
 
-6. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
+6. Create a copy of `ida_preprocessor_scripts/find-CCSPlayerController_ChangeTeam.py` as `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
 
- - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CBaseModelEntity_SetModel"` in the preprocessor script.
+ - Don't forget to change `CCSPlayerController_ChangeTeam` to `CBaseModelEntity_SetModel` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 
@@ -337,9 +337,9 @@ Prompt:
  - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
 ```
 
-7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_EmitSoundFilter.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+7. Create a copy of `ida_preprocessor_scripts/find-CCSPlayerPawnBase_PostThink.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
- - Don't forget to change `CBaseEntity_EmitSoundFilter"` to `CCSPlayerController_Respawn"` in the preprocessor script.
+ - Don't forget to change `CCSPlayerPawnBase_PostThink` to `CCSPlayerController_Respawn` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 
