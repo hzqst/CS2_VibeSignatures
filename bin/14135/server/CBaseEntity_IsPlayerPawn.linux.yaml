@@ -1,0 +1,6 @@
+func_va: '0x9b63f0'
+func_rva: '0x9b63f0'
+func_size: '0x3'
+vtable_name: CBaseEntity
+vfunc_offset: '0x538'
+vfunc_index: 167
