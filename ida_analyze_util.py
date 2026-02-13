@@ -184,6 +184,7 @@ def write_gv_yaml(path, data):
         raise RuntimeError("PyYAML is required to write global-variable YAML")
 
     ordered_keys = [
+        "gv_name",
         "gv_va", "gv_rva", "gv_sig", "gv_sig_va",
         "gv_inst_offset", "gv_inst_length", "gv_inst_disp",
     ]
@@ -1484,6 +1485,7 @@ async def preprocess_gv_sig_via_mcp(
     gv_sig_va_hex = str(gv_info.get("gv_sig_va", match_addr))
 
     return {
+        "gv_name": old_data.get("gv_name") or os.path.basename(new_path).split(".")[0],
         "gv_va": gv_va_hex,
         "gv_rva": hex(gv_va_int - image_base),
         "gv_sig": gv_sig,
