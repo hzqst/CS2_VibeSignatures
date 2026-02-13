@@ -64,11 +64,11 @@
 - 标准库：`importlib.util`、`inspect`、`re`、`pathlib`、`json`、`os`
 
 ## 注意事项
-- 预处理属于“加速路径”：返回 `False` 是可接受结果，上层会回退 Agent。
-- 现在“是否预处理成功”由 skill 脚本控制；脚本应自行保证输出完整性。
+- 预处理属于“加速路径”：返回 `False` 是可接受结果，上层会回退 Agent SKILL。
+- 现在“是否预处理成功”由脚本控制；脚本应自行保证输出完整性。
 - `preprocess_func_sig_via_mcp` 仍要求 `find_bytes` 唯一命中；0或多命中都会失败。
 - vfunc 偏移仍按 `index * 8` 计算（64位假设）。
-- 若缺少脚本或脚本导出不符合约定，该 skill 会直接走 Agent，不会阻断主流程。
+- 若缺少脚本或脚本导出不符合约定，该 skill 会直接走 Agent SKILL，不会阻断主流程。
 
 ## 调用方（可选）
 - `ida_analyze_bin.py` 的 `process_binary`（在 `run_skill` 之前调用）
