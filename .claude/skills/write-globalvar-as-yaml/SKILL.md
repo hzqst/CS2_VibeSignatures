@@ -83,15 +83,13 @@ The output YAML filename follows this pattern:
 - `<gv_name>.<platform>.yaml`
 
 Examples:
-- `server.dll` → `CBaseModelEntity_SetModel.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseModelEntity_SetModel.linux.yaml`
-
-- `engine2.dll` → `CServerSideClient_IsHearingClient.windows.yaml`
-- `libengine2.so` → `CServerSideClient_IsHearingClient.linux.yaml`
+- `server.dll` → `IGameSystem_InitAllSystems_pFirst.windows.yaml`
+- `server.so` / `libserver.so` → `IGameSystem_InitAllSystems_pFirst.linux.yaml`
 
 ## Output YAML Format
 
 ```yaml
+gv_name: IGameSystem_InitAllSystems_pFirst
 gv_va: 0x180XXXXXX   # Global variable's virtual address - changes with game updates
 gv_rva: 0xXXXXXX     # Relative virtual address (VA - image base) - changes with game updates
 gv_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00  # Unique byte signature (starts at GV-referencing instruction)
