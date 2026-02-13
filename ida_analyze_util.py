@@ -1492,3 +1492,164 @@ async def preprocess_gv_sig_via_mcp(
         "gv_inst_length": gv_inst_length,
         "gv_inst_disp": gv_inst_disp,
     }
+
+
+# ---------------------------------------------------------------------------
+# Common preprocess_skill template
+# ---------------------------------------------------------------------------
+
+async def preprocess_common_skill(
+    session,
+    expected_outputs,
+    old_yaml_map=None,
+    new_binary_dir=None,
+    platform="windows",
+    image_base=0,
+    func_names=None,
+    gv_names=None,
+    vtable_class_names=None,
+    debug=False,
+):
+    """Reusable preprocess_skill implementation for func/vfunc, gv, and vtable targets.
+
+    Handles any combination of the three target types in a single call:
+    - ``func_names``: func/vfunc targets via ``preprocess_func_sig_via_mcp``
+      (which already supports vfunc_sig fallback internally).
+    - ``gv_names``: global-variable targets via ``preprocess_gv_sig_via_mcp``.
+    - ``vtable_class_names``: vtable targets via ``preprocess_vtable_via_mcp``.
+
+    Args:
+        session: Active MCP ClientSession.
+        expected_outputs: List of expected output YAML paths.
+        old_yaml_map: Mapping from new output path to old version path.
+        new_binary_dir: Directory for new version outputs.
+        platform: "windows" or "linux".
+        image_base: Binary image base address (int).
+        func_names: List of function/vfunc target names (may be empty/None).
+        gv_names: List of global-variable target names (may be empty/None).
+        vtable_class_names: List of class names for vtable lookup, or None.
+        debug: Enable debug output.
+
+    Returns:
+        True if all targets were successfully preprocessed, False otherwise.
+    """
+    func_names = func_names or []
+    gv_names = gv_names or []
+    vtable_class_names = vtable_class_names or []
+
+    # --- vtable targets ---
+    for vtable_class in vtable_class_names:
+        target_filename = f"{vtable_class}_vtable.{platform}.yaml"
+        target_outputs = [
+            path for path in expected_outputs
+            if os.path.basename(path) == target_filename
+        ]
+
+        if len(target_outputs) != 1:
+            if debug:
+                print(
+                    f"    Preprocess: expected exactly one output named {target_filename}, "
+                    f"got {len(target_outputs)}"
+                )
+            return False
+
+        vtable_data = await preprocess_vtable_via_mcp(
+            session=session,
+            class_name=vtable_class,
+            image_base=image_base,
+            platform=platform,
+            debug=debug,
+        )
+        if vtable_data is None:
+            return False
+
+        write_vtable_yaml(target_outputs[0], vtable_data)
+        if debug:
+            print(f"    Preprocess: generated {target_filename}")
+
+    # --- func/vfunc + gv targets ---
+    if not func_names and not gv_names:
+        return True
+
+    # Build expected filename -> (kind, name) mapping
+    expected_by_filename = {
+        f"{func_name}.{platform}.yaml": ("func", func_name)
+        for func_name in func_names
+    }
+    for gv_name in gv_names:
+        expected_by_filename[f"{gv_name}.{platform}.yaml"] = ("gv", gv_name)
+
+    # Match expected outputs
+    matched_func_outputs = {}
+    matched_gv_outputs = {}
+    for path in expected_outputs:
+        basename = os.path.basename(path)
+        item = expected_by_filename.get(basename)
+        if item is None:
+            continue
+        kind, name = item
+        if kind == "func":
+            matched_func_outputs[name] = path
+        else:
+            matched_gv_outputs[name] = path
+
+    # Validate all expected outputs are present
+    missing_func = [n for n in func_names if n not in matched_func_outputs]
+    missing_gv = [n for n in gv_names if n not in matched_gv_outputs]
+    if missing_func or missing_gv:
+        if debug:
+            missing = missing_func + missing_gv
+            print(
+                "    Preprocess: expected outputs missing for "
+                f"{', '.join(missing)}"
+            )
+        return False
+
+    # Process func/vfunc targets
+    for func_name in func_names:
+        target_output = matched_func_outputs[func_name]
+        old_path = (old_yaml_map or {}).get(target_output)
+
+        func_data = await preprocess_func_sig_via_mcp(
+            session=session,
+            new_path=target_output,
+            old_path=old_path,
+            image_base=image_base,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+        if func_data is None:
+            if debug:
+                print(f"    Preprocess: failed to locate {func_name}")
+            return False
+
+        write_func_yaml(target_output, func_data)
+        if debug:
+            print(f"    Preprocess: generated {func_name}.{platform}.yaml")
+
+    # Process gv targets
+    for gv_name in gv_names:
+        target_output = matched_gv_outputs[gv_name]
+        gv_old_path = (old_yaml_map or {}).get(target_output)
+
+        gv_data = await preprocess_gv_sig_via_mcp(
+            session=session,
+            new_path=target_output,
+            old_path=gv_old_path,
+            image_base=image_base,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+
+        if gv_data is None:
+            if debug:
+                print(f"    Preprocess: failed to locate {gv_name}")
+            return False
+
+        write_gv_yaml(target_output, gv_data)
+        if debug:
+            print(f"    Preprocess: generated {gv_name}.{platform}.yaml")
+
+    return True

@@ -36,22 +36,24 @@
 ### skill 脚本约定
 - 文件名：`ida_preprocessor_scripts/{skill_name}.py`
 - 导出方法：`preprocess_skill(...)`
-- 脚本内部可按需组合 `ida_analyze_util.py` 的公共方法，例如：
-  - `preprocess_vtable_via_mcp`
-  - `preprocess_func_sig_via_mcp`
-  - `write_vtable_yaml`
-  - `write_func_yaml`
+- 大多数脚本只需声明常量并委托给 `preprocess_common_skill`：
+  - func/vfunc 脚本：声明 `TARGET_FUNCTION_NAMES`，传 `func_names=TARGET_FUNCTION_NAMES`
+  - gv 脚本：声明 `TARGET_GLOBALVAR_NAMES`，传 `gv_names=TARGET_GLOBALVAR_NAMES`
+  - vtable 脚本：声明 `TARGET_CLASS_NAME`，传 `vtable_class_names=[TARGET_CLASS_NAME]`
+  - 混合脚本：可同时传多个参数
+- 特殊脚本（如 CTriggerPush_Touch、CBaseTrigger_StartTouch、CPointTeleport_Teleport）有自定义逻辑，直接使用底层方法
 
 ## 公共能力 ida_analyze_util.py
 
 - MCP结果解析：`parse_mcp_result`
 - vtable py_eval模板与构建：`_VTABLE_PY_EVAL_TEMPLATE`、`_build_vtable_py_eval`
-- YAML写盘：`write_vtable_yaml`、`write_func_yaml`
+- YAML写盘：`write_vtable_yaml`、`write_func_yaml`、`write_gv_yaml`
 - `preprocess_vtable_via_mcp`：按类名在 IDA 中定位并读取 vtable，输出标准化 vtable YAML 数据。
 - `preprocess_func_sig_via_mcp`：优先复用旧 `func_sig` 定位函数，缺失时回退 `vfunc_sig` + vtable 索引并补全新函数元数据。
 - `preprocess_gen_func_sig_via_mcp`：从函数头自动生成最短唯一 `func_sig`，用于新版本函数定位与写盘。
 - `preprocess_gen_gv_sig_via_mcp`：围绕访问全局变量的指令生成最短唯一 `gv_sig`，并返回指令位移元数据。
 - `preprocess_gv_sig_via_mcp`：复用旧 `gv_sig` 在新二进制中重定位全局变量并重建 `gv_*` 字段。
+- **`preprocess_common_skill`**：统一的 `preprocess_skill` 模板函数，支持 func/vfunc、gv、vtable 三种目标类型的任意组合。大多数 skill 脚本只需声明常量并委托给此函数。
 
 其中 `write_vtable_yaml` / `write_func_yaml` 现使用 `yaml.safe_dump` 导出：
 - 保证 key 集合与顺序控制（`sort_keys=False`）
