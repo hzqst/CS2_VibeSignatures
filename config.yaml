@@ -107,6 +107,10 @@ modules:
         expected_output:
           - CTriggerPush_vtable.{platform}.yaml
 
+      - name: find-CPhysBox_vtable
+        expected_output:
+          - CPhysBox_vtable.{platform}.yaml
+
       - name: find-CPointTeleport_vtable
         expected_output:
           - CPointTeleport_vtable.{platform}.yaml
@@ -431,6 +435,14 @@ modules:
           - find-CBaseEntity_vtable
           - find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_EquipWeapon
 
+      - name: find-CBaseEntity_Use
+        expected_output:
+          - CBaseEntity_Use.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
@@ -471,6 +483,16 @@ modules:
         prerequisite:
           - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
           - find-CTriggerPush_vtable
+
+      - name: find-CPhysBox_Use
+        expected_output:
+          - CPhysBox_Use.{platform}.yaml
+        expected_input:
+          - CBaseEntity_Use.{platform}.yaml
+          - CPhysBox_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_Use
+          - find-CPhysBox_vtable
 
       - name: find-CBaseEntity_SetGroundEntity
         expected_output:
@@ -559,6 +581,9 @@ modules:
         catagory: vtable
 
       - name: CTriggerPush_vtable
+        catagory: vtable
+
+      - name: CPhysBox_vtable
         catagory: vtable
 
       - name: CTakeDamageInfo_vtable
@@ -872,6 +897,11 @@ modules:
         alias:
           - CBaseEntity::SetOwner
 
+      - name: CBaseEntity_Use
+        catagory: vfunc
+        alias:
+          - CBaseEntity::Use
+
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
         catagory: vfunc
         alias:
@@ -940,6 +970,11 @@ modules:
         alias:
           - CTriggerPush::Touch
           - TriggerPush_Touch
+
+      - name: CPhysBox_Use
+        catagory: vfunc
+        alias:
+          - CPhysBox::Use
 
       - name: CBaseEntity_SetGroundEntity
         catagory: func
