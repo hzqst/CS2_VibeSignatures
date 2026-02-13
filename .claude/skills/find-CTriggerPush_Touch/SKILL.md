@@ -46,7 +46,7 @@ if os.path.exists(yaml_path):
         print(f.read())
 else:
     print(f"ERROR: {yaml_path} not found")
-    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch first.")
+    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch first.")
 """
 ```
 

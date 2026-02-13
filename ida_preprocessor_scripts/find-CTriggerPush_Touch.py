@@ -75,7 +75,6 @@ async def preprocess_skill(
                 image_base=image_base,
                 base_vfunc_name=BASE_TOUCH_FUNCTION_NAME,
                 inherit_vtable_class=TRIGGER_PUSH_VTABLE_NAME,
-                relative_index_offset=0,
                 generate_func_sig=True,
                 debug=debug,
             )

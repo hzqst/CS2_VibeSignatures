@@ -16,7 +16,7 @@ Before using this skill, ensure the following YAML files exist beside the binary
 
 If any of these files are missing, run the corresponding skills first:
 - `/find-CBaseTrigger_vtable` to generate CBaseTrigger vtable YAML
-- `/find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch` to generate CBaseEntity touch function YAMLs
+- `/find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch` to generate CBaseEntity touch function YAMLs
 
 ## Method
 
@@ -48,7 +48,7 @@ if os.path.exists(yaml_path1):
         print(f.read())
 else:
     print(f"ERROR: {yaml_path1} not found")
-    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch first.")
+    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch first.")
 
 print()
 
@@ -60,7 +60,7 @@ if os.path.exists(yaml_path2):
         print(f.read())
 else:
     print(f"ERROR: {yaml_path2} not found")
-    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch first.")
+    print("Please run /find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch first.")
 """
 ```
 

@@ -9,11 +9,10 @@ from ida_analyze_util import (
 )
 
 
-BASE_START_TOUCH_NAME = "CBaseEntity_StartTouch"
-TARGET_VTABLE_NAME = "CBaseTrigger"
+# (target_func_name, inherit_vtable_class, base_vfunc_name)
 TARGET_FUNCTION_SPECS = [
-    ("CBaseTrigger_StartTouch", 0),
-    ("CBaseTrigger_EndTouch", 2),
+    ("CBaseTrigger_StartTouch", "CBaseTrigger", "CBaseEntity_StartTouch"),
+    ("CBaseTrigger_EndTouch", "CBaseTrigger", "CBaseEntity_EndTouch"),
 ]
 
 
@@ -27,12 +26,12 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Resolve CBaseTrigger StartTouch/EndTouch by CBaseEntity StartTouch index and CBaseTrigger vtable."""
+    """Resolve CBaseTrigger StartTouch/EndTouch by their respective CBaseEntity vfunc indices."""
     _ = skill_name
 
     expected_by_filename = {
         f"{func_name}.{platform}.yaml": func_name
-        for func_name, _ in TARGET_FUNCTION_SPECS
+        for func_name, _, _ in TARGET_FUNCTION_SPECS
     }
     matched_outputs = {}
     for path in expected_outputs:
@@ -45,7 +44,7 @@ async def preprocess_skill(
         if debug:
             missing = [
                 func_name
-                for func_name, _ in TARGET_FUNCTION_SPECS
+                for func_name, _, _ in TARGET_FUNCTION_SPECS
                 if func_name not in matched_outputs
             ]
             print(
@@ -54,7 +53,7 @@ async def preprocess_skill(
             )
         return False
 
-    for func_name, relative_index in TARGET_FUNCTION_SPECS:
+    for func_name, vtable_class, base_vfunc_name in TARGET_FUNCTION_SPECS:
         target_output = matched_outputs[func_name]
 
         func_data = await preprocess_index_based_vfunc_via_mcp(
@@ -65,9 +64,8 @@ async def preprocess_skill(
             new_binary_dir=new_binary_dir,
             platform=platform,
             image_base=image_base,
-            base_vfunc_name=BASE_START_TOUCH_NAME,
-            inherit_vtable_class=TARGET_VTABLE_NAME,
-            relative_index_offset=relative_index,
+            base_vfunc_name=base_vfunc_name,
+            inherit_vtable_class=vtable_class,
             generate_func_sig=False,
             debug=debug,
         )

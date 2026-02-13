@@ -1506,7 +1506,6 @@ async def preprocess_index_based_vfunc_via_mcp(
     image_base,
     base_vfunc_name,
     inherit_vtable_class,
-    relative_index_offset=0,
     generate_func_sig=True,
     debug=False,
 ):
@@ -1514,7 +1513,12 @@ async def preprocess_index_based_vfunc_via_mcp(
 
     Reads ``{base_vfunc_name}.{platform}.yaml`` to obtain the base vfunc_index,
     then reads ``{inherit_vtable_class}_vtable.{platform}.yaml`` to look up the
-    function address at ``base_index + relative_index_offset``.
+    function address at that exact index.
+
+    Each target function should specify its own *base_vfunc_name* that maps
+    directly to the correct vtable slot.  This avoids fragile relative-offset
+    calculations that break when the engine inserts new virtual functions
+    between existing ones.
 
     If an old YAML exists for the target, its ``func_sig`` is reused.  Otherwise
     (or when no old YAML is available), a new ``func_sig`` is generated via
@@ -1528,10 +1532,10 @@ async def preprocess_index_based_vfunc_via_mcp(
         new_binary_dir: Directory containing per-binary YAML files.
         platform: ``"windows"`` or ``"linux"``.
         image_base: Binary image base address (int).
-        base_vfunc_name: YAML stem of the base-class vfunc (e.g. ``"CBaseEntity_Touch"``).
+        base_vfunc_name: YAML stem of the base-class vfunc whose ``vfunc_index``
+            is used directly (e.g. ``"CBaseEntity_Touch"``).
         inherit_vtable_class: Class name whose vtable is looked up
             (e.g. ``"CTriggerPush"``).
-        relative_index_offset: Offset added to the base vfunc_index (default 0).
         generate_func_sig: Whether to generate a new func_sig when none can be
             reused from old YAML (default True).
         debug: Enable debug output.
@@ -1619,7 +1623,7 @@ async def preprocess_index_based_vfunc_via_mcp(
             return None
 
     # 3. Look up target function address
-    target_index = base_index + relative_index_offset
+    target_index = base_index
     target_addr_hex = vtable_entries.get(target_index)
     if not target_addr_hex:
         if debug:
