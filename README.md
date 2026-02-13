@@ -162,7 +162,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CCSPlayerPawn_vtable.{platform}.yaml
 ```
 
-3. Add the new symbol to `config.yaml`, in `symbols`.
+3. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CCSPlayerPawn_vtable
@@ -251,7 +251,7 @@ Prompt:
           - CBaseModelEntity_SetModel.{platform}.yaml
 ```
 
-8. Add the new symbol to `config.yaml`, in `symbols`.
+8. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CBaseModelEntity_SetModel
@@ -357,7 +357,7 @@ Prompt:
           - find-CCSPlayerController_vtable
 ```
 
-9. Add the new symbol to `config.yaml`, in `symbols`.
+9. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CCSPlayerController_Respawn
@@ -441,7 +441,7 @@ Prompt:
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
 ```
 
-8. Add the new symbols to `config.yaml`, in `symbols`.
+8. Add the new symbols to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: IGameSystem_InitAllSystems
