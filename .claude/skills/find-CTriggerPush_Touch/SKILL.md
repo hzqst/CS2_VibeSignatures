@@ -15,7 +15,7 @@ Before using this skill, ensure the following YAML files exist beside the binary
 
 If any of these files are missing, run the corresponding skills first:
 - `/find-CTriggerPush_vtable` to generate CTriggerPush vtable YAML
-- `/find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-CBaseEntity_EndTouch` to generate CBaseEntity touch function YAMLs
+- `/find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch` to generate CBaseEntity touch function YAMLs
 
 ## Method
 
