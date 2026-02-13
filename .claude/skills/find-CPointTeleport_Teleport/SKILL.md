@@ -1,7 +1,7 @@
 ---
-name: find-CPointTeleport_Teleport-AND-CBaseEntity_Teleport
+name: find-CPointTeleport_Teleport
 description: |
-  Find and identify the CPointTeleport_Teleport and CBaseEntity_Teleport virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the teleport handler function for point_teleport entities.
+  Find and identify the CPointTeleport_Teleport virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the teleport handler function for point_teleport entities.
   Triggers: CPointTeleport_Teleport, point_teleport, teleport entity, can't teleport object
 ---
 
@@ -60,11 +60,11 @@ mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<function_addr>", "name": "CPo
 
 ### 6. Generate and Validate Unique Signature
 
-- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CPointTeleport_Teleport`.
 
 ### 7. Write IDA Analysis Output as YAML
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results of CPointTeleport_Teleport.
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results of `CPointTeleport_Teleport`.
 
 Required parameters:
 - `func_name`: `CPointTeleport_Teleport`
@@ -73,20 +73,6 @@ Required parameters:
 
 VTable parameters:
 - `vtable_name`: `CPointTeleport`
-- `vfunc_offset`: The offset from step 5
-- `vfunc_index`: The index from step 5
-
-### 8. Write IDA Analysis Output as YAML
-
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the CBaseEntity_Teleport.{platform}.yaml
-
-Required parameters:
-- `func_name`: `CBaseEntity_Teleport`
-- `func_addr`: Leave empty, we don't need it
-- `func_sig`: Leave empty, we don't need it
-
-VTable parameters:
-- `vtable_name`: `CBaseEntity`
 - `vfunc_offset`: The offset from step 5
 - `vfunc_index`: The index from step 5
 
@@ -114,8 +100,3 @@ The `CPointTeleport_Teleport` function contains:
 The output YAML filename of CPointTeleport_Teleport depends on the platform:
 - `server.dll` → `CPointTeleport_Teleport.windows.yaml`
 - `server.so` / `libserver.so` → `CPointTeleport_Teleport.linux.yaml`
-
-The output YAML filename of CBaseEntity_Teleport depends on the platform:
-- `server.dll` → `CBaseEntity_Teleport.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_Teleport.linux.yaml`
-

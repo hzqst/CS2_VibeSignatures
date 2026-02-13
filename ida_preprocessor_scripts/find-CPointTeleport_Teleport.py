@@ -1,16 +1,11 @@
-﻿#!/usr/bin/env python3
-"""Preprocess script for find-CBaseEntity_TakeDamageOld skill."""
+#!/usr/bin/env python3
+"""Preprocess script for find-CPointTeleport_Teleport skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CBaseEntity_TakeDamageOld",
-    "CBasePlayerPawn_OnTakeDamage",
-    "CBasePlayerPawn_OnTakeDamage_Alive",
-    "CBasePlayerPawn_OnTakeDamage_Dying",
-    "CBasePlayerPawn_OnTakeDamage_Dead",
+    "CPointTeleport_Teleport",
 ]
-
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,

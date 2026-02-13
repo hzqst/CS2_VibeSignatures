@@ -1,0 +1,13 @@
+func_name: CBasePlayerPawn_OnTakeDamage_Dying
+func_va: '0x18016b230'
+func_rva: '0x16b230'
+func_size: '0x3'
+vfunc_sig: 48 8B 9C 24 ?? ?? ?? ?? 48 81 C4 ?? ?? ?? ?? 5F 48 FF A0 D8 07 00 00
+vfunc_sig_va: '0x180a816f6'
+vfunc_inst_offset: 16
+vfunc_inst_length: 7
+vfunc_disp_offset: 3
+vfunc_disp_size: 4
+vtable_name: CBasePlayerPawn
+vfunc_offset: '0x7d8'
+vfunc_index: 251

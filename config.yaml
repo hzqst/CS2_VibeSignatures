@@ -126,6 +126,31 @@ modules:
       - name: find-CBaseEntity_TakeDamageOld
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Alive.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Dying.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
+        expected_input:
+          - CBasePlayerPawn_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBasePlayerPawn_vtable
+        max_retries: 6
+
+      - name: find-CCSPlayerPawn_OnTakeDamage
+        expected_output:
+          - CCSPlayerPawn_OnTakeDamage.{platform}.yaml
+          - CCSPlayerPawn_OnTakeDamage_Alive.{platform}.yaml
+          - CCSPlayerPawn_OnTakeDamage_Dying.{platform}.yaml
+          - CCSPlayerPawn_OnTakeDamage_Dead.{platform}.yaml
+        expected_input:
+          - CCSPlayerPawn_vtable.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Alive.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Dying.{platform}.yaml
+          - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerPawn_vtable
+          - find-CBaseEntity_TakeDamageOld
 
       - name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
         expected_output:
@@ -529,15 +554,22 @@ modules:
           - CBaseAnimGraph.{platform}.yaml
           - CSkeletonInstance.{platform}.yaml
 
-      - name: find-CPointTeleport_Teleport-AND-CBaseEntity_Teleport
+      - name: find-CPointTeleport_Teleport
         expected_output:
           - CPointTeleport_Teleport.{platform}.yaml
-          - CBaseEntity_Teleport.{platform}.yaml
         expected_input:
           - CPointTeleport_vtable.{platform}.yaml
-          - CBaseEntity_vtable.{platform}.yaml
         prerequisite:
           - find-CPointTeleport_vtable
+
+      - name: find-CBaseEntity_Teleport
+        expected_output:
+          - CBaseEntity_Teleport.{platform}.yaml
+        expected_input:
+          - CPointTeleport_Teleport.{platform}.yaml
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CPointTeleport_Teleport
           - find-CBaseEntity_vtable
 
     symbols:
@@ -596,6 +628,36 @@ modules:
         catagory: func
         alias:
           - CBaseEntity::TakeDamageOld
+
+      - name: CBasePlayerPawn_OnTakeDamage_Alive
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::OnTakeDamage_Alive
+
+      - name: CBasePlayerPawn_OnTakeDamage_Dying
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::OnTakeDamage_Dying
+
+      - name: CBasePlayerPawn_OnTakeDamage_Dead
+        catagory: vfunc
+        alias:
+          - CBasePlayerPawn::OnTakeDamage_Dead
+
+      - name: CCSPlayerPawn_OnTakeDamage_Alive
+        catagory: vfunc
+        alias:
+          - CCSPlayerPawn::OnTakeDamage_Alive
+
+      - name: CCSPlayerPawn_OnTakeDamage_Dying
+        catagory: vfunc
+        alias:
+          - CCSPlayerPawn::OnTakeDamage_Dying
+
+      - name: CCSPlayerPawn_OnTakeDamage_Dead
+        catagory: vfunc
+        alias:
+          - CCSPlayerPawn::OnTakeDamage_Dead
 
       - name: CBaseModelEntity_SetModel
         catagory: func

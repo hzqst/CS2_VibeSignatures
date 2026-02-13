@@ -94,7 +94,7 @@ If the skill returns an error, **STOP** and report to user.
 
 Otherwise, extract `vtable_va`, `vtable_numvfunc` and `vtable_entries` for subsequent steps.
 
-### 6. Calculate VTable Indices
+### 6. Calculate VTable Indices and resolve vfunc addresses
 
 From the offsets found in step 3, calculate vtable indices:
 
