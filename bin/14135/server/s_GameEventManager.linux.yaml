@@ -1,3 +1,4 @@
+gv_name: s_GameEventManager
 gv_va: '0x2586ee0'
 gv_rva: '0x2586ee0'
 gv_sig: 4C 8D 25 ?? ?? ?? ?? 53 48 8D 5F ??

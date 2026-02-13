@@ -1,3 +1,4 @@
+gv_name: gameeventmanager
 gv_va: '0x181b89780'
 gv_rva: '0x1b89780'
 gv_sig: 48 8B 0D ?? ?? ?? ?? 45 33 C9 45 33 C0 48 8B 01 FF 50 ?? 4C 8B F8 48 85 C0
