@@ -1738,15 +1738,25 @@ async def preprocess_common_skill(
     func_names=None,
     gv_names=None,
     vtable_class_names=None,
+    inherit_vfuncs=None,
     debug=False,
 ):
-    """Reusable preprocess_skill implementation for func/vfunc, gv, and vtable targets.
+    """Reusable preprocess_skill implementation for func/vfunc, gv, vtable, and inherit-vfunc targets.
 
-    Handles any combination of the three target types in a single call:
+    Handles any combination of the four target types in a single call:
     - ``func_names``: func/vfunc targets via ``preprocess_func_sig_via_mcp``
       (which already supports vfunc_sig fallback internally).
     - ``gv_names``: global-variable targets via ``preprocess_gv_sig_via_mcp``.
     - ``vtable_class_names``: vtable targets via ``preprocess_vtable_via_mcp``.
+    - ``inherit_vfuncs``: inherited virtual function targets resolved by
+      base-class vfunc_index + vtable lookup via
+      ``preprocess_index_based_vfunc_via_mcp``.  Each element is a tuple of
+      ``(target_func_name, inherit_vtable_class, base_vfunc_name)`` or
+      ``(target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)``.
+      When *generate_func_sig* is omitted it defaults to ``True``.
+      For each target, ``preprocess_func_sig_via_mcp`` is attempted first
+      (reusing an existing ``func_sig`` from old YAML); the index-based
+      fallback is used only when that fails.
 
     Args:
         session: Active MCP ClientSession.
@@ -1758,6 +1768,7 @@ async def preprocess_common_skill(
         func_names: List of function/vfunc target names (may be empty/None).
         gv_names: List of global-variable target names (may be empty/None).
         vtable_class_names: List of class names for vtable lookup, or None.
+        inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
         debug: Enable debug output.
 
     Returns:
@@ -1766,6 +1777,7 @@ async def preprocess_common_skill(
     func_names = func_names or []
     gv_names = gv_names or []
     vtable_class_names = vtable_class_names or []
+    inherit_vfuncs = inherit_vfuncs or []
 
     # --- vtable targets ---
     for vtable_class in vtable_class_names:
@@ -1796,6 +1808,75 @@ async def preprocess_common_skill(
         write_vtable_yaml(target_outputs[0], vtable_data)
         if debug:
             print(f"    Preprocess: generated {target_filename}")
+
+    # --- inherit-vfunc targets ---
+    if inherit_vfuncs:
+        iv_expected_by_filename = {}
+        for spec in inherit_vfuncs:
+            func_name = spec[0]
+            iv_expected_by_filename[f"{func_name}.{platform}.yaml"] = spec
+
+        iv_matched = {}
+        for path in expected_outputs:
+            basename = os.path.basename(path)
+            matched_spec = iv_expected_by_filename.get(basename)
+            if matched_spec is not None:
+                iv_matched[matched_spec[0]] = path
+
+        missing_iv = [s[0] for s in inherit_vfuncs if s[0] not in iv_matched]
+        if missing_iv:
+            if debug:
+                print(
+                    "    Preprocess: expected outputs missing for "
+                    f"{', '.join(missing_iv)}"
+                )
+            return False
+
+        for spec in inherit_vfuncs:
+            func_name = spec[0]
+            vtable_class = spec[1]
+            base_vfunc_name = spec[2]
+            gen_func_sig = spec[3] if len(spec) > 3 else True
+
+            target_output = iv_matched[func_name]
+            old_path = (old_yaml_map or {}).get(target_output)
+
+            # Try reusing old func_sig first (fast path).
+            func_data = None
+            if old_path:
+                func_data = await preprocess_func_sig_via_mcp(
+                    session=session,
+                    new_path=target_output,
+                    old_path=old_path,
+                    image_base=image_base,
+                    new_binary_dir=new_binary_dir,
+                    platform=platform,
+                    debug=debug,
+                )
+
+            # Fallback: resolve via base-class vfunc_index + vtable lookup.
+            if func_data is None:
+                func_data = await preprocess_index_based_vfunc_via_mcp(
+                    session=session,
+                    target_func_name=func_name,
+                    target_output=target_output,
+                    old_yaml_map=old_yaml_map,
+                    new_binary_dir=new_binary_dir,
+                    platform=platform,
+                    image_base=image_base,
+                    base_vfunc_name=base_vfunc_name,
+                    inherit_vtable_class=vtable_class,
+                    generate_func_sig=gen_func_sig,
+                    debug=debug,
+                )
+                if func_data is None:
+                    if debug:
+                        print(f"    Preprocess: failed to locate {func_name}")
+                    return False
+
+            write_func_yaml(target_output, func_data)
+            if debug:
+                print(f"    Preprocess: generated {func_name}.{platform}.yaml")
 
     # --- func/vfunc + gv targets ---
     if not func_names and not gv_names:
