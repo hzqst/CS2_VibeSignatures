@@ -175,7 +175,11 @@ Look for this virtual function call:
 (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 1192LL))(a1);
 ```
 
-### 6. Get CBaseEntity VTable 
+### 6. Generate vfunc offset signatures for CBaseEntity_StartTouch, CBaseEntity_Touch and CBaseEntity_EndTouch
+
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_StartTouch`, `CBaseEntity_Touch` and `CBaseEntity_EndTouch`, with `inst_addr` and `vfunc_offset` from step 3 ~ step 5
+
+### 7. Get CBaseEntity VTable 
 
 **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
 
@@ -186,27 +190,28 @@ Otherwise, extract these values for subsequent steps:
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 - `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 7. Read CBaseEntity VTable Entries
+### 8. Resolve the virtual function addresses from the CBaseEntity's vtable_entries
 
-Read the virtual function addresses from the CBaseEntity vtable:
-
-* Index 147, 148, 149 can change on game update.
+* Note that vfunc index 147, 148, 149 can change on game update.
 
 ```python
-# Index 147 (offset 1176): CBaseEntity_StartTouch
-# Index 148 (offset 1184): CBaseEntity_Touch
-# Index 149 (offset 1192): CBaseEntity_EndTouch
-vtable_addr = <CBaseEntity_vtable_addr>
-starttouch_addr = vtable_addr + 147 * 8  # Read pointer at this address
-touch_addr = vtable_addr + 148 * 8       # Read pointer at this address
-endtouch_addr = vtable_addr + 149 * 8    # Read pointer at this address
+vtable_class: CBaseEntity
+vtable_symbol: ??_7CBaseEntity@@6B@
+vtable_va: '0x1816f61e0'
+vtable_rva: '0x16f61e0'
+vtable_size: '0x770'
+vtable_numvfunc: 238
+vtable_entries:
+  0: '0x1801688d0'
+  1: '0x1801687f0'
+  2: '0x1805d8620'
+  #..................
+  147: '0x1803c81d0' # CBaseEntity_StartTouch
+  148: '0x1803c9710' # CBaseEntity_Touch
+  149: '0x1803af380' # CBaseEntity_EndTouch
 ```
 
-```
-mcp__ida-pro-mcp__get_int queries=[{"addr": "<starttouch_ptr_addr>", "ty": "u64le"}, {"addr": "<touch_ptr_addr>", "ty": "u64le"}, {"addr": "<endtouch_ptr_addr>", "ty": "u64le"}]
-```
-
-### 8. Verify by Decompiling the VTable Functions
+### 9. Verify function body by decompiling
 
 Decompile each function to verify it matches the expected pattern:
 
@@ -247,7 +252,7 @@ if ( v2 )
 return (*(__int64 (__fastcall **)(_QWORD *, __int64))(*v5 + 1192LL))(v5, a2);
 ```
 
-### 9. Rename the CBaseEntity Functions
+### 10. Rename the CBaseEntity Functions
 
 ```
 mcp__ida-pro-mcp__rename batch={"func": [
@@ -256,16 +261,6 @@ mcp__ida-pro-mcp__rename batch={"func": [
     {"addr": "<endtouch_addr>", "name": "CBaseEntity_EndTouch"}
 ]}
 ```
-
-### 10. Generate Signatures for All Functions
-
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for each function.
-
-#### Signature Guidance
-
-- **CBaseEntity_StartTouch**: Look for the final virtual call with offset `0x498` (98 04 00 00)
-- **CBaseEntity_Touch**: Has unique prologue with offset `0x2B8` and `FF D0` (call rax)
-- **CBaseEntity_EndTouch**: Look for the final virtual call with offset `0x4A8` (A8 04 00 00)
 
 ### 11. Write YAML Files
 
@@ -276,20 +271,23 @@ Required parameters for each function:
 #### CBaseEntity_StartTouch
 - `func_name`: `CBaseEntity_StartTouch`
 - `vtable_name`: `CBaseEntity`
-- `vfunc_offset`: `0x498`
-- `vfunc_index`: `147`
+- `vfunc_offset`: `0x498` # can change on game update
+- `vfunc_index`: `147`    # can change on game update
+- `vfunc_sig`: CBaseEntity_StartTouch's `<vfunc_sig>` from step 6
 
 #### CBaseEntity_Touch
 - `func_name`: `CBaseEntity_Touch`
 - `vtable_name`: `CBaseEntity`
-- `vfunc_offset`: `0x4A0`
-- `vfunc_index`: `148`
+- `vfunc_offset`: `0x4A0` # can change on game update
+- `vfunc_index`: `148`    # can change on game update
+- `vfunc_sig`: CBaseEntity_Touch's `<vfunc_sig>` from step 6
 
 #### CBaseEntity_EndTouch
 - `func_name`: `CBaseEntity_EndTouch`
 - `vtable_name`: `CBaseEntity`
-- `vfunc_offset`: `0x4A8`
-- `vfunc_index`: `149`
+- `vfunc_offset`: `0x4A8`  # can change on game update
+- `vfunc_index`: `149`     # can change on game update
+- `vfunc_sig`: CBaseEntity_EndTouch's `<vfunc_sig>` from step 6
 
 ## Function Characteristics
 

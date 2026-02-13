@@ -68,7 +68,7 @@ Extract `vfunc_index` values:
 - `StartTouch_index` from CBaseEntity_StartTouch YAML
 - `EndTouch_index` from CBaseEntity_EndTouch YAML
 
-### 3. Get CBaseTrigger Virtual Function Addresses
+### 3. Resolve CBaseTrigger Virtual Function Addresses from vtable_entries
 
 Using the vtable entries from step 1 and indices from step 2:
 - `CBaseTrigger_StartTouch` address = `vtable_entries[StartTouch_index]`
@@ -97,41 +97,37 @@ mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<CBaseTrigger_StartTouch_addr
 mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<CBaseTrigger_EndTouch_addr>", "name": "CBaseTrigger_EndTouch"}]}
 ```
 
-### 6. Generate Signature for CBaseTrigger_StartTouch
+### 6. Generate Signature for CBaseTrigger_StartTouch and CBaseTrigger_EndTouch
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CBaseTrigger_StartTouch.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CBaseTrigger_StartTouch` and `CBaseTrigger_EndTouch`.
 
 ### 7. Write CBaseTrigger_StartTouch as YAML
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CBaseTrigger_StartTouch` and `CBaseTrigger_EndTouch`.
 
-Required parameters:
-- `func_name`: `CBaseTrigger_StartTouch`
-- `func_addr`: The function address from step 3
-- `func_sig`: The validated signature from step 6
+  #### For `CBaseTrigger_StartTouch`:
 
-VTable parameters:
-- `vtable_name`: `CBaseTrigger`
-- `vfunc_offset`: `StartTouch_index * 8` (e.g., `0x498` for index 147)
-- `vfunc_index`: `StartTouch_index` (e.g., `147`)
+    Required parameters:
+    - `func_name`: `CBaseTrigger_StartTouch`
+    - `func_addr`: The function address from step 3
+    - `func_sig`: The validated signature from step 6
 
-### 8. Generate Signature for CBaseTrigger_EndTouch
+    VTable parameters:
+    - `vtable_name`: `CBaseTrigger`
+    - `vfunc_offset`: `StartTouch_index * 8` (e.g., `0x498` for index 147)
+    - `vfunc_index`: `StartTouch_index` (e.g., `147`)
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for CBaseTrigger_EndTouch.
+  #### For `CBaseTrigger_EndTouch`:
 
-### 9. Write CBaseTrigger_EndTouch as YAML
+    Required parameters:
+    - `func_name`: `CBaseTrigger_EndTouch`
+    - `func_addr`: The function address from step 3
+    - `func_sig`: The validated signature from step 6
 
-**ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
-
-Required parameters:
-- `func_name`: `CBaseTrigger_EndTouch`
-- `func_addr`: The function address from step 3
-- `func_sig`: The validated signature from step 8
-
-VTable parameters:
-- `vtable_name`: `CBaseTrigger`
-- `vfunc_offset`: `EndTouch_index * 8` (e.g., `0x4A8` for index 149)
-- `vfunc_index`: `EndTouch_index` (e.g., `149`)
+    VTable parameters:
+    - `vtable_name`: `CBaseTrigger`
+    - `vfunc_offset`: `EndTouch_index * 8` (e.g., `0x4A8` for index 149)
+    - `vfunc_index`: `EndTouch_index` (e.g., `149`)
 
 ## Function Characteristics
 
