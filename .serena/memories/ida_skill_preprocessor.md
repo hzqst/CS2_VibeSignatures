@@ -42,8 +42,8 @@
   - `write_vtable_yaml`
   - `write_func_yaml`
 
-## 公共能力迁移（ida_analyze_util）
-已从旧 `ida_skill_preprocessor.py` 迁移到 `ida_analyze_util.py`：
+## 公共能力 ida_analyze_util.py
+
 - MCP结果解析：`parse_mcp_result`
 - vtable py_eval模板与构建：`_VTABLE_PY_EVAL_TEMPLATE`、`_build_vtable_py_eval`
 - YAML写盘：`write_vtable_yaml`、`write_func_yaml`

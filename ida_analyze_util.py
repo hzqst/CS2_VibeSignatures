@@ -266,11 +266,18 @@ async def preprocess_func_sig_via_mcp(
     session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
 ):
     """
-    Preprocess a function output by reusing old-version func_sig signature.
+    Preprocess a function output by reusing old-version signature metadata.
 
-    Searches the old signature in the new binary via find_bytes.
-    For unique matches, builds new YAML data (func_va, func_rva, func_size, func_sig).
-    For vfuncs, additionally cross-references with the new vtable YAML for vfunc_offset/index.
+    Primary path:
+    - Reuse old `func_sig`, locate unique match in the new binary, and resolve
+      function metadata from the matched function head.
+
+    Fallback path (for old YAML without `func_sig`):
+    - Reuse old `vfunc_sig` (must uniquely match in the new binary), then reuse
+      old vfunc index/offset and resolve function metadata from the
+      corresponding entry in the new vtable YAML.
+    - After resolving function VA/size from vtable, try to generate a new
+      function-head `func_sig` automatically.
 
     Args:
         session: Active MCP ClientSession
@@ -305,90 +312,85 @@ async def preprocess_func_sig_via_mcp(
     if not old_data or not isinstance(old_data, dict):
         return None
 
-    func_sig = old_data.get("func_sig")
-    if not func_sig:
-        if debug:
-            print(f"    Preprocess: no func_sig in {os.path.basename(old_path)}")
-        return None
+    def _parse_int_field(value, field_name):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError(f"empty {field_name}")
+            return int(raw, 0)
+        return int(value)
 
-    # Search signature in new binary via MCP find_bytes
-    try:
-        fb_result = await session.call_tool(
-            name="find_bytes",
-            arguments={"patterns": [func_sig], "limit": 2}
+    async def _find_unique_match(signature, label):
+        try:
+            fb_result = await session.call_tool(
+                name="find_bytes",
+                arguments={"patterns": [signature], "limit": 2}
+            )
+            fb_data = parse_mcp_result(fb_result)
+        except Exception as e:
+            if debug:
+                print(f"    Preprocess: find_bytes error: {e}")
+            return None
+
+        if not isinstance(fb_data, list) or len(fb_data) == 0:
+            return None
+
+        entry = fb_data[0]
+        if not isinstance(entry, dict):
+            return None
+
+        matches = entry.get("matches", [])
+        match_count = entry.get("n", len(matches))
+        if match_count != 1:
+            if debug:
+                print(f"    Preprocess: {label} matched {match_count} (need 1)")
+            return None
+
+        return matches[0]
+
+    async def _get_func_info(addr_expr):
+        py_code = (
+            f"import idaapi, json\n"
+            f"addr = {addr_expr}\n"
+            f"f = idaapi.get_func(addr)\n"
+            f"if f and f.start_ea == addr:\n"
+            f"    result = json.dumps({{'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea)}})\n"
+            f"else:\n"
+            f"    result = json.dumps(None)\n"
         )
-        fb_data = parse_mcp_result(fb_result)
-    except Exception as e:
-        if debug:
-            print(f"    Preprocess: find_bytes error: {e}")
-        return None
+        try:
+            fi_result = await session.call_tool(
+                name="py_eval",
+                arguments={"code": py_code}
+            )
+            fi_data = parse_mcp_result(fi_result)
+        except Exception as e:
+            if debug:
+                print(f"    Preprocess: py_eval error: {e}")
+            return None
 
-    # Parse find_bytes result: list of {pattern, matches, n, ...}
-    if not isinstance(fb_data, list) or len(fb_data) == 0:
-        return None
+        func_info = None
+        if isinstance(fi_data, dict):
+            stderr_text = fi_data.get("stderr", "")
+            if stderr_text and debug:
+                print("    Preprocess: py_eval stderr:")
+                print(stderr_text.strip())
+            result_str = fi_data.get("result", "")
+            if result_str:
+                try:
+                    func_info = json.loads(result_str)
+                except (json.JSONDecodeError, TypeError):
+                    pass
 
-    entry = fb_data[0]
-    matches = entry.get("matches", [])
-    match_count = entry.get("n", len(matches))
+        if not isinstance(func_info, dict):
+            return None
+        if "func_va" not in func_info or "func_size" not in func_info:
+            return None
+        return func_info
 
-    if match_count != 1:
-        if debug:
-            print(f"    Preprocess: {os.path.basename(old_path)} sig matched {match_count} (need 1)")
-        return None
-
-    match_addr = matches[0]  # hex string like "0x180bb1470"
-
-    # Get function info from match address via py_eval
-    py_code = (
-        f"import idaapi, json\n"
-        f"addr = {match_addr}\n"
-        f"f = idaapi.get_func(addr)\n"
-        f"if f and f.start_ea == addr:\n"
-        f"    result = json.dumps({{'func_va': hex(f.start_ea), 'func_size': hex(f.end_ea - f.start_ea)}})\n"
-        f"else:\n"
-        f"    result = json.dumps(None)\n"
-    )
-    try:
-        fi_result = await session.call_tool(
-            name="py_eval",
-            arguments={"code": py_code}
-        )
-        fi_data = parse_mcp_result(fi_result)
-    except Exception as e:
-        if debug:
-            print(f"    Preprocess: py_eval error: {e}")
-        return None
-
-    # Parse py_eval result
-    func_info = None
-    if isinstance(fi_data, dict):
-        result_str = fi_data.get("result", "")
-        if result_str:
-            try:
-                func_info = json.loads(result_str)
-            except (json.JSONDecodeError, TypeError):
-                pass
-
-    if not func_info:
-        if debug:
-            print(f"    Preprocess: could not get func info at {match_addr}")
-        return None
-
-    func_va_hex = func_info["func_va"]
-    func_va_int = int(func_va_hex, 16)
-    func_size_hex = func_info["func_size"]
-
-    # Build new YAML data
-    new_data = {
-        "func_va": func_va_hex,
-        "func_rva": hex(func_va_int - image_base),
-        "func_size": func_size_hex,
-        "func_sig": func_sig,
-    }
-
-    # For vfunc: cross-reference with vtable YAML
-    if "vtable_name" in old_data:
-        vtable_name = old_data["vtable_name"]
+    async def _load_vtable_data(vtable_name):
         vtable_yaml_path = os.path.join(
             new_binary_dir,
             f"{vtable_name}_vtable.{platform}.yaml"
@@ -416,11 +418,183 @@ async def preprocess_func_sig_via_mcp(
         except Exception:
             return None
 
+        if not isinstance(vtable_data, dict):
+            return None
+        return vtable_data
+
+    func_sig = old_data.get("func_sig")
+    vfunc_sig = old_data.get("vfunc_sig")
+    vtable_name = old_data.get("vtable_name")
+
+    used_vfunc_fallback = False
+    vfunc_index = None
+    vfunc_offset = None
+    vfunc_match_addr = None
+
+    if func_sig:
+        match_addr = await _find_unique_match(
+            func_sig, f"{os.path.basename(old_path)} func_sig"
+        )
+        if match_addr is None:
+            return None
+
+        func_info = await _get_func_info(match_addr)
+        if not func_info:
+            if debug:
+                print(f"    Preprocess: could not get func info at {match_addr}")
+            return None
+    else:
+        used_vfunc_fallback = True
+        if not vfunc_sig:
+            if debug:
+                print(f"    Preprocess: no func_sig/vfunc_sig in {os.path.basename(old_path)}")
+            return None
+        if not vtable_name:
+            if debug:
+                print(
+                    "    Preprocess: no vtable_name for vfunc fallback in "
+                    f"{os.path.basename(old_path)}"
+                )
+            return None
+
+        has_index = old_data.get("vfunc_index") is not None
+        has_offset = old_data.get("vfunc_offset") is not None
+        if not has_index and not has_offset:
+            if debug:
+                print(
+                    "    Preprocess: missing vfunc_index/vfunc_offset in "
+                    f"{os.path.basename(old_path)}"
+                )
+            return None
+
+        try:
+            if has_index:
+                vfunc_index = _parse_int_field(old_data.get("vfunc_index"), "vfunc_index")
+            if has_offset:
+                vfunc_offset = _parse_int_field(old_data.get("vfunc_offset"), "vfunc_offset")
+        except Exception:
+            if debug:
+                print(f"    Preprocess: invalid vfunc metadata in {os.path.basename(old_path)}")
+            return None
+
+        if vfunc_index is None:
+            if vfunc_offset % 8 != 0:
+                if debug:
+                    print(
+                        "    Preprocess: vfunc_offset is not 8-byte aligned in "
+                        f"{os.path.basename(old_path)}"
+                    )
+                return None
+            vfunc_index = vfunc_offset // 8
+        if vfunc_offset is None:
+            vfunc_offset = vfunc_index * 8
+
+        if vfunc_index < 0 or vfunc_offset < 0 or vfunc_offset != vfunc_index * 8:
+            if debug:
+                print(
+                    "    Preprocess: inconsistent vfunc_index/vfunc_offset in "
+                    f"{os.path.basename(old_path)}"
+                )
+            return None
+
+        vfunc_match_addr = await _find_unique_match(
+            vfunc_sig, f"{os.path.basename(old_path)} vfunc_sig"
+        )
+        if vfunc_match_addr is None:
+            return None
+
+        vtable_data = await _load_vtable_data(vtable_name)
+        if not isinstance(vtable_data, dict):
+            return None
+
+        vtable_entries = vtable_data.get("vtable_entries", {})
+        func_va_from_vtable = None
+        for idx, entry_addr in vtable_entries.items():
+            try:
+                idx_int = int(idx)
+            except Exception:
+                continue
+            if idx_int != vfunc_index:
+                continue
+            try:
+                func_va_from_vtable = int(str(entry_addr), 16)
+            except Exception:
+                func_va_from_vtable = None
+            break
+
+        if func_va_from_vtable is None:
+            if debug:
+                print(
+                    "    Preprocess: vfunc_index not found in vtable entries: "
+                    f"{vtable_name}[{vfunc_index}]"
+                )
+            return None
+
+        func_info = await _get_func_info(hex(func_va_from_vtable))
+        if not func_info:
+            if debug:
+                print(
+                    "    Preprocess: could not get func info from vtable entry: "
+                    f"{vtable_name}[{vfunc_index}] -> {hex(func_va_from_vtable)}"
+                )
+            return None
+
+    func_va_hex = func_info["func_va"]
+    func_va_int = int(func_va_hex, 16)
+    func_size_hex = func_info["func_size"]
+
+    # Build new YAML data
+    new_data = {
+        "func_va": func_va_hex,
+        "func_rva": hex(func_va_int - image_base),
+        "func_size": func_size_hex,
+    }
+    if func_sig:
+        new_data["func_sig"] = func_sig
+
+    # vfunc fallback path: reuse old index/offset and regenerate func_sig from vtable-resolved function.
+    if used_vfunc_fallback:
+        new_data["vtable_name"] = vtable_name
+        new_data["vfunc_offset"] = hex(vfunc_offset)
+        new_data["vfunc_index"] = vfunc_index
+
+        generated_sig_data = await preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va=func_va_int,
+            image_base=image_base,
+            debug=debug,
+        )
+        if generated_sig_data and generated_sig_data.get("func_sig"):
+            new_data["func_sig"] = generated_sig_data["func_sig"]
+        elif debug:
+            print(
+                "    Preprocess: vfunc fallback succeeded but func_sig generation failed: "
+                f"{os.path.basename(new_path)}"
+            )
+
+        if debug:
+            print(
+                "    Preprocess: reused vfunc_sig + vtable metadata at "
+                f"{vfunc_match_addr} for {os.path.basename(new_path)}"
+            )
+        return new_data
+
+    # For vfunc with func_sig input: cross-reference with new vtable YAML for vfunc_offset/index.
+    if vtable_name:
+        vtable_data = await _load_vtable_data(vtable_name)
+        if not isinstance(vtable_data, dict):
+            return None
+
         vtable_entries = vtable_data.get("vtable_entries", {})
         found_index = None
         for idx, entry_addr in vtable_entries.items():
-            if int(str(entry_addr), 16) == func_va_int:
-                found_index = int(idx)
+            try:
+                idx_int = int(idx)
+                entry_int = int(str(entry_addr), 16)
+            except Exception:
+                continue
+            if entry_int == func_va_int:
+                found_index = idx_int
                 break
 
         if found_index is None:
