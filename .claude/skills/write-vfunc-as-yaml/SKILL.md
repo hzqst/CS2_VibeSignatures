@@ -28,10 +28,12 @@ Before using this skill, you should have:
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `func_addr` | Virtual address of the function (use `None` to omit) | `0x180999830` |
-| `func_sig` | Unique byte signature (use `None` to omit) | `48 89 5C 24 08` |
+| `func_sig` | Unique byte signature to locate function body (use `None` to omit) | `48 89 5C 24 08` |
+| `vfunc_sig` | Unique byte signature to determine vfunc offset (use `None` to omit) | `FF 90 80 04 00 00 4C 8B AC 24 ?? ?? ?? ??` |
 
 When `func_addr` is `None`, the following fields will be omitted from output: `func_va`, `func_rva`, `func_size`.
 When `func_sig` is `None`, the `func_sig` field will be omitted from output.
+When `vfunc_sig` is `None`, the `vfunc_sig` field will be omitted from output.
 
 ## Method
 
@@ -48,6 +50,7 @@ func_name = "<func_name>"           # e.g., "CCSPlayerController_ChangeTeam"
 # === OPTIONAL: Set to None to omit from output ===
 func_addr = <func_addr>             # e.g., 0x180999830 or None
 func_sig = <func_sig>               # e.g., "48 89 5C 24 08" or None
+vfunc_sig = <vfunc_sig>               # e.g., "FF 90 80 04 00 00 4C 8B AC 24 ?? ?? ?? ??" or None
 # =================================================
 
 # === VTABLE INFO: Replace these values ===
@@ -81,6 +84,9 @@ if func_addr is not None:
 
 if func_sig is not None:
     data['func_sig'] = func_sig
+
+if vfunc_sig is not None:
+    data['vfunc_sig'] = vfunc_sig
 
 data['vtable_name'] = vtable_name
 data['vfunc_offset'] = hex(vfunc_offset)
@@ -116,7 +122,7 @@ vfunc_offset: 0x330       # Offset from vtable start - changes with game updates
 vfunc_index: 102          # vtable[102] - changes with game updates
 ```
 
-Minimal output (with `func_addr=None` and `func_sig=None`):
+Minimal output (with `func_addr=None`, `func_sig=None`, `vfunc_sig=None`):
 ```yaml
 func_name: CCSPlayerController_ChangeTeam
 vtable_name: CCSPlayerController
@@ -136,6 +142,6 @@ The skill automatically detects the platform based on file extension:
 - The YAML file is written to the same directory as the input binary
 - When `func_addr` is provided, func_size is automatically calculated from IDA's function analysis
 - When `func_addr` is provided, func_rva is automatically calculated as `func_va - image_base`
-- When `func_addr` or `func_sig` is `None`, those fields are omitted from the output entirely
+- When `func_addr` / `func_sig` / `vfunc_sig`  is `None`, those fields are omitted from the output entirely
 - This skill is specifically for virtual functions that have vtable information
 - For regular functions without vtable, use `/write-func-as-yaml` instead

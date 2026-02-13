@@ -421,6 +421,16 @@ modules:
           - find-CBaseEntity_vtable
           - find-CBasePlayerPawn_vtable
 
+      - name: find-CBaseEntity_SetOwner
+        expected_output:
+          - CBaseEntity_SetOwner.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+          - CCSPlayer_WeaponServices_EquipWeapon.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+          - find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_EquipWeapon
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
@@ -856,6 +866,11 @@ modules:
         catagory: vfunc
         alias:
           - CBaseEntity::IsAlive
+
+      - name: CBaseEntity_SetOwner
+        catagory: vfunc
+        alias:
+          - CBaseEntity::SetOwner
 
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
         catagory: vfunc
