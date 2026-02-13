@@ -1,7 +1,8 @@
 func_va: '0x9b67e0'
 func_rva: '0x9b67e0'
 func_size: '0xb'
-func_sig: 80 BF ?? 05 00 00 ?? 0F 94 C0 C3
 vtable_name: CBaseEntity
 vfunc_offset: '0x530'
 vfunc_index: 166
+vfunc_sig: 48 8B 80 30 05 00 00 48 39 D0 75 ?? 80 BF ?? 05 00 00 ?? 74 ?? 48 83 C4
+  ?? 4C 89 E0

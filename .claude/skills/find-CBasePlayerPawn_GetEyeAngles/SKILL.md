@@ -76,25 +76,29 @@ Extract the vtable offset `<OFFSET>` from the virtual call `*(_QWORD *)a1 + <OFF
 
 ### 5. Resolve and Rename the Function
 
-Using the vtable entries from step 1, look up `CBasePlayerPawn vtable_entries[index]` to get the actual function address of `CBasePlayerPawn_GetEyeAngles`.
+Using the vtable entries from step 1, look up `CBasePlayerPawn vtable_entries[index]` to resolve the actual function address of `CBasePlayerPawn_GetEyeAngles`.
 
-Using the vtable entries from step 1, look up `CBaseEntity vtable_entries[index]` to get the actual function address of `CBaseEntity_GetEyeAngles`.
+Using the vtable entries from step 1, look up `CBaseEntity vtable_entries[index]` to resolve the actual function address of `CBaseEntity_GetEyeAngles`.
 
-Rename it:
-
-```
-mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<CBasePlayerPawn_GetEyeAngles_function_addr>", "name": "CBasePlayerPawn_GetEyeAngles"}})
-```
+Rename them:
 
 ```
 mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<CBaseEntity_GetEyeAngles_function_addr>", "name": "CBaseEntity_GetEyeAngles"}})
 ```
 
-### 6. Generate and Validate Unique Signature for CBasePlayerPawn_GetEyeAngles
+```
+mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<CBasePlayerPawn_GetEyeAngles_function_addr>", "name": "CBasePlayerPawn_GetEyeAngles"}})
+```
+
+### 6. Generate and Validate Unique Signature for CBaseEntity_GetEyeAngles
+
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_GetEyeAngles`.
+
+### 7. Generate and Validate Unique Signature for CBasePlayerPawn_GetEyeAngles
 
 **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for `CBasePlayerPawn_GetEyeAngles`.
 
-### 7. Write IDA analysis output as YAML beside the binary
+### 8. Write IDA analysis output as YAML beside the binary
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results for `CBasePlayerPawn_GetEyeAngles` and `CBaseEntity_GetEyeAngles`.
 
@@ -103,7 +107,7 @@ For `CBaseEntity_GetEyeAngles`:
   Required parameters:
   - `func_name`: `CBaseEntity_GetEyeAngles`
   - `func_addr`: The function address from step 5
-  - `func_sig`: `None` (omit — function is too small for a unique signature)
+  - `vfunc_sig`: CBaseEntity_GetEyeAngles's `<vfunc_sig>` from step 6
 
   VTable parameters:
   - `vtable_name`: `CBaseEntity`
@@ -115,7 +119,7 @@ For `CBasePlayerPawn_GetEyeAngles`:
   Required parameters:
   - `func_name`: `CBasePlayerPawn_GetEyeAngles`
   - `func_addr`: The function address from step 5
-  - `func_sig`: The validated signature from step 6
+  - `func_sig`: The validated signature from step 8
 
   VTable parameters:
   - `vtable_name`: `CBasePlayerPawn`

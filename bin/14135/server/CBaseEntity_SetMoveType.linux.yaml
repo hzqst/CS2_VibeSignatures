@@ -1,4 +1,3 @@
-func_name: CBaseEntity_SetMoveType
 func_va: '0xc89010'
 func_rva: '0xc89010'
 func_size: '0x461'

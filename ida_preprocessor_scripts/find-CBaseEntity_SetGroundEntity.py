@@ -1,11 +1,10 @@
 ﻿#!/usr/bin/env python3
-"""Preprocess script for find-CBasePlayerPawn_GetEyeAngles skill."""
+"""Preprocess script for find-CBaseEntity_SetGroundEntity skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CBaseEntity_GetEyeAngles",
-    "CBasePlayerPawn_GetEyeAngles",
+    "CBaseEntity_SetGroundEntity",
 ]
 
 

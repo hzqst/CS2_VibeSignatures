@@ -165,7 +165,7 @@ def write_func_yaml(path, data):
 
     ordered_keys = [
         "func_va", "func_rva", "func_size", "func_sig",
-        "vtable_name", "vfunc_offset", "vfunc_index",
+        "vtable_name", "vfunc_offset", "vfunc_index", "vfunc_sig",
     ]
     payload = {key: data[key] for key in ordered_keys if key in data}
 
@@ -555,23 +555,10 @@ async def preprocess_func_sig_via_mcp(
 
     # vfunc fallback path: reuse old index/offset and regenerate func_sig from vtable-resolved function.
     if used_vfunc_fallback:
+        new_data["vfunc_sig"] = vfunc_sig
         new_data["vtable_name"] = vtable_name
         new_data["vfunc_offset"] = hex(vfunc_offset)
         new_data["vfunc_index"] = vfunc_index
-
-        generated_sig_data = await preprocess_gen_func_sig_via_mcp(
-            session=session,
-            func_va=func_va_int,
-            image_base=image_base,
-            debug=debug,
-        )
-        if generated_sig_data and generated_sig_data.get("func_sig"):
-            new_data["func_sig"] = generated_sig_data["func_sig"]
-        elif debug:
-            print(
-                "    Preprocess: vfunc fallback succeeded but func_sig generation failed: "
-                f"{os.path.basename(new_path)}"
-            )
 
         if debug:
             print(

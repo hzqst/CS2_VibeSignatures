@@ -424,7 +424,7 @@ modules:
         expected_output:
           - LegacyGameEventListener.{platform}.yaml
 
-      - name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch--AND-CBaseEntity_EndTouch
+      - name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
         expected_output:
           - CBaseEntity_StartTouch.{platform}.yaml
           - CBaseEntity_Touch.{platform}.yaml

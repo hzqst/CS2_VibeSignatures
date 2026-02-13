@@ -1,4 +1,3 @@
-func_name: CBaseEntity_EmitSoundParams
 func_va: '0x180c09b20'
 func_rva: '0xc09b20'
 func_size: '0x102'
