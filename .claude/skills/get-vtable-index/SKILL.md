@@ -56,7 +56,7 @@ Find a function's position (offset and index) within a vtable by iterating throu
            entry_addr = int(entry, 16) if isinstance(entry, str) else entry
            if entry_addr == func_addr:
                offset = i * ptr_size
-               print(f"Found at vtable offset: {hex(offset)}, index: {i}")
+               print(f"Found at vfunc_offset: {hex(offset)}, vfunc_index: {i}")
                print(f"vtable_va: {hex(vtable_va) if isinstance(vtable_va, int) else vtable_va}")
                break
        else:

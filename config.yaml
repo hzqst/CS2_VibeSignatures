@@ -186,6 +186,15 @@ modules:
         prerequisite:
           - find-CCSPlayer_WeaponServices_vtable
 
+      - name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_EquipWeapon
+        expected_output:
+          - CCSPlayer_WeaponServices_PickupItem.{platform}.yaml
+          - CCSPlayer_WeaponServices_EquipWeapon.{platform}.yaml
+        expected_input:
+          - CCSPlayer_WeaponServices_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_WeaponServices_vtable
+
       - name: find-CCSPlayer_WeaponServices_Weapon_GetSlot
         expected_output:
           - CCSPlayer_WeaponServices_Weapon_GetSlot.{platform}.yaml
@@ -360,6 +369,14 @@ modules:
       - name: find-CBaseEntity_EmitSoundFilter
         expected_output:
           - CBaseEntity_EmitSoundFilter.{platform}.yaml
+
+      - name: find-CBaseEntity_Precache
+        expected_output:
+          - CBaseEntity_Precache.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
 
       - name: find-CBaseEntity_EmitSoundParams
         expected_output:
@@ -615,6 +632,16 @@ modules:
         alias:
           - CCSPlayer_WeaponServices::CanUse
 
+      - name: CCSPlayer_WeaponServices_PickupItem
+        catagory: vfunc
+        alias:
+          - CCSPlayer_WeaponServices::PickupItem
+
+      - name: CCSPlayer_WeaponServices_EquipWeapon
+        catagory: func
+        alias:
+          - CCSPlayer_WeaponServices::EquipWeapon
+
       - name: CCSPlayer_WeaponServices_Weapon_GetSlot
         catagory: func
         alias:
@@ -777,6 +804,12 @@ modules:
         catagory: func
         alias:
           - CBaseEntity::EmitSoundParams
+
+      - name: CBaseEntity_Precache
+        catagory: vfunc
+        alias:
+          - CBaseEntity::Precache
+          - Precache
 
       - name: CBaseEntity_SetMoveType
         catagory: func
