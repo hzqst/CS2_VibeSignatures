@@ -1,3 +1,4 @@
+func_name: CPhysBox_Use
 func_va: '0x17b9e20'
 func_rva: '0x17b9e20'
 func_size: '0x85'

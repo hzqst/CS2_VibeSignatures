@@ -164,7 +164,7 @@ def write_func_yaml(path, data):
         raise RuntimeError("PyYAML is required to write function YAML")
 
     ordered_keys = [
-        "func_va", "func_rva", "func_size", "func_sig",
+        "func_name", "func_va", "func_rva", "func_size", "func_sig",
         "vtable_name", "vfunc_offset", "vfunc_index", "vfunc_sig",
     ]
     payload = {key: data[key] for key in ordered_keys if key in data}
@@ -1671,8 +1671,16 @@ async def preprocess_index_based_vfunc_via_mcp(
             print(f"    Preprocess: invalid func_va for {target_func_name}: {func_va_hex}")
         return None
 
-    # 5. Build payload
+    # 5. Build func_name from base_vfunc_name + inherit_vtable_class
+    func_name = target_func_name  # fallback
+    base_vtable_name = base_vfunc_data.get("vtable_name")
+    if base_vtable_name and base_vfunc_name.startswith(base_vtable_name + "_"):
+        method_suffix = base_vfunc_name[len(base_vtable_name) + 1:]
+        func_name = f"{inherit_vtable_class}_{method_suffix}"
+
+    # 6. Build payload
     payload = {
+        "func_name": func_name,
         "func_va": str(func_va_hex),
         "func_rva": hex(func_va_int - image_base),
         "func_size": str(func_size_hex),
@@ -1681,7 +1689,7 @@ async def preprocess_index_based_vfunc_via_mcp(
         "vfunc_index": target_index,
     }
 
-    # 6. Try to reuse old func_sig
+    # 7. Try to reuse old func_sig
     old_path = (old_yaml_map or {}).get(target_output)
     old_func_sig = None
     if old_path and os.path.exists(old_path):

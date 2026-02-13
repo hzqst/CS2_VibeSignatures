@@ -41,8 +41,8 @@
             "linux": 640
         },
         "CBaseEntity::Use": {
-            "windows": 147,
-            "linux": 146
+            "windows": 144,
+            "linux": 143
         },
         "CBaseEntity::StartTouch": {
             "windows": 147,
