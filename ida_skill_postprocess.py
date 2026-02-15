@@ -6,6 +6,7 @@ Validates generated YAML outputs via IDA MCP after skill execution,
 and cleans up invalid outputs to keep bin directory signatures reliable.
 """
 
+import asyncio
 import json
 import os
 
@@ -17,6 +18,10 @@ try:
     from mcp.client.streamable_http import streamable_http_client
 except ImportError:
     pass
+
+
+MCP_CONNECT_MAX_RETRIES = 3
+MCP_CONNECT_RETRY_DELAY = 3
 
 
 async def validate_func_sig_in_yaml_via_mcp(session, yaml_path, debug=False):
@@ -147,25 +152,37 @@ async def postprocess_single_skill_via_mcp(host, port, skill_name, expected_outp
     """
     server_url = f"http://{host}:{port}/mcp"
 
-    try:
-        async with streamable_http_client(server_url) as (read_stream, write_stream, _):
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
+    for attempt in range(1, MCP_CONNECT_MAX_RETRIES + 1):
+        try:
+            async with streamable_http_client(server_url) as (read_stream, write_stream, _):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
 
-                all_valid = True
-                for yaml_path in expected_outputs:
-                    is_valid = await validate_func_sig_in_yaml_via_mcp(session, yaml_path, debug)
-                    if not is_valid:
-                        all_valid = False
+                    all_valid = True
+                    for yaml_path in expected_outputs:
+                        is_valid = await validate_func_sig_in_yaml_via_mcp(session, yaml_path, debug)
+                        if not is_valid:
+                            all_valid = False
 
-                if debug and all_valid:
-                    print(f"    Postprocess: {skill_name} - all {len(expected_outputs)} outputs validated")
+                    if debug and all_valid:
+                        print(f"    Postprocess: {skill_name} - all {len(expected_outputs)} outputs validated")
 
-                return all_valid
-    except Exception as e:
-        if debug:
-            print(f"    Postprocess MCP connection error for {skill_name}: {e}")
-        return False
+                    return all_valid
+        except Exception as e:
+            if debug:
+                print(
+                    f"    Postprocess MCP connection error for {skill_name} "
+                    f"(attempt {attempt}/{MCP_CONNECT_MAX_RETRIES}): {e}"
+                )
+            if attempt < MCP_CONNECT_MAX_RETRIES:
+                if debug:
+                    print(
+                        f"    Postprocess: retrying MCP connection for {skill_name} "
+                        f"in {MCP_CONNECT_RETRY_DELAY}s..."
+                    )
+                await asyncio.sleep(MCP_CONNECT_RETRY_DELAY)
+
+    return False
 
 
 def remove_invalid_yaml_outputs(yaml_paths, debug=False):

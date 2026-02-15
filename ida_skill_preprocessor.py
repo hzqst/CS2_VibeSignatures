@@ -7,6 +7,7 @@ resolves the skill-specific preprocessor script under ida_preprocessor_scripts,
 and delegates preprocessing to the script's exported method.
 """
 
+import asyncio
 import importlib.util
 import inspect
 import re
@@ -24,6 +25,8 @@ except ImportError:
 _SCRIPT_DIR = Path(__file__).resolve().parent / "ida_preprocessor_scripts"
 _PREPROCESS_EXPORT_NAME = "preprocess_skill"
 _SCRIPT_ENTRY_CACHE = {}
+MCP_CONNECT_MAX_RETRIES = 3
+MCP_CONNECT_RETRY_DELAY = 3
 
 
 def _get_preprocess_entry(skill_name, debug=False):
@@ -99,44 +102,54 @@ async def preprocess_single_skill_via_mcp(
 
     server_url = f"http://{host}:{port}/mcp"
 
-    try:
-        async with streamable_http_client(server_url) as (read_stream, write_stream, _):
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
+    for attempt in range(1, MCP_CONNECT_MAX_RETRIES + 1):
+        try:
+            async with streamable_http_client(server_url) as (read_stream, write_stream, _):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
 
-                # Get image_base once for the script.
-                ib_result = await session.call_tool(
-                    name="py_eval",
-                    arguments={"code": "hex(idaapi.get_imagebase())"}
-                )
-                ib_data = parse_mcp_result(ib_result)
-                if isinstance(ib_data, dict):
-                    image_base = int(ib_data.get("result", "0x0"), 16)
-                else:
-                    image_base = int(str(ib_data), 16) if ib_data else 0
-
-                try:
-                    result = preprocess_func(
-                        session=session,
-                        skill_name=skill_name,
-                        expected_outputs=expected_outputs,
-                        old_yaml_map=old_yaml_map,
-                        new_binary_dir=new_binary_dir,
-                        platform=platform,
-                        image_base=image_base,
-                        debug=debug,
+                    # Get image_base once for the script.
+                    ib_result = await session.call_tool(
+                        name="py_eval",
+                        arguments={"code": "hex(idaapi.get_imagebase())"}
                     )
-                    if inspect.isawaitable(result):
-                        result = await result
-                    return bool(result)
-                except Exception as e:
-                    if debug:
-                        print(f"    Preprocess: script execution failed for {skill_name}: {e}")
-                    return False
+                    ib_data = parse_mcp_result(ib_result)
+                    if isinstance(ib_data, dict):
+                        image_base = int(ib_data.get("result", "0x0"), 16)
+                    else:
+                        image_base = int(str(ib_data), 16) if ib_data else 0
 
-    except Exception as e:
-        if debug:
-            print(f"  Preprocess MCP connection error for {skill_name}: {e}")
+                    try:
+                        result = preprocess_func(
+                            session=session,
+                            skill_name=skill_name,
+                            expected_outputs=expected_outputs,
+                            old_yaml_map=old_yaml_map,
+                            new_binary_dir=new_binary_dir,
+                            platform=platform,
+                            image_base=image_base,
+                            debug=debug,
+                        )
+                        if inspect.isawaitable(result):
+                            result = await result
+                        return bool(result)
+                    except Exception as e:
+                        if debug:
+                            print(f"    Preprocess: script execution failed for {skill_name}: {e}")
+                        return False
+        except Exception as e:
+            if debug:
+                print(
+                    f"  Preprocess MCP connection error for {skill_name} "
+                    f"(attempt {attempt}/{MCP_CONNECT_MAX_RETRIES}): {e}"
+                )
+            if attempt < MCP_CONNECT_MAX_RETRIES:
+                if debug:
+                    print(
+                        f"  Preprocess: retrying MCP connection for {skill_name} "
+                        f"in {MCP_CONNECT_RETRY_DELAY}s..."
+                    )
+                await asyncio.sleep(MCP_CONNECT_RETRY_DELAY)
 
     return False
 

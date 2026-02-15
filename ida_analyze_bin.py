@@ -59,6 +59,7 @@ DEFAULT_AGENT = "claude"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 600  # seconds to wait for MCP server
+MCP_HTTP_READY_DELAY = 3  # extra warmup time after TCP port is reachable
 SKILL_TIMEOUT = 600  # 10 minutes per skill
 
 async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
@@ -391,6 +392,12 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
             return None
 
         print(f"  MCP server is ready")
+        if MCP_HTTP_READY_DELAY > 0:
+            if debug:
+                print(
+                    f"  Waiting {MCP_HTTP_READY_DELAY} seconds for MCP HTTP handler warmup..."
+                )
+            time.sleep(MCP_HTTP_READY_DELAY)
         return process
 
     except Exception as e:
