@@ -1869,6 +1869,7 @@ async def preprocess_common_skill(
                         print(f"    Preprocess: failed to locate {func_name}")
                     return False
 
+            func_data.setdefault("func_name", func_name)
             write_func_yaml(target_output, func_data)
             if debug:
                 print(f"    Preprocess: generated {func_name}.{platform}.yaml")
@@ -1930,6 +1931,7 @@ async def preprocess_common_skill(
                 print(f"    Preprocess: failed to locate {func_name}")
             return False
 
+        func_data.setdefault("func_name", func_name)
         write_func_yaml(target_output, func_data)
         if debug:
             print(f"    Preprocess: generated {func_name}.{platform}.yaml")
