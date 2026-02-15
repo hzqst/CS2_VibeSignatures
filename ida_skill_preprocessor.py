@@ -7,11 +7,9 @@ resolves the skill-specific preprocessor script under ida_preprocessor_scripts,
 and delegates preprocessing to the script's exported method.
 """
 
-import asyncio
 import importlib.util
 import inspect
 import re
-import traceback
 from pathlib import Path
 
 from ida_analyze_util import parse_mcp_result
@@ -27,8 +25,6 @@ except ImportError:
 _SCRIPT_DIR = Path(__file__).resolve().parent / "ida_preprocessor_scripts"
 _PREPROCESS_EXPORT_NAME = "preprocess_skill"
 _SCRIPT_ENTRY_CACHE = {}
-MCP_CONNECT_MAX_RETRIES = 3
-MCP_CONNECT_RETRY_DELAY = 3
 
 
 def _get_preprocess_entry(skill_name, debug=False):
@@ -104,14 +100,13 @@ async def preprocess_single_skill_via_mcp(
 
     server_url = f"http://{host}:{port}/mcp"
 
-    for attempt in range(1, MCP_CONNECT_MAX_RETRIES + 1):
-        try:
-            async with httpx.AsyncClient(
-                follow_redirects=True,
-                timeout=httpx.Timeout(30.0, read=300.0),
-                trust_env=False,  # Bypass system proxy to avoid 502
-            ) as http_client:
-              async with streamable_http_client(server_url, http_client=http_client) as (read_stream, write_stream, _):
+    try:
+        async with httpx.AsyncClient(
+            follow_redirects=True,
+            timeout=httpx.Timeout(30.0, read=300.0),
+            trust_env=False,  # Bypass system proxy to avoid 502
+        ) as http_client:
+            async with streamable_http_client(server_url, http_client=http_client) as (read_stream, write_stream, _):
                 async with ClientSession(read_stream, write_stream) as session:
                     await session.initialize()
 
@@ -144,23 +139,10 @@ async def preprocess_single_skill_via_mcp(
                         if debug:
                             print(f"    Preprocess: script execution failed for {skill_name}: {e}")
                         return False
-        except Exception as e:
-            if debug:
-                print(
-                    f"  Preprocess MCP connection error for {skill_name} "
-                    f"(attempt {attempt}/{MCP_CONNECT_MAX_RETRIES}): {e}"
-                )
-                if hasattr(e, 'exceptions'):
-                    for i, sub_exc in enumerate(e.exceptions):
-                        print(f"    Sub-exception {i+1}: {type(sub_exc).__name__}: {sub_exc}")
-                print(f"    Traceback:\n{traceback.format_exc()}")
-            if attempt < MCP_CONNECT_MAX_RETRIES:
-                if debug:
-                    print(
-                        f"  Preprocess: retrying MCP connection for {skill_name} "
-                        f"in {MCP_CONNECT_RETRY_DELAY}s..."
-                    )
-                await asyncio.sleep(MCP_CONNECT_RETRY_DELAY)
+
+    except Exception as e:
+        if debug:
+            print(f"  Preprocess MCP connection error for {skill_name}: {e}")
 
     return False
 

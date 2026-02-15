@@ -41,6 +41,7 @@ from pathlib import Path
 try:
     import yaml
     import asyncio
+    import httpx
     from mcp import ClientSession
     from mcp.client.streamable_http import streamable_http_client
 except ImportError as e:
@@ -59,7 +60,6 @@ DEFAULT_AGENT = "claude"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 600  # seconds to wait for MCP server
-MCP_HTTP_READY_DELAY = 3  # extra warmup time after TCP port is reachable
 SKILL_TIMEOUT = 600  # 10 minutes per skill
 
 async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
@@ -75,11 +75,16 @@ async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     server_url = f"http://{host}:{port}/mcp"
 
     try:
-        async with streamable_http_client(server_url) as (read_stream, write_stream, _):
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
-                await session.call_tool(name="py_eval", arguments={"code": "import idc; idc.qexit(0)"})
-                return True
+        async with httpx.AsyncClient(
+            follow_redirects=True,
+            timeout=httpx.Timeout(30.0, read=300.0),
+            trust_env=False,  # Bypass system proxy to avoid 502
+        ) as http_client:
+            async with streamable_http_client(server_url, http_client=http_client) as (read_stream, write_stream, _):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
+                    await session.call_tool(name="py_eval", arguments={"code": "import idc; idc.qexit(0)"})
+                    return True
     except Exception:
         return False
 
@@ -392,12 +397,6 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
             return None
 
         print(f"  MCP server is ready")
-        if MCP_HTTP_READY_DELAY > 0:
-            if debug:
-                print(
-                    f"  Waiting {MCP_HTTP_READY_DELAY} seconds for MCP HTTP handler warmup..."
-                )
-            time.sleep(MCP_HTTP_READY_DELAY)
         return process
 
     except Exception as e:
