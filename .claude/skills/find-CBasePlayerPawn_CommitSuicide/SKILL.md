@@ -1,13 +1,6 @@
 ---
 name: find-CBasePlayerPawn_CommitSuicide
-description: Find and identify the CBasePlayerPawn_CommitSuicide function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CommitSuicide function by analyzing the CBasePlayerPawn vtable and identifying unique function characteristics including specific pointer offsets (0x890, 0xBF8) and sequential function call patterns.
-expected_output:
-  - name: CBasePlayerPawn_CommitSuicide
-    category: vfunc
-    alias:
-      - CBasePlayerPawn::CommitSuicide
-    files:
-      - CBasePlayerPawn_CommitSuicide.{platform}.yaml
+description: Find and identify the CBasePlayerPawn_CommitSuicide function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CommitSuicide function by searching for the "bot_kill" command string, tracing to its handler, and identifying the CommitSuicide vfunc call in the kill loop.
 ---
 
 # Find CBasePlayerPawn_CommitSuicide
@@ -16,27 +9,79 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
 
 ## Method
 
-1. Get CBasePlayerPawn vtable information:
+1. Search for the `bot_kill` command string:
+
+   ```
+   mcp__ida-pro-mcp__find_regex pattern="bot_kill.*all"
+   ```
+
+   This should find a string like:
+   `"bot_kill <all> <t|ct> <type> <difficulty> <name> - Kills a specific bot, or all bots, matching the given criteria."`
+
+2. Find cross-references to the string:
+
+   ```
+   mcp__ida-pro-mcp__xrefs_to addrs="<string_addr>"
+   ```
+
+   This leads to a ConCommand registration function. Decompile it to find the command handler (callback) address — the first argument stored before the description string in the registration call.
+
+3. Decompile the `bot_kill` command handler and locate the kill loop:
+
+   ```
+   mcp__ida-pro-mcp__decompile addr="<handler_addr>"
+   ```
+
+   Look for a loop pattern like this:
+
+   ```c
+   do
+   {
+     v24 = *(_QWORD *)v23;
+     if ( (*(unsigned __int8 (__fastcall **)(_QWORD))(**(_QWORD **)(*(_QWORD *)v23 + 24LL) + <IsAlive_offset>))(*(_QWORD *)(*(_QWORD *)v23 + 24LL)) )
+     {
+       (*(void (__fastcall **)(_QWORD, _QWORD, _QWORD))(**(_QWORD **)(v24 + 24) + <CommitSuicide_offset>))(
+         *(_QWORD *)(v24 + 24),
+         0LL,
+         0LL);
+       if ( !v5 )
+         break;
+     }
+     ++v21;
+     v23 += 8;
+   }
+   while ( v21 < v20 );
+   ```
+
+   The loop iterates over matched bots. For each bot:
+   - `*(v24 + 24)` dereferences the PlayerPawn pointer
+   - The first vfunc call (with `<IsAlive_offset>`) checks if the pawn is alive
+   - The second vfunc call (with `<CommitSuicide_offset>`) calls `pPlayerPawn->CommitSuicide(false, false)`
+   - If not in "all" mode (`!v5`), it breaks after the first kill
+
+   Extract `<CommitSuicide_offset>` from the decompiled code (e.g., `3200LL` = `0xC80`).
+
+4. Get CBasePlayerPawn vtable information:
 
    **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBasePlayerPawn`.
 
-   Extract `vtable_va` and `vtable_entries` from the result.
+   Extract `vtable_va`, `vtable_numvfunc` and `vtable_entries` from the result.
 
-2. Decompile the virtual function at vtable[398 ~ 402]:
+5. Map the vfunc offset to a vtable index and resolve the function address:
 
    ```
-   mcp__ida-pro-mcp__decompile addr="<vtable_entries[index]>"
+   vfunc_index = <CommitSuicide_offset> / 8
    ```
 
-   where index ranges fronm 398 to 402
+   Look up `vtable_entries[vfunc_index]` to get the function address.
 
-3. Verify function characteristics to identify `CBasePlayerPawn::CommitSuicide`:
+6. Verify function characteristics to confirm `CBasePlayerPawn::CommitSuicide`:
 
-   The function should look like:
+   Decompile the resolved function address. The function should match:
 
    Windows:
    ```c
-   char __fastcall sub_180BE9210(float *a1, unsigned __int8 a2, char a3)
+   char __fastcall CBasePlayerPawn_CommitSuicide(float *a1, unsigned __int8 a2, char a3)
    {
       __int64 v4; // rbp
       char result; // al
@@ -46,19 +91,19 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
       char v10; // [rsp+198h] [rbp+20h] BYREF
 
       v4 = a2;
-      result = (*(__int64 (__fastcall **)(float *))(*(_QWORD *)a1 + 1336LL))(a1);
+      result = (*(__int64 (__fastcall **)(float *))(*(_QWORD *)a1 + 1336LL))(a1); // IsAlive check
       if ( result )
       {
-         sub_1808757E0(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
-         result = sub_1801C22A0(a1 + 824, (float *)&v9);
+         sub_XXX(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
+         result = sub_XXX(a1 + 824, (float *)&v9);
          if ( !result || a3 )
          {
-            sub_1808757E0(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
-            a1[824] = *(float *)sub_1801965D0(&v10, &v9);
-            sub_180DFABA0((unsigned int)v7, (_DWORD)a1, (_DWORD)a1, 0, 1065353216, (_DWORD)v4 << 6, 0);
+            sub_XXX(&v9, *(_DWORD *)(*((_QWORD *)a1 + 2) + 56LL));
+            a1[824] = *(float *)sub_XXX(&v10, &v9);
+            sub_XXX((unsigned int)v7, (_DWORD)a1, (_DWORD)a1, 0, 1065353216, (_DWORD)v4 << 6, 0);
             v8 |= (32 * (v4 ^ 1) + 32) | 0x116;
-            sub_1803C8520(a1, (__int64)v7, 0LL);//CBaseEntity::TakeDamageOld
-            return sub_180DFBEE0((__int64)v7);
+            sub_XXX(a1, (__int64)v7, 0LL); // CBaseEntity::TakeDamageOld
+            return sub_XXX((__int64)v7);
          }
       }
       return result;
@@ -66,15 +111,14 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
    ```
 
    Linux:
-
    ```c
-   void __fastcall sub_1628A10(__int64 a1, unsigned __int8 a2, char a3)
+   void __fastcall CBasePlayerPawn_CommitSuicide(__int64 a1, unsigned __int8 a2, char a3)
    {
       unsigned __int8 (*v4)(void); // rax
       _BYTE v5[112]; // [rsp+0h] [rbp-140h] BYREF
       __int64 v6; // [rsp+70h] [rbp-D0h]
 
-      v4 = *(unsigned __int8 (**)(void))(*(_QWORD *)a1 + 1328LL);
+      v4 = *(unsigned __int8 (**)(void))(*(_QWORD *)a1 + <IsAlive_offset>);
       if ( (char *)v4 == (char *)CBaseEntity_IsPlayerPawn )
       {
          if ( *(_BYTE *)(a1 + 1472) )
@@ -84,80 +128,82 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
       {
          return;
       }
-      if ( *(float *)(a1 + 4072) <= sub_118C0E0(*(unsigned int *)(*(_QWORD *)(a1 + 16) + 56LL)) || a3 )
+      if ( *(float *)(a1 + 4072) <= sub_XXX(...) || a3 )
       {
-         *(float *)(a1 + 4072) = sub_118C0E0(*(unsigned int *)(*(_QWORD *)(a1 + 16) + 56LL)) + 5.0;
-         sub_18B0D40(v5, a1, a1, 0LL, a2 << 6, 0LL, 1.0);
+         *(float *)(a1 + 4072) = sub_XXX(...) + 5.0;
+         sub_XXX(v5, a1, a1, 0LL, a2 << 6, 0LL, 1.0);
          v6 |= (a2 == 0 ? 64LL : 32LL) | 0x116;
-         sub_C8A650(a1, v5, 0LL);
-         sub_189BA20(v5);//CBaseEntity::TakeDamageOld
+         sub_XXX(a1, v5, 0LL); // CBaseEntity::TakeDamageOld
+         sub_XXX(v5);
       }
    }
    ```
 
-   where the `CBaseEntity::TakeDamageOld` can be verified by checking string "CBaseEntity::TakeDamageOld: damagetype %d with info.GetDamagePosition() == Vector::vZero\n" in it's decompiled procedure.
+   Key verification points:
+   - Calls `IsAlive` via vtable at the start
+   - Constructs a `CTakeDamageInfo` on the stack (112-byte buffer)
+   - Sets damage flags with `| 0x116`
+   - Calls `CBaseEntity::TakeDamageOld` (verify by checking for string `"CBaseEntity::TakeDamageOld: damagetype %d with info.GetDamagePosition() == Vector::vZero\n"` in its callee)
 
-   If the code pattern match, proceed to rename.
+   If the code pattern matches, proceed to rename.
 
-4. Rename the function:
+7. Rename the function:
 
    ```
    mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CBasePlayerPawn_CommitSuicide"}]}
    ```
 
-5. Generate and validate unique signature:
+8. Generate and validate unique signature:
 
    **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 
-7. Write IDA analysis output as YAML beside the binary:
+9. Write IDA analysis output as YAML beside the binary:
 
    **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
    Required parameters:
    - `func_name`: `CBasePlayerPawn_CommitSuicide`
-   - `func_addr`: The function address from step 2
-   - `func_sig`: The validated signature from step 6
+   - `func_addr`: The function address from step 5
+   - `func_sig`: The validated signature from step 8
 
    VTable parameters:
    - `vtable_name`: `CBasePlayerPawn`
-   - `vfunc_index`: The vtable index from step 3
+   - `vfunc_index`: The vtable index from step 5
    - `vfunc_offset`: `vfunc_offset = vfunc_index * 8`
 
 ## Function Characteristics
 
-- **Parameters**: `(this)` where `this` is CBasePlayerPawn pointer
-- **Purpose**: Handles player suicide/death state cleanup and processing
+- **Parameters**: `(this, bool bExplodeDeath, bool bForce)` where `this` is CBasePlayerPawn pointer
+- **Purpose**: Handles player suicide by constructing a CTakeDamageInfo and calling TakeDamageOld
 - **Key Operations**:
-  - Sets up player state at offset 0x890 (2192 bytes)
-  - Calls cleanup functions
-  - Invokes virtual function for death handling
-  - Sets death-related flags (bit 21 = 0x200000)
-  - Finalizes the suicide process
+  - Checks if pawn is alive via vtable call (IsAlive)
+  - Checks cooldown timer to prevent rapid suicide calls
+  - Constructs a 112-byte CTakeDamageInfo on the stack
+  - Sets damage flags: `(32 * (bExplodeDeath ^ 1) + 32) | 0x116`
+  - Calls `CBaseEntity::TakeDamageOld(this, info, 0)`
+  - Destructs the CTakeDamageInfo
 
 ## VTable Information
 
 - **VTable Name**: `CBasePlayerPawn::\`vftable'`
 - **VTable Mangled Name**: `??_7CBasePlayerPawn@@6B@` (Windows) / `_ZTV16CBasePlayerPawn` (Linux)
-- **VTable Index**: 400 (IDA index) / 399 (array index) - This can change when game updates.
-- **VTable Offset**: 0xC78 - This can change when game updates.
+- **VTable Index**: Changes with game updates. Resolve via `<CommitSuicide_offset> / 8`.
+- **VTable Offset**: Changes with game updates. Extract from the `bot_kill` handler loop.
 
 * Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV16CBasePlayerPawn` + `0x10`.
 
-## Unique Identifiers
+## String-Based Discovery
 
-The function can be uniquely identified by:
+The primary discovery method uses the `bot_kill` console command:
 
-1. **Offset 0x890** (`4C 8D A7 90 08 00 00`) - LEA r12, [rdi+890h]
-   - This is `a1 + 274` in QWORD pointer arithmetic
+1. **Search string**: `"bot_kill <all>"` or `"bot_kill.*all"`
+2. **Xref chain**: String → ConCommand registration → command handler callback
+3. **Kill loop**: The handler iterates matched bots, calling `pPlayerPawn->CommitSuicide(false, false)` via vtable
 
-2. **Vtable offset 0xBF8** (`FF 90 F8 0B 00 00`) - call qword ptr [rax+0BF8h]
-   - Virtual function call at index 383
-   - This corresponds to `(*a1 + 3064)` in bytes
-
-3. **Sequential function call pattern**:
-   - Call to view initialization
-   - Virtual call at vtable[383]
-   - Two helper function calls for offset calculations
+This is more robust than scanning vtable entries because:
+- The `bot_kill` string is unique and stable across updates
+- The kill loop structure is distinctive and unlikely to change
+- The vfunc offset is extracted directly from the call site
 
 ## Output YAML Format
 
