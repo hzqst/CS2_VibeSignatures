@@ -50,7 +50,6 @@ except ImportError as e:
     sys.exit(1)
 
 from ida_skill_preprocessor import preprocess_single_skill_via_mcp
-from ida_skill_postprocess import postprocess_single_skill_via_mcp, remove_invalid_yaml_outputs
     
 DEFAULT_CONFIG_FILE = "config.yaml"
 DEFAULT_BIN_DIR = "bin"
@@ -647,50 +646,24 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
                 preprocess_ok = False
 
             if preprocess_ok:
-                postprocess_ok = False
-                try:
-                    postprocess_ok = asyncio.run(
-                        postprocess_single_skill_via_mcp(
-                            host, port, skill_name, expected_outputs, debug
-                        )
-                    )
-                except Exception as e:
-                    if debug:
-                        print(f"  Postprocess error for {skill_name}: {e}")
-
-                if postprocess_ok:
+                missing_outputs = [p for p in expected_outputs if not os.path.exists(p)]
+                if missing_outputs:
+                    fail_count += 1
+                    missing_names = [os.path.basename(p) for p in missing_outputs]
+                    print(f"  Pre-processed but missing expected_output: {skill_name} ({', '.join(missing_names)})")
+                else:
                     success_count += 1
                     if old_binary_dir:
                         print(f"  Pre-processed: {skill_name} (signature reuse)")
                     else:
                         print(f"  Pre-processed: {skill_name}")
-                else:
-                    removed = remove_invalid_yaml_outputs(expected_outputs, debug)
-                    fail_count += 1
-                    print(f"  Pre-processed but postprocess failed: {skill_name} (removed {removed} yaml)")
                 continue
 
             print(f"  Processing skill: {skill_name}")
 
             if run_skill(skill_name, agent, debug, expected_yaml_paths=expected_outputs, max_retries=skill_max_retries):
-                postprocess_ok = False
-                try:
-                    postprocess_ok = asyncio.run(
-                        postprocess_single_skill_via_mcp(
-                            host, port, skill_name, expected_outputs, debug
-                        )
-                    )
-                except Exception as e:
-                    if debug:
-                        print(f"  Postprocess error for {skill_name}: {e}")
-
-                if postprocess_ok:
-                    success_count += 1
-                    print(f"    Success")
-                else:
-                    removed = remove_invalid_yaml_outputs(expected_outputs, debug)
-                    fail_count += 1
-                    print(f"    Failed (postprocess validation, removed {removed} yaml)")
+                success_count += 1
+                print(f"    Success")
             else:
                 fail_count += 1
                 print(f"    Failed")
