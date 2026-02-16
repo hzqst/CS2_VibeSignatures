@@ -29,6 +29,14 @@ MODULE_ENABLED = True
 # Relative path to gamedata file within this dist directory
 GAMEDATA_PATH = "gamedata/cs2fixes.games.txt"
 
+# Signatures that should NOT be auto-updated from YAML data.
+# These are hand-crafted to point at a specific instruction (e.g. the patch target)
+# rather than the function start, so our auto-generated function-start signatures
+# would be incorrect for CS2Fixes' purposes.
+SKIP_SIG_UPDATE = {
+    "CPhysBox_Use",
+}
+
 
 def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debug=False):
     """
@@ -75,6 +83,16 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
     for func_name, entry in signatures.items():
         # Convert :: to _ for matching with YAML data
         yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
+
+        # Skip signatures that are hand-crafted for specific instruction offsets
+        if func_name in SKIP_SIG_UPDATE or yaml_func_name in SKIP_SIG_UPDATE:
+            skipped_count += 1
+            if debug:
+                skipped_symbols.append({
+                    "name": func_name,
+                    "reason": "in SKIP_SIG_UPDATE (hand-crafted signature)"
+                })
+            continue
 
         # Determine library
         library = entry.get("library")
