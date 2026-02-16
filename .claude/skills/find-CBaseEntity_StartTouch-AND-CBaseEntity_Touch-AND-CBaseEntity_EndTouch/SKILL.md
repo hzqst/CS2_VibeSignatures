@@ -33,6 +33,8 @@ This will lead to a large function that processes touch events.
 mcp__ida-pro-mcp__decompile addr="<function_addr>"
 ```
 
+The verify first virtual func call `(*(void (__fastcall **)(__int64 *, __int64 *, _QWORD))(v3 + 968))(a2, &v60, 0LL);` is `CVPhys2World_GetTouchingList`, 968 is the vfunc_offset of `CVPhys2World_GetTouchingList`. vfunc_index = 968 / 8 = 121
+
 #### Locate helper function that calls into StartTouch+Touch
 
 Look for a call with 4 args in the decompiled code:
@@ -175,11 +177,11 @@ Look for this virtual function call:
 (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 1192LL))(a1);
 ```
 
-### 6. Generate vfunc offset signatures for CBaseEntity_StartTouch, CBaseEntity_Touch and CBaseEntity_EndTouch
+### 6. Generate vfunc offset signatures for CBaseEntity_StartTouch, CBaseEntity_Touch, CBaseEntity_EndTouch, CVPhys2World_GetTouchingList
 
-**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_StartTouch`, `CBaseEntity_Touch` and `CBaseEntity_EndTouch`, with `inst_addr` and `vfunc_offset` from step 3, step 4 and step 5
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_StartTouch`, `CBaseEntity_Touch`, `CBaseEntity_EndTouch`, `CVPhys2World_GetTouchingList`, with `inst_addr` and `vfunc_offset` from previous steps.
 
-### 7. Get CBaseEntity VTable 
+### 7. Load CBaseEntity VTable information from yaml
 
 **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBaseEntity`.
 
@@ -190,26 +192,22 @@ Otherwise, extract these values for subsequent steps:
 - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
 - `vtable_entries`: An array of virtual functions starting from vtable[0]
 
-### 8. Resolve the virtual function addresses from the CBaseEntity's vtable_entries
+### 8. Resolve the virtual function addresses from the CBaseEntity vtable_entries
 
-* Note that vfunc index 147, 148, 149 can change on game update.
+`CBaseEntity_vtable.{platform}.yaml` :
 
-```
+```yaml
 vtable_class: CBaseEntity
 vtable_symbol: ??_7CBaseEntity@@6B@
-vtable_va: '0x1816f61e0'
-vtable_rva: '0x16f61e0'
-vtable_size: '0x770'
-vtable_numvfunc: 238
+#..................
 vtable_entries:
-  0: '0x1801688d0'
-  1: '0x1801687f0'
-  2: '0x1805d8620'
   #..................
-  147: '0x1803c81d0' # CBaseEntity_StartTouch
-  148: '0x1803c9710' # CBaseEntity_Touch
-  149: '0x1803af380' # CBaseEntity_EndTouch
+  147: '0x1803c81d0' # CBaseEntity_StartTouch, note that vfunc index can change on game update.
+  148: '0x1803c9710' # CBaseEntity_Touch, note that vfunc index can change on game update.
+  149: '0x1803af380' # CBaseEntity_EndTouch, note that vfunc index can change on game update.
 ```
+
+* No need to resolve `CVPhys2World_GetTouchingList` because it resides in `vphysics2` instead of `server` dll.
 
 ### 9. Verify function body by decompiling
 
@@ -289,6 +287,13 @@ Required parameters for each function:
 - `vfunc_index`: `149`     # can change on game update
 - `vfunc_sig`: CBaseEntity_EndTouch's `<vfunc_sig>` from step 6
 
+#### CVPhys2World_GetTouchingList
+- `func_name`: `CVPhys2World_GetTouchingList`
+- `vtable_name`: `CVPhys2World`
+- `vfunc_offset`: `0x3C8`  # can change on game update
+- `vfunc_index`: `121`     # can change on game update
+- `vfunc_sig`: CVPhys2World_GetTouchingList's `<vfunc_sig>` from step 3
+
 ## Function Characteristics
 
 ### CBaseEntity_StartTouch
@@ -326,8 +331,8 @@ Required parameters for each function:
 ## Output YAML Format
 
 The output YAML filenames depend on the platform:
-- `server.dll` -> `CBaseEntity_StartTouch.windows.yaml`, `CBaseEntity_Touch.windows.yaml`, `CBaseEntity_EndTouch.windows.yaml`
-- `server.so` -> `CBaseEntity_StartTouch.linux.yaml`, `CBaseEntity_Touch.linux.yaml`, `CBaseEntity_EndTouch.linux.yaml`
+- `server.dll` -> `CBaseEntity_StartTouch.windows.yaml`, `CBaseEntity_Touch.windows.yaml`, `CBaseEntity_EndTouch.windows.yaml`, `CVPhys2World_GetTouchingList.windows.yaml`
+- `server.so` -> `CBaseEntity_StartTouch.linux.yaml`, `CBaseEntity_Touch.linux.yaml`, `CBaseEntity_EndTouch.linux.yaml`, `CVPhys2World_GetTouchingList.linux.yaml`
 
 ## DLL Information
 

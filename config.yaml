@@ -1,4 +1,17 @@
 modules:
+  - name: vphysics2
+    path_windows: game/bin/win64/vphysics2.dll
+    path_linux: game/bin/linuxsteamrt64/libvphysics2.so
+
+    skills:
+      - name: find-CVPhys2World_vtable
+        expected_output:
+          - CVPhys2World_vtable.{platform}.yaml
+
+    symbols:
+      - name: CVPhys2World_vtable
+        category: vtable
+
   - name: engine
     path_windows: game/bin/win64/engine2.dll
     path_linux: game/bin/linuxsteamrt64/libengine2.so
@@ -560,6 +573,7 @@ modules:
           - CBaseEntity_StartTouch.{platform}.yaml
           - CBaseEntity_Touch.{platform}.yaml
           - CBaseEntity_EndTouch.{platform}.yaml
+          - CVPhys2World_GetTouchingList.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
         prerequisite:
@@ -1117,6 +1131,11 @@ modules:
         alias:
           - CBaseEntity::EndTouch
           - EndTouch
+
+      - name: CVPhys2World_GetTouchingList
+        category: vfunc
+        alias:
+          - CVPhys2World::GetTouchingList
 
       - name: CTriggerPush_Touch
         category: vfunc

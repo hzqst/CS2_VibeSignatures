@@ -7,6 +7,7 @@ TARGET_FUNCTION_NAMES = [
     "CBaseEntity_StartTouch",
     "CBaseEntity_Touch",
     "CBaseEntity_EndTouch",
+    "CVPhys2World_GetTouchingList",
 ]
 
 

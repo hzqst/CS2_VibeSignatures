@@ -73,11 +73,12 @@ else:
 # Build data dictionary conditionally
 data = {}
 
+data['func_name'] = func_name
+
 if func_addr is not None:
     func = idaapi.get_func(func_addr)
     func_size = func.size() if func else 0
     func_rva = func_addr - image_base
-    data['func_name'] = func_name
     data['func_va'] = hex(func_addr)
     data['func_rva'] = hex(func_rva)
     data['func_size'] = hex(func_size)
