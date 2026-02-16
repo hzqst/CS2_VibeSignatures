@@ -262,6 +262,14 @@ modules:
           - find-CCSGameRules_vtable
         max_retries: 4
 
+      - name: find-CCSGameRules_GoToIntermission
+        expected_output:
+          - CCSGameRules_GoToIntermission.{platform}.yaml
+        expected_input:
+          - CCSGameRules_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSGameRules_vtable
+
       - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
         expected_output:
           - CCSGameRules_TerminateRound.{platform}.yaml
@@ -813,6 +821,11 @@ modules:
           - CGameRules::TerminateRound
           - CGameRules_TerminateRound
 
+      - name: CCSGameRules_GoToIntermission
+        category: vfunc
+        alias:
+         - CCSGameRules::GoToIntermission
+         
       - name: CEntityInstance_AcceptInput
         category: func
         alias:
