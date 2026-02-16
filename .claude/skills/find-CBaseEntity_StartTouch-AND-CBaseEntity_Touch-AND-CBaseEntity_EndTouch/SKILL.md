@@ -177,7 +177,7 @@ Look for this virtual function call:
 
 ### 6. Generate vfunc offset signatures for CBaseEntity_StartTouch, CBaseEntity_Touch and CBaseEntity_EndTouch
 
-**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_StartTouch`, `CBaseEntity_Touch` and `CBaseEntity_EndTouch`, with `inst_addr` and `vfunc_offset` from step 3 ~ step 5
+**ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for `CBaseEntity_StartTouch`, `CBaseEntity_Touch` and `CBaseEntity_EndTouch`, with `inst_addr` and `vfunc_offset` from step 3, step 4 and step 5
 
 ### 7. Get CBaseEntity VTable 
 
@@ -194,7 +194,7 @@ Otherwise, extract these values for subsequent steps:
 
 * Note that vfunc index 147, 148, 149 can change on game update.
 
-```python
+```
 vtable_class: CBaseEntity
 vtable_symbol: ??_7CBaseEntity@@6B@
 vtable_va: '0x1816f61e0'
