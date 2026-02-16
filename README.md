@@ -422,10 +422,16 @@ Prompt:
  - /skill-creator Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH** according to what we just did.
  - Don't pack skill.
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
- - **ALWAYS** check for @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager.md as references.
+ - **ALWAYS** check for @.claude/skills/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager/SKILL.md as references.
 ```
 
-7. Add the new SKILL to `config.yaml`, under `skills`.
+8. Create a copy of `ida_preprocessor_scripts/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager.py` as `ida_preprocessor_scripts/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.py`
+
+ - Don't forget to update `TARGET_FUNCTION_NAMES` and `TARGET_GLOBALVAR_NAMES` in the new preprocessor script.
+
+ * The preprocessor script will be used when signature from older version of game is available.
+
+9. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
