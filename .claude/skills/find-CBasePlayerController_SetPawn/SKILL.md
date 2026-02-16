@@ -1,6 +1,6 @@
 ---
 name: find-CBasePlayerController_SetPawn
-description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by analyzing the cleanup sequence in CBasePlayerController virtual function index around 14 (12 ~ 16) and identifying the characteristic call pattern.
+description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by finding CSource2GameClients_ClientDisconnect (via "player_disconnect" + "xuid" string xrefs) and identifying the characteristic call pattern within it.
 ---
 
 # Find CBasePlayerController_SetPawn
@@ -9,66 +9,72 @@ Locate `CBasePlayerController_SetPawn` in CS2 server.dll or server.so using IDA 
 
 ## Method
 
-### 1. Get CBasePlayerController vtable address
+### 1. Find CSource2GameClients_ClientDisconnect
 
-**ALWAYS** Use SKILL `/get-vtable-address` to find vtable for `CBasePlayerController`.
+Search for strings `"player_disconnect"` and `"xuid"` in IDA, then find the function that references both.
 
-### 2. Decompile virtual function index around 14 (12 ~ 16)
-
-`vfunc_addr = vtable_start + (vtable_index * 8)`
+#### 1a. Search for both strings
 
 ```
-mcp__ida-pro-mcp__decompile addr="<vfunc_addr>"
+mcp__ida-pro-mcp__find_regex pattern="player_disconnect"
+mcp__ida-pro-mcp__find_regex pattern="^xuid$"
+```
+
+#### 1b. Get xrefs and find intersection
+
+Get cross-references for each string match and find the function that appears in both xref sets. That function is `CSource2GameClients_ClientDisconnect`.
+
+```
+mcp__ida-pro-mcp__xrefs_to addrs="<player_disconnect_addr>"
+mcp__ida-pro-mcp__xrefs_to addrs="<xuid_addr>"
+```
+
+The intersecting function fires the `player_disconnect` game event with fields: `userid`, `reason`, `name`, `xuid`, `networkid`.
+
+#### 1c. Rename CSource2GameClients_ClientDisconnect (if not already named)
+
+```
+mcp__ida-pro-mcp__rename batch={"func": {"addr": "<function_addr>", "name": "CSource2GameClients_ClientDisconnect"}}
+```
+
+### 2. Decompile CSource2GameClients_ClientDisconnect
+
+```
+mcp__ida-pro-mcp__decompile addr="<CSource2GameClients_ClientDisconnect_addr>"
 ```
 
 ### 3. Identify CBasePlayerController_SetPawn call pattern
 
-Look for the following pattern in the decompiled code:
+In the decompiled code of `CSource2GameClients_ClientDisconnect`, look for this pattern near the end of the function:
 
 ```c
-// Pattern to identify:
-for ( i = *(_QWORD **)(a1 + 1928); i; i = (_QWORD *)i[7] )
-{
-  while ( 1 )
-  {
-    v15 = *(__int64 (__fastcall **)())(*i + 48LL);
-    if ( v15 != nullsub_1097 )
-      break;
-    i = (_QWORD *)i[7];
-    if ( !i )
-      goto LABEL_22;
-  }
-  ((void (__fastcall *)(_QWORD *))v15)(i);
-}
-LABEL_22:
-sub_XXXXXXX(a1, 0, 0, 0, 0, 0);  // <- This is CBasePlayerController_SetPawn
-v16 = *(void (__fastcall ****)(_QWORD))(a1 + 2472);
-if ( v16 )
-{
-  (**v16)(v16);
-  *(_QWORD *)(a1 + 2472) = 0;
-}
+      v38 = sub_XXXXXXX(v8);       // get pawn from controller
+      if ( v38 )
+      {
+        sub_YYYYYYY(v8, 0LL, 0, 0, 0, 0);  // <- This is CBasePlayerController_SetPawn
+        sub_ZZZZZZZ(v38);                    // remove/destroy the pawn
+      }
 ```
 
-The target function is called:
-- Immediately after iterating a linked list at offset 1928
-- Each list node invokes virtual function at vtable offset +48, skipping nullsubs
-- Called with parent object (a1) as first argument and all remaining arguments set to zero
-- Immediately followed by releasing a function pointer at offset 2472
+The target function (`sub_YYYYYYY`) is identified by:
+- Called with the player controller (`v8` obtained from `UTIL_PlayerSlotToPlayerController`) as first argument
+- All remaining 5 arguments are zero (clearing/nullifying the pawn assignment)
+- Called inside a null-check block after retrieving the pawn
+- Immediately followed by a cleanup/destroy call on the pawn
 
 ### 4. Rename the function
 
 ```
-mcp__ida-pro-mcp__rename batch={"func": [{"addr": "<function_addr>", "name": "CBasePlayerController_SetPawn"}]}
+mcp__ida-pro-mcp__rename batch={"func": {"addr": "<function_addr>", "name": "CBasePlayerController_SetPawn"}}
 ```
 
 ### 5. Generate and validate unique signature
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+**ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function `CBasePlayerController_SetPawn`.
 
 ### 6. Write IDA analysis output as YAML beside the binary
 
-**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results.
+**ALWAYS** Use SKILL `/write-func-as-yaml` to write the analysis results of `CBasePlayerController_SetPawn`.
 
 Required parameters:
 - `func_name`: `CBasePlayerController_SetPawn`
@@ -80,34 +86,8 @@ Required parameters:
 - **Purpose**: Associates or disassociates a pawn with the player controller
 - **Parameters**: `(controller, pawn_ptr, param2, param3, param4, param5)`
   - When called with all zeros: clears/nullifies the pawn assignment
-- **Called from**: Virtual function index 14 (CBasePlayerController cleanup/destructor)
-- **Function size**: ~0x53c bytes (1340 bytes) - may vary between versions
-
-## Signature Pattern
-
-The function has a distinctive prologue:
-
-```
-push    rbp
-lea     rax, [rdi+7C0h]     ; Pawn offset in controller (0x7C0 = 1984 decimal)
-mov     rbp, rsp
-push    r15
-mov     r15d, ecx
-push    r14
-push    r13
-mov     r13d, r9d
-push    r12
-mov     r12, rsi
-push    rbx
-mov     rbx, rdi
-sub     rsp, 68h
-mov     ecx, [rdi+7C0h]     ; Same offset appears twice
-```
-
-Key identifying features:
-- Offset 0x7C0 (1984) appears twice - this is the pawn field offset in CBasePlayerController (note that 0x7C0 can change on game updates)
-- Standard function prologue with register preservation
-- Stack allocation of 0x68 bytes (can change on game updates too)
+- **Called from**: `CSource2GameClients_ClientDisconnect` (player disconnect handler)
+- **Function size**: ~0x528 bytes - may vary between versions
 
 ## Output YAML Format
 
