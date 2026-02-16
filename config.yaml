@@ -66,10 +66,6 @@ modules:
       - name: find-CCSGameRules_vtable
         expected_output:
           - CCSGameRules_vtable.{platform}.yaml
-        expected_input:
-          - CGameRules_vtable.{platform}.yaml
-        prerequisite:
-          - find-CGameRules_vtable
 
       - name: find-CCSPlayer_ItemServices_vtable
         expected_output:
@@ -194,13 +190,25 @@ modules:
         expected_output:
           - CBasePlayerController_SetPlayerName.{platform}.yaml
 
+      - name: find-g_pGameRules-AND-CGameRules_FindPickerEntity
+        expected_output:
+          - g_pGameRules.{platform}.yaml
+          - CGameRules_FindPickerEntity.{platform}.yaml
+        expected_input:
+          - CGameRules_vtable.{platform}.yaml
+        prerequisite:
+          - find-CGameRules_vtable
+
       - name: find-CCSGameRules_FindPickerEntity
         expected_output:
           - CCSGameRules_FindPickerEntity.{platform}.yaml
         expected_input:
+          - CGameRules_FindPickerEntity.{platform}.yaml
           - CCSGameRules_vtable.{platform}.yaml
         prerequisite:
+          - find-g_pGameRules-AND-CGameRules_FindPickerEntity
           - find-CCSGameRules_vtable
+        max_retries: 4
 
       - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
         expected_output:
@@ -402,7 +410,7 @@ modules:
           - IGameSystem_LoopPostInitAllSystems_pEventDispatcher.{platform}.yaml
           - IGameSystem_LoopDestroyAllSystems_s_GameSystems.{platform}.yaml
         max_retries: 4
-        
+
       - name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
         expected_output:
           - CSource2GameEntities_CheckTransmit.{platform}.yaml
@@ -724,12 +732,18 @@ modules:
         alias:
           - CBasePlayerController::SetPawn
 
+      - name: g_pGameRules
+        category: gv
+
+      - name: CGameRules_FindPickerEntity
+        category: vfunc
+        alias:
+          - CGameRules::FindPickerEntity
+
       - name: CCSGameRules_FindPickerEntity
         category: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
-          - CGameRules::FindPickerEntity
-          - CGameRules_FindPickerEntity
 
       - name: CCSGameRules_TerminateRound
         category: func
