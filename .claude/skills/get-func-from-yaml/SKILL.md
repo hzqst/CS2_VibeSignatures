@@ -86,7 +86,7 @@ If the skill returns an error, stop and report to user.
 Otherwise, extract `func_va`, `func_sig`, and other available fields for subsequent steps.
 ```
 
-## Expected Output Values
+## Example Output
 
 | Field | Description | Example |
 |-------|-------------|---------|
