@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_EquipWeapon skill."""
+"""Preprocess script for find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "CCSPlayer_WeaponServices_PickupItem",
+    "CCSPlayer_WeaponServices_CanUse",
     "CCSPlayer_WeaponServices_EquipWeapon",
 ]
 
