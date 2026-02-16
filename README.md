@@ -214,8 +214,7 @@ Prompt:
 
 ```bash
 Prompt:
-   Generate a robust signature for this function
-   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
 ```
 
 4. Write YAML
@@ -302,7 +301,7 @@ Prompt:
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBasePlayerController`.
+  **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBasePlayerController`.
 
   If the skill returns an error, **STOP** and report to user.
 
@@ -315,7 +314,7 @@ Prompt:
 
 ```bash
 Prompt:
-   -- **ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for CBasePlayerController_Respawn, with `inst_addr` and `vfunc_offset` from previous step
+   **ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for CBasePlayerController_Respawn, with `inst_addr` and `vfunc_offset` from previous step
 ```
 
 5. Write YAML
@@ -392,8 +391,7 @@ rename "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )" to "for ( i = IGameSyst
 
 ```bash
 Prompt:
-   Generate a robust signature for IGameSystem_InitAllSystems
-   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for IGameSystem_InitAllSystems.
+   **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for IGameSystem_InitAllSystems.
 ```
 
 3. Write YAML
