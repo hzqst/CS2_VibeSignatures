@@ -37,6 +37,14 @@ SKIP_SIG_UPDATE = {
     "CPhysBox_Use",
 }
 
+# Struct member offsets that need to be divided by a factor before writing.
+# CS2Fixes indexes some structs by element count (pointer-sized slots) rather
+# than by raw byte offset.  For example CNetworkGameServer_ClientList is stored
+# in YAML as 0x250 (592 bytes), but CS2Fixes expects 592/8 = 74.
+STRUCT_MEMBER_OFFSET_DIVISOR = {
+    "CNetworkGameServer_ClientList": 8,
+}
+
 
 def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debug=False):
     """
@@ -165,7 +173,11 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
                         })
                 # Check for struct_member_offset (struct member offset)
                 elif "struct_member_offset" in yaml_entry[platform]:
-                    entry[platform] = str(yaml_entry[platform]["struct_member_offset"])
+                    offset_val = yaml_entry[platform]["struct_member_offset"]
+                    divisor = STRUCT_MEMBER_OFFSET_DIVISOR.get(func_name)
+                    if divisor:
+                        offset_val = offset_val // divisor
+                    entry[platform] = str(offset_val)
                     updated_count += 1
                     if debug:
                         updated_symbols.append({
