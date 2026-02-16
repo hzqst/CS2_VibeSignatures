@@ -1723,6 +1723,40 @@ async def preprocess_index_based_vfunc_via_mcp(
 # Common preprocess_skill template
 # ---------------------------------------------------------------------------
 
+
+async def _rename_func_in_ida(session, func_va_hex, func_name, debug=False):
+    """Best-effort rename of a function address in IDA via MCP rename tool."""
+    if not func_va_hex or not func_name:
+        return
+    try:
+        await session.call_tool(
+            name="rename",
+            arguments={"batch": {"func": {"addr": str(func_va_hex), "name": func_name}}},
+        )
+        if debug:
+            print(f"    Preprocess: renamed func {func_va_hex} -> {func_name}")
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: failed to rename func {func_va_hex} -> {func_name}: {e}")
+
+
+async def _rename_gv_in_ida(session, gv_va_hex, gv_name, debug=False):
+    """Best-effort rename of a global variable address in IDA via py_eval."""
+    if not gv_va_hex or not gv_name:
+        return
+    try:
+        gv_va_int = int(gv_va_hex, 16)
+        await session.call_tool(
+            name="py_eval",
+            arguments={"code": f"import idc; idc.set_name({gv_va_int}, \"{gv_name}\", idc.SN_NOWARN)"},
+        )
+        if debug:
+            print(f"    Preprocess: renamed gv {gv_va_hex} -> {gv_name}")
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: failed to rename gv {gv_va_hex} -> {gv_name}: {e}")
+
+
 async def preprocess_common_skill(
     session,
     expected_outputs,
@@ -1870,6 +1904,7 @@ async def preprocess_common_skill(
                     return False
 
             func_data.setdefault("func_name", func_name)
+            await _rename_func_in_ida(session, func_data.get("func_va"), func_name, debug)
             write_func_yaml(target_output, func_data)
             if debug:
                 print(f"    Preprocess: generated {func_name}.{platform}.yaml")
@@ -1932,6 +1967,7 @@ async def preprocess_common_skill(
             return False
 
         func_data.setdefault("func_name", func_name)
+        await _rename_func_in_ida(session, func_data.get("func_va"), func_name, debug)
         write_func_yaml(target_output, func_data)
         if debug:
             print(f"    Preprocess: generated {func_name}.{platform}.yaml")
@@ -1956,6 +1992,7 @@ async def preprocess_common_skill(
                 print(f"    Preprocess: failed to locate {gv_name}")
             return False
 
+        await _rename_gv_in_ida(session, gv_data.get("gv_va"), gv_name, debug)
         write_gv_yaml(target_output, gv_data)
         if debug:
             print(f"    Preprocess: generated {gv_name}.{platform}.yaml")
