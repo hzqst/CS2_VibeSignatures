@@ -1,60 +1,68 @@
 # ida_analyze_bin
 
 ## 概述
-`ida_analyze_bin.py` 是IDA二进制分析总编排脚本：按 `config.yaml` 的模块/技能配置遍历平台二进制，先尝试通过 `ida_skill_preprocessor` 复用旧版本签名快速生成 YAML，失败时再回退到 Claude/Codex 执行技能。
+`ida_analyze_bin.py` 是 CS2 二进制签名分析的总编排入口：读取 `config.yaml` 后按模块/平台/技能顺序执行，优先走预处理与后处理校验，必要时再调用 Claude/Codex 技能补全 YAML 输出。
 
 ## 职责
-- 解析命令行参数并规范化平台/模块过滤（含 `-oldgamever` 推断、`-maxretry`、`-modules`）。
-- 读取 `config.yaml`，提取模块与技能元数据（`expected_output` / `expected_input` / `prerequisite` / `max_retries`）。
-- 对技能按依赖做拓扑排序，按输出文件存在性决定跳过或执行。
-- 启动并等待 `idalib-mcp`，对每个技能执行“预处理优先、Agent 回退”的双阶段流程。
-- 汇总成功/失败/跳过数量，统一关闭 IDA 进程并以失败数决定退出码。
+- 解析 CLI 参数并生成运行上下文（平台过滤、模块过滤、`oldgamever` 推断、默认重试次数等）。
+- 解析 `config.yaml` 的 `modules[*].skills[*]` 元数据，提取 `expected_input/expected_output/prerequisite/max_retries`。
+- 对每个二进制内的技能做拓扑排序与跳过判定（输出已存在则直接跳过）。
+- 启动并管理 `idalib-mcp` 生命周期（启动等待、任务执行、优雅退出/强制回收）。
+- 执行“预处理 -> 后处理校验 -> 失败回退 Agent -> 再后处理校验”的双阶段流程。
+- 汇总成功/失败/跳过统计，并在存在失败时以非 0 退出码结束。
 
 ## 涉及文件 (不要带行号)
 - ida_analyze_bin.py
-- ida_skill_preprocessor.py
 - config.yaml
+- ida_skill_preprocessor.py
+- ida_skill_postprocess.py
+- ida_analyze_util.py
+- .claude/agents/sig-finder.md
 - .claude/skills/<skill>/SKILL.md
 
 ## 架构
-主入口 `main`：
-1. `parse_args`：解析参数，平台仅允许 `windows/linux`；`oldgamever` 未显式给定时会尝试 `int(gamever)-1`，传 `none` 可禁用旧版本复用。
-2. `parse_config`：读取模块和技能配置，保留每个技能的依赖与重试参数。
-3. 逐模块逐平台处理：
-   - 通过 `get_binary_path` 生成 `{bindir}/{gamever}/{module}/{filename}`。
-   - 若存在 `oldgamever` 目录，则构造 `old_binary_dir` 用于签名复用。
-   - 调用 `process_binary` 执行该二进制的全部技能。
-4. 输出总计并在 `total_fail > 0` 时 `sys.exit(1)`。
+主入口以 `main -> process_binary -> (preprocess/run_skill) -> postprocess` 的分层方式工作：
 
-`process_binary` 核心流程：
-- `topological_sort_skills`（Kahn）得到技能顺序。
-- 展开 `expected_output` 里的 `{platform}` 并拼接到 `binary_dir`；若输出全存在则跳过。
-- 仅当有待处理技能时才 `start_idalib_mcp`。
-- 对每个技能：
-  - 若有 `old_binary_dir`，先构造 `old_yaml_map` 并调用 `preprocess_single_skill_via_mcp(...)`。
-  - 预处理成功则直接记成功；失败则调用 `run_skill(...)` 走 Agent。
-- `finally` 中调用 `quit_ida_gracefully`：优先 MCP `py_eval(idc.qexit(0))`，超时后 `kill`。
+```mermaid
+flowchart TD
+  A[parse_args] --> B[parse_config]
+  B --> C[遍历模块/平台]
+  C --> D[process_binary]
+  D --> E[topological_sort_skills]
+  E --> F[检查 expected_output 是否已存在]
+  F -->|全部存在| G[skip]
+  F -->|存在待处理技能| H[start_idalib_mcp]
+  H --> I[逐技能执行]
+  I --> J[检查 expected_input]
+  J -->|缺失| K[fail]
+  J -->|满足| L[preprocess_single_skill_via_mcp]
+  L -->|成功| M[postprocess_single_skill_via_mcp]
+  L -->|失败| N[run_skill Claude/Codex]
+  N --> M
+  M -->|成功| O[success]
+  M -->|失败| P[remove_invalid_yaml_outputs + fail]
+  I --> Q[quit_ida_gracefully]
+```
 
-`run_skill` 流程：
-- 根据 `agent` 名称包含关系分派：
-  - Claude：`-p /{skill}` + `--agent sig-finder` + `--allowedTools mcp__ida-pro-mcp__*`，并用 `--session-id/--resume` 做重试续跑。
-  - Codex：`codex exec "Run SKILL: .claude/skills/{skill}/SKILL.md"`。
-- 每次尝试均校验退出码和 `expected_yaml_paths` 是否全部落盘；失败按 `max_retries` 重试。
+关键实现点：
+- `topological_sort_skills` 使用 Kahn 算法，并对同层节点排序，保证执行顺序稳定。
+- `run_skill` 按 `agent` 名称分流：
+  - Claude：`--session-id/--resume` 复用会话重试。
+  - Codex：读取 `.claude/agents/sig-finder.md`，去除 frontmatter 后通过 `developer_instructions=` 注入；重试时 `exec resume --last`。
+- `process_binary` 中技能级 `max_retries` 可覆盖全局 `-maxretry`。
 
 ## 依赖
-- PyYAML（`yaml.safe_load`）
-- asyncio + mcp Python SDK（`ClientSession`、`streamable_http_client`）
-- `uv` + `idalib-mcp`（本地 MCP 服务）
-- Claude CLI 或 Codex CLI（按 `-agent` 选择）
+- 外部库：`pyyaml`、`httpx`、`mcp` Python SDK。
+- 外部工具：`uv run idalib-mcp`、`claude` CLI 或 `codex` CLI。
+- 内部模块：`ida_skill_preprocessor.preprocess_single_skill_via_mcp`、`ida_skill_postprocess.postprocess_single_skill_via_mcp`、`ida_skill_postprocess.remove_invalid_yaml_outputs`。
 
 ## 注意事项
-- 默认 `agent` 为 `claude`（不是 `codex`）。
-- `get_binary_path` 只取配置路径的文件名，不保留原子目录层级。
-- `expected_input` 在 `process_binary` 中会在执行技能前检查：展开 `{platform}` 后拼接 `binary_dir`，若有文件缺失则记为失败并输出缺失文件名提示。
-- 仅当 `old_binary_dir` 存在时才会触发签名复用预处理；否则直接走 Agent SKILL。
-- `preprocess_single_skill_via_mcp` 当前为脚本分发模式：按 skill 名动态加载 `ida_preprocessor_scripts/{skill_name}.py` 的 `preprocess_skill`，脚本缺失或失败时回退 Agent。
-- 技能级 `max_retries` 可覆盖命令行 `-maxretry`。
-- 若 MCP 启动失败，当前二进制所有待处理技能都记为失败。
+- `-oldgamever` 未显式指定时会尝试 `int(gamever)-1`；`gamever` 非数字则自动禁用旧版本复用。
+- `old_binary_dir` 仅检查目录存在，不保证每个旧 YAML 存在；预处理脚本需自行处理旧文件缺失。
+- `ida_args` 使用字符串 `split()`，对带空格或复杂引号参数不友好。
+- `expected_input` 缺失会直接记失败，不会进入 Agent 回退路径。
+- 后处理校验失败会删除本次生成的 YAML，避免无效签名落盘。
+- MCP 启动失败时，该二进制下所有待处理技能直接计为失败。
 
 ## 调用方（可选）
-- 命令行直接执行 `ida_analyze_bin.py`
+- 命令行直接执行：`python ida_analyze_bin.py -gamever 14135 [-agent=claude] [-platform windows] [-debug]`
