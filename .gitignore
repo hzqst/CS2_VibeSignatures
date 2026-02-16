@@ -1,4 +1,5 @@
 *.dll
+!bin/**/*.dll
 *.so
 *.i64
 *.id0
