@@ -5,8 +5,8 @@
             "linux": 80
         },
         "CBaseEntity::GetHammerUniqueId": {
-            "windows": 115,
-            "linux": 114
+            "windows": 111,
+            "linux": 110
         },
         "IsEntityPawn": {
             "windows": 168,

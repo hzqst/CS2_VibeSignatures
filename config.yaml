@@ -624,6 +624,14 @@ modules:
         prerequisite:
           - find-CBaseEntity_vtable
 
+      - name: find-CBaseEntity_GetHammerUniqueId
+        expected_output:
+          - CBaseEntity_GetHammerUniqueId.{platform}.yaml
+        expected_input:
+          - CBaseEntity_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_vtable
+
       - name: find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
         expected_output:
           - CBaseTrigger_StartTouch.{platform}.yaml
@@ -1201,6 +1209,12 @@ modules:
           - CBaseEntity::IsPlayerPawn
           - IsEntityPawn
           - IsPlayerPawn
+
+      - name: CBaseEntity_GetHammerUniqueId
+        category: vfunc
+        alias:
+          - CBaseEntity::GetHammerUniqueId
+          - GetHammerUniqueId
 
       - name: CBaseEntity_IsPlayerController
         category: vfunc
