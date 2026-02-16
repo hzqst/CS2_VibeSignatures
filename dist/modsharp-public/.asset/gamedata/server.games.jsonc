@@ -447,7 +447,7 @@
         "CSpawnGroupMgrGameSystem::GetSpawnGroups": {
             "library": "server",
             "linux": "55 49 89 F1 BE ? ? ? ?",
-            "windows": "40 56 48 83 EC ? 48 89 5C 24 ? 48 8D B1"
+            "windows": "40 56 48 83 EC ? 48 89 5C 24 ? 48 8D B1 ? ? ? ?"
         },
         "CTriggerGravity::GravityTouch": {
             "library": "server",

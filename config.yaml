@@ -111,6 +111,10 @@ modules:
         expected_output:
           - CSource2GameEntities_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_vtable
+        expected_output:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
       - name: find-CGameRules_vtable
         expected_output:
           - CGameRules_vtable.{platform}.yaml
@@ -692,11 +696,18 @@ modules:
           - g_pGameTypes.{platform}.yaml
           - IGameTypes_CreateWorkshopMapGroup.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
+        expected_output:
+          - CSpawnGroupMgrGameSystem_GetSpawnGroups.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
 
       - name: CSource2GameEntities_vtable
+        category: vtable
+
+      - name: CSpawnGroupMgrGameSystem_vtable
         category: vtable
 
       - name: CGameRules_vtable
@@ -1279,3 +1290,9 @@ modules:
         category: vfunc
         alias:
          - IGameTypes::CreateWorkshopMapGroup
+
+      - name: CSpawnGroupMgrGameSystem_GetSpawnGroups
+        category: func
+        alias:
+          - CSpawnGroupMgrGameSystem::GetSpawnGroups
+          - GetSpawnGroups
