@@ -4,6 +4,10 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     skills:
+      - name: find-CNetworkGameServer_vtable
+        expected_output:
+          - CNetworkGameServer_vtable.{platform}.yaml
+
       - name: find-CServerSideClient_vtable
         expected_output:
           - CServerSideClient_vtable.{platform}.yaml
@@ -27,7 +31,19 @@ modules:
           - CGameResourceService.{platform}.yaml
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
 
+      - name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
+        expected_output:
+          - CNetworkGameServer.{platform}.yaml
+          - CServerSideClientBase_ClientPrintf.{platform}.yaml
+        expected_input:
+          - CNetworkGameServer_vtable.{platform}.yaml
+        prerequisite:
+          - find-CNetworkGameServer_vtable
+
     symbols:
+      - name: CNetworkGameServer_vtable
+        category: vtable
+
       - name: CServerSideClient_vtable
         category: vtable
 
@@ -54,6 +70,20 @@ modules:
         member: m_pEntitySystem
         alias:
           - GameEntitySystem
+
+      - name: CNetworkGameServer
+        category: struct
+
+      - name: CNetworkGameServer_ClientList
+        category: structmember
+        struct: CNetworkGameServer
+        member: ClientList
+
+      - name: CServerSideClientBase_ClientPrintf
+        category: vfunc
+        alias:
+          - CServerSideClientBase::ClientPrintf
+          - ClientPrintf
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll

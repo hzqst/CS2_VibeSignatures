@@ -133,7 +133,7 @@
         "CBasePlayerController::SetPawn": {
             "library": "server",
             "linux": "55 48 8D 87 C0 07 00 00 48 89 E5 41 57 41 89 CF 41 56 41 55 45 89 CD 41 54 49 89 F4 53 48 89 FB 48 83 EC 68 8B 8F C0 07 00 00 44 89 45 80 48 89 45 88 83 F9 FF 0F 84 ? ? ? ? 48 8B 35 ? ? ? ?",
-            "windows": "44 88 4C 24 20 53 57 41 54 41 56 41 57 48 83 EC 30 4C 8B 15 ? ? ? ? 48 8D 99 ? ? ? ? 44 8B 1B 45 33 F6 41 0F B6 F8 4C 8B FA 4C 8B E1 41 83 FB FF 74 ? 4D 85 D2 74 ? 41 83 FB FE 74 ?"
+            "windows": "44 88 4C 24 ? 53 57"
         },
         "CBasePlayerController::SwitchSteam": {
             "library": "server",
@@ -183,7 +183,7 @@
         },
         "CCSGameRules::TerminateRound": {
             "library": "server",
-            "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC C8 00 00 00 48 8D 05 ? ? ? ? F3 0F 11 85 ? ? ? ? 89 B5 ? ? ? ? F3 0F 10 05 ? ? ? ? 48 8D 35 ? ? ? ? 48 89 95 ? ? ? ? BA 01 00 00 00 89 8D ? ? ? ? 48 8B 38 48 8B 07 FF 90 C8 00 00 00",
+            "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC ? ? ? ? 48 8D 05 ? ? ? ? F3 0F 11 85 ? ? ? ?",
             "windows": "48 8B C4 4C 89 48 20 48 89 48 08 55 56 41 56 41 57 48 8D 68 A9 48 81 EC E8 00 00 00 4C 8D B1 ? ? ? ? 0F 29 70 B8 41 83 3E 00 41 8B F0 0F 28 F1 4C 8B F9 0F 85 ? ? ? ? 48 8B 0D ? ? ? ?"
         },
         "CCSGameRules::WillTeamHaveRoomForPlayer": {
@@ -853,7 +853,7 @@
         },
         "CCSPlayer_WeaponServices::CanUse": {
             "linux": 24,
-            "windows": 25
+            "windows": 23
         },
         "CCSPlayer_WeaponServices::DropWeapon": {
             "linux": 25,
@@ -936,7 +936,7 @@
             "windows": 37
         },
         "CGameSceneNode::GetSkeletonInstance": {
-            "linux": 9,
+            "linux": 10,
             "windows": 8
         },
         "CGameSceneNode::GetStudioModel": {

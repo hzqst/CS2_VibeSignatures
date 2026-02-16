@@ -1,0 +1,5 @@
+func_name: CServerSideClientBase_ClientPrintf
+vfunc_sig: 48 FF A0 80 00 00 00 48 8D 0D ?? ?? ?? ??
+vtable_name: CServerSideClientBase
+vfunc_offset: '0x80'
+vfunc_index: 16
