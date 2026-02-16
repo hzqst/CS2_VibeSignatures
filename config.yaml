@@ -267,13 +267,23 @@ modules:
         expected_output:
           - CCSPlayerController_InventoryUpdateThink.{platform}.yaml
 
+      - name: find-CBasePlayerController_Respawn
+        expected_output:
+          - CBasePlayerController_Respawn.{platform}.yaml
+        expected_input:
+          - CBasePlayerController_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBasePlayerController_vtable
+
       - name: find-CCSPlayerController_Respawn
         expected_output:
           - CCSPlayerController_Respawn.{platform}.yaml
         expected_input:
           - CCSPlayerController_vtable.{platform}.yaml
+          - CBasePlayerController_Respawn.{platform}.yaml
         prerequisite:
           - find-CCSPlayerController_vtable
+          - find-CBasePlayerController_Respawn
 
       - name: find-CCSPlayerController_SwitchTeam
         expected_output:
