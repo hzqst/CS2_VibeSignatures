@@ -653,6 +653,11 @@ modules:
           - find-CPointTeleport_Teleport
           - find-CBaseEntity_vtable
 
+      - name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
+        expected_output:
+          - g_pGameTypes.{platform}.yaml
+          - IGameTypes_CreateWorkshopMapGroup.{platform}.yaml
+          
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1209,3 +1214,11 @@ modules:
         alias:
           - CCheckTransmitInfo::m_nPlayerSlot
           - CheckTransmitPlayerSlot
+
+      - name: g_pGameTypes
+        category: gv
+
+      - name: IGameTypes_CreateWorkshopMapGroup
+        category: vfunc
+        alias:
+         - IGameTypes::CreateWorkshopMapGroup
