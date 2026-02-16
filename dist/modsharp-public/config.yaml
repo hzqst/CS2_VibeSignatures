@@ -3,6 +3,6 @@ modules:
 
     symbols:
       - name: gameeventmanager
-        catagory: gv
+        category: gv
         alias:
           - g_GameEventManager

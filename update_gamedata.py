@@ -311,7 +311,7 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
             if not func_name:
                 continue
 
-            category = symbol.get("catagory")
+            category = symbol.get("category")
 
             yaml_data[func_name] = {
                 "library": module_name,

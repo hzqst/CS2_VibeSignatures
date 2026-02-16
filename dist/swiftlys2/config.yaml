@@ -3,6 +3,6 @@ modules:
 
     symbols:
       - name: CSource2Server_Init
-        catagory: vfunc
+        category: vfunc
         alias:
           - CSource2Server::g_GameEventManager

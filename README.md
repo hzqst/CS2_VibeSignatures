@@ -166,7 +166,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ```yaml
       - name: CCSPlayerPawn_vtable
-        catagory: vtable
+        category: vtable
 ```
 
 ## How to create SKILL for regular function
@@ -361,7 +361,7 @@ Prompt:
 
 ```yaml
       - name: CCSPlayerController_Respawn
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerController::Respawn
 ```
@@ -445,12 +445,12 @@ Prompt:
 
 ```yaml
       - name: IGameSystem_InitAllSystems
-        catagory: func
+        category: func
         alias:
           - IGameSystem::InitAllSystems
 
       - name: IGameSystem_InitAllSystems_pFirst
-        catagory: gv
+        category: gv
         alias:
           - IGameSystem::InitAllSystems::pFirst
 ```

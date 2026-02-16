@@ -23,24 +23,24 @@ modules:
 
     symbols:
       - name: CServerSideClient_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CServerSideClient_IsHearingClient
-        catagory: vfunc
+        category: vfunc
         alias:
           - IsHearingClient
 
       - name: CGameResourceService_BuildResourceManifest
-        catagory: func
+        category: func
         alias:
           - CGameResourceService::BuildResourceManifest
           - BuildResourceManifest
 
       - name: CGameResourceService
-        catagory: struct
+        category: struct
 
       - name: CGameResourceService_m_pEntitySystem
-        catagory: structmember
+        category: structmember
         struct: CGameResourceService
         member: m_pEntitySystem
         alias:
@@ -591,217 +591,217 @@ modules:
 
     symbols:
       - name: CSource2Server_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CSource2GameEntities_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CGameRules_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSGameRules_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayer_ItemServices_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayer_WeaponServices_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayer_MovementServices_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayer_MovementServices_ProcessMovement
-        catagory: func
+        category: func
         alias:
           - CCSPlayer_MovementServices::ProcessMovement
           - ProcessMovement
 
       - name: CCSPlayer_MovementServices_CheckMovingGround
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_MovementServices::CheckMovingGround
           - CheckMovingGround
 
       - name: CEntityInstance_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CBaseEntity_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CBasePlayerController_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayerController_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CBasePlayerPawn_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayerPawn_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CBaseTrigger_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CPointTeleport_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CTriggerPush_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CPhysBox_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CTakeDamageInfo_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CCSPlayerStateDeathAnim_vtable
-        catagory: vtable
+        category: vtable
 
       - name: CBaseEntity_TakeDamageOld
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::TakeDamageOld
 
       - name: CBasePlayerPawn_OnTakeDamage_Alive
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Alive
 
       - name: CBasePlayerPawn_OnTakeDamage_Dying
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Dying
 
       - name: CBasePlayerPawn_OnTakeDamage_Dead
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Dead
 
       - name: CCSPlayerPawn_OnTakeDamage_Alive
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerPawn::OnTakeDamage_Alive
 
       - name: CCSPlayerPawn_OnTakeDamage_Dying
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerPawn::OnTakeDamage_Dying
 
       - name: CCSPlayerPawn_OnTakeDamage_Dead
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerPawn::OnTakeDamage_Dead
 
       - name: CBaseModelEntity_SetModel
-        catagory: func
+        category: func
         alias:
           - CBaseModelEntity::SetModel
 
       - name: CBaseEntity_SetGravityScale
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::SetGravityScale
 
       - name: CTriggerGravity_GravityTouch
-        catagory: func
+        category: func
         alias:
           - CTriggerGravity::GravityTouch
 
       - name: CBasePlayerController_HandleCommand_JoinTeam
-        catagory: func
+        category: func
         alias:
           - CBasePlayerController::HandleCommand_JoinTeam
 
       - name: CBasePlayerController_SetPlayerName
-        catagory: func
+        category: func
         alias:
           - CBasePlayerController::SetPlayerName
 
       - name: CBasePlayerController_SetPawn
-        catagory: func
+        category: func
         alias:
           - CBasePlayerController::SetPawn
 
       - name: CCSGameRules_FindPickerEntity
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSGameRules::FindPickerEntity
           - CGameRules::FindPickerEntity
           - CGameRules_FindPickerEntity
 
       - name: CCSGameRules_TerminateRound
-        catagory: func
+        category: func
         alias:
           - CCSGameRules::TerminateRound
           - CGameRules::TerminateRound
           - CGameRules_TerminateRound
 
       - name: CEntityInstance_AcceptInput
-        catagory: func
+        category: func
         alias:
           - CEntityInstance::AcceptInput
           - AcceptInput
 
       - name: CEntityIdentity_AcceptInput
-        catagory: func
+        category: func
         alias:
           - CEntityIdentity::AcceptInput
 
       - name: CCSPlayer_ItemServices_CanAcquire
-        catagory: func
+        category: func
         alias:
           - CCSPlayer_ItemServices::CanAcquire
 
       - name: CCSPlayer_ItemServices_GiveNamedItem
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_ItemServices::GiveNamedItem
 
       - name: CCSPlayer_WeaponServices_CanUse
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_WeaponServices::CanUse
 
       - name: CCSPlayer_WeaponServices_PickupItem
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_WeaponServices::PickupItem
 
       - name: CCSPlayer_WeaponServices_EquipWeapon
-        catagory: func
+        category: func
         alias:
           - CCSPlayer_WeaponServices::EquipWeapon
 
       - name: CCSPlayer_WeaponServices_Weapon_GetSlot
-        catagory: func
+        category: func
         alias:
           - CCSPlayer_WeaponServices_Weapon_GetSlot
 
       - name: CCSPlayerController_ChangeTeam
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerController::ChangeTeam
 
       - name: CCSPlayerController_InventoryUpdateThink
-        catagory: func
+        category: func
         alias:
           - InventoryUpdateThink
           - CCSPlayerController::InventoryUpdateThink
 
       - name: CCSPlayerController_Respawn
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerController::Respawn
 
       - name: CCSPlayerController_SwitchTeam
-        catagory: func
+        category: func
         alias:
           - CCSPlayerController::SwitchTeam
 
       - name: CCSPlayerPawnBase_PostThink
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayerPawnBase::PostThink
           - CCSPlayerPawn::PostThink
@@ -809,37 +809,37 @@ modules:
           - PostThink
 
       - name: CGameRules_ClientSettingsChanged
-        catagory: vfunc
+        category: vfunc
         alias:
           - CGameRules::ClientSettingsChanged
 
       - name: ClientPrint
-        catagory: func
+        category: func
 
       - name: CSource2Server_Init
-        catagory: vfunc
+        category: vfunc
         alias:
           - CSource2Server::Init
 
       - name: CGameEventManager_Init
-        catagory: func
+        category: func
         alias:
           - CGameEventManager::Init
 
       - name: gameeventmanager
-        catagory: gv
+        category: gv
 
       - name: s_GameEventManager
-        catagory: gv
+        category: gv
 
       - name: CTakeDamageInfo
-        catagory: struct
+        category: struct
 
       - name: CTakeDamageInfo_GetWeaponName
-        catagory: func
+        category: func
 
       - name: CTakeDamageInfo_HitGroupInfo
-        catagory: structmember
+        category: structmember
         struct: CTakeDamageInfo
         member: HitGroupInfo
         alias:
@@ -848,79 +848,79 @@ modules:
           - CTakeDamageInfo_HitGroup
 
       - name: GetCSWeaponDataFromKey
-        catagory: func
+        category: func
 
       - name: GiveNamedItem
-        catagory: func
+        category: func
 
       - name: UTIL_CreateEntityByName
-        catagory: func
+        category: func
         alias:
           - CreateEntityByName
 
       - name: CBaseEntity_DispatchSpawn
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::DispatchSpawn
           - DispatchSpawn
 
       - name: CBaseEntity_SetStateChanged
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::SetStateChanged
           - SetStateChanged
 
       - name: Host_Say
-        catagory: func
+        category: func
 
       - name: NetworkStateChanged
-        catagory: func
+        category: func
 
       - name: UTIL_ClientPrintAll
-        catagory: func
+        category: func
 
       - name: UTIL_PlayerSlotToPlayerController
-        catagory: func
+        category: func
 
       - name: UTIL_Remove
-        catagory: func
+        category: func
 
       - name: UTIL_SayTextFilter
-        catagory: func
+        category: func
 
       - name: UTIL_SayTextFilter2
-        catagory: func
+        category: func
         alias:
           - UTIL_SayText2Filter
 
       - name: WeaponBuy
-        catagory: func
+        category: func
 
       - name: IGameSystem_InitAllSystems
-        catagory: func
+        category: func
         alias:
           - IGameSystem::InitAllSystems
 
       - name: IGameSystem_InitAllSystems_pFirst
-        catagory: gv
+        category: gv
         alias:
           - IGameSystem::InitAllSystems::pFirst
           - IGameSystem::InitAllSystems->pFirst
 
       - name: IGameSystem_LoopPostInitAllSystems_pEventDispatcher
-        catagory: gv
+        category: gv
         alias:
           - IGameSystem::LoopPostInitAllSystems::pEventDispatcher
           - IGameSystem::LoopPostInitAllSystems->pEventDispatcher
 
       - name: IGameSystem_LoopDestroyAllSystems_s_GameSystems
-        catagory: gv
+        category: gv
         alias:
           - IGameSystem::LoopDestroyAllSystems::s_GameSystems
           - IGameSystem::LoopDestroyAllSystems->s_GameSystems
 
       - name: CSource2GameEntities_CheckTransmit
-        catagory: vfunc
+        category: vfunc
         alias:
           - CSource2GameEntities::CheckTransmit
           - ISource2GameEntities::CheckTransmit
@@ -928,207 +928,207 @@ modules:
           - CheckTransmit
 
       - name: CBaseEntity_EmitSoundFilter
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::EmitSoundFilter
 
       - name: CBaseEntity_EmitSoundParams
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::EmitSoundParams
 
       - name: CBaseEntity_Precache
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::Precache
           - Precache
 
       - name: CBaseEntity_SetMoveType
-        catagory: func
+        category: func
         alias:
           - CBaseEntity::SetMoveType
 
       - name: CBasePlayerPawn_CommitSuicide
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::CommitSuicide
           - CommitSuicide
 
       - name: CBasePlayerPawn_RemovePlayerItem
-        catagory: func
+        category: func
         alias:
           - CBasePlayerPawn::RemovePlayerItem
 
       - name: CBasePlayerPawn_DropActivePlayerWeapon
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::DropActivePlayerWeapon
 
       - name: CBasePlayerPawn_GetEyePosition
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::GetEyePosition
 
       - name: CBaseEntity_GetEyePosition
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::GetEyePosition
 
       - name: CBasePlayerPawn_GetEyeAngles
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBasePlayerPawn::GetEyeAngles
 
       - name: CBaseEntity_GetEyeAngles
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::GetEyeAngles
 
       - name: CBaseEntity_IsAlive
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::IsAlive
 
       - name: CBaseEntity_SetOwner
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::SetOwner
 
       - name: CBaseEntity_Use
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::Use
 
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_ItemServices::DropActivePlayerWeapon
 
       - name: CCSPlayer_WeaponServices_DropWeapon
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_WeaponServices::DropWeapon
 
       - name: CCSPlayer_ItemServices_RemoveWeapons
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_ItemServices::RemoveWeapons
 
       - name: CCSPlayer_WeaponServices_SelectItem
-        catagory: vfunc
+        category: vfunc
         alias:
           - CCSPlayer_WeaponServices::SelectItem
 
       - name: CEntityIOOutput_FireOutputInternal
-        catagory: func
+        category: func
         alias:
           - CEntityIOOutput::FireOutputInternal
 
       - name: CEntitySystem_AddEntityIOEvent
-        catagory: func
+        category: func
         alias:
           - CEntitySystem::AddEntityIOEvent
 
       - name: CGameEntitySystem_FindEntityByClassName
-        catagory: func
+        category: func
         alias:
           - CGameEntitySystem::FindEntityByClassName
 
       - name: CGameEntitySystem_FindEntityByName
-        catagory: func
+        category: func
         alias:
           - CGameEntitySystem::FindEntityByName
 
       - name: LegacyGameEventListener
-        catagory: func
+        category: func
         alias:
           - GetLegacyGameEventListener
 
       - name: CBaseEntity_StartTouch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::StartTouch
           - StartTouch
 
       - name: CBaseEntity_Touch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::Touch
           - Touch
 
       - name: CBaseEntity_EndTouch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::EndTouch
           - EndTouch
 
       - name: CTriggerPush_Touch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CTriggerPush::Touch
           - TriggerPush_Touch
 
       - name: CPhysBox_Use
-        catagory: vfunc
+        category: vfunc
         alias:
           - CPhysBox::Use
 
       - name: CBaseEntity_SetGroundEntity
-        catagory: func
+        category: func
         alias:
           - SetGroundEntity
 
       - name: CBaseEntity_IsPlayerPawn
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::IsPlayerPawn
           - IsEntityPawn
           - IsPlayerPawn
 
       - name: CBaseEntity_IsPlayerController
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::IsPlayerController
           - IsEntityController
           - IsPlayerController
 
       - name: CBaseTrigger_StartTouch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseTrigger::StartTouch
 
       - name: CBaseTrigger_EndTouch
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseTrigger::EndTouch
 
       - name: CGameSceneNode_GetSkeletonInstance
-        catagory: vfunc
+        category: vfunc
         alias:
           - CGameSceneNode::GetSkeletonInstance
 
       - name: CBaseAnimGraph
-        catagory: struct
+        category: struct
 
       - name: CSkeletonInstance
-        catagory: struct
+        category: struct
 
       - name: CPointTeleport_Teleport
-        catagory: vfunc
+        category: vfunc
         alias:
           - CPointTeleport::Teleport
 
       - name: CBaseEntity_Teleport
-        catagory: vfunc
+        category: vfunc
         alias:
           - CBaseEntity::Teleport
           - Teleport
 
       - name: CCheckTransmitInfo
-        catagory: struct
+        category: struct
 
       - name: CCheckTransmitInfo_m_nPlayerSlot
-        catagory: structmember
+        category: structmember
         struct: CCheckTransmitInfo
         member: m_nPlayerSlot
         alias:

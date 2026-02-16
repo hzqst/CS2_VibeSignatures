@@ -44,11 +44,10 @@ parse_args
 - 目录结构：`bin/<gamever>/<module>/` 与各插件 gamedata 目标路径
 
 ## 注意事项
-- `config.yaml` 中 `catagory` 字段为拼写错误但被沿用，映射时需依赖该字段
 - JSONC 写回不保留注释（`save_jsonc` 直接写入纯 JSON）
 - YAML 不存在会打印 Warning 并跳过
 - `::` 名称与别名映射不完整时会导致跳过
 - VDF 输出需替换 `\\x` 为 `\x`，否则 CS2Fixes/CS2KZ 读取不匹配
 
 ## 调用方（可选）
-- 命令行直接调用：`python update_gamedata.py -gamever=<version> ...`
+- 命令行直接调用：`python update_gamedata.py -gamever 14135 [-debug]`
