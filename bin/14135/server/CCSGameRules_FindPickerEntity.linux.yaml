@@ -1,3 +1,4 @@
+func_name: CCSGameRules_FindPickerEntity
 func_va: '0x17012f0'
 func_rva: '0x17012f0'
 func_size: '0x3a1'
@@ -7,4 +8,3 @@ func_sig: 55 48 89 E5 41 57 41 56 41 55 49 89 D5 41 54 48 8D 15 ?? ?? ?? ?? 49 8
 vtable_name: CCSGameRules
 vfunc_offset: '0xd0'
 vfunc_index: 26
-func_name: CCSGameRules_FindPickerEntity

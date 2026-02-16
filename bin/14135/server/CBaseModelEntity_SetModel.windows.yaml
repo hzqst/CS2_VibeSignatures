@@ -1,3 +1,4 @@
+func_name: CBaseModelEntity_SetModel
 func_va: '0x180a8f5e0'
 func_rva: '0xa8f5e0'
 func_size: '0x3b'

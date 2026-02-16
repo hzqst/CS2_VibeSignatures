@@ -1,3 +1,4 @@
+func_name: CBasePlayerPawn_GetEyePosition
 func_va: '0x180a6bea0'
 func_rva: '0xa6bea0'
 func_size: '0x61'

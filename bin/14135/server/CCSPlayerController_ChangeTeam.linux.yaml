@@ -1,3 +1,4 @@
+func_name: CCSPlayerController_ChangeTeam
 func_va: '0x137ef10'
 func_rva: '0x137ef10'
 func_size: '0x46d'
@@ -7,4 +8,3 @@ func_sig: 55 48 89 E5 41 57 41 56 41 55 41 54 53 48 83 EC 68 44 0F B6 B7 24 06 0
 vtable_name: CCSPlayerController
 vfunc_offset: '0x328'
 vfunc_index: 101
-func_name: CCSPlayerController_ChangeTeam

@@ -1,3 +1,4 @@
+func_name: CCSPlayerController_Respawn
 func_va: '0x1332940'
 func_rva: '0x1332940'
 func_size: '0x3e'
@@ -6,4 +7,3 @@ func_sig: 55 48 89 E5 53 48 89 FB 48 83 EC 08 E8 ?? ?? ?? ?? 48 85 C0 74 22 48 8
 vtable_name: CCSPlayerController
 vfunc_offset: '0x898'
 vfunc_index: 275
-func_name: CCSPlayerController_Respawn

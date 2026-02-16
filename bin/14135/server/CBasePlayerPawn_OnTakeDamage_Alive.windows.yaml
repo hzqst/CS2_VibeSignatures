@@ -2,13 +2,8 @@ func_name: CBasePlayerPawn_OnTakeDamage_Alive
 func_va: '0x180a81730'
 func_rva: '0xa81730'
 func_size: '0x8'
-vfunc_sig: C6 05 ?? ?? ?? ?? 00 48 8B 03 48 8B 9C 24 ?? ?? ?? ?? 48 81 C4 ?? ?? ??
+vfunc_sig: C6 05 ?? 72 41 01 ?? 48 8B 03 48 8B 9C 24 ?? ?? ?? ?? 48 81 C4 ?? ?? ??
   ?? 5F 48 FF A0 C8 07 00 00
-vfunc_sig_va: '0x180a8170d'
-vfunc_inst_offset: 26
-vfunc_inst_length: 7
-vfunc_disp_offset: 3
-vfunc_disp_size: 4
 vtable_name: CBasePlayerPawn
 vfunc_offset: '0x7c8'
 vfunc_index: 249

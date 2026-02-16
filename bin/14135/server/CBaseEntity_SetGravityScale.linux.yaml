@@ -1,3 +1,4 @@
+func_name: CBaseEntity_SetGravityScale
 func_va: '0xc86380'
 func_rva: '0xc86380'
 func_size: '0x3e1'

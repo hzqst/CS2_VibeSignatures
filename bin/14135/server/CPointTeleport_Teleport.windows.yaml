@@ -1,3 +1,4 @@
+func_name: CPointTeleport_Teleport
 func_va: '0x180d35f90'
 func_rva: '0xd35f90'
 func_size: '0x1d0'

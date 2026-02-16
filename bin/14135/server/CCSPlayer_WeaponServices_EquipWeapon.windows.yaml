@@ -1,6 +1,5 @@
 func_name: CCSPlayer_WeaponServices_EquipWeapon
-func_va: '0x180a203a0'
-func_rva: '0xa203a0'
-func_size: '0x17d'
-func_sig: 48 89 5C 24 ?? 57 48 83 EC ?? 48 83 79 ?? ?? 48 8B FA 48 8B D9 75 ?? E8
-  ?? ?? ?? ?? 48 8B 53 ??
+func_va: '0x180a1f3c0'
+func_rva: '0xa1f3c0'
+func_size: '0x9c0'
+func_sig: 40 55 57 41 55 41 56 48 8D 6C 24 ??

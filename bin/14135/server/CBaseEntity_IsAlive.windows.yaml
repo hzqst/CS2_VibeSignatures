@@ -1,3 +1,4 @@
+func_name: CBaseEntity_IsAlive
 func_va: '0x180168580'
 func_rva: '0x168580'
 func_size: '0xb'

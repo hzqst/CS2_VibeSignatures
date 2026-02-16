@@ -2,7 +2,8 @@ func_name: CBasePlayerPawn_DropActivePlayerWeapon
 func_va: '0x180bf03b0'
 func_rva: '0xbf03b0'
 func_size: '0x17'
-func_sig: 48 8B 89 78 0B 00 00 48 85 C9 74 ?? 48 8B 01 48 FF A0 B0 00 00 00 C3
+func_sig: 48 8B 89 ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 01 48 FF A0 ?? ?? ?? ?? C3 CC
+  CC CC CC CC CC CC CC CC 40 53
 vtable_name: CBasePlayerPawn
 vfunc_offset: '0xa60'
 vfunc_index: 332

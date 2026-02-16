@@ -1,7 +1,7 @@
 func_name: CBaseEntity_Use
-func_va: '0x9b67c0'
-func_rva: '0x9b67c0'
-func_size: '0x6'
+func_va: '0x160e5b0'
+func_rva: '0x160e5b0'
+func_size: '0x5a'
 vfunc_sig: FF 90 78 04 00 00 E9 ?? ?? ?? ?? 66 0F 1F 44 00 ??
 vtable_name: CBaseEntity
 vfunc_offset: '0x478'

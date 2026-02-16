@@ -1,3 +1,4 @@
+func_name: CBaseEntity_Touch
 func_va: '0x1803c9710'
 func_rva: '0x3c9710'
 func_size: '0x66'

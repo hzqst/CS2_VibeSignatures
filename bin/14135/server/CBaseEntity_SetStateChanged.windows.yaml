@@ -1,3 +1,4 @@
+func_name: CBaseEntity_SetStateChanged
 func_va: '0x180168df0'
 func_rva: '0x168df0'
 func_size: '0x142'

@@ -1,3 +1,4 @@
+func_name: CBaseEntity_GetEyeAngles
 func_va: '0x180163470'
 func_rva: '0x163470'
 func_size: '0x25'

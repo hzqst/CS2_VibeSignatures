@@ -1,3 +1,4 @@
+func_name: CBaseEntity_EmitSoundFilter
 func_va: '0x18601a0'
 func_rva: '0x18601a0'
 func_size: '0x1a'

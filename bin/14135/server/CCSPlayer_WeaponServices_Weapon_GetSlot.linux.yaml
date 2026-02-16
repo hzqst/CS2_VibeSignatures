@@ -1,7 +1,5 @@
+func_name: CCSPlayer_WeaponServices_Weapon_GetSlot
 func_va: '0x15aabc0'
 func_rva: '0x15aabc0'
 func_size: '0x1ad'
-func_sig: 55 48 89 E5 41 57 41 56 41 55 41 54 53 89 F3 48 83 EC 08 48 63 77 48 85
-  F6 0F 8E ?? ?? ?? ?? 49 89 FE 41 89 D4 45 31 FF 85 D2 0F 88 ?? ?? ?? ?? 49 8B 46
-  50 4A 8D 04 B8 8B 08 83 F9 FF 74 ??
-func_name: CCSPlayer_WeaponServices_Weapon_GetSlot
+func_sig: 55 48 89 E5 41 57 41 56 41 55 41 54 53 89 F3 48 83 EC ?? 48 63 77 ??

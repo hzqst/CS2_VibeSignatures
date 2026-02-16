@@ -1,3 +1,4 @@
+func_name: CBaseEntity_EndTouch
 func_va: '0xc690c0'
 func_rva: '0xc690c0'
 func_size: '0x59'

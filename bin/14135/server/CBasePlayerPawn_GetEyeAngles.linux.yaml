@@ -1,3 +1,4 @@
+func_name: CBasePlayerPawn_GetEyeAngles
 func_va: '0x1439670'
 func_rva: '0x1439670'
 func_size: '0x190'

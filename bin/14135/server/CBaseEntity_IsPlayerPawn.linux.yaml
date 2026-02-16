@@ -1,3 +1,4 @@
+func_name: CBaseEntity_IsPlayerPawn
 func_va: '0x9b63f0'
 func_rva: '0x9b63f0'
 func_size: '0x3'

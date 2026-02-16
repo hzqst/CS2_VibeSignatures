@@ -1,3 +1,4 @@
+func_name: CCSPlayerPawnBase_PostThink
 func_va: '0x1801e15c0'
 func_rva: '0x1e15c0'
 func_size: '0xa04'
@@ -7,4 +8,3 @@ func_sig: 48 8B C4 55 53 56 57 41 54 48 8D 68 C8 48 81 EC 10 01 00 00 4C 89 68 2
 vtable_name: CCSPlayerPawn
 vfunc_offset: '0xb80'
 vfunc_index: 368
-func_name: CCSPlayerPawnBase_PostThink
