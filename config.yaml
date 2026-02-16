@@ -92,6 +92,10 @@ modules:
         prerequisite:
           - find-CCSPlayer_MovementServices_vtable
 
+      - name: find-CEntityInstance_vtable
+        expected_output:
+          - CEntityInstance_vtable.{platform}.yaml
+
       - name: find-CBaseEntity_vtable
         expected_output:
           - CBaseEntity_vtable.{platform}.yaml
@@ -618,6 +622,9 @@ modules:
         alias:
           - CCSPlayer_MovementServices::CheckMovingGround
           - CheckMovingGround
+
+      - name: CEntityInstance_vtable
+        catagory: vtable
 
       - name: CBaseEntity_vtable
         catagory: vtable
