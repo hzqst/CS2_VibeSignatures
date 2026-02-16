@@ -264,82 +264,80 @@ Prompt:
 
 * Always make sure you have ida-pro-mcp server running.
 
-1. Vibe all the way down to get what you want, `CCSPlayerController_Respawn` for example.
+1. Vibe all the way down to get what you want, `CBasePlayerController_Respawn` for example.
+
+```bash
+Prompt:
+  - search string "GMR_BeginRound" in IDA and look for a function with reference to it.
+```
 
 ```bash
 Prompt: 
- - **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CCSPlayerController`.
+  - decompile the function who reference "GMR_BeginRound" and look for code pattern:
+
+      do
+      {
+        //.......
+        if ( v31 )
+        {
+          if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v31 + 3352LL))(v31) )
+          {
+            (*(void (__fastcall **)(__int64))(*(_QWORD *)v33 + 3368LL))(v33);
+            if ( v36 )
+            {
+              sub_1801C86D0(v36);
+              sub_18039EA00(v36, 32LL);
+            }
+          }
+          else if ( v36 && *(_BYTE *)(v30 + 836) == 3 || *(_BYTE *)(v30 + 836) == 2 )
+          {
+            sub_1809F9670(v36);
+            (*(void (__fastcall **)(__int64))(*(_QWORD *)v30 + 2176LL))(v30);//2176LL is vfunc_offset for CBasePlayerController_Respawn
+          }
+        }
+        ++v28;
+      }
+      while ( v28 != v29 );
+```
+
+```bash
+Prompt: 
+ - **ALWAYS** Use SKILL `/get-vtable-from-yaml` with `class_name=CBasePlayerController`.
 
   If the skill returns an error, **STOP** and report to user.
 
-  Otherwise, extract these values for subsequent steps:
-  - `vtable_va`: The vtable start address (use as `<VTABLE_START>`)
-  - `vtable_numvfunc`: The valid vtable entry count (last valid index = count - 1)
-  - `vtable_entries`: An array of virtual functions starting from vtable[0]
+  Resolve CBasePlayerController_Respawn's address in CBasePlayerController's vtable entries:
 
+  `CBasePlayerController_Respawn = CBasePlayerController vtable_entries[vfunc_offset / 8]`
 ```
+
+2. Generate a robust signature for this function
 
 ```bash
 Prompt:
-  - Decompile virtual functions from index 270 to the last valid index
-
-  mcp__ida-pro-mcp__decompile addr="<function_addr>"
-
-```
-
-```bash
-Prompt: 
- - Identify CCSPlayerController_Respawn with following code pattern:
-
-    result = GetPlayerPawn(a1);  // Called once
-    if ( result )
-    {
-        v6 = GetPlayerPawn(a1);  // Called again (same function)
-        return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v6 + PAWN_VFUNC_OFFSET))(v6);
-    }
-    return result;
-```
-
-```bash
-Prompt: 
- - Rename the virtual function we found to CCSPlayerController_Respawn in IDA
-```
-
-3. Get vtable index for this function
-
-```bash
-Prompt: 
- - **ALWAYS** Use SKILL `/get-vtable-index` to get vtable offset and index for the function.
-```
-
-4. Generate a robust signature for this function (* This can be skipped if the vfunc is too short)
-
-```bash
-Prompt:
-   Generate a robust signature for this function
-   -- **ALWAYS** Use SKILL `/generate-signature-for-function` to generate a robust and unique signature for the function.
+   -- **ALWAYS** Use SKILL `/generate-signature-for-vfuncoffset` to generate a robust and unique signature for CBasePlayerController_Respawn, with `inst_addr` and `vfunc_offset` from previous step
 ```
 
 5. Write YAML
 
 ```bash
 Prompt:
-  **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results into yaml.
+  **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results into yaml for CBasePlayerController_Respawn.
 ```
 
 6. Create SKILL
 
 ```bash
 Prompt:
- - /skill-creator Create project-level skill "find-CCSPlayerController_Respawn" in **ENGLISH** according to what we just did. 
+ - /skill-creator Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH** according to what we just did. 
  - Don't pack skill. 
  - Note that the SKILL should be working with both `server.dll` and `server.so`. 
- - **ALWAYS** check for: @.claude/skills/find-CCSPlayerPawnBase_PostThink/SKILL.md as references.
+ - **ALWAYS** check for: @.claude/skills/find-CBaseEntity_IsPlayerPawn/SKILL.md as references.
 ```
 
-7. Create a copy of `ida_preprocessor_scripts/find-CCSPlayerPawnBase_PostThink.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_IsPlayerPawn.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
- - Don't forget to change `CCSPlayerPawnBase_PostThink` to `CCSPlayerController_Respawn` in the preprocessor script.
+ - Don't forget to change `CBaseEntity_IsPlayerPawn` to `CBasePlayerController_Respawn` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 
@@ -348,22 +346,22 @@ Prompt:
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
 ```yaml
-      - name: find-CCSPlayerController_Respawn
+      - name: find-CBasePlayerController_Respawn
         expected_output:
-          - CCSPlayerController_Respawn.{platform}.yaml
+          - CBasePlayerController_Respawn.{platform}.yaml
         expected_input:
-          - CCSPlayerController_vtable.{platform}.yaml
+          - CBasePlayerController_vtable.{platform}.yaml
         prerequisite:
-          - find-CCSPlayerController_vtable
+          - find-CBasePlayerController_vtable
 ```
 
 9. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
-      - name: CCSPlayerController_Respawn
+      - name: CBasePlayerController_Respawn
         category: vfunc
         alias:
-          - CCSPlayerController::Respawn
+          - CBasePlayerController::Respawn
 ```
 
 ## How to create SKILL for global variable
