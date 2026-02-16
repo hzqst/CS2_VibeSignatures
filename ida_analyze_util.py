@@ -264,7 +264,7 @@ async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, d
 
 
 async def preprocess_func_sig_via_mcp(
-    session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
+    session, new_path, old_path, image_base, new_binary_dir, platform, func_name=None, debug=False
 ):
     """
     Preprocess a function output by reusing old-version signature metadata.
@@ -544,8 +544,15 @@ async def preprocess_func_sig_via_mcp(
     func_va_int = int(func_va_hex, 16)
     func_size_hex = func_info["func_size"]
 
+    # Resolve func_name: explicit parameter > old YAML > derive from filename
+    if func_name is None:
+        func_name = old_data.get("func_name")
+    if func_name is None:
+        func_name = os.path.basename(new_path).rsplit(".", 2)[0]
+
     # Build new YAML data
     new_data = {
+        "func_name": func_name,
         "func_va": func_va_hex,
         "func_rva": hex(func_va_int - image_base),
         "func_size": func_size_hex,
@@ -1880,6 +1887,7 @@ async def preprocess_common_skill(
                     image_base=image_base,
                     new_binary_dir=new_binary_dir,
                     platform=platform,
+                    func_name=func_name,
                     debug=debug,
                 )
 
@@ -1903,7 +1911,6 @@ async def preprocess_common_skill(
                         print(f"    Preprocess: failed to locate {func_name}")
                     return False
 
-            func_data.setdefault("func_name", func_name)
             await _rename_func_in_ida(session, func_data.get("func_va"), func_name, debug)
             write_func_yaml(target_output, func_data)
             if debug:
@@ -1959,6 +1966,7 @@ async def preprocess_common_skill(
             image_base=image_base,
             new_binary_dir=new_binary_dir,
             platform=platform,
+            func_name=func_name,
             debug=debug,
         )
         if func_data is None:
@@ -1966,7 +1974,6 @@ async def preprocess_common_skill(
                 print(f"    Preprocess: failed to locate {func_name}")
             return False
 
-        func_data.setdefault("func_name", func_name)
         await _rename_func_in_ida(session, func_data.get("func_va"), func_name, debug)
         write_func_yaml(target_output, func_data)
         if debug:
