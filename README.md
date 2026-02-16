@@ -148,7 +148,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 1. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py` as `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
- - Don't forget to change `TARGET_CLASS_NAME = "CBaseEntity"` to `TARGET_CLASS_NAME = "CCSPlayerPawn"` in the new preprocessor script.
+ - Don't forget to change `CBaseEntity` to `CCSPlayerPawn` in the new preprocessor script.
 
  * no LLM needed when finding vtable. everything done in the preprocessor script.
 
@@ -407,8 +407,7 @@ Prompt:
 
 ```bash
 Prompt:
-   Generate a robust signature for IGameSystem_InitAllSystems_pFirst
-   -- **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for IGameSystem_InitAllSystems_pFirst.
+   **ALWAYS** Use SKILL `/generate-signature-for-globalvar` to generate a robust and unique signature for IGameSystem_InitAllSystems_pFirst.
 ```
 
 5. Write YAML
