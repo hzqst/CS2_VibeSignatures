@@ -416,8 +416,8 @@
 			}
 			"CCSGameRules_GoToIntermission"
 			{
-				"windows" "127"
-				"linux" "128"
+				"windows" "128"
+				"linux" "129"
 			}
 			"CheckTransmitPlayerSlot"
 			{

@@ -637,6 +637,16 @@ modules:
           - find-CBaseTrigger_vtable
           - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
 
+      - name: find-CBaseTrigger_PassesTriggerFilters
+        expected_output:
+          - CBaseTrigger_PassesTriggerFilters.{platform}.yaml
+        expected_input:
+          - CBaseTrigger_vtable.{platform}.yaml
+          - CBaseTrigger_StartTouch.{platform}.yaml
+        prerequisite:
+          - find-CBaseTrigger_vtable
+          - find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
+
       - name: find-CGameSceneNode_GetSkeletonInstance
         expected_output:
           - CGameSceneNode_GetSkeletonInstance.{platform}.yaml
@@ -1194,6 +1204,12 @@ modules:
         category: vfunc
         alias:
           - CBaseTrigger::EndTouch
+
+      - name: CBaseTrigger_PassesTriggerFilters
+        category: vfunc
+        alias:
+          - CBaseTrigger::PassesTriggerFilters
+          - PassesTriggerFilters
 
       - name: CGameSceneNode_GetSkeletonInstance
         category: vfunc
