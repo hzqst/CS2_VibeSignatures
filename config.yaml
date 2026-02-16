@@ -671,11 +671,19 @@ modules:
           - find-CPointTeleport_Teleport
           - find-CBaseEntity_vtable
 
+      - name: find-CBaseEntity_CollisionRulesChanged
+        expected_output:
+          - CBaseEntity_CollisionRulesChanged.{platform}.yaml
+        expected_input:
+          - CBaseEntity_SetOwner.{platform}.yaml
+        prerequisite:
+          - find-CBaseEntity_SetOwner
+
       - name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
         expected_output:
           - g_pGameTypes.{platform}.yaml
           - IGameTypes_CreateWorkshopMapGroup.{platform}.yaml
-          
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1091,6 +1099,12 @@ modules:
         category: vfunc
         alias:
           - CBaseEntity::SetOwner
+
+      - name: CBaseEntity_CollisionRulesChanged
+        category: vfunc
+        alias:
+          - CBaseEntity::CollisionRulesChanged
+          - CollisionRulesChanged
 
       - name: CBaseEntity_Use
         category: vfunc
