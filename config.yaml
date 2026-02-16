@@ -8,13 +8,19 @@ modules:
         expected_output:
           - CServerSideClient_vtable.{platform}.yaml
 
+      - name: find-CSVCMsg_PeerList_t_vtable
+        expected_output:
+          - CSVCMsg_PeerList_t_vtable.{platform}.yaml
+
       - name: find-CServerSideClient_IsHearingClient
         expected_output:
           - CServerSideClient_IsHearingClient.{platform}.yaml
         expected_input:
           - CServerSideClient_vtable.{platform}.yaml
+          - CSVCMsg_PeerList_t_vtable.{platform}.yaml
         prerequisite:
           - find-CServerSideClient_vtable
+          - find-CSVCMsg_PeerList_t_vtable
 
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
@@ -23,6 +29,9 @@ modules:
 
     symbols:
       - name: CServerSideClient_vtable
+        category: vtable
+
+      - name: CSVCMsg_PeerList_t_vtable
         category: vtable
 
       - name: CServerSideClient_IsHearingClient

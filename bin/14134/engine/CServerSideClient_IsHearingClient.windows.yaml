@@ -1,9 +1,0 @@
-func_va: 6443273232
-func_rva: 822288
-func_size: 212
-func_sig: 40 53 48 83 EC 20 48 8B D9 3B 51 48 75 ?? 0F B6 81 ?? ?? ?? ?? 48 83 C4
-  20 5B C3
-vtable_name: CServerSideClient
-vfunc_offset: 152
-vfunc_index: 19
-func_name: CServerSideClient_IsHearingClient
