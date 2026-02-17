@@ -721,6 +721,10 @@ modules:
         expected_output:
           - TraceShape.{platform}.yaml
 
+      - name: find-CBaseFilter_InputTestActivator
+        expected_output:
+          - CBaseFilter_InputTestActivator.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1331,3 +1335,8 @@ modules:
 
       - name: g_GameTraceManager
         category: gv
+
+      - name: CBaseFilter_InputTestActivator
+        category: func
+        alias:
+          - CBaseFilter::InputTestActivator
