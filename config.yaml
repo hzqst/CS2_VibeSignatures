@@ -154,6 +154,12 @@ modules:
         prerequisite:
           - find-CCSPlayer_MovementServices_vtable
 
+      - name: find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
+        expected_output:
+          - CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml
+          - CCSPlayer_MovementServices_CheckVelocity.{platform}.yaml
+          - CCSPlayer_MovementServices_WaterMove.{platform}.yaml
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -804,6 +810,24 @@ modules:
         alias:
           - CCSPlayer_MovementServices::CheckMovingGround
           - CheckMovingGround
+
+      - name: CCSPlayer_MovementServices_FullWalkMove
+        category: func
+        alias:
+          - CCSPlayer_MovementServices::FullWalkMove
+          - FullWalkMove
+
+      - name: CCSPlayer_MovementServices_CheckVelocity
+        category: func
+        alias:
+          - CCSPlayer_MovementServices::CheckVelocity
+          - CheckVelocity
+
+      - name: CCSPlayer_MovementServices_WaterMove
+        category: func
+        alias:
+          - CCSPlayer_MovementServices::WaterMove
+          - WaterMove
 
       - name: CEntityInstance_vtable
         category: vtable
