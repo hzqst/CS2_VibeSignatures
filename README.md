@@ -460,7 +460,17 @@ Prompt:
  - Note that the SKILL should be working with both `server.dll` and `server.so`.
 ```
 
-6. Add the new SKILL to `config.yaml`, under `skills`.
+6. Add preprocessor support for this patch SKILL.
+
+Create `ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py` and delegate to `preprocess_common_skill` with `patch_names`.
+
+ - Define `TARGET_PATCH_NAMES = ["CCSPlayer_MovementServices_FullWalkMove_SpeedClamp"]`.
+ - Pass `patch_names=TARGET_PATCH_NAMES` in `preprocess_common_skill(...)`.
+ - The preprocessor reuses old patch YAML and requires `patch_sig` to be uniquely matched in new binary (`find_bytes` result must be `== 1`), otherwise preprocessing fails and falls back to normal SKILL execution.
+
+ * The preprocessor script will be used when patch YAML from older version of game is available.
+
+7. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -474,7 +484,7 @@ Prompt:
           - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
 ```
 
-7. Add the new symbol to `config.yaml`, under `symbols`.
+8. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
