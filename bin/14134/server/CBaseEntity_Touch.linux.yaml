@@ -1,12 +1,8 @@
-func_va: 13009136
-func_rva: 13009136
-func_size: 130
-func_sig: 55 48 89 E5 41 54 49 89 F4 53 48 8B 87 ?? ?? ?? ?? 48 89 FB 48 85 C0 74
-  ?? 48 8B BF ?? ?? ?? ?? 48 01 DF A8 01 75 ?? 4C 89 E6 FF D0 48 8B 83 ?? ?? ?? ??
-  48 8B 78 38 48 85 FF 74 ?? E8 ?? ?? ?? ?? 48 89 C3 48 85 C0 74 ?? 48 8B 00 48 89
-  DF FF 90 A8 04 00 00 84 C0 74 ?? 48 8B 03 4C 89 E6 48 89 DF 5B 41 5C 5D 48 8B 80
-  98 04 00 00 FF E0
-vtable_name: CBaseEntity
-vfunc_offset: 1176
-vfunc_index: 147
 func_name: CBaseEntity_Touch
+func_va: '0xc680f0'
+func_rva: '0xc680f0'
+func_size: '0x82'
+vfunc_sig: FF 90 98 04 00 00 48 8B 43 ??
+vtable_name: CBaseEntity
+vfunc_offset: '0x498'
+vfunc_index: 147

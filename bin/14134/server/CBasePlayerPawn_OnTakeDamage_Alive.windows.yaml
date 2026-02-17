@@ -1,0 +1,9 @@
+func_name: CBasePlayerPawn_OnTakeDamage_Alive
+func_va: '0x180a7eab0'
+func_rva: '0xa7eab0'
+func_size: '0x8'
+vfunc_sig: 48 81 C4 ?? ?? ?? ?? 5F 48 FF A0 C8 07 00 00
+vfunc_sig_disp: 8
+vtable_name: CBasePlayerPawn
+vfunc_offset: '0x7c8'
+vfunc_index: 249

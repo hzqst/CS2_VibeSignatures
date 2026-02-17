@@ -1,0 +1,12 @@
+vtable_class: CSVCMsg_PeerList_t
+vtable_symbol: ??_7CSVCMsg_PeerList_t@@6B@
+vtable_va: '0x18053aa08'
+vtable_rva: '0x53aa08'
+vtable_size: '0x28'
+vtable_numvfunc: 5
+vtable_entries:
+  0: '0x180093720'
+  1: '0x18003c240'
+  2: '0x18003c240'
+  3: '0x180095db0'
+  4: '0x180095e00'

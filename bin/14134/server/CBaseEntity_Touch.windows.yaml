@@ -1,9 +1,8 @@
-func_va: 6446421712
-func_rva: 3970768
-func_size: 102
-func_sig: 48 89 5C 24 08 57 48 83 EC 20 48 8B 81 B8 02 00 00 48 8B FA 48 8B D9 48
-  85 C0 74 02 FF D0
-vtable_name: CBaseEntity
-vfunc_offset: 1184
-vfunc_index: 148
 func_name: CBaseEntity_Touch
+func_va: '0x1803c96d0'
+func_rva: '0x3c96d0'
+func_size: '0x66'
+vfunc_sig: FF 90 A0 04 00 00 48 85 F6
+vtable_name: CBaseEntity
+vfunc_offset: '0x4a0'
+vfunc_index: 148

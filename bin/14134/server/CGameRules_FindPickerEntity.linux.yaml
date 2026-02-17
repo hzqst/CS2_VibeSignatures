@@ -1,0 +1,8 @@
+func_name: CGameRules_FindPickerEntity
+func_va: '0x9b5780'
+func_rva: '0x9b5780'
+func_size: '0x8'
+func_sig: 40 88 B7 ?? 03 00 00 C3
+vtable_name: CGameRules
+vfunc_offset: '0xd0'
+vfunc_index: 26

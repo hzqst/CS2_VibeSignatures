@@ -33,7 +33,7 @@ void __fastcall sub_XXXXXXXXXX(__int64 a1, int a2)
 {
   __int64 v2; // rcx
 
-  if ( qword_XXXXXXXXXX )  // CNetworkGameServer pointer
+  if ( qword_XXXXXXXXXX )  // g_pGameServer pointer
   {
     if ( a2 < 0 || a2 >= *(_DWORD *)(qword_XXXXXXXXXX + 592) ) // +0x250 = ClientList
     {
@@ -49,15 +49,15 @@ void __fastcall sub_XXXXXXXXXX(__int64 a1, int a2)
 ```
 
 Key identifications from the decompiled code:
-- `qword_XXXXXXXXXX` = global `CNetworkGameServer` instance pointer
-- Offset `0x250` (592) = `CNetworkGameServer.ClientList` (client count / max clients)
+- `qword_XXXXXXXXXX` = global `CNetworkGameServer` instance pointer `g_pGameServer`
+- Offset `0x250` (592) = `CNetworkGameServer_ClientList` (client count / max clients)
 - Offset `0x258` (600) = Client list array pointer
 - vfunc offset `0x80` (128) on `CServerSideClientBase` vtable = `ClientPrintf`
 
 ### 4. Rename the global variable
 
 ```
-mcp__ida-pro-mcp__rename batch={"data": {"old": "qword_XXXXXXXXXX", "new": "CNetworkGameServer"}}
+mcp__ida-pro-mcp__rename batch={"data": {"old": "qword_XXXXXXXXXX", "new": "g_pGameServer"}}
 ```
 
 ### 5. Generate Struct Offset Signature and Write Struct Member YAML
@@ -114,9 +114,9 @@ The function references this debug string:
 
 ## Function / Global Variable Characteristics
 
-### CNetworkGameServer (global pointer)
+### CNetworkGameServer *g_pGameServer (global pointer)
 
-- **Type**: Global pointer (`CNetworkGameServer*`)
+- **Type**: Global pointer (`CNetworkGameServer* g_pGameServer`)
 - **Purpose**: Singleton pointer to the network game server instance, used for client management
 - **Struct Members**:
   - `+0x250` (`ClientList`): Client count / max clients (`DWORD`)
