@@ -30,58 +30,6 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 
 6. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
-## How to find and generate signatures for specified function or variable
-
-Let's locate `CBaseModelEntity_SetModel` for example.
-
-1. Download CS2 binaries
-
-```bash
-python download_bin.py -gamever 14135
-```
-
-2. Open `CS2_VibeSignatures/bin/14135/server/server.dll` (`server.so`, or whatever) with IDA-Pro (GUI), wait until auto-analysis complete, Ctrl+Alt+M to start MCP server.
-
-3. Let claude / codex do everything for you
-
-claude (no-interactive-mode)
-
-```bash
-claude -p "/find-CCSPlayerController_ChangeTeam" --agent sig-finder
-```
-
-claude (interactive-mode)
-
-```bash
-claude
-```
-
-```bash
-prompt:
- - /find-CCSPlayerController_ChangeTeam
-```
-
-codex (no-interactive-mode)
-
-```bash
-codex exec "Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md"
-```
-
-codex (interactive-mode)
-
-```bash
-codex
-```
-
-```bash
-prompt:
- - Run SKILL: .claude/skills/find-CCSPlayerController_ChangeTeam/SKILL.md
-```
-
-4. `CCSPlayerController_ChangeTeam.windows.yaml` or `CCSPlayerController_ChangeTeam.linux.yaml` will be generated right beside `server.dll` / `server.so` if everything goes as expected
-
-* Automation with headless IDA & subagents is coming soon.
-
 ## How to find and generate signatures for all functions or variables declared in `config.yaml`
 
 1. Download CS2 binaries
@@ -92,7 +40,7 @@ python download_bin.py -gamever 14135
 
 2. Run `python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
 
-* Signatures from `from bin/{previous_gamever}/{module}/*.{platform}.yaml` will be used to find functions directly through mcp call before actually running SKILL(s). No LLM token will be consumed in this case.
+* Signatures from `from bin/{previous_gamever}/{module}/*.{platform}.yaml` will be used to find functions / global vars directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
 
 ## How to convert generated yaml to gamedata json / txt
 
@@ -100,7 +48,7 @@ python download_bin.py -gamever 14135
 python update_gamedata.py -gamever 14135 [-debug]
 ```
 
-### Current supported gamedata distribution
+### Currently supported gamedata
 
 [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 
