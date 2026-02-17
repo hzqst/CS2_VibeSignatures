@@ -760,6 +760,10 @@ modules:
         expected_output:
           - DispatchParticleEffect.{platform}.yaml
 
+      - name: find-CNavMesh_GetNearestNavArea
+        expected_output:
+          - CNavMesh_GetNearestNavArea.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1405,3 +1409,8 @@ modules:
 
       - name: DispatchParticleEffect
         category: func
+
+      - name: CNavMesh_GetNearestNavArea
+        category: func
+        alias:
+          - CNavMesh::GetNearestNavArea
