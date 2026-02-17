@@ -1,0 +1,8 @@
+modules:
+  - name: server
+
+    symbols:
+      - name: CTakeDamageInfo_ctor
+        category: func
+        alias:
+          - CTakeDamageInfo
