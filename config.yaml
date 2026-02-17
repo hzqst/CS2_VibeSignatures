@@ -725,6 +725,10 @@ modules:
         expected_output:
           - CBaseFilter_InputTestActivator.{platform}.yaml
 
+      - name: find-GameSystem_Think_CheckSteamBan
+        expected_output:
+          - GameSystem_Think_CheckSteamBan.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1340,3 +1344,6 @@ modules:
         category: func
         alias:
           - CBaseFilter::InputTestActivator
+
+      - name: GameSystem_Think_CheckSteamBan
+        category: func
