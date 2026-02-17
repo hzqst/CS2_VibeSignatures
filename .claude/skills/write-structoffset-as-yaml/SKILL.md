@@ -12,7 +12,7 @@ Persist a single struct member offset analysis result to a YAML file beside the 
 Before using this skill, you should have:
 1. Identified the struct name and member name
 2. Determined the member offset (and optionally size)
-3. Optionally generated a unique signature using `/generate-signature-for-structoffset`
+3. Generated a unique signature using `/generate-signature-for-structoffset`
 
 ## Required Parameters
 
