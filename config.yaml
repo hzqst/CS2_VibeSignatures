@@ -704,6 +704,10 @@ modules:
         expected_output:
           - CSpawnGroupMgrGameSystem_GetSpawnGroups.{platform}.yaml
 
+      - name: find-FindUseEntity
+        expected_output:
+          - FindUseEntity.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1305,3 +1309,6 @@ modules:
         alias:
           - CSpawnGroupMgrGameSystem::GetSpawnGroups
           - GetSpawnGroups
+
+      - name: FindUseEntity
+        category: func
