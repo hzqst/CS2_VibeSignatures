@@ -44,6 +44,10 @@ modules:
           - CGameResourceService_m_pEntitySystem.{platform}.yaml
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
 
+      - name: find-CNetworkGameServer_GetFreeClient
+        expected_output:
+          - CNetworkGameServer_GetFreeClient.{platform}.yaml
+
       - name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
         expected_output:
           - CNetworkGameServer_ClientList.{platform}.yaml
@@ -97,6 +101,12 @@ modules:
         alias:
           - CServerSideClientBase::ClientPrintf
           - ClientPrintf
+
+      - name: CNetworkGameServer_GetFreeClient
+        category: func
+        alias:
+          - CNetworkGameServer::GetFreeClient
+          - GetFreeClient
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
@@ -741,6 +751,11 @@ modules:
         expected_output:
           - GameSystem_Think_CheckSteamBan.{platform}.yaml
 
+      - name: find-CGamePlayerEquip_InputTriggerForAllPlayers-AND-CGamePlayerEquip_InputTriggerForActivatedPlayer
+        expected_output:
+          - CGamePlayerEquip_InputTriggerForAllPlayers.{platform}.yaml
+          - CGamePlayerEquip_InputTriggerForActivatedPlayer.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1360,6 +1375,9 @@ modules:
       - name: TraceFunc
         category: func
 
+      - name: TraceShape
+        category: func
+
       - name: g_GameTraceManager
         category: gv
 
@@ -1370,3 +1388,13 @@ modules:
 
       - name: GameSystem_Think_CheckSteamBan
         category: func
+
+      - name: CGamePlayerEquip_InputTriggerForAllPlayers
+        category: func
+        alias:
+          - CGamePlayerEquip::InputTriggerForAllPlayers
+
+      - name: CGamePlayerEquip_InputTriggerForActivatedPlayer
+        category: func
+        alias:
+          - CGamePlayerEquip::InputTriggerForActivatedPlayer

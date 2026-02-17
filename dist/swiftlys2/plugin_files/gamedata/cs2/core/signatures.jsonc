@@ -116,7 +116,7 @@
     },
     "TraceShape": {
         "lib": "server",
-        "windows": "48 89 5C 24 20 48 89 4C 24 08 55 57",
+        "windows": "48 89 5C 24 ? 48 89 4C 24 ? 55 57",
         "linux": "55 48 89 E5 41 57 49 89 CF 41 56 49 89 F6 41 55 4D 89 C5"
     },
     "CCSPlayer_ItemServices::CanAcquire": {
