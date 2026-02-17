@@ -411,12 +411,12 @@
         },
         "CGamePlayerEquip::InputTriggerForActivatedPlayer": {
             "library": "server",
-            "linux": "55 48 89 E5 41 56 41 55 41 54 53 48 83 EC 10 48 8B 1E",
-            "windows": "48 89 5C 24 18 56 48 83 EC ? 48 8B 1A"
+            "linux": "55 48 89 E5 41 56 41 55 41 54 53 48 83 EC ? 48 8B 1E",
+            "windows": "48 89 5C 24 ? 56 48 83 EC ? 48 8B 1A 48 8B F1 48 85 DB 0F 84 ? ? ? ? 48 8B 03 48 8B CB FF 90 ? ? ? ? 84 C0 0F 84 ? ? ? ? 48 8B 86 ? ? ? ?"
         },
         "CGamePlayerEquip::InputTriggerForAllPlayers": {
             "library": "server",
-            "linux": "55 48 89 E5 41 56 41 55 41 54 53 48 83 EC 10 48 8B 1E",
+            "linux": "55 48 89 E5 41 57 41 56 41 55 49 89 FD 41 54 53 48 83 EC ? E8 ? ? ? ? C7 45 ? ? ? ? ?",
             "windows": "40 55 53 41 54 41 56 48 8B EC"
         },
         "CNavMesh::GetNearestNavArea": {

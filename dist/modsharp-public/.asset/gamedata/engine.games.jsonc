@@ -2,8 +2,8 @@
     "Addresses": {
         "CNetworkGameServer::GetFreeClient": {
             "library": "engine",
-            "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 49 89 F4 53 48 81 EC ? ? ? ? 41 C6 01",
-            "windows": "48 89 54 24 10 53 56 57 41 56 48 83 EC ?"
+            "linux": "55 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 49 89 F4 53 48 81 EC ? ? ? ?",
+            "windows": "48 89 54 24 ? 53 56 57 41 56 48 83 EC ?"
         },
         "CNetworkGameServer::PrintStatus": {
             "library": "engine",

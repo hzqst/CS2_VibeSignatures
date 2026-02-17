@@ -756,6 +756,10 @@ modules:
           - CGamePlayerEquip_InputTriggerForAllPlayers.{platform}.yaml
           - CGamePlayerEquip_InputTriggerForActivatedPlayer.{platform}.yaml
 
+      - name: find-DispatchParticleEffect
+        expected_output:
+          - DispatchParticleEffect.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1398,3 +1402,6 @@ modules:
         category: func
         alias:
           - CGamePlayerEquip::InputTriggerForActivatedPlayer
+
+      - name: DispatchParticleEffect
+        category: func
