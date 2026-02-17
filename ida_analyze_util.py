@@ -199,6 +199,31 @@ def write_gv_yaml(path, data):
             allow_unicode=False,
         )
 
+
+def write_struct_offset_yaml(path, data):
+    """Write struct-member offset YAML matching write-structoffset-as-yaml key order."""
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to write struct offset YAML")
+
+    ordered_keys = [
+        "struct_name",
+        "member_name",
+        "offset",
+        "size",
+        "offset_sig",
+        "offset_sig_disp",
+    ]
+    payload = {key: data[key] for key in ordered_keys if key in data}
+
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(
+            payload,
+            f,
+            sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=False,
+        )
+
 async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, debug=False):
     """
     Preprocess a vtable output by looking up the class vtable via py_eval.
@@ -1490,6 +1515,256 @@ async def preprocess_gv_sig_via_mcp(
     }
 
 
+async def preprocess_struct_offset_sig_via_mcp(
+    session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
+):
+    """
+    Preprocess a struct-member offset output by reusing old-version offset_sig signature.
+
+    Searches the old signature in the new binary via find_bytes.
+    For unique matches, decodes the target instruction (match + offset_sig_disp)
+    and extracts the struct offset displacement/immediate.
+
+    Args:
+        session: Active MCP ClientSession
+        new_path: Full path to expected output YAML
+        old_path: Full path to old version YAML (may be None)
+        image_base: Binary image base address (reserved)
+        new_binary_dir: Directory for new version outputs (reserved)
+        platform: "windows" or "linux" (reserved)
+        debug: Enable debug output
+
+    Returns:
+        Dict with struct-member YAML data, or None on failure
+    """
+    _ = image_base, new_binary_dir, platform  # Reserved for future platform-specific behavior.
+
+    if yaml is None:
+        if debug:
+            print("    Preprocess: PyYAML is required for struct offset preprocessing")
+        return None
+
+    if not old_path or not os.path.exists(old_path):
+        if debug:
+            print(f"    Preprocess: no old YAML for {os.path.basename(new_path)}")
+        return None
+
+    try:
+        with open(old_path, "r", encoding="utf-8") as f:
+            old_data = yaml.safe_load(f)
+    except Exception:
+        return None
+
+    if not old_data or not isinstance(old_data, dict):
+        return None
+
+    struct_name = old_data.get("struct_name")
+    member_name = old_data.get("member_name")
+    offset_sig = old_data.get("offset_sig")
+    if not struct_name or not member_name:
+        if debug:
+            print(f"    Preprocess: missing struct_name/member_name in {os.path.basename(old_path)}")
+        return None
+    if not offset_sig:
+        if debug:
+            print(f"    Preprocess: no offset_sig in {os.path.basename(old_path)}")
+        return None
+
+    def _parse_int_field(value, field_name):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError(f"empty {field_name}")
+            return int(raw, 0)
+        return int(value)
+
+    offset_sig_disp = 0
+    try:
+        raw_disp = old_data.get("offset_sig_disp")
+        if raw_disp is not None:
+            offset_sig_disp = _parse_int_field(raw_disp, "offset_sig_disp")
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid offset_sig_disp in {os.path.basename(old_path)}")
+        return None
+
+    if offset_sig_disp < 0:
+        if debug:
+            print(f"    Preprocess: offset_sig_disp must be >= 0 in {os.path.basename(old_path)}")
+        return None
+
+    old_offset = None
+    try:
+        if old_data.get("offset") is not None:
+            old_offset = _parse_int_field(old_data.get("offset"), "offset")
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid offset in {os.path.basename(old_path)}")
+
+    # Search signature in new binary via MCP find_bytes
+    try:
+        fb_result = await session.call_tool(
+            name="find_bytes",
+            arguments={"patterns": [offset_sig], "limit": 2}
+        )
+        fb_data = parse_mcp_result(fb_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: find_bytes error: {e}")
+        return None
+
+    if not isinstance(fb_data, list) or len(fb_data) == 0:
+        return None
+
+    entry = fb_data[0]
+    matches = entry.get("matches", [])
+    match_count = entry.get("n", len(matches))
+
+    if match_count != 1:
+        if debug:
+            print(f"    Preprocess: {os.path.basename(old_path)} offset sig matched {match_count} (need 1)")
+        return None
+
+    match_addr = matches[0]
+    expected_offset_expr = "None" if old_offset is None else str(old_offset)
+
+    py_code = (
+        "import idaapi, ida_bytes, idautils, ida_ua, json\n"
+        f"sig_addr = {match_addr}\n"
+        f"inst_addr = sig_addr + {offset_sig_disp}\n"
+        f"expected_offset = {expected_offset_expr}\n"
+        "insn = idautils.DecodeInstruction(inst_addr)\n"
+        "raw = ida_bytes.get_bytes(inst_addr, insn.size) if insn and insn.size > 0 else None\n"
+        "if not insn or insn.size <= 0 or not raw:\n"
+        "    result = json.dumps(None)\n"
+        "else:\n"
+        "    candidates = []\n"
+        "    for op in insn.ops:\n"
+        "        ot = int(op.type)\n"
+        "        if ot == int(idaapi.o_void):\n"
+        "            continue\n"
+        "        if ot not in (int(idaapi.o_displ), int(idaapi.o_mem), int(idaapi.o_imm)):\n"
+        "            continue\n"
+        "        for attr in ('offb', 'offo'):\n"
+        "            off = int(getattr(op, attr, 0))\n"
+        "            if off <= 0 or off >= insn.size:\n"
+        "                continue\n"
+        "            sizes = []\n"
+        "            dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))\n"
+        "            if dsz > 0:\n"
+        "                sizes.append(dsz)\n"
+        "            for s in (1, 2, 4, 8):\n"
+        "                if s not in sizes:\n"
+        "                    sizes.append(s)\n"
+        "            for sz in sizes:\n"
+        "                if off + sz > insn.size:\n"
+        "                    continue\n"
+        "                chunk = raw[off:off + sz]\n"
+        "                unsigned_val = int.from_bytes(chunk, 'little', signed=False)\n"
+        "                signed_val = int.from_bytes(chunk, 'little', signed=True)\n"
+        "                expected_match = False\n"
+        "                if expected_offset is not None:\n"
+        "                    expected_mod = expected_offset & ((1 << (8 * sz)) - 1)\n"
+        "                    expected_match = unsigned_val == expected_mod or signed_val == expected_offset\n"
+        "                candidates.append({\n"
+        "                    'off': off,\n"
+        "                    'size': sz,\n"
+        "                    'unsigned': unsigned_val,\n"
+        "                    'signed': signed_val,\n"
+        "                    'expected': expected_match,\n"
+        "                })\n"
+        "    uniq = []\n"
+        "    seen = set()\n"
+        "    for c in candidates:\n"
+        "        key = (c['off'], c['size'])\n"
+        "        if key in seen:\n"
+        "            continue\n"
+        "        seen.add(key)\n"
+        "        uniq.append(c)\n"
+        "    if not uniq:\n"
+        "        result = json.dumps(None)\n"
+        "    else:\n"
+        "        preferred = [c for c in uniq if c['expected']]\n"
+        "        pool = preferred if preferred else uniq\n"
+        "        pool.sort(key=lambda c: (c['size'], -c['off']), reverse=True)\n"
+        "        best = pool[0]\n"
+        "        final_offset = best['signed'] if best['signed'] < 0 else best['unsigned']\n"
+        "        result = json.dumps({\n"
+        "            'offset': final_offset,\n"
+        "            'sig_va': hex(sig_addr),\n"
+        "            'inst_va': hex(inst_addr),\n"
+        "            'offset_size': best['size'],\n"
+        "            'matched_expected': bool(preferred),\n"
+        "        })\n"
+    )
+
+    try:
+        offset_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code}
+        )
+        offset_data = parse_mcp_result(offset_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: py_eval error: {e}")
+        return None
+
+    offset_info = None
+    if isinstance(offset_data, dict):
+        stderr_text = offset_data.get("stderr", "")
+        if stderr_text and debug:
+            print("    Preprocess: py_eval stderr:")
+            print(stderr_text.strip())
+        result_str = offset_data.get("result", "")
+        if result_str:
+            try:
+                offset_info = json.loads(result_str)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if not isinstance(offset_info, dict) or "offset" not in offset_info:
+        if debug:
+            print(f"    Preprocess: could not resolve struct offset at {match_addr}")
+        return None
+
+    try:
+        offset_int = _parse_int_field(offset_info["offset"], "offset")
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid parsed offset at {match_addr}")
+        return None
+
+    new_data = {
+        "struct_name": struct_name,
+        "member_name": member_name,
+        "offset": hex(offset_int),
+        "offset_sig": offset_sig,
+    }
+
+    raw_size = old_data.get("size")
+    if raw_size is not None:
+        try:
+            size_value = _parse_int_field(raw_size, "size")
+            if size_value > 0:
+                new_data["size"] = size_value
+        except Exception:
+            if debug:
+                print(f"    Preprocess: invalid size in {os.path.basename(old_path)}")
+
+    if offset_sig_disp > 0:
+        new_data["offset_sig_disp"] = offset_sig_disp
+
+    if debug:
+        print(
+            "    Preprocess: reused offset_sig at "
+            f"{match_addr} for {os.path.basename(new_path)}"
+        )
+
+    return new_data
+
+
 async def preprocess_index_based_vfunc_via_mcp(
     session,
     target_func_name,
@@ -1773,16 +2048,19 @@ async def preprocess_common_skill(
     image_base=0,
     func_names=None,
     gv_names=None,
+    struct_member_names=None,
     vtable_class_names=None,
     inherit_vfuncs=None,
     debug=False,
 ):
-    """Reusable preprocess_skill implementation for func/vfunc, gv, vtable, and inherit-vfunc targets.
+    """Reusable preprocess_skill implementation for func/vfunc, gv, struct-member, vtable, and inherit-vfunc targets.
 
-    Handles any combination of the four target types in a single call:
+    Handles any combination of the five target types in a single call:
     - ``func_names``: func/vfunc targets via ``preprocess_func_sig_via_mcp``
       (which already supports vfunc_sig fallback internally).
     - ``gv_names``: global-variable targets via ``preprocess_gv_sig_via_mcp``.
+    - ``struct_member_names``: struct-member offset targets via
+      ``preprocess_struct_offset_sig_via_mcp``.
     - ``vtable_class_names``: vtable targets via ``preprocess_vtable_via_mcp``.
     - ``inherit_vfuncs``: inherited virtual function targets resolved by
       base-class vfunc_index + vtable lookup via
@@ -1803,6 +2081,7 @@ async def preprocess_common_skill(
         image_base: Binary image base address (int).
         func_names: List of function/vfunc target names (may be empty/None).
         gv_names: List of global-variable target names (may be empty/None).
+        struct_member_names: List of struct-member target names (may be empty/None).
         vtable_class_names: List of class names for vtable lookup, or None.
         inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
         debug: Enable debug output.
@@ -1812,6 +2091,7 @@ async def preprocess_common_skill(
     """
     func_names = func_names or []
     gv_names = gv_names or []
+    struct_member_names = struct_member_names or []
     vtable_class_names = vtable_class_names or []
     inherit_vfuncs = inherit_vfuncs or []
 
@@ -1916,8 +2196,8 @@ async def preprocess_common_skill(
             if debug:
                 print(f"    Preprocess: generated {func_name}.{platform}.yaml")
 
-    # --- func/vfunc + gv targets ---
-    if not func_names and not gv_names:
+    # --- func/vfunc + gv + struct-member targets ---
+    if not func_names and not gv_names and not struct_member_names:
         return True
 
     # Build expected filename -> (kind, name) mapping
@@ -1927,10 +2207,13 @@ async def preprocess_common_skill(
     }
     for gv_name in gv_names:
         expected_by_filename[f"{gv_name}.{platform}.yaml"] = ("gv", gv_name)
+    for struct_member_name in struct_member_names:
+        expected_by_filename[f"{struct_member_name}.{platform}.yaml"] = ("struct", struct_member_name)
 
     # Match expected outputs
     matched_func_outputs = {}
     matched_gv_outputs = {}
+    matched_struct_outputs = {}
     for path in expected_outputs:
         basename = os.path.basename(path)
         item = expected_by_filename.get(basename)
@@ -1939,15 +2222,18 @@ async def preprocess_common_skill(
         kind, name = item
         if kind == "func":
             matched_func_outputs[name] = path
-        else:
+        elif kind == "gv":
             matched_gv_outputs[name] = path
+        else:
+            matched_struct_outputs[name] = path
 
     # Validate all expected outputs are present
     missing_func = [n for n in func_names if n not in matched_func_outputs]
     missing_gv = [n for n in gv_names if n not in matched_gv_outputs]
-    if missing_func or missing_gv:
+    missing_struct = [n for n in struct_member_names if n not in matched_struct_outputs]
+    if missing_func or missing_gv or missing_struct:
         if debug:
-            missing = missing_func + missing_gv
+            missing = missing_func + missing_gv + missing_struct
             print(
                 "    Preprocess: expected outputs missing for "
                 f"{', '.join(missing)}"
@@ -2003,5 +2289,29 @@ async def preprocess_common_skill(
         write_gv_yaml(target_output, gv_data)
         if debug:
             print(f"    Preprocess: generated {gv_name}.{platform}.yaml")
+
+    # Process struct-member targets
+    for struct_member_name in struct_member_names:
+        target_output = matched_struct_outputs[struct_member_name]
+        struct_old_path = (old_yaml_map or {}).get(target_output)
+
+        struct_data = await preprocess_struct_offset_sig_via_mcp(
+            session=session,
+            new_path=target_output,
+            old_path=struct_old_path,
+            image_base=image_base,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+
+        if struct_data is None:
+            if debug:
+                print(f"    Preprocess: failed to locate {struct_member_name}")
+            return False
+
+        write_struct_offset_yaml(target_output, struct_data)
+        if debug:
+            print(f"    Preprocess: generated {struct_member_name}.{platform}.yaml")
 
     return True

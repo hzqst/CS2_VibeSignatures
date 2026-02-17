@@ -189,43 +189,59 @@ def load_yaml_data(yaml_path):
 
 def parse_struct_yaml(yaml_data):
     """
-    Parse struct YAML data to extract member offsets.
+    Parse struct YAML data and extract member offsets.
 
-    YAML format (nested):
+    Supported formats:
+    1) New per-member format:
+        struct_name: CBaseEntity
+        member_name: m_nPlayerSlot
+        offset: 0x240
+
+    2) Legacy nested format:
         struct_name: CBaseEntity
         struct_offsets:
           0x240: m_nPlayerSlot 4
 
-    Where key is hex offset, value is "member_name size"
-
-    Args:
-        yaml_data: Dictionary from YAML file
-
     Returns:
         Dictionary mapping member names to their offsets (as integers)
     """
-    if not yaml_data:
+    if not yaml_data or not isinstance(yaml_data, dict):
         return {}
 
-    # Extract struct_offsets from nested format
+    def _parse_offset(value):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError("empty offset")
+            return int(raw, 0)
+        return int(value)
+
+    # New per-member format
+    member_name = yaml_data.get("member_name")
+    if member_name is not None and yaml_data.get("offset") is not None:
+        try:
+            return {str(member_name): _parse_offset(yaml_data.get("offset"))}
+        except Exception:
+            return {}
+
+    # Legacy nested format
     offsets_data = yaml_data.get("struct_offsets", {})
-    if not offsets_data:
+    if not isinstance(offsets_data, dict) or not offsets_data:
         return {}
 
     members = {}
-    for offset_str, value in offsets_data.items():
-        # Parse offset (hex string like '0x240')
-        if isinstance(offset_str, str) and offset_str.startswith("0x"):
-            offset = int(offset_str, 16)
-        else:
-            offset = int(offset_str)
+    for offset_raw, value in offsets_data.items():
+        try:
+            offset = _parse_offset(offset_raw)
+        except Exception:
+            continue
 
-        # Parse value: "member_name size" or just "member_name"
         if isinstance(value, str):
             parts = value.split()
             if parts:
-                member_name = parts[0]
-                members[member_name] = offset
+                members[parts[0]] = offset
 
     return members
 
@@ -307,8 +323,8 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
     yaml_data = {}
     missing_symbols = []
 
-    # Cache for loaded struct YAML files to avoid re-reading
-    struct_cache = {}  # {(module_name, struct_name, platform): parsed_members}
+    # Cache for legacy struct YAML files ({struct}.{platform}.yaml)
+    legacy_struct_cache = {}  # {(module_name, struct_name, platform): parsed_members | None}
 
     for module in config.get("modules", []):
         module_name = module.get("name")
@@ -337,35 +353,55 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
                     continue
 
                 for platform in platforms:
-                    cache_key = (module_name, struct_name, platform)
+                    member_yaml_path = os.path.join(
+                        bin_dir, gamever, module_name, f"{func_name}.{platform}.yaml"
+                    )
+                    member_yaml_data = load_yaml_data(member_yaml_path)
 
-                    # Load and cache struct YAML if not already cached
-                    if cache_key not in struct_cache:
-                        yaml_path = os.path.join(
-                            bin_dir, gamever, module_name, f"{struct_name}.{platform}.yaml"
-                        )
-                        data = load_yaml_data(yaml_path)
-                        if data:
-                            struct_cache[cache_key] = parse_struct_yaml(data)
-                        else:
-                            struct_cache[cache_key] = None
-                            if debug:
-                                missing_symbols.append({
-                                    "name": struct_name,
-                                    "library": module_name,
-                                    "platform": platform,
-                                    "path": yaml_path
-                                })
-                            print(f"  Warning: Struct YAML not found: {yaml_path}")
+                    resolved_offset = None
+                    if member_yaml_data is not None:
+                        parsed_members = parse_struct_yaml(member_yaml_data)
+                        if member_name in parsed_members:
+                            resolved_offset = parsed_members[member_name]
 
-                    # Extract member offset from cached struct data
-                    struct_members = struct_cache.get(cache_key)
-                    if struct_members and member_name in struct_members:
+                    # Backward compatibility: fallback to legacy {struct}.{platform}.yaml.
+                    legacy_members = None
+                    legacy_yaml_path = os.path.join(
+                        bin_dir, gamever, module_name, f"{struct_name}.{platform}.yaml"
+                    )
+                    if resolved_offset is None:
+                        cache_key = (module_name, struct_name, platform)
+                        if cache_key not in legacy_struct_cache:
+                            legacy_yaml_data = load_yaml_data(legacy_yaml_path)
+                            if legacy_yaml_data is None:
+                                legacy_struct_cache[cache_key] = None
+                            else:
+                                legacy_struct_cache[cache_key] = parse_struct_yaml(legacy_yaml_data)
+
+                        legacy_members = legacy_struct_cache.get(cache_key)
+                        if legacy_members is not None and member_name in legacy_members:
+                            resolved_offset = legacy_members[member_name]
+
+                    if resolved_offset is not None:
                         yaml_data[func_name][platform] = {
-                            "struct_member_offset": struct_members[member_name]
+                            "struct_member_offset": resolved_offset
                         }
-                    elif struct_members:
-                        print(f"  Warning: Member {member_name} not found in {struct_name}")
+                        continue
+
+                    if debug:
+                        missing_symbols.append({
+                            "name": func_name,
+                            "library": module_name,
+                            "platform": platform,
+                            "path": member_yaml_path
+                        })
+
+                    if member_yaml_data is not None:
+                        print(f"  Warning: Member {member_name} not found in {member_yaml_path}")
+                    elif legacy_members is not None:
+                        print(f"  Warning: Member {member_name} not found in {legacy_yaml_path}")
+                    else:
+                        print(f"  Warning: Struct member YAML not found: {member_yaml_path}")
             else:
                 # Original logic for func/vfunc/struct types
                 for platform in platforms:
