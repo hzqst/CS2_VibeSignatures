@@ -404,6 +404,85 @@ Prompt:
           - IGameSystem::InitAllSystems::pFirst
 ```
 
+## How to create SKILL for patch
+
+A patch SKILL locates a specific instruction inside a known function and generates replacement bytes to change its behavior at runtime (e.g., force/skip a branch, NOP a call). The prerequisite function must already have a find-SKILL.
+
+* Always make sure you have ida-pro-mcp server running.
+
+`CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` for example — patching the velocity clamping `jbe` to an unconditional `jmp` inside `CCSPlayer_MovementServices_FullWalkMove`.
+
+1. Decompile the prerequisite function and locate the target code pattern.
+
+```bash
+Prompt:
+ - decompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
+
+  v20 = (float)((float)(v16 * v16) + (float)(v19 * v19)) + (float)(v17 * v17);
+  if ( v20 > (float)(v18 * v18) )
+  {
+    ...velocity clamping logic...
+  }
+```
+
+2. Disassemble around the comparison to find the exact conditional jump instruction.
+
+```bash
+Prompt:
+ - Disassemble around the comparison address to find the comiss + jbe instruction pair.
+```
+
+Expected assembly pattern:
+```asm
+addss   xmm2, xmm1          ; v20 = sum of squares
+comiss  xmm2, xmm0          ; compare v20 vs v18*v18
+jbe     loc_XXXXXXXX         ; skip clamp block if v20 <= v18*v18
+```
+
+3. Determine the patch bytes based on the instruction encoding.
+
+ * Near `jbe` (`0F 86 rel32` — 6 bytes) → `E9 <new_rel32> 90` (unconditional `jmp` + `nop`)
+ * Short `jbe` (`76 rel8` — 2 bytes) → `EB rel8` (unconditional `jmp short`)
+
+4. Generate patch signature and validate.
+
+```bash
+Prompt:
+  **ALWAYS** Use SKILL `/generate-signature-for-patch` to generate signature and patch bytes for the conditional jump, to make the "if" branch a dead path (patch the conditional jump to unconditional jump to skip the inner code path).
+```
+
+5. Create SKILL
+
+```bash
+Prompt:
+ - /skill-creator Create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH** according to what we just did.
+ - Don't pack skill.
+ - Note that the SKILL should be working with both `server.dll` and `server.so`.
+```
+
+6. Add the new SKILL to `config.yaml`, under `skills`.
+
+ * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+
+```yaml
+      - name: find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
+        expected_output:
+          - CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.{platform}.yaml
+        expected_input:
+          - CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
+```
+
+7. Add the new symbol to `config.yaml`, under `symbols`.
+
+```yaml
+      - name: CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
+        category: patch
+        alias:
+          - ServerMovementUnlock
+```
+
 ## Troubleshooting
 
 ### Cannot load IDA library file {name}, Please make sure you are using IDA 

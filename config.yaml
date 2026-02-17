@@ -160,6 +160,14 @@ modules:
           - CCSPlayer_MovementServices_CheckVelocity.{platform}.yaml
           - CCSPlayer_MovementServices_WaterMove.{platform}.yaml
 
+      - name: find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
+        expected_output:
+          - CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.{platform}.yaml
+        expected_input:
+          - CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -828,6 +836,11 @@ modules:
         alias:
           - CCSPlayer_MovementServices::WaterMove
           - WaterMove
+
+      - name: CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
+        category: patch
+        alias:
+          - ServerMovementUnlock
 
       - name: CEntityInstance_vtable
         category: vtable
