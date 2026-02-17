@@ -326,6 +326,18 @@ modules:
         expected_output:
           - CCSPlayerController_InventoryUpdateThink.{platform}.yaml
 
+      - name: find-CCSPlayerController_ResourceDataThink
+        expected_output:
+          - CCSPlayerController_ResourceDataThink.{platform}.yaml
+
+      - name: find-CCSGameRules__sm_mapGcBanInformation
+        expected_output:
+          - CCSGameRules__sm_mapGcBanInformation.{platform}.yaml
+        expected_input:
+          - CCSPlayerController_ResourceDataThink.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayerController_ResourceDataThink
+
       - name: find-CBasePlayerController_Respawn
         expected_output:
           - CBasePlayerController_Respawn.{platform}.yaml
@@ -948,6 +960,17 @@ modules:
         alias:
           - InventoryUpdateThink
           - CCSPlayerController::InventoryUpdateThink
+
+      - name: CCSPlayerController_ResourceDataThink
+        category: func
+        alias:
+          - ResourceDataThink
+          - CCSPlayerController::ResourceDataThink
+
+      - name: CCSGameRules__sm_mapGcBanInformation
+        category: gv
+        alias:
+          - CCSGameRules::sm_mapGcBanInformation
 
       - name: CCSPlayerController_Respawn
         category: vfunc
