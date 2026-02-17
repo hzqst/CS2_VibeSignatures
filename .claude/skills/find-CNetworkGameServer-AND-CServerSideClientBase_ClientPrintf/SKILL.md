@@ -64,7 +64,7 @@ mcp__ida-pro-mcp__rename batch={"data": {"old": "qword_XXXXXXXXXX", "new": "CNet
 
 **ALWAYS** Use SKILL `/write-struct-as-yaml` to write CNetworkGameServer's struct member information:
 
-For `CNetworkGameServer.{platform}.yaml`:
+For `CNetworkGameServer`:
 - Offset `0x250`: `ClientList`
 
 ### 6. Generate vfunc signature for CServerSideClientBase_ClientPrintf

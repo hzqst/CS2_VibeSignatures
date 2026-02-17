@@ -183,7 +183,7 @@ Linux:
 
 **ALWAYS** Use SKILL `/write-struct-as-yaml` to write CTakeDamageInfo's struct member information:
 
-For `CTakeDamageInfo.{platform}.yaml`:
+For `CTakeDamageInfo`:
 - Offset `0x68`: `HitGroupInfo` (size 8)
 
 ## Function Characteristics

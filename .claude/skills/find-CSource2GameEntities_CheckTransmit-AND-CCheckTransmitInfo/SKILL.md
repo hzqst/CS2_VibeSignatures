@@ -135,7 +135,7 @@ the `*(int *)(v20 + 576)` is `CCheckTransmitInfo::m_nPlayerSlot`
 
 **ALWAYS** Use SKILL `/write-struct-as-yaml` to write CCheckTransmitInfo's struct member information:
 
-For `CCheckTransmitInfo.{platform}.yaml`:
+For `CCheckTransmitInfo`:
 - Offset `0x240`: `m_nPlayerSlot` (size 4)
 
 ## Function Characteristics

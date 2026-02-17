@@ -191,7 +191,11 @@ def parse_struct_yaml(yaml_data):
     """
     Parse struct YAML data to extract member offsets.
 
-    YAML format: {'0x240': 'm_nPlayerSlot 4', ...}
+    YAML format (nested):
+        struct_name: CBaseEntity
+        struct_offsets:
+          0x240: m_nPlayerSlot 4
+
     Where key is hex offset, value is "member_name size"
 
     Args:
@@ -203,8 +207,13 @@ def parse_struct_yaml(yaml_data):
     if not yaml_data:
         return {}
 
+    # Extract struct_offsets from nested format
+    offsets_data = yaml_data.get("struct_offsets", {})
+    if not offsets_data:
+        return {}
+
     members = {}
-    for offset_str, value in yaml_data.items():
+    for offset_str, value in offsets_data.items():
         # Parse offset (hex string like '0x240')
         if isinstance(offset_str, str) and offset_str.startswith("0x"):
             offset = int(offset_str, 16)

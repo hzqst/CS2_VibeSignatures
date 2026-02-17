@@ -91,7 +91,7 @@ Required parameters:
 
 **ALWAYS** Use SKILL `/write-struct-as-yaml` to write CGameResourceService's struct member information:
 
-For `CGameResourceService.{platform}.yaml`:
+For `CGameResourceService`:
 - Offset `0x58`: `m_pEntitySystem` (size 8)
 
 ## Function Characteristics

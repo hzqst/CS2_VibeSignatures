@@ -55,8 +55,8 @@ existing_entries = {}  # member_name -> (offset, size)
 if os.path.exists(yaml_path):
     with open(yaml_path, 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
-        if data:
-            for offset_key, value in data.items():
+        if data and 'struct_offsets' in data:
+            for offset_key, value in data['struct_offsets'].items():
                 # Parse offset from key (e.g., "0x278")
                 offset = int(offset_key, 16) if isinstance(offset_key, str) else offset_key
                 # Parse value: "member_name [size]"
@@ -72,14 +72,19 @@ for offset, name, size in members:
 # Sort by offset and build output dict
 sorted_entries = sorted(existing_entries.items(), key=lambda x: x[1][0])
 
-# Build ordered dict for YAML output
-output_data = {}
+# Build struct_offsets dict
+offsets_data = {}
 for name, (offset, size) in sorted_entries:
     key = f"0x{offset:X}"
     if size and size > 0:
-        output_data[key] = f"{name} {size}"
+        offsets_data[key] = f"{name} {size}"
     else:
-        output_data[key] = name
+        offsets_data[key] = name
+
+output_data = {
+    'struct_name': struct_name,
+    'struct_offsets': offsets_data,
+}
 
 with open(yaml_path, 'w', encoding='utf-8') as f:
     yaml.dump(output_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
@@ -101,9 +106,11 @@ Examples:
 ## Output YAML Format
 
 ```yaml
-0x278: m_skeletonInstance 8
-0x3A0: m_animationController 8
-0x400: m_someFlag
+struct_name: CBaseEntity
+struct_offsets:
+  0x278: m_skeletonInstance 8
+  0x3A0: m_animationController 8
+  0x400: m_someFlag
 ```
 
 Each line contains:
