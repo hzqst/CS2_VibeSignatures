@@ -87,12 +87,22 @@ Required parameters:
 - `func_addr`: The function address
 - `func_sig`: The validated signature from step 5
 
-### 7. Write Struct Members for CGameResourceService as YAML
+### 7. Generate Struct Offset Signature and Write Struct Member YAML
 
-**ALWAYS** Use SKILL `/write-struct-as-yaml` to write CGameResourceService's struct member information:
+For each struct member, **ALWAYS** generate a dedicated `offset_sig` first, then write a dedicated YAML file for that member.
 
-For `CGameResourceService`:
-- Offset `0x58`: `m_pEntitySystem` (size 8)
+For `CGameResourceService::m_pEntitySystem`:
+- Offset: `0x58` (size `8`)
+- Locate the instruction that accesses this member offset in `CGameResourceService_BuildResourceManifest` (for example: `*(_QWORD *)(a1 + 88)` where `88 = 0x58`)
+- Use SKILL `/generate-signature-for-structoffset` with:
+  - `inst_addr`: address of the instruction containing offset `0x58`
+  - `struct_offset`: `0x58`
+- Use SKILL `/write-structoffset-as-yaml` with:
+  - `struct_name`: `CGameResourceService`
+  - `member_name`: `m_pEntitySystem`
+  - `offset`: `0x58`
+  - `size`: `8`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
 ## Function Characteristics
 
@@ -120,5 +130,5 @@ if (v16)
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
-- `engine2.dll` → `CGameResourceService_BuildResourceManifest.windows.yaml`, `CGameResourceService.windows.yaml`
-- `libengine2.so` → `CGameResourceService_BuildResourceManifest.linux.yaml`, `CGameResourceService.linux.yaml`
+- `engine2.dll` → `CGameResourceService_BuildResourceManifest.windows.yaml`, `CGameResourceService_m_pEntitySystem.windows.yaml`
+- `libengine2.so` → `CGameResourceService_BuildResourceManifest.linux.yaml`, `CGameResourceService_m_pEntitySystem.linux.yaml`

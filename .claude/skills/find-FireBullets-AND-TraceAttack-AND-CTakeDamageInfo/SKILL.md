@@ -179,12 +179,26 @@ Linux:
 - Each entry is 480 bytes
 - `pTakeDamageInfo + 104` (0x68) stores the HitGroupInfo pointer
 
-### 10. Write Struct Members for CTakeDamageInfo as YAML
+### 10. Generate Struct Offset Signature and Write Struct Member YAML
 
-**ALWAYS** Use SKILL `/write-struct-as-yaml` to write CTakeDamageInfo's struct member information:
+For each struct member, **ALWAYS** generate a dedicated `offset_sig` first, then write a dedicated YAML file for that member.
 
-For `CTakeDamageInfo`:
-- Offset `0x68`: `HitGroupInfo` (size 8)
+For `CTakeDamageInfo::HitGroupInfo`:
+- Offset: `0x68` (size `8`)
+- Typical instruction pattern from step 9: `*(_QWORD *)(pTakeDamageInfo + 104) = HitGroupInfo` (`104 = 0x68`)
+- Use SKILL `/generate-signature-for-structoffset` with:
+  - `inst_addr`: address of the instruction containing offset `0x68`
+  - `struct_offset`: `0x68`
+- Use SKILL `/write-structoffset-as-yaml` with:
+  - `struct_name`: `CTakeDamageInfo`
+  - `member_name`: `HitGroupInfo`
+  - `offset`: `0x68`
+  - `size`: `8`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
+
+Output YAML:
+- `server.dll` → `CTakeDamageInfo_HitGroupInfo.windows.yaml`
+- `server.so` / `libserver.so` → `CTakeDamageInfo_HitGroupInfo.linux.yaml`
 
 ## Function Characteristics
 

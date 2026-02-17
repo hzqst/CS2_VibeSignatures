@@ -60,12 +60,22 @@ Key identifications from the decompiled code:
 mcp__ida-pro-mcp__rename batch={"data": {"old": "qword_XXXXXXXXXX", "new": "CNetworkGameServer"}}
 ```
 
-### 5. Write struct YAML for CNetworkGameServer
+### 5. Generate Struct Offset Signature and Write Struct Member YAML
 
-**ALWAYS** Use SKILL `/write-struct-as-yaml` to write CNetworkGameServer's struct member information:
+For each struct member, **ALWAYS** generate a dedicated `offset_sig` first, then write a dedicated YAML file for that member.
 
-For `CNetworkGameServer`:
-- Offset `0x250`: `ClientList`
+For `CNetworkGameServer::ClientList`:
+- Offset: `0x250` (size `4`)
+- Typical instruction pattern from step 3: `*(_DWORD *)(qword_XXXXXXXXXX + 592)` (`592 = 0x250`)
+- Use SKILL `/generate-signature-for-structoffset` with:
+  - `inst_addr`: address of the instruction containing offset `0x250`
+  - `struct_offset`: `0x250`
+- Use SKILL `/write-structoffset-as-yaml` with:
+  - `struct_name`: `CNetworkGameServer`
+  - `member_name`: `ClientList`
+  - `offset`: `0x250`
+  - `size`: `4`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
 ### 6. Generate vfunc signature for CServerSideClientBase_ClientPrintf
 
@@ -126,9 +136,9 @@ The function references this debug string:
 
 The output YAML filenames depend on the platform:
 
-For CNetworkGameServer struct:
-- `server.dll` → `CNetworkGameServer.windows.yaml`
-- `server.so` → `CNetworkGameServer.linux.yaml`
+For CNetworkGameServer struct member:
+- `server.dll` → `CNetworkGameServer_ClientList.windows.yaml`
+- `server.so` → `CNetworkGameServer_ClientList.linux.yaml`
 
 For CServerSideClientBase_ClientPrintf vfunc:
 - `server.dll` → `CServerSideClientBase_ClientPrintf.windows.yaml`

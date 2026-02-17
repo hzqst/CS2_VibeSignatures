@@ -90,15 +90,31 @@ Use `rename` to give the function a meaningful name:
 mcp__ida-pro-mcp__rename(batch={"func": {"addr": "<function_addr>", "name": "CBaseAnimGraph_GetAnimationController"}})
 ```
 
-### 6. Write Struct Members as YAML
+### 6. Generate Struct Offset Signatures and Write Struct Member YAMLs
 
-**ALWAYS** Use SKILL `/write-struct-as-yaml` to write the struct member information:
+For each struct member below, **ALWAYS** run the workflow independently:
+1. Use SKILL `/generate-signature-for-structoffset` on an instruction that contains the target offset.
+2. Use SKILL `/write-structoffset-as-yaml` with that member's `offset_sig`.
 
-For `CSkeletonInstance`:
-- Offset `0x3A0`: `m_animationController` (size 8)
+Member A (`CBaseAnimGraph::m_skeletonInstance`):
+- `offset`: `0x278` (size `8`)
+- Typical instruction pattern: `*(_QWORD *)(a1 + 632)` (`632 = 0x278`)
+- Write YAML parameters:
+  - `struct_name`: `CBaseAnimGraph`
+  - `member_name`: `m_skeletonInstance`
+  - `offset`: `0x278`
+  - `size`: `8`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
-For `CBaseAnimGraph`:
-- Offset `0x278`: `m_skeletonInstance` (size 8)
+Member B (`CSkeletonInstance::m_animationController`):
+- `offset`: `0x3A0` (size `8`)
+- Typical instruction pattern: `*(_QWORD *)(result + 928)` (`928 = 0x3A0`)
+- Write YAML parameters:
+  - `struct_name`: `CSkeletonInstance`
+  - `member_name`: `m_animationController`
+  - `offset`: `0x3A0`
+  - `size`: `8`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
 ### 7. Write Virtual Function as YAML
 
@@ -148,20 +164,28 @@ vfunc_offset: 0x40
 vfunc_index: 8
 ```
 
-### CBaseAnimGraph.{platform}.yaml
+### CBaseAnimGraph_m_skeletonInstance.{platform}.yaml
 
 Example output:
 
 ```yaml
-0x278: m_skeletonInstance 8
+struct_name: CBaseAnimGraph
+member_name: m_skeletonInstance
+offset: 0x278
+size: 8
+offset_sig: <offset_sig>
 ```
 
-### CSkeletonInstance.{platform}.yaml
+### CSkeletonInstance_m_animationController.{platform}.yaml
 
 Example output:
 
 ```yaml
-0x3A0: m_animationController 8
+struct_name: CSkeletonInstance
+member_name: m_animationController
+offset: 0x3A0
+size: 8
+offset_sig: <offset_sig>
 ```
 
 ## Related Functions

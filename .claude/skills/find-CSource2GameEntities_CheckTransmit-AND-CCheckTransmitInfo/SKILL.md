@@ -131,12 +131,22 @@ the `*(int *)(v20 + 576)` is `CCheckTransmitInfo::m_nPlayerSlot`
 
 * The offset 576 (0x240) can change on game update.
 
-### 9. Write Struct Members for CCheckTransmitInfo as YAML
+### 9. Generate Struct Offset Signature and Write Struct Member YAML
 
-**ALWAYS** Use SKILL `/write-struct-as-yaml` to write CCheckTransmitInfo's struct member information:
+For each struct member, **ALWAYS** generate a dedicated `offset_sig` first, then write a dedicated YAML file for that member.
 
-For `CCheckTransmitInfo`:
-- Offset `0x240`: `m_nPlayerSlot` (size 4)
+For `CCheckTransmitInfo::m_nPlayerSlot`:
+- Offset: `0x240` (size `4`)
+- Typical instruction pattern from step 8: `*(unsigned int *)(v20 + 576)` or `*(_DWORD *)(pInfo + 576)` (`576 = 0x240`)
+- Use SKILL `/generate-signature-for-structoffset` with:
+  - `inst_addr`: address of the instruction containing offset `0x240`
+  - `struct_offset`: `0x240`
+- Use SKILL `/write-structoffset-as-yaml` with:
+  - `struct_name`: `CCheckTransmitInfo`
+  - `member_name`: `m_nPlayerSlot`
+  - `offset`: `0x240`
+  - `size`: `4`
+  - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
 ## Function Characteristics
 
@@ -155,5 +165,5 @@ For `CCheckTransmitInfo`:
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
-- `server.dll` → `CSource2GameEntities_CheckTransmit.windows.yaml`
-- `server.so` → `CSource2GameEntities_CheckTransmit.linux.yaml`
+- `server.dll` → `CSource2GameEntities_CheckTransmit.windows.yaml`, `CCheckTransmitInfo_m_nPlayerSlot.windows.yaml`
+- `server.so` → `CSource2GameEntities_CheckTransmit.linux.yaml`, `CCheckTransmitInfo_m_nPlayerSlot.linux.yaml`
