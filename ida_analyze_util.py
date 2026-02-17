@@ -200,6 +200,29 @@ def write_gv_yaml(path, data):
         )
 
 
+
+
+def write_patch_yaml(path, data):
+    """Write patch YAML with stable key order."""
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to write patch YAML")
+
+    ordered_keys = [
+        "patch_name",
+        "patch_sig",
+        "patch_bytes",
+    ]
+    payload = {key: data[key] for key in ordered_keys if key in data}
+
+    with open(path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(
+            payload,
+            f,
+            sort_keys=False,
+            default_flow_style=False,
+            allow_unicode=False,
+        )
+
 def write_struct_offset_yaml(path, data):
     """Write struct-member offset YAML matching write-structoffset-as-yaml key order."""
     if yaml is None:
@@ -1515,6 +1538,106 @@ async def preprocess_gv_sig_via_mcp(
     }
 
 
+
+
+async def preprocess_patch_via_mcp(
+    session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
+):
+    """
+    Preprocess a patch output by reusing old-version patch metadata.
+
+    Verifies that old ``patch_sig`` can be uniquely found in the new binary via
+    ``find_bytes``. On success, reuses ``patch_name``, ``patch_sig``, and
+    ``patch_bytes`` from old YAML.
+
+    Args:
+        session: Active MCP ClientSession
+        new_path: Full path to expected output YAML
+        old_path: Full path to old version YAML (may be None)
+        image_base: Binary image base address (reserved)
+        new_binary_dir: Directory for new version outputs (reserved)
+        platform: "windows" or "linux" (reserved)
+        debug: Enable debug output
+
+    Returns:
+        Dict with patch YAML data, or None on failure
+    """
+    _ = image_base, new_binary_dir, platform  # Reserved for future behavior.
+
+    if yaml is None:
+        if debug:
+            print("    Preprocess: PyYAML is required for patch preprocessing")
+        return None
+
+    # Check if old YAML exists
+    if not old_path or not os.path.exists(old_path):
+        if debug:
+            print(f"    Preprocess: no old YAML for {os.path.basename(new_path)}")
+        return None
+
+    # Read old YAML
+    try:
+        with open(old_path, "r", encoding="utf-8") as f:
+            old_data = yaml.safe_load(f)
+    except Exception:
+        return None
+
+    if not old_data or not isinstance(old_data, dict):
+        return None
+
+    patch_sig = old_data.get("patch_sig")
+    patch_bytes = old_data.get("patch_bytes")
+
+    if not patch_sig:
+        if debug:
+            print(f"    Preprocess: no patch_sig in {os.path.basename(old_path)}")
+        return None
+
+    if not patch_bytes:
+        if debug:
+            print(f"    Preprocess: no patch_bytes in {os.path.basename(old_path)}")
+        return None
+
+    # Verify patch_sig uniquely matches in new binary via MCP find_bytes.
+    try:
+        fb_result = await session.call_tool(
+            name="find_bytes",
+            arguments={"patterns": [patch_sig], "limit": 2}
+        )
+        fb_data = parse_mcp_result(fb_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: find_bytes error: {e}")
+        return None
+
+    if not isinstance(fb_data, list) or len(fb_data) == 0:
+        return None
+
+    entry = fb_data[0]
+    if not isinstance(entry, dict):
+        return None
+
+    matches = entry.get("matches", [])
+    match_count = entry.get("n", len(matches))
+    try:
+        match_count_int = int(match_count)
+    except Exception:
+        match_count_int = len(matches)
+
+    if match_count_int != 1:
+        if debug:
+            print(
+                "    Preprocess: patch_sig matched "
+                f"{match_count_int} (need 1) in {os.path.basename(old_path)}"
+            )
+        return None
+
+    return {
+        "patch_name": old_data.get("patch_name") or os.path.basename(new_path).rsplit(".", 2)[0],
+        "patch_sig": patch_sig,
+        "patch_bytes": patch_bytes,
+    }
+
 async def preprocess_struct_offset_sig_via_mcp(
     session, new_path, old_path, image_base, new_binary_dir, platform, debug=False
 ):
@@ -2048,17 +2171,19 @@ async def preprocess_common_skill(
     image_base=0,
     func_names=None,
     gv_names=None,
+    patch_names=None,
     struct_member_names=None,
     vtable_class_names=None,
     inherit_vfuncs=None,
     debug=False,
 ):
-    """Reusable preprocess_skill implementation for func/vfunc, gv, struct-member, vtable, and inherit-vfunc targets.
+    """Reusable preprocess_skill implementation for func/vfunc, gv, patch, struct-member, vtable, and inherit-vfunc targets.
 
-    Handles any combination of the five target types in a single call:
+    Handles any combination of the six target types in a single call:
     - ``func_names``: func/vfunc targets via ``preprocess_func_sig_via_mcp``
       (which already supports vfunc_sig fallback internally).
     - ``gv_names``: global-variable targets via ``preprocess_gv_sig_via_mcp``.
+    - ``patch_names``: patch targets via ``preprocess_patch_via_mcp``.
     - ``struct_member_names``: struct-member offset targets via
       ``preprocess_struct_offset_sig_via_mcp``.
     - ``vtable_class_names``: vtable targets via ``preprocess_vtable_via_mcp``.
@@ -2081,6 +2206,7 @@ async def preprocess_common_skill(
         image_base: Binary image base address (int).
         func_names: List of function/vfunc target names (may be empty/None).
         gv_names: List of global-variable target names (may be empty/None).
+        patch_names: List of patch target names (may be empty/None).
         struct_member_names: List of struct-member target names (may be empty/None).
         vtable_class_names: List of class names for vtable lookup, or None.
         inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
@@ -2091,6 +2217,7 @@ async def preprocess_common_skill(
     """
     func_names = func_names or []
     gv_names = gv_names or []
+    patch_names = patch_names or []
     struct_member_names = struct_member_names or []
     vtable_class_names = vtable_class_names or []
     inherit_vfuncs = inherit_vfuncs or []
@@ -2196,8 +2323,8 @@ async def preprocess_common_skill(
             if debug:
                 print(f"    Preprocess: generated {func_name}.{platform}.yaml")
 
-    # --- func/vfunc + gv + struct-member targets ---
-    if not func_names and not gv_names and not struct_member_names:
+    # --- func/vfunc + gv + patch + struct-member targets ---
+    if not func_names and not gv_names and not patch_names and not struct_member_names:
         return True
 
     # Build expected filename -> (kind, name) mapping
@@ -2207,12 +2334,15 @@ async def preprocess_common_skill(
     }
     for gv_name in gv_names:
         expected_by_filename[f"{gv_name}.{platform}.yaml"] = ("gv", gv_name)
+    for patch_name in patch_names:
+        expected_by_filename[f"{patch_name}.{platform}.yaml"] = ("patch", patch_name)
     for struct_member_name in struct_member_names:
         expected_by_filename[f"{struct_member_name}.{platform}.yaml"] = ("struct", struct_member_name)
 
     # Match expected outputs
     matched_func_outputs = {}
     matched_gv_outputs = {}
+    matched_patch_outputs = {}
     matched_struct_outputs = {}
     for path in expected_outputs:
         basename = os.path.basename(path)
@@ -2224,16 +2354,19 @@ async def preprocess_common_skill(
             matched_func_outputs[name] = path
         elif kind == "gv":
             matched_gv_outputs[name] = path
+        elif kind == "patch":
+            matched_patch_outputs[name] = path
         else:
             matched_struct_outputs[name] = path
 
     # Validate all expected outputs are present
     missing_func = [n for n in func_names if n not in matched_func_outputs]
     missing_gv = [n for n in gv_names if n not in matched_gv_outputs]
+    missing_patch = [n for n in patch_names if n not in matched_patch_outputs]
     missing_struct = [n for n in struct_member_names if n not in matched_struct_outputs]
-    if missing_func or missing_gv or missing_struct:
+    if missing_func or missing_gv or missing_patch or missing_struct:
         if debug:
-            missing = missing_func + missing_gv + missing_struct
+            missing = missing_func + missing_gv + missing_patch + missing_struct
             print(
                 "    Preprocess: expected outputs missing for "
                 f"{', '.join(missing)}"
@@ -2289,6 +2422,30 @@ async def preprocess_common_skill(
         write_gv_yaml(target_output, gv_data)
         if debug:
             print(f"    Preprocess: generated {gv_name}.{platform}.yaml")
+
+    # Process patch targets
+    for patch_name in patch_names:
+        target_output = matched_patch_outputs[patch_name]
+        patch_old_path = (old_yaml_map or {}).get(target_output)
+
+        patch_data = await preprocess_patch_via_mcp(
+            session=session,
+            new_path=target_output,
+            old_path=patch_old_path,
+            image_base=image_base,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+
+        if patch_data is None:
+            if debug:
+                print(f"    Preprocess: failed to locate {patch_name}")
+            return False
+
+        write_patch_yaml(target_output, patch_data)
+        if debug:
+            print(f"    Preprocess: generated {patch_name}.{platform}.yaml")
 
     # Process struct-member targets
     for struct_member_name in struct_member_names:

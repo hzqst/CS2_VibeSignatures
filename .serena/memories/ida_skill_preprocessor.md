@@ -3,7 +3,7 @@
 ## 概述
 `ida_skill_preprocessor.py` 现在是“预处理分发入口”：负责建立 IDA MCP 会话、获取 `image_base`，然后把具体预处理逻辑委托给 `ida_preprocessor_scripts/{skill_name}.py`。
 
-与旧流程不同：不再在入口里硬编码按输出类型分支（vtable/function）。具体流程由每个 skill 脚本自行决定。
+与旧流程不同：不再在入口里硬编码按输出类型分支。具体流程由每个 skill 脚本自行决定。
 
 ## 职责
 - 动态加载并缓存 `ida_preprocessor_scripts/{skill_name}.py` 的导出方法 `preprocess_skill`。
@@ -18,6 +18,7 @@
 - ida_preprocessor_scripts/*.py
 - ida_preprocessor_scripts/find-CTriggerPush_vtable.py
 - ida_preprocessor_scripts/find-CTriggerPush_Touch.py
+- ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py
 - ida_analyze_bin.py
 
 ## 架构
@@ -39,6 +40,7 @@
 - 大多数脚本只需声明常量并委托给 `preprocess_common_skill`：
   - func/vfunc 脚本：声明 `TARGET_FUNCTION_NAMES`，传 `func_names=TARGET_FUNCTION_NAMES`
   - gv 脚本：声明 `TARGET_GLOBALVAR_NAMES`，传 `gv_names=TARGET_GLOBALVAR_NAMES`
+  - patch 脚本：声明 `TARGET_PATCH_NAMES`，传 `patch_names=TARGET_PATCH_NAMES`
   - vtable 脚本：声明 `TARGET_CLASS_NAME`，传 `vtable_class_names=[TARGET_CLASS_NAME]`
   - 混合脚本：可同时传多个参数
 - 特殊脚本（如 CTriggerPush_Touch、CBaseTrigger_StartTouch、CPointTeleport_Teleport）有自定义逻辑，直接使用底层方法
@@ -47,15 +49,18 @@
 
 - MCP结果解析：`parse_mcp_result`
 - vtable py_eval模板与构建：`_VTABLE_PY_EVAL_TEMPLATE`、`_build_vtable_py_eval`
-- YAML写盘：`write_vtable_yaml`、`write_func_yaml`、`write_gv_yaml`
+- YAML写盘：`write_vtable_yaml`、`write_func_yaml`、`write_gv_yaml`、`write_patch_yaml`、`write_struct_offset_yaml`
 - `preprocess_vtable_via_mcp`：按类名在 IDA 中定位并读取 vtable，输出标准化 vtable YAML 数据。
 - `preprocess_func_sig_via_mcp`：优先复用旧 `func_sig` 定位函数，缺失时回退 `vfunc_sig` + vtable 索引并补全新函数元数据。
 - `preprocess_gen_func_sig_via_mcp`：从函数头自动生成最短唯一 `func_sig`，用于新版本函数定位与写盘。
 - `preprocess_gen_gv_sig_via_mcp`：围绕访问全局变量的指令生成最短唯一 `gv_sig`，并返回指令位移元数据。
 - `preprocess_gv_sig_via_mcp`：复用旧 `gv_sig` 在新二进制中重定位全局变量并重建 `gv_*` 字段。
-- **`preprocess_common_skill`**：统一的 `preprocess_skill` 模板函数，支持 func/vfunc、gv、vtable 三种目标类型的任意组合。大多数 skill 脚本只需声明常量并委托给此函数。
+- `preprocess_patch_via_mcp`：复用旧 patch YAML 的 `patch_sig/patch_bytes`，并要求 `patch_sig` 在新二进制中 `find_bytes` 唯一命中（`== 1`）后才成功。
+- `preprocess_struct_offset_sig_via_mcp`：复用旧 offset signature 解析结构体成员偏移与大小。
+- `preprocess_index_based_vfunc_via_mcp`：通过基类旧 `vfunc_index` + 新版 vtable 反解继承 vfunc 的新地址与元数据。
+- **`preprocess_common_skill`**：统一的 `preprocess_skill` 模板函数，支持 func/vfunc、gv、patch、struct-member、vtable、inherit-vfunc 多种目标类型组合。大多数 skill 脚本只需声明常量并委托给此函数。
 
-其中 `write_vtable_yaml` / `write_func_yaml` 现使用 `yaml.safe_dump` 导出：
+其中写盘函数统一使用 `yaml.safe_dump` 导出：
 - 保证 key 集合与顺序控制（`sort_keys=False`）
 - 具体标量引号/样式由 PyYAML 决定
 
@@ -68,7 +73,8 @@
 ## 注意事项
 - 预处理属于“加速路径”：返回 `False` 是可接受结果，上层会回退 Agent SKILL。
 - 现在“是否预处理成功”由脚本控制；脚本应自行保证输出完整性。
-- `preprocess_func_sig_via_mcp` 仍要求 `find_bytes` 唯一命中；0或多命中都会失败。
+- `preprocess_func_sig_via_mcp` 要求 `find_bytes` 唯一命中；0或多命中都会失败。
+- `preprocess_patch_via_mcp` 同样要求 `patch_sig` 唯一命中（`==1`），未命中或多命中都失败。
 - vfunc 偏移仍按 `index * 8` 计算（64位假设）。
 - 若缺少脚本或脚本导出不符合约定，该 skill 会直接走 Agent SKILL，不会阻断主流程。
 
