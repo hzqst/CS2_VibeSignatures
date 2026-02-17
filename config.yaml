@@ -41,12 +41,12 @@ modules:
 
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
-          - CGameResourceService.{platform}.yaml
+          - CGameResourceService_m_pEntitySystem.{platform}.yaml
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
 
       - name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
         expected_output:
-          - CNetworkGameServer.{platform}.yaml
+          - CNetworkGameServer_ClientList.{platform}.yaml
           - CServerSideClientBase_ClientPrintf.{platform}.yaml
         expected_input:
           - CNetworkGameServer_vtable.{platform}.yaml
@@ -386,7 +386,7 @@ modules:
         expected_output:
           - FireBullets.{platform}.yaml
           - TraceAttack.{platform}.yaml
-          - CTakeDamageInfo.{platform}.yaml
+          - CTakeDamageInfo_HitGroupInfo.{platform}.yaml
         max_retries: 6
 
       - name: find-GetCSWeaponDataFromKey
@@ -485,7 +485,7 @@ modules:
       - name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
         expected_output:
           - CSource2GameEntities_CheckTransmit.{platform}.yaml
-          - CCheckTransmitInfo.{platform}.yaml
+          - CCheckTransmitInfo_m_nPlayerSlot.{platform}.yaml
         expected_input:
           - CSource2GameEntities_vtable.{platform}.yaml
         prerequisite:
@@ -666,8 +666,8 @@ modules:
       - name: find-CGameSceneNode_GetSkeletonInstance
         expected_output:
           - CGameSceneNode_GetSkeletonInstance.{platform}.yaml
-          - CBaseAnimGraph.{platform}.yaml
-          - CSkeletonInstance.{platform}.yaml
+          - CBaseAnimGraph_m_skeletonInstance.{platform}.yaml
+          - CSkeletonInstance_m_animationController.{platform}.yaml
 
       - name: find-CPointTeleport_Teleport
         expected_output:
