@@ -800,6 +800,14 @@ modules:
           - g_pCSBotManager.{platform}.yaml
           - g_pNavMesh.{platform}.yaml
 
+      - name: find-CCSBotManager_AddBot_BotNavIgnore
+        expected_output:
+          - CCSBotManager_AddBot_BotNavIgnore.{platform}.yaml
+        expected_input:
+          - CCSBotManager_AddBot.{platform}.yaml
+        prerequisite:
+          - find-CCSBotManager_AddBot-AND-g_pCSBotManager-AND-g_pNavMesh
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -1500,3 +1508,8 @@ modules:
 
       - name: g_pNavMesh
         category: gv
+
+      - name: CCSBotManager_AddBot_BotNavIgnore
+        category: patch
+        alias:
+          - BotNavIgnore
