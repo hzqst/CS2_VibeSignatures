@@ -1,0 +1,9 @@
+func_name: CDecalGameSystem_ClientPreUpdate
+func_va: '0x18036ebf0'
+func_rva: '0x36ebf0'
+func_size: '0x28'
+func_sig: 40 53 48 83 EC ?? 48 8B D9 48 8B 89 ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B
+  01 FF 50 ??
+vtable_name: CDecalGameSystem
+vfunc_offset: '0xa8'
+vfunc_index: 21
