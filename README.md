@@ -279,12 +279,12 @@ Prompt:
  - /skill-creator Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH** according to what we just did. 
  - Don't pack skill. 
  - Note that the SKILL should be working with both `server.dll` and `server.so`. 
- - **ALWAYS** check for: @.claude/skills/find-CBaseEntity_IsPlayerPawn/SKILL.md as references.
+ - **ALWAYS** check for: @.claude/skills/find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController/SKILL.md as references.
 ```
 
-7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_IsPlayerPawn.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+7. Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
- - Don't forget to change `CBaseEntity_IsPlayerPawn` to `CBasePlayerController_Respawn` in the preprocessor script.
+ - Don't forget to change `CBaseEntity_IsPlayerPawn` and `CBaseEntity_IsPlayerController` to `CBasePlayerController_Respawn` in the preprocessor script.
 
  * The preprocessor script will be used when signature from older version of game is available.
 

@@ -1,10 +1,11 @@
-﻿#!/usr/bin/env python3
-"""Preprocess script for find-CBaseEntity_IsPlayerPawn skill."""
+#!/usr/bin/env python3
+"""Preprocess script for find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "CBaseEntity_IsPlayerPawn",
+    "CBaseEntity_IsPlayerController",
 ]
 
 

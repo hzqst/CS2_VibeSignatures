@@ -684,13 +684,14 @@ modules:
         prerequisite:
           - find-CTriggerPush_Touch
 
-      - name: find-CBaseEntity_IsPlayerPawn
+      - name: find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController
         expected_output:
           - CBaseEntity_IsPlayerPawn.{platform}.yaml
+          - CBaseEntity_IsPlayerController.{platform}.yaml
         expected_input:
-          - CBaseEntity_vtable.{platform}.yaml
+          - ShowHudHint.{platform}.yaml
         prerequisite:
-          - find-CBaseEntity_vtable
+          - find-ShowHudHint
 
       - name: find-CBaseEntity_GetHammerUniqueId
         expected_output:
@@ -815,6 +816,10 @@ modules:
           - CCSBotManager_AddBot.{platform}.yaml
         prerequisite:
           - find-CCSBotManager_AddBot-AND-g_pCSBotManager-AND-g_pNavMesh
+
+      - name: find-ShowHudHint
+        expected_output:
+          - ShowHudHint.{platform}.yaml
 
     symbols:
       - name: CSource2Server_vtable
@@ -1172,6 +1177,9 @@ modules:
       - name: NetworkStateChanged
         category: func
 
+      - name: ClientPrint
+        category: func
+
       - name: UTIL_ClientPrintAll
         category: func
 
@@ -1388,18 +1396,18 @@ modules:
         alias:
           - SetGroundEntity
 
+      - name: CBaseEntity_GetHammerUniqueId
+        category: vfunc
+        alias:
+          - CBaseEntity::GetHammerUniqueId
+          - GetHammerUniqueId
+
       - name: CBaseEntity_IsPlayerPawn
         category: vfunc
         alias:
           - CBaseEntity::IsPlayerPawn
           - IsEntityPawn
           - IsPlayerPawn
-
-      - name: CBaseEntity_GetHammerUniqueId
-        category: vfunc
-        alias:
-          - CBaseEntity::GetHammerUniqueId
-          - GetHammerUniqueId
 
       - name: CBaseEntity_IsPlayerController
         category: vfunc
@@ -1524,3 +1532,6 @@ modules:
         category: patch
         alias:
           - BotNavIgnore
+
+      - name: ShowHudHint
+        category: func

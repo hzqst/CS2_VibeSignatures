@@ -1,5 +1,5 @@
 func_name: CBaseEntity_IsPlayerPawn
-func_va: '0x180168580'
-func_rva: '0x168580'
-func_size: '0xb'
-func_sig: 80 B9 E0 02 00 00 00 0F 94 C0 C3
+vfunc_sig: FF 92 40 05 00 00 84 C0 0F 85 ?? ?? ?? ??
+vtable_name: CBaseEntity
+vfunc_offset: '0x540'
+vfunc_index: 168
