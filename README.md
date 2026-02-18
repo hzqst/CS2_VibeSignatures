@@ -8,13 +8,13 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 
 * Signatures from old version of game will be used when available - to save as many tokens as possible.
 
-* Avg cost for the first run: ~ 30$ for claude sonnet 4.5, or ~ 15$ for codex-5.3-high
+* Avg cost for the first run: ~ 60$ for claude sonnet 4.5, or ~ 30$ for codex-5.3-high
 
-* Avg time consume for the first run: 30mins ~ 60mins, depending on the model you are using.
+* Avg time consume for the first run: 60 ~ 120 mins, depending on the model you are using.
 
 * Avg time consume for the second run, when signatures from old version are available: 5mins ~ 15mins, depending on how many signatures are gone after game update.
 
-* Feel free to contribute your SKILLS with PR!
+* Feel free to contribute your SKILLS with PR! See `TODO: Add skill support for XXXXXX` in closed **Issues**.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 
 6. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
-## How to find and generate signatures for all functions or variables declared in `config.yaml`
+## Overall workflow
 
 1. Download CS2 binaries
 
@@ -38,11 +38,15 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 python download_bin.py -gamever 14135
 ```
 
-2. Run `python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]`
+2. Find and generate signatures for all symbols declared in `config.yaml`
 
-* Signatures from `from bin/{previous_gamever}/{module}/*.{platform}.yaml` will be used to find functions / global vars directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
+ ```bash
+ python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]
+ ```
 
-## How to convert generated yaml to gamedata json / txt
+* Old signatures from `from bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` will be used to find symbols directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
+
+3. Convert yaml(s) to gamedata json / txt
 
 ```bash
 python update_gamedata.py -gamever 14135 [-debug]
