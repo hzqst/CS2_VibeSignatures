@@ -1,4 +1,5 @@
 modules:
+
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
     path_linux: game/bin/linuxsteamrt64/libvphysics2.so
@@ -107,6 +108,14 @@ modules:
         alias:
           - CNetworkGameServer::GetFreeClient
           - GetFreeClient
+
+  - name: client
+    path_windows: game/csgo/bin/win64/client.dll
+    path_linux: game/csgo/bin/linuxsteamrt64/libclient.so
+
+    skills:
+
+    symbols:
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll

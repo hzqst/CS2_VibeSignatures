@@ -245,7 +245,7 @@ python update_gamedata.py -gamever 14135 [-debug]
       }
       while ( v28 != v29 );
 
-  - The SKILL should: generate CBasePlayerController_Respawn.{platform}.yaml, with vfunc_sig.
+  - The SKILL should: generate CBasePlayerController_Respawn.{platform}.yaml, with func_sig (or vfunc_sig if CBasePlayerController_Respawn is too short or too generic).
 
   - Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH**. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. 
 
