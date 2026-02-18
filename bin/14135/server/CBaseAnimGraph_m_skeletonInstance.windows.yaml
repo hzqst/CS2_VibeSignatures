@@ -1,7 +1,0 @@
-struct_name: CBaseAnimGraph
-member_name: m_skeletonInstance
-offset: '0x278'
-size: 8
-offset_sig: 48 83 EC 28 48 8B 89 78 02 00 00 48 8B 01 FF 50 40 48 85 C0 74 ?? 48 8B
-  80 A0 03 00 00
-offset_sig_disp: 4

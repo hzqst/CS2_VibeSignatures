@@ -1382,8 +1382,6 @@ modules:
 
       - name: CPhysBox_Use_PatchCaller
         category: patch
-        alias:
-          - CPhysBox_Use_PatchCaller
 
       - name: CBaseEntity_SetGroundEntity
         category: func

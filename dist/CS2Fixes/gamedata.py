@@ -29,17 +29,6 @@ MODULE_ENABLED = True
 # Relative path to gamedata file within this dist directory
 GAMEDATA_PATH = "gamedata/cs2fixes.games.txt"
 
-# Signatures that should NOT be auto-updated from YAML data.
-# These are hand-crafted to point at a specific instruction (e.g. the patch target)
-# rather than the function start, so our auto-generated function-start signatures
-# would be incorrect for CS2Fixes' purposes.
-SKIP_SIG_UPDATE = set()
-
-# Mapping from CS2Fixes Patches entry names to YAML symbol names.
-# Used when the VDF entry name differs from the YAML patch symbol name.
-PATCH_ALIAS_MAP = {
-    "CPhysBox_Use": "CPhysBox_Use_PatchCaller",
-}
 
 # Struct member offsets that need to be divided by a factor before writing.
 # CS2Fixes indexes some structs by element count (pointer-sized slots) rather
@@ -95,16 +84,6 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
     for func_name, entry in signatures.items():
         # Convert :: to _ for matching with YAML data
         yaml_func_name = normalize_func_name_colons_to_underscore(func_name, alias_to_name_map)
-
-        # Skip signatures that are hand-crafted for specific instruction offsets
-        if func_name in SKIP_SIG_UPDATE or yaml_func_name in SKIP_SIG_UPDATE:
-            skipped_count += 1
-            if debug:
-                skipped_symbols.append({
-                    "name": func_name,
-                    "reason": "in SKIP_SIG_UPDATE (hand-crafted signature)"
-                })
-            continue
 
         # Determine library
         library = entry.get("library")
@@ -190,11 +169,27 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
                             "platform": platform
                         })
 
+    # Build patch-only alias map from yaml_data metadata to avoid collisions
+    # with non-patch symbols (e.g. CPhysBox_Use offset/signature entries).
+    patch_alias_to_name_map = {}
+    for yaml_name, yaml_entry in yaml_data.items():
+        if yaml_entry.get("category") != "patch":
+            continue
+
+        patch_alias_to_name_map[yaml_name] = yaml_name
+
+        aliases = yaml_entry.get("aliases", [])
+        if isinstance(aliases, str):
+            aliases = [aliases]
+        for alias in aliases:
+            patch_alias_to_name_map[alias] = yaml_name
+
     # Update Patches
     patches = csgo.get("Patches", {})
     for patch_name, entry in patches.items():
-        # Resolve via PATCH_ALIAS_MAP first, then alias_to_name_map
-        yaml_patch_name = PATCH_ALIAS_MAP.get(patch_name)
+        # Resolve via patch-only aliases from config, then fallback to generic
+        # normalization logic.
+        yaml_patch_name = patch_alias_to_name_map.get(patch_name)
         if not yaml_patch_name:
             yaml_patch_name = normalize_func_name_colons_to_underscore(
                 patch_name, alias_to_name_map
@@ -202,6 +197,9 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
 
         # Find matching YAML data
         yaml_entry = yaml_data.get(yaml_patch_name)
+        if yaml_entry and yaml_entry.get("category") not in (None, "patch"):
+            yaml_entry = None
+
         if not yaml_entry:
             skipped_count += 1
             if debug:

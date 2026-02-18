@@ -41,6 +41,22 @@ DEFAULT_BIN_DIR = "bin"
 DEFAULT_DIST_DIR = "dist"
 DEFAULT_PLATFORMS = "windows,linux"
 
+PATCH_COMPAT_ALIASES = {
+    "CCSPlayer_MovementServices_FullWalkMove_SpeedClamp": [
+        "ServerMovementUnlock",
+    ],
+    "CCSPlayer_MovementServices_CheckJumpButton_WaterPatch": [
+        "CheckJumpButtonWater",
+        "FixWaterFloorJump",
+    ],
+    "CCSBotManager_AddBot_BotNavIgnore": [
+        "BotNavIgnore",
+    ],
+    "CPhysBox_Use_PatchCaller": [
+        "CPhysBox_Use",
+    ],
+}
+
 
 def parse_args():
     """Parse command line arguments."""
@@ -317,7 +333,14 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
 
     Returns:
         Tuple: (yaml_data dict, missing_symbols list)
-        yaml_data: {func_name: {"library": str, "category": str, platform: yaml_data}}
+        yaml_data: {
+            func_name: {
+                "library": str,
+                "category": str,
+                "aliases": list[str],
+                platform: yaml_data
+            }
+        }
         missing_symbols: List of {"name": str, "library": str, "platform": str, "path": str}
     """
     yaml_data = {}
@@ -337,10 +360,20 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
                 continue
 
             category = symbol.get("category")
+            aliases = symbol.get("alias", [])
+            if isinstance(aliases, str):
+                aliases = [aliases]
+            else:
+                aliases = list(aliases)
+
+            if category == "patch":
+                compat_aliases = PATCH_COMPAT_ALIASES.get(func_name, [])
+                aliases = list(dict.fromkeys([*aliases, *compat_aliases]))
 
             yaml_data[func_name] = {
                 "library": module_name,
-                "category": category
+                "category": category,
+                "aliases": aliases
             }
 
             # Handle structmember type differently
@@ -403,23 +436,59 @@ def load_all_yaml_data(config, bin_dir, gamever, platforms, debug=False):
                     else:
                         print(f"  Warning: Struct member YAML not found: {member_yaml_path}")
             else:
-                # Original logic for func/vfunc/struct types
+                # Original logic for func/vfunc/struct types, with patch alias fallback.
                 for platform in platforms:
-                    yaml_path = os.path.join(
+                    candidate_names = [func_name]
+                    if category == "patch":
+                        candidate_names.extend(aliases)
+
+                    loaded_data = None
+                    missing_path = os.path.join(
                         bin_dir, gamever, module_name, f"{func_name}.{platform}.yaml"
                     )
-                    data = load_yaml_data(yaml_path)
-                    if data:
-                        yaml_data[func_name][platform] = data
+                    alias_paths = []
+
+                    for candidate_name in candidate_names:
+                        yaml_path = os.path.join(
+                            bin_dir, gamever, module_name, f"{candidate_name}.{platform}.yaml"
+                        )
+                        data = load_yaml_data(yaml_path)
+                        if not data:
+                            if candidate_name != func_name:
+                                alias_paths.append(yaml_path)
+                            continue
+
+                        if category == "patch" and "patch_bytes" not in data:
+                            if candidate_name != func_name:
+                                alias_paths.append(yaml_path)
+                            continue
+
+                        loaded_data = data
+                        break
+
+                    if loaded_data:
+                        yaml_data[func_name][platform] = loaded_data
                     else:
                         if debug:
                             missing_symbols.append({
                                 "name": func_name,
                                 "library": module_name,
                                 "platform": platform,
-                                "path": yaml_path
+                                "path": missing_path
                             })
-                        print(f"  Warning: YAML not found: {yaml_path}")
+
+                        if category == "patch" and alias_paths:
+                            print(
+                                f"  Warning: Patch YAML not found or missing patch_bytes: "
+                                f"{missing_path} (tried aliases: {', '.join(alias_paths)})"
+                            )
+                        elif category == "patch":
+                            print(
+                                f"  Warning: Patch YAML not found or missing patch_bytes: "
+                                f"{missing_path}"
+                            )
+                        else:
+                            print(f"  Warning: YAML not found: {missing_path}")
 
     return yaml_data, missing_symbols
 

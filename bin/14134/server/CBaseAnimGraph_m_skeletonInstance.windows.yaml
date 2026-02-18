@@ -1,4 +1,0 @@
-struct_name: CBaseAnimGraph
-member_name: m_skeletonInstance
-offset: '0x278'
-size: 8
