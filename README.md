@@ -54,9 +54,18 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 `dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
 
+ - 2 skipped symbols.
+
+ - `GameEventManager`: not used anymore by CSS.
+ - `CEntityResourceManifest_AddResource`: barely changes on game update.
+
 [CS2Fixes](https://github.com/Source2ZE/CS2Fixes) 
 
 `dist/CS2Fixes/gamedata/cs2fixes.games.txt`
+
+ - 1 skipped symbol.
+
+ - `CCSPlayerPawn_GetMaxSpeed` because it is not a thing in `server.dll`
 
 [swiftlys2](https://github.com/swiftly-solution/swiftlys2) 
 
@@ -64,14 +73,20 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 `dist/swiftlys2/plugin_files/gamedata/cs2/core/signatures.jsonc`
 
+ - 44 skipped symbols.
+
 [plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk) 
 
 `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
 
+ - 14 skipped symbols.
+ 
 [cs2kz-metamod](https://github.com/Source2ZE/CS2Fixes) 
 
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
+ - 42 skipped symbols.
+ 
 [modsharp](https://github.com/Kxnrl/modsharp-public) 
 
 `dist/modsharp-public/.asset/gamedata/core.games.jsonc` 
@@ -86,10 +101,14 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 `dist/modsharp-public/.asset/gamedata/tier0.games.jsonc`
 
+ - 230 skipped symbols.
+ 
 [CS2Surf/Timer](https://github.com/CS2Surf-CN/Timer) 
 
 `dist/cs2surf/gamedata/cs2surf-core.games.jsonc` 
 
+ - 26 skipped symbols.
+ 
 ## How to create SKILL for vtable
 
 `CCSPlayerPawn` for example.
