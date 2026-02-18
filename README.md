@@ -532,7 +532,7 @@ Mitigation: You should run `pip install .` and `python py-activate-idalib.py` un
 
 Mitigation: Try `set IDADIR=C:\Program Files\IDA Professional 9.0` or add `IDADIR=C:\Program Files\IDA Professional 9.0` to your system environment.
 
-## Jenkins References
+## Jenkins workflow references
 
 ```bash
 @echo Download latest game binaries
@@ -541,13 +541,13 @@ python download_bin.py -gamever %CS2_GAMEVER%
 ```
 
 ```bash
-@echo Analyze with Claude and IDA-Pro-MCP
+@echo Analyze game binaries
 
-python ida_analyze_bin.py -gamever %CS2_GAMEVER% -agent=claude.cmd -platform %CS2_PLATFORM% -debug
+python ida_analyze_bin.py -gamever %CS2_GAMEVER% -agent="claude.cmd" -platform %CS2_PLATFORM% -debug
 ```
 
 ```bash
-@echo Sync symbol yamls to gamedata
+@echo Update gamedata with generated yamls
 
 python update_gamedata.py -gamever %CS2_GAMEVER% -debug
 ```
