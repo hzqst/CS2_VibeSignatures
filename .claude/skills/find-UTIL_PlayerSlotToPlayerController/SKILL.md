@@ -1,6 +1,7 @@
 ---
 name: find-UTIL_PlayerSlotToPlayerController
 description: Find and identify the UTIL_PlayerSlotToPlayerController function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the function by searching for the "game_playerleave" string reference and identifying its callee.
+disable-model-invocation: true
 ---
 
 # Find UTIL_PlayerSlotToPlayerController

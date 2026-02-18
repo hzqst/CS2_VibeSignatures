@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetEntityName function
   on CEntityIdentity, which sets the targetname of an entity.
   Triggers: CEntityIdentity_SetEntityName, SetEntityName, entity name, set entity name
+disable-model-invocation: true
 ---
 
 # CEntityIdentity_SetEntityName Function Location Workflow

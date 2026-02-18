@@ -1,6 +1,7 @@
 ---
 name: find-CBasePlayerPawn_CommitSuicide
 description: Find and identify the CBasePlayerPawn_CommitSuicide function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CommitSuicide function by searching for the "bot_kill" command string, tracing to its handler, and identifying the CommitSuicide vfunc call in the kill loop.
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_CommitSuicide

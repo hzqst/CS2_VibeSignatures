@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController
 description: Find and identify the CBaseEntity_IsPlayerPawn and CBaseEntity_IsPlayerController virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate both vfuncs by decompiling ShowHudHint, following its first callee, and extracting the vtable offsets for IsPlayerPawn and IsPlayerController.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_IsPlayerPawn and CBaseEntity_IsPlayerController

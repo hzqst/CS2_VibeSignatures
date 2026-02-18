@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the SelectItem function
   in CCSPlayer_WeaponServices vtable.
   Trigger: CCSPlayer_WeaponServices_SelectItem, SelectItem, weapon select, switch weapon
+disable-model-invocation: true
 ---
 
 # CCSPlayer_WeaponServices_SelectItem Function Location Workflow

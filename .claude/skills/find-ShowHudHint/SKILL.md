@@ -1,6 +1,7 @@
 ---
 name: find-ShowHudHint
 description: Find and identify the ShowHudHint function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ShowHudHint function by searching for its string pointer in the data section and resolving the function pointer at string_ptr + 0x10.
+disable-model-invocation: true
 ---
 
 # Find ShowHudHint

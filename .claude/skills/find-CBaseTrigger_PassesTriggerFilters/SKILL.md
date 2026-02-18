@@ -1,6 +1,7 @@
 ---
 name: find-CBaseTrigger_PassesTriggerFilters
 description: Find and identify the CBaseTrigger_PassesTriggerFilters virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the PassesTriggerFilters function by first finding CBaseTrigger_StartTouch and extracting the first virtual call offset from its decompiled code.
+disable-model-invocation: true
 ---
 
 # Find CBaseTrigger_PassesTriggerFilters

@@ -1,6 +1,7 @@
 ---
 name: find-CCSPlayer_WeaponServices_Weapon_GetSlot
 description: Find and identify the CCSPlayer_WeaponServices_Weapon_GetSlot function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the Weapon_GetSlot function by searching for a known string in a caller function and tracing the call target.
+disable-model-invocation: true
 ---
 
 # Find CCSPlayer_WeaponServices_Weapon_GetSlot

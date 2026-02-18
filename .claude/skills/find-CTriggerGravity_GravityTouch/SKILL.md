@@ -1,6 +1,7 @@
 ---
 name: find-CTriggerGravity_GravityTouch
 description: Find and identify the CTriggerGravity_GravityTouch function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GravityTouch handler by searching for the "GravityTouch" string reference and analyzing the registration pattern.
+disable-model-invocation: true
 ---
 
 # Find CTriggerGravity_GravityTouch

@@ -1,6 +1,7 @@
 ---
 name: find-CServerSideClient_IsHearingClient
 description: Find and identify the CServerSideClient_IsHearingClient function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 engine2.dll or libengine2.so to locate the IsHearingClient function by cross-referencing CSVCMsg_PeerList_t vtable and analyzing the bidirectional hearing check pattern.
+disable-model-invocation: true
 ---
 
 # Find CServerSideClient_IsHearingClient

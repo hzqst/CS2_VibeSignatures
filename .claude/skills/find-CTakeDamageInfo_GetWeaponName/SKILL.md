@@ -1,6 +1,7 @@
 ---
 name: find-CTakeDamageInfo_GetWeaponName
 description: Find and identify the CTakeDamageInfo_GetWeaponName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetWeaponName function by searching for the "_projectile" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CTakeDamageInfo_GetWeaponName

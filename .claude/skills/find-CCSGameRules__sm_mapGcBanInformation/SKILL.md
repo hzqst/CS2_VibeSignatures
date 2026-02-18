@@ -1,6 +1,7 @@
 ---
 name: find-CCSGameRules__sm_mapGcBanInformation
 description: Find and identify the CCSGameRules__sm_mapGcBanInformation global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GC ban information map structure by decompiling CCSPlayerController_ResourceDataThink's sub-function (Linux) or searching for the "Notification about user penalty" string (Windows).
+disable-model-invocation: true
 ---
 
 # Find CCSGameRules__sm_mapGcBanInformation

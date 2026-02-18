@@ -6,6 +6,7 @@ description: |
   inputdata->pCaller to this (the CPhysBox entity pointer), so the caller is the physbox itself.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the caller argument.
   Trigger: CPhysBox_Use patch caller, CPhysBox_Use_PatchCaller, physbox use caller patch
+disable-model-invocation: true
 ---
 
 # CPhysBox_Use_PatchCaller Patch Workflow

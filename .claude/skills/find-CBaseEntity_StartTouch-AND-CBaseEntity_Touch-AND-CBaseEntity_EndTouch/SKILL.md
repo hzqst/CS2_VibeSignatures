@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
 description: Find and identify the CBaseEntity_StartTouch, CBaseEntity_Touch, and CBaseEntity_EndTouch virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these touch-related virtual functions by searching for the "INVALID CGameEventStartTouchCollideAdaptor" string reference and analyzing the touch event handler functions.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_StartTouch, CBaseEntity_Touch, and CBaseEntity_EndTouch

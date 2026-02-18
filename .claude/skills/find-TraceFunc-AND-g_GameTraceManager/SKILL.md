@@ -1,6 +1,7 @@
 ---
 name: find-TraceFunc-AND-g_GameTraceManager
 description: Find and identify the TraceFunc function and g_GameTraceManager global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate TraceFunc by analyzing the FindUseEntity function and identifying the trace call with CTraceFilter vftable setup and the g_GameTraceManager global pointer.
+disable-model-invocation: true
 ---
 
 # Find TraceFunc AND g_GameTraceManager

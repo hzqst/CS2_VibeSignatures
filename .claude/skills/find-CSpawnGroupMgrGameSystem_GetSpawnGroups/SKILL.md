@@ -1,6 +1,7 @@
 ---
 name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
 description: Find and identify the CSpawnGroupMgrGameSystem_GetSpawnGroups function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetSpawnGroups function by searching for known format string references and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CSpawnGroupMgrGameSystem_GetSpawnGroups

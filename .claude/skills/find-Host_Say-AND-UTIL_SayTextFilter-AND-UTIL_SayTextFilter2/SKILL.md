@@ -1,6 +1,7 @@
 ---
 name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
 description: Find and identify the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 function by searching for the "%s %s @ %s:" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2

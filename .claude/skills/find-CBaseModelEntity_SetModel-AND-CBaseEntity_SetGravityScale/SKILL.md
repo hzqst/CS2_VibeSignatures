@@ -1,6 +1,7 @@
 ---
 name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
 description: Find and identify the CBaseModelEntity_SetModel and CBaseEntity_SetGravityScale functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these functions by searching for the "weapons/models/grenade/flashbang/weapon_flashbang.vmdl" string reference and analyzing the flashbang grenade initializer function.
+disable-model-invocation: true
 ---
 
 # Find CBaseModelEntity_SetModel and CBaseEntity_SetGravityScale

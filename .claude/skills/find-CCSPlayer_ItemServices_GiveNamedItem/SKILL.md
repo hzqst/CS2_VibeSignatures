@@ -1,6 +1,7 @@
 ---
 name: find-CCSPlayer_ItemServices_GiveNamedItem
 description: Find and identify the CCSPlayer_ItemServices_GiveNamedItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GiveNamedItem wrapper function in CCSPlayer_ItemServices vtable by searching for the "GiveNamedItem: interpreting" string reference and analyzing vtable entries.
+disable-model-invocation: true
 ---
 
 # Find CCSPlayer_ItemServices_GiveNamedItem

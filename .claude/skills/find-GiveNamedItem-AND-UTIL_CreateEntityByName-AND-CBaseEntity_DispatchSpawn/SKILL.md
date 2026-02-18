@@ -1,6 +1,7 @@
 ---
 name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
 description: Find and identify the GiveNamedItem, UTIL_CreateEntityByName and CBaseEntity_DispatchSpawn functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these related entity creation functions by searching for the "GiveNamedItem: interpreting" debug string and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find GiveNamedItem, UTIL_CreateEntityByName and CBaseEntity_DispatchSpawn

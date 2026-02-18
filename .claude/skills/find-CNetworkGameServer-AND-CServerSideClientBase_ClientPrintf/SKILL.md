@@ -1,6 +1,7 @@
 ---
 name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
 description: Find and identify the CNetworkGameServer global pointer and CServerSideClientBase_ClientPrintf virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CNetworkGameServer instance by searching for the "tried to sprint to a non-client" debug string reference and analyzing the function that validates client slot indices and calls ClientPrintf via vtable.
+disable-model-invocation: true
 ---
 
 # Find CNetworkGameServer and CServerSideClientBase_ClientPrintf

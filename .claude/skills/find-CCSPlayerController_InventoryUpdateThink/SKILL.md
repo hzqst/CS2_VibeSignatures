@@ -1,6 +1,7 @@
 ---
 name: find-CCSPlayerController_InventoryUpdateThink
 description: Find and identify the CCSPlayerController_InventoryUpdateThink wrapper function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the InventoryUpdateThink think function wrapper by searching for the think function name string in schema registration and tracing through the schema structure to find the wrapper function pointer.
+disable-model-invocation: true
 ---
 
 # Find CCSPlayerController_InventoryUpdateThink

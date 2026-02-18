@@ -10,6 +10,7 @@ description: |
   (5) Rename functions and variables to improve readability
   (6) Analyze function call relationships and data flow
   Trigger: CBaseEntity_Precache
+disable-model-invocation: true
 ---
 
 # CBaseEntity_Precache Function Location Workflow

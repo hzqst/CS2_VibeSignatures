@@ -1,6 +1,7 @@
 ---
 name: find-CNavMesh_GetNearestNavArea
 description: Find and identify the CNavMesh_GetNearestNavArea function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CNavMesh_GetNearestNavArea function by searching for the string "CNavMesh::GetNearestNavArea" and finding the function that references it.
+disable-model-invocation: true
 ---
 
 # Find CNavMesh_GetNearestNavArea

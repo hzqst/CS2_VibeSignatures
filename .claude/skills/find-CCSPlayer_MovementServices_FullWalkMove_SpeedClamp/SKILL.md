@@ -4,6 +4,7 @@ description: |
   Find and identify the velocity clamping branch inside CCSPlayer_MovementServices_FullWalkMove in CS2 binary using IDA Pro MCP, then generate a patch signature to disable it.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the speed-clamp if-branch that caps player velocity to maxspeed inside FullWalkMove.
   Trigger: FullWalkMove speed clamp, velocity clamping patch, FullWalkMove SpeedClamp, disable maxspeed clamp
+disable-model-invocation: true
 ---
 
 # CCSPlayer_MovementServices_FullWalkMove_SpeedClamp Patch Workflow

@@ -1,6 +1,7 @@
 ---
 name: find-CBasePlayerController_SetPawn
 description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by finding CSource2GameClients_ClientDisconnect (via "player_disconnect" + "xuid" string xrefs) and identifying the characteristic call pattern within it.
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_SetPawn

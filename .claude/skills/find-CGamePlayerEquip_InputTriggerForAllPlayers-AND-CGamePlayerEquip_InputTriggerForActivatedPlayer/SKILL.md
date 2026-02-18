@@ -1,6 +1,7 @@
 ---
 name: find-CGamePlayerEquip_InputTriggerForAllPlayers-AND-CGamePlayerEquip_InputTriggerForActivatedPlayer
 description: Find and identify the CGamePlayerEquip_InputTriggerForAllPlayers and CGamePlayerEquip_InputTriggerForActivatedPlayer functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these input handlers by searching for their string pointers in the data section and resolving the function pointers at string_ptr + 0x10.
+disable-model-invocation: true
 ---
 
 # Find CGamePlayerEquip_InputTriggerForAllPlayers and CGamePlayerEquip_InputTriggerForActivatedPlayer

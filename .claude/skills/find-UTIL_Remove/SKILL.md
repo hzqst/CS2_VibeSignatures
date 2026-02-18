@@ -1,6 +1,7 @@
 ---
 name: find-UTIL_Remove
 description: Find and identify the UTIL_Remove function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the UTIL_Remove function by analyzing the Molotov extinguish pattern and identifying the finalization call after particle effects.
+disable-model-invocation: true
 ---
 
 # Find UTIL_Remove

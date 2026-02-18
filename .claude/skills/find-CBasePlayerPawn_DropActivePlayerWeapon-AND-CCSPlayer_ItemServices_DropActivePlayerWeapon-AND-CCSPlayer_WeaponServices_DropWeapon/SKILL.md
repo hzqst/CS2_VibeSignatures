@@ -3,6 +3,7 @@ name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_Dro
 description: |
   Find and identify CCSPlayer_ItemServices_DropActivePlayerWeapon and CCSPlayer_ItemServices_RemoveWeapons functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the weapon drop call chain: CBasePlayerPawn_DropActivePlayerWeapon (vtable thunk) -> CCSPlayer_ItemServices_DropActivePlayerWeapon -> CCSPlayer_WeaponServices_DropWeapon. Located via "KilledNPC" string xref in the death handler function.
   Trigger: CBasePlayerPawn_DropActivePlayerWeapon, CCSPlayer_ItemServices_DropActivePlayerWeapon, CCSPlayer_WeaponServices_DropWeapon, DropActivePlayerWeapon, DropWeapon, KilledNPC
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_DropActivePlayerWeapon, CCSPlayer_ItemServices_DropActivePlayerWeapon, and CCSPlayer_WeaponServices_DropWeapon

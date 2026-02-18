@@ -1,6 +1,7 @@
 ---
 name: find-CBasePlayerController_SetPlayerName
 description: Find and identify the CBasePlayerController_SetPlayerName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPlayerName function by searching for known string references and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_SetPlayerName

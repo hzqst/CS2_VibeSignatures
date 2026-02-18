@@ -3,6 +3,7 @@ name: find-CPointTeleport_Teleport
 description: |
   Find and identify the CPointTeleport_Teleport virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the teleport handler function for point_teleport entities.
   Triggers: CPointTeleport_Teleport, point_teleport, teleport entity, can't teleport object
+disable-model-invocation: true
 ---
 
 # CPointTeleport_Teleport Function Location Workflow

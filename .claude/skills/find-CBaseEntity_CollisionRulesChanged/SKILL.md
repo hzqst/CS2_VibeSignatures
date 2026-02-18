@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_CollisionRulesChanged
 description: Find and identify the CBaseEntity_CollisionRulesChanged virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CollisionRulesChanged function by first finding CBaseEntity_SetOwner and extracting the very last virtual call offset from its decompiled code.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_CollisionRulesChanged

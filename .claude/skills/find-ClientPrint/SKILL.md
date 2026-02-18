@@ -1,6 +1,7 @@
 ---
 name: find-ClientPrint
 description: Find and identify the ClientPrint function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ClientPrint function by searching for known localization string references like "#Player_Cash_Award_ExplainSuicide_TeammateGotCash" and analyzing cross-references to find the print function.
+disable-model-invocation: true
 ---
 
 # Find ClientPrint

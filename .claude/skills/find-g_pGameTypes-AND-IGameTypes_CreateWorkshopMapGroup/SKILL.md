@@ -1,6 +1,7 @@
 ---
 name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
 description: Find and identify the g_pGameTypes global variable and IGameTypes_CreateWorkshopMapGroup virtual function call in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the IGameTypes interface pointer by searching for the "mapgroup workshop" string reference and analyzing the virtual function call pattern.
+disable-model-invocation: true
 ---
 
 # Find g_pGameTypes and IGameTypes_CreateWorkshopMapGroup

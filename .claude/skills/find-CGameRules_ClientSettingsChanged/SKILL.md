@@ -1,6 +1,7 @@
 ---
 name: find-CGameRules_ClientSettingsChanged
 description: Find and identify the CGameRules_ClientSettingsChanged function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ClientSettingsChanged function by searching for the "fov_desired" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CGameRules_ClientSettingsChanged

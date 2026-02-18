@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetOwner function.
   CBaseEntity_SetOwner is a virtual function on CBaseEntity, resolved via vtable offset in CCSPlayer_WeaponServices_EquipWeapon.
   Trigger: CBaseEntity_SetOwner, SetOwner
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_SetOwner

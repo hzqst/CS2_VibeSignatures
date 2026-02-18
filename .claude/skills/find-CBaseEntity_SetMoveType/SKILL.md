@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_SetMoveType
 description: Find and identify the CBaseEntity_SetMoveType function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetMoveType function by searching for the "env_shake %s with" debug string and analyzing cross-references to find the matching code pattern.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_SetMoveType

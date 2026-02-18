@@ -4,6 +4,7 @@ description: |
   Find and identify the CBasePlayerPawn_GetEyeAngles virtual function in CS2 binary using IDA Pro MCP.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetEyeAngles function on CBasePlayerPawn.
   Trigger: CBasePlayerPawn_GetEyeAngles, GetEyeAngles, eye angles
+disable-model-invocation: true
 ---
 
 # CBasePlayerPawn_GetEyeAngles Function Location Workflow

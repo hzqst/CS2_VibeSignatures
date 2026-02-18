@@ -1,6 +1,7 @@
 ---
 name: find-UTIL_ClientPrintAll
 description: Find and identify the UTIL_ClientPrintAll function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the UTIL_ClientPrintAll function by searching for the "#Game_idle_kick" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find UTIL_ClientPrintAll

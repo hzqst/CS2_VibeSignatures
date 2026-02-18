@@ -5,6 +5,7 @@ description: |
   This patch removes the navigation mesh requirement so bots can be added even without a nav mesh loaded.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the nav mesh check in AddBot.
   Trigger: bot nav ignore, AddBot nav mesh patch, bot without nav, CCSBotManager nav ignore
+disable-model-invocation: true
 ---
 
 # CCSBotManager_AddBot_BotNavIgnore Patch Workflow

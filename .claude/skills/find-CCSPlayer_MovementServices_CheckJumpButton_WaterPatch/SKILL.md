@@ -5,6 +5,7 @@ description: |
   This patch changes the water jump velocity from 100.0f to 145.0f by modifying the immediate operand of a mov instruction.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the water jump height value.
   Trigger: water jump patch, CheckJumpButton water velocity, jump height patch, water jump 145
+disable-model-invocation: true
 ---
 
 # CCSPlayer_MovementServices_CheckJumpButton_WaterPatch

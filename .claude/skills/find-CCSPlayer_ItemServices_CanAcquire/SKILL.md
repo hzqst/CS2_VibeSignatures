@@ -1,6 +1,7 @@
 ---
 name: find-CCSPlayer_ItemServices_CanAcquire
 description: Find and identify the CCSPlayer_ItemServices_CanAcquire function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CanAcquire function that checks if a player's item services can acquire a specific item. This function validates item acquisition based on bot AI purchase logic and item availability.
+disable-model-invocation: true
 ---
 
 # Find CCSPlayer_ItemServices_CanAcquire

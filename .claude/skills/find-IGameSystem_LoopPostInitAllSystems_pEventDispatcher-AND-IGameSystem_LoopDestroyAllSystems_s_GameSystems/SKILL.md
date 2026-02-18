@@ -1,6 +1,7 @@
 ---
 name: find-IGameSystem_LoopPostInitAllSystems_pEventDispatcher-AND-IGameSystem_LoopDestroyAllSystems_s_GameSystems
 description: Find and identify the IGameSystem_LoopPostInitAllSystems_pEventDispatcher and IGameSystem_LoopDestroyAllSystems_s_GameSystems global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the event dispatcher pointer by searching for the "IGameSystem::LoopPostInitAllSystems(finish)" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find IGameSystem_LoopPostInitAllSystems_pEventDispatcher and IGameSystem_LoopDestroyAllSystems_s_GameSystems

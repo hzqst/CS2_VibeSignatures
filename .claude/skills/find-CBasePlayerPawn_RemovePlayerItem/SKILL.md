@@ -1,6 +1,7 @@
 ---
 name: find-CBasePlayerPawn_RemovePlayerItem
 description: Find and identify the CBasePlayerPawn_RemovePlayerItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the RemovePlayerItem function by searching for the "DestroyWeapon" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_RemovePlayerItem

@@ -1,6 +1,7 @@
 ---
 name: find-CGameResourceService_BuildResourceManifest
 description: Find and identify the CGameResourceService_BuildResourceManifest function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 engine2.dll or libengine2.so to locate the CGameResourceService::BuildResourceManifest function by searching for the log string pattern and analyzing xrefs.
+disable-model-invocation: true
 ---
 
 # Find CGameResourceService_BuildResourceManifest

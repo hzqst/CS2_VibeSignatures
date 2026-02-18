@@ -6,6 +6,7 @@ description: |
   by searching for the "GMR_BeginRound" log string, tracing to the CCSGameRules_BeginRound function,
   and identifying the Respawn vfunc call in the player respawn loop.
   Trigger: CBasePlayerController_Respawn
+disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_Respawn

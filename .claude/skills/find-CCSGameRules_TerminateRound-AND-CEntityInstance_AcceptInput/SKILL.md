@@ -1,6 +1,7 @@
 ---
 name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
 description: Find and identify the CCSGameRules_TerminateRound and CEntityInstance_AcceptInput functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TerminateRound function by searching for the "TerminateRound" string reference and then identifying CEntityInstance_AcceptInput by analyzing calls with "CTsWin" or "TerroristsWin" string parameters.
+disable-model-invocation: true
 ---
 
 # Find CCSGameRules_TerminateRound and CEntityInstance_AcceptInput

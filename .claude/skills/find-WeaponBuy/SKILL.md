@@ -1,6 +1,7 @@
 ---
 name: find-WeaponBuy
 description: Find and identify the WeaponBuy (item purchase handler) function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the WeaponBuy function by searching for the "item_purchase" string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find WeaponBuy

@@ -1,6 +1,7 @@
 ---
 name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
 description: Find and identify the CSource2GameEntities::CheckTransmit (virtual function) and CCheckTransmitInfo (struct) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2GameEntities::CheckTransmit function by searching for the assertion string pattern and analyzing xrefs.
+disable-model-invocation: true
 ---
 
 # Find CSource2GameEntities::CheckTransmit

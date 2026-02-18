@@ -4,6 +4,7 @@ description: |
   Find and identify the CCSPlayer_MovementServices_FullWalkMove, CCSPlayer_MovementServices_CheckVelocity, and CCSPlayer_MovementServices_WaterMove functions in CS2 binary using IDA Pro MCP.
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the ground walk movement, velocity sanitization, and water movement functions.
   Trigger: FullWalkMove, CheckVelocity, WaterMove, FullWalkMovePreMove, NaN velocity, water current, ground movement
+disable-model-invocation: true
 ---
 
 # CCSPlayer_MovementServices_FullWalkMove & CheckVelocity & WaterMove Location Workflow

@@ -1,6 +1,7 @@
 ---
 name: find-DispatchParticleEffect
 description: Find and identify the DispatchParticleEffect function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the DispatchParticleEffect function by searching for the string "Invalid attach type specified for particle_test in cvar 'particle_test_attach_mode." and analyzing the decompiled code of the referencing function.
+disable-model-invocation: true
 ---
 
 # Find DispatchParticleEffect

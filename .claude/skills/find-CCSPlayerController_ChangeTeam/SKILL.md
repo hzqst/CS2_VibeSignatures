@@ -1,6 +1,7 @@
 ---
 name: find-CCSPlayerController_ChangeTeam
 description: Find and identify the CCSPlayerController_ChangeTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ChangeTeam function by searching for known debug string references and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CCSPlayerController_ChangeTeam

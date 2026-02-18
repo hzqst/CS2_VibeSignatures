@@ -1,6 +1,7 @@
 ---
 name: find-TraceShape
 description: Find and identify the TraceShape function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TraceShape function by searching for the VProf counter string "Physics/TraceShape (Server)" and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find TraceShape

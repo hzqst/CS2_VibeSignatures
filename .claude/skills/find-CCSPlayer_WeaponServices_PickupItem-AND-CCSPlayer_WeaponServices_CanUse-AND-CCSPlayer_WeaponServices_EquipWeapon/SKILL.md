@@ -3,6 +3,7 @@ name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanU
 description: |
   Find and identify CCSPlayer_WeaponServices_PickupItem , CCSPlayer_WeaponServices_CanUse and CCSPlayer_WeaponServices_EquipWeapon functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the weapon pickup functions. CCSPlayer_WeaponServices_PickupItem is a virtual function on CCSPlayer_WeaponServices found via "Player.PickupGrenadeAudible" string xref. CCSPlayer_WeaponServices_EquipWeapon is called within PickupItem.
   Trigger: CCSPlayer_WeaponServices_PickupItem, CCSPlayer_WeaponServices_EquipWeapon, PickupItem, EquipWeapon, Player.PickupGrenadeAudible, item_pickup
+disable-model-invocation: true
 ---
 
 # Find CCSPlayer_WeaponServices_PickupItem, CCSPlayer_WeaponServices_CanUse and CCSPlayer_WeaponServices_EquipWeapon

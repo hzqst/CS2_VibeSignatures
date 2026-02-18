@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetStateChanged function,
   which handles network state change notifications for entities.
   Trigger: CBaseEntity_SetStateChanged, SetStateChanged, NetworkStateChanged callback, state change handler
+disable-model-invocation: true
 ---
 
 # CBaseEntity_SetStateChanged Function Location Workflow

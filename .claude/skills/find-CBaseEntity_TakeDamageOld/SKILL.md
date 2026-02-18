@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_TakeDamageOld
 description: Find and identify the CBaseEntity_TakeDamageOld function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TakeDamageOld function by searching for the TakeDamageOld debug string references and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_TakeDamageOld, CBaseEntity_TakeDamage, CBaseEntity_TakeDamage_Alive, CBaseEntity_TakeDamage_Dying, CBaseEntity_TakeDamage_Dead

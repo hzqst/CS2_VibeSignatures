@@ -10,6 +10,7 @@ description: |
   (5) Rename functions and variables to improve readability
   (6) Analyze function call relationships and data flow
   Trigger: CCSPlayerPawnBase_PostThink
+disable-model-invocation: true
 ---
 
 # CCSPlayerPawnBase_PostThink Function Location Workflow

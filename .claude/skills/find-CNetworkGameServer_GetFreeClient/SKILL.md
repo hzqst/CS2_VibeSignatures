@@ -1,6 +1,7 @@
 ---
 name: find-CNetworkGameServer_GetFreeClient
 description: Find and identify the CNetworkGameServer_GetFreeClient function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 engine2.dll or libengine2.so to locate the GetFreeClient function by searching for the "NETWORK_DISCONNECT_REJECT_SERVERFULL to %s: Cannot get free client" debug string reference and analyzing cross-references.
+disable-model-invocation: true
 ---
 
 # Find CNetworkGameServer_GetFreeClient

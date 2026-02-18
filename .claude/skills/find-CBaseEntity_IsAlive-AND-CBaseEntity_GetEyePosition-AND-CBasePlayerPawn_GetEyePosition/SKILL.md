@@ -6,6 +6,7 @@ description: |
   CBaseEntity_IsAlive checks m_lifeState == 0 (LIFE_ALIVE).
   CBasePlayerPawn_GetEyePosition retrieves the player eye position via camera services.
   Trigger: CBaseEntity_IsAlive, CBasePlayerPawn_GetEyePosition, IsAlive, GetEyePosition
+disable-model-invocation: true
 ---
 
 # CBaseEntity_IsAlive & CBaseEntity_GetEyePosition & CBasePlayerPawn_GetEyePosition Function Location Workflow

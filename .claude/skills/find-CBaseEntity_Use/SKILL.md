@@ -6,6 +6,7 @@ description: |
   CBaseEntity_Use is a virtual function on CBaseEntity, resolved via vtable offset found in the function
   that references both "Radio.YouTakeThePoint" and "#Cstrike_TitlesTXT_Game_afk_bomb_drop".
   Trigger: CBaseEntity_Use, Use
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_Use

@@ -1,6 +1,7 @@
 ---
 name: find-g_pGameRules-AND-CGameRules_FindPickerEntity
 description: Find and identify the g_pGameRules and CCSGameRules_FindPickerEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the FindPickerEntity function by searching for the "[%03d] Found: %s, firing" string and tracing its caller to identify g_pGameRules and the vfunc call pattern.
+disable-model-invocation: true
 ---
 
 # Find g_pGameRules and CGameRules_FindPickerEntity

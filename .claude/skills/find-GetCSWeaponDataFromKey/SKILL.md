@@ -1,6 +1,7 @@
 ---
 name: find-GetCSWeaponDataFromKey
 description: Find and identify the GetCSWeaponDataFromKey function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetCSWeaponDataFromKey function by searching for known projectile string references and analyzing the characteristic code pattern.
+disable-model-invocation: true
 ---
 
 # Find GetCSWeaponDataFromKey

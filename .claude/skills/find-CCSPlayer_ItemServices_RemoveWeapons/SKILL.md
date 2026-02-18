@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the RemoveWeapons virtual function
   in the CCSPlayer_ItemServices vtable.
   Trigger: CCSPlayer_ItemServices_RemoveWeapons
+disable-model-invocation: true
 ---
 
 # CCSPlayer_ItemServices_RemoveWeapons Function Location Workflow

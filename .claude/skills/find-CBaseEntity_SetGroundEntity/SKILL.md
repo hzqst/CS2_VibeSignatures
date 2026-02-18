@@ -1,6 +1,7 @@
 ---
 name: find-CBaseEntity_SetGroundEntity
 description: Find and identify the CBaseEntity_SetGroundEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetGroundEntity function by analyzing CTriggerPush_Touch's decompiled code for a specific call pattern within the spawnflags 0x80 branch.
+disable-model-invocation: true
 ---
 
 # Find CBaseEntity_SetGroundEntity

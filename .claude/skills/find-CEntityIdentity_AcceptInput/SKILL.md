@@ -5,6 +5,7 @@ description: |
   Use this skill when reverse engineering CS2 server.dll or server.so to locate the AcceptInput function
   on CEntityIdentity, which dispatches entity I/O inputs.
   Triggers: CEntityIdentity_AcceptInput, AcceptInput, entity input dispatch, entity IO accept
+disable-model-invocation: true
 ---
 
 # CEntityIdentity_AcceptInput Function Location Workflow
