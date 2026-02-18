@@ -22,9 +22,7 @@ Hard requirements:
 5. `len(patch_bytes)` must equal `len(original_instruction_bytes)` (pad with `0x90` NOP if the replacement is shorter).
 
 Strategy:
-- **Phase 1 (forward-only):** Try expanding only forward (after target instruction) within the function. This keeps `patch_sig_disp = 0` for the simplest case.
-- **Phase 2 (backward expansion, wildcarded):** If Phase 1 fails, prepend wildcarded instructions before the target instruction (within the same function) and re-test. The `patch_sig_disp` field records the byte distance from signature start to the target instruction.
-- **Phase 3 (backward expansion, fully-fixed):** If Phase 2 fails (wildcarding erased distinguishing bytes), retry with fully-fixed (no wildcard) preceding instructions.
+- **Forward-only expansion:** Expand only forward (after target instruction). The signature may extend beyond the current function boundary into CC padding or the next function. `patch_sig_disp` is always `0` — the signature always starts at the target instruction.
 
 ## Prerequisites
 
@@ -50,9 +48,7 @@ Common patch patterns:
 
 Use a single `py_eval` call that:
 - Collects instruction bytes from the target instruction forward, tests uniqueness.
-- Phase 1: forward-only expansion.
-- Phase 2 (if Phase 1 fails): prepends wildcarded instructions before the target instruction.
-- Phase 3 (if Phase 2 fails): retries with fully-fixed preceding instructions.
+- Forward-only expansion (no backward expansion — `patch_sig_disp` is always `0`).
 - Enforces **no wildcard on the target instruction**.
 - Computes both VA and RVA for the target instruction.
 - Outputs the shortest unique signature as `patch_sig` with metadata.
@@ -163,9 +159,10 @@ def main():
         return len(matches) == 1 and matches[0] == expected_addr
 
     # ====================================================================
-    # Phase 1: Forward-only expansion (signature starts at target_inst)
+    # Forward-only expansion (signature starts at target_inst)
+    # May extend beyond the current function into CC padding or next function.
     # ====================================================================
-    limit_end = min(f.end_ea, target_inst + max_sig_bytes)
+    limit_end = target_inst + max_sig_bytes
     fwd_tokens = []
     fwd_boundaries = []
     cursor = target_inst
@@ -173,7 +170,7 @@ def main():
     target_inst_len = None
 
     while (
-        cursor < f.end_ea
+        cursor < search_end
         and cursor < limit_end
         and len(fwd_tokens) < max_sig_bytes
         and inst_count < max_instructions
@@ -211,7 +208,7 @@ def main():
 
     min_boundary = max(min_sig_bytes, target_inst_len)
 
-    # Try forward-only first
+    # Try expanding at each instruction boundary until unique
     phase1_sig = None
     phase1_boundary = 0
     for boundary in fwd_boundaries:
@@ -237,158 +234,14 @@ def main():
         }))
         return
 
-    # ====================================================================
-    # Phase 2: Backward expansion (prepend wildcarded instructions)
-    # ====================================================================
-
-    # Collect all instructions in the function from f.start_ea up to target_inst.
-    pre_instructions = []   # list of (addr, insn, raw_bytes)
-    cursor = f.start_ea
-    while cursor < target_inst:
-        insn = idautils.DecodeInstruction(cursor)
-        if not insn or insn.size <= 0:
-            break
-        raw = ida_bytes.get_bytes(cursor, insn.size)
-        if not raw:
-            break
-        pre_instructions.append((cursor, insn, raw))
-        cursor += insn.size
-
-    if not pre_instructions:
-        # Nothing to prepend, truly failed.
-        print(json.dumps({
-            "patch_va": hex(target_inst),
-            "patch_rva": hex(target_inst - image_base),
-            "original_bytes": " ".join(f"{b:02X}" for b in raw0),
-            "total_fwd_tokens": len(fwd_tokens),
-            "sig_full_fwd": " ".join(fwd_tokens),
-            "error": "no unique signature found: forward exhausted, no preceding instructions available",
-            "status": "failed"
-        }))
-        return
-
-    # Build wildcarded tokens for each preceding instruction (in order).
-    pre_token_groups = []   # list of token lists, in forward order
-    for addr, insn, raw in pre_instructions:
-        toks = wildcard_instruction(addr, insn, raw)
-        pre_token_groups.append(toks)
-
-    # Prepend one instruction at a time (from the nearest predecessor backward).
-    prepend_tokens = []
-    phase2_prepend_bytes = 0
-
-    for i in range(len(pre_token_groups) - 1, -1, -1):
-        group = pre_token_groups[i]
-        prepend_tokens = group + prepend_tokens
-        phase2_prepend_bytes += len(group)
-
-        if phase2_prepend_bytes + len(fwd_tokens) > max_sig_bytes:
-            break
-
-        for boundary in reversed(fwd_boundaries):
-            candidate = prepend_tokens + fwd_tokens[:boundary]
-            if len(candidate) < min_sig_bytes:
-                continue
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate, sig_start_addr):
-                print(json.dumps({
-                    "patch_sig": " ".join(candidate),
-                    "sig_bytes": len(candidate),
-                    "patch_sig_va": hex(sig_start_addr),
-                    "patch_sig_disp": phase2_prepend_bytes,
-                    "patch_inst_length": target_inst_len,
-                    "patch_va": hex(target_inst),
-                    "patch_rva": hex(target_inst - image_base),
-                    "original_bytes": " ".join(f"{b:02X}" for b in raw0),
-                    "status": "success"
-                }))
-                return
-
-        # Also try prepend + target_inst only (minimal forward)
-        candidate_min = prepend_tokens + fwd_tokens[:target_inst_len]
-        if len(candidate_min) >= min_sig_bytes:
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate_min, sig_start_addr):
-                print(json.dumps({
-                    "patch_sig": " ".join(candidate_min),
-                    "sig_bytes": len(candidate_min),
-                    "patch_sig_va": hex(sig_start_addr),
-                    "patch_sig_disp": phase2_prepend_bytes,
-                    "patch_inst_length": target_inst_len,
-                    "patch_va": hex(target_inst),
-                    "patch_rva": hex(target_inst - image_base),
-                    "original_bytes": " ".join(f"{b:02X}" for b in raw0),
-                    "status": "success"
-                }))
-                return
-
-    # ====================================================================
-    # Phase 3: Backward expansion with fully-fixed preceding instructions
-    # ====================================================================
-    # Phase 2 failed because wildcarding erased the distinguishing bytes.
-    # Retry with fully-fixed (no wildcard) preceding instructions.
-
-    pre_fixed_groups = []
-    for addr, insn, raw in pre_instructions:
-        toks = [f"{raw[idx]:02X}" for idx in range(insn.size)]
-        pre_fixed_groups.append(toks)
-
-    prepend_tokens = []
-    phase3_prepend_bytes = 0
-
-    for i in range(len(pre_fixed_groups) - 1, -1, -1):
-        group = pre_fixed_groups[i]
-        prepend_tokens = group + prepend_tokens
-        phase3_prepend_bytes += len(group)
-
-        if phase3_prepend_bytes + len(fwd_tokens) > max_sig_bytes:
-            break
-
-        for boundary in reversed(fwd_boundaries):
-            candidate = prepend_tokens + fwd_tokens[:boundary]
-            if len(candidate) < min_sig_bytes:
-                continue
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate, sig_start_addr):
-                print(json.dumps({
-                    "patch_sig": " ".join(candidate),
-                    "sig_bytes": len(candidate),
-                    "patch_sig_va": hex(sig_start_addr),
-                    "patch_sig_disp": phase3_prepend_bytes,
-                    "patch_inst_length": target_inst_len,
-                    "patch_va": hex(target_inst),
-                    "patch_rva": hex(target_inst - image_base),
-                    "original_bytes": " ".join(f"{b:02X}" for b in raw0),
-                    "status": "success"
-                }))
-                return
-
-        candidate_min = prepend_tokens + fwd_tokens[:target_inst_len]
-        if len(candidate_min) >= min_sig_bytes:
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate_min, sig_start_addr):
-                print(json.dumps({
-                    "patch_sig": " ".join(candidate_min),
-                    "sig_bytes": len(candidate_min),
-                    "patch_sig_va": hex(sig_start_addr),
-                    "patch_sig_disp": phase3_prepend_bytes,
-                    "patch_inst_length": target_inst_len,
-                    "patch_va": hex(target_inst),
-                    "patch_rva": hex(target_inst - image_base),
-                    "original_bytes": " ".join(f"{b:02X}" for b in raw0),
-                    "status": "success"
-                }))
-                return
-
-    # All attempts exhausted.
+    # Forward-only expansion exhausted without finding a unique signature.
     print(json.dumps({
         "patch_va": hex(target_inst),
         "patch_rva": hex(target_inst - image_base),
         "original_bytes": " ".join(f"{b:02X}" for b in raw0),
         "total_fwd_tokens": len(fwd_tokens),
-        "total_pre_instructions": len(pre_instructions),
         "sig_full_fwd": " ".join(fwd_tokens),
-        "error": "no unique signature found after all phases",
+        "error": "no unique signature found with forward-only expansion",
         "status": "failed"
     }))
 
@@ -442,14 +295,14 @@ Required:
 - `patch_bytes`: Space-separated hex bytes to write at the patch location.
 
 Recommended metadata:
-- `patch_sig_va`: VA of signature start (may be before target instruction if backward expansion was used).
-- `patch_sig_disp`: Byte displacement from signature start to the target instruction. `0` means signature starts at target instruction (forward-only). Non-zero means backward expansion was used.
+- `patch_sig_va`: VA of signature start (always equals `patch_va` since `patch_sig_disp` is always `0`).
+- `patch_sig_disp`: Always `0` — signature always starts at the target instruction.
 - `patch_inst_length`: Length of the target instruction in bytes.
 - `patch_va`: VA of the instruction to be patched.
 - `patch_rva`: RVA of the instruction to be patched (VA − image base).
 - `original_bytes`: Original bytes of the target instruction (for restore/rollback).
 
-### Example Output (Forward-only, patch_sig_disp = 0)
+### Example Output
 
 Patch effect: skip conditional branch `jbe` → unconditional `jmp` (the `if` block becomes dead code).
 
@@ -468,23 +321,3 @@ In this example:
 - Patch converts it to `jmp loc_180A00EE4` + `nop`: `E9 B0 00 00 00 90`
 - `new_rel32` = `0x180A00EE4 − (0x180A00E2F + 5)` = `0xB0` → `B0 00 00 00`
 - The branch now always jumps, making the if-block dead code
-
-### Example Output (Backward expansion, patch_sig_disp > 0)
-
-When the target instruction alone is not unique, backward expansion prepends preceding instructions:
-
-```yaml
-patch_sig: "48 85 C0 74 ?? E8 ?? ?? ?? ?? 0F 57 C0"
-patch_sig_va: 0x180B01230
-patch_sig_disp: 5
-patch_inst_length: 5
-patch_va: 0x180B01235
-patch_rva: 0xB01235
-original_bytes: "E8 AA BB CC DD"
-patch_bytes: "90 90 90 90 90"
-```
-
-In this example:
-- Signature starts 5 bytes before the target instruction (`patch_sig_disp: 5`)
-- The `call rel32` at `0x180B01235` is NOPed out (5× `0x90`)
-- Runtime: scan for `patch_sig`, then add `patch_sig_disp` to get the target instruction address

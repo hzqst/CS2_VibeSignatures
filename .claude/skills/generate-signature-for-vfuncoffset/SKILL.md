@@ -21,9 +21,7 @@ Hard requirements:
 4. Signature length grows by complete instruction boundaries and stops at the shortest unique prefix.
 
 Strategy:
-- **Phase 1 (forward-only):** Try expanding only forward (after target instruction) within the function. This keeps `vfunc_sig_disp = 0` for the simplest case.
-- **Phase 2 (backward expansion, wildcarded):** If Phase 1 fails, prepend wildcarded instructions before the target instruction (within the same function) and re-test. The `vfunc_sig_disp` field records the byte distance from signature start to the target instruction.
-- **Phase 3 (backward expansion, fully-fixed):** If Phase 2 fails (wildcarding erased distinguishing bytes), retry with fully-fixed (no wildcard) preceding instructions.
+- **Forward-only expansion:** Expand only forward (after target instruction). The signature may extend beyond the current function boundary into CC padding or the next function. `vfunc_sig_disp` is always `0` — the signature always starts at the target instruction.
 
 ## Prerequisites
 
@@ -37,14 +35,11 @@ Strategy:
 
 Use a single `py_eval` call that:
 - Validates the input instruction contains the expected `vfuncoffset` displacement.
-- Phase 1: collects instruction bytes from the target instruction forward, tests uniqueness.
-- Phase 2 (if Phase 1 fails): prepends wildcarded instructions before the target instruction within the same function, re-tests uniqueness after each prepend.
-- Phase 3 (if Phase 2 fails): retries backward expansion with fully-fixed (no wildcard) preceding instructions, for cases where wildcarding erased the distinguishing bytes.
+- Collects instruction bytes from the target instruction forward, tests uniqueness.
+- Forward-only expansion (no backward expansion — `vfunc_sig_disp` is always `0`).
 - Enforces **no wildcard on the target instruction**.
-- Applies programmatic wildcarding on all other instructions (Phase 1 & 2 only).
-- Tracks instruction boundaries so prefixes always end on complete instructions.
-- Progressively tests uniqueness via `bin_search3`.
-- Outputs the shortest unique signature as `vfunc_sig` with `vfunc_sig_disp`.
+- Computes both VA and RVA for the target instruction.
+- Outputs the shortest unique signature as `vfunc_sig` with metadata.
 
 ```python
 mcp__ida-pro-mcp__py_eval code="""
@@ -206,9 +201,10 @@ def main():
         return len(matches) == 1 and matches[0] == expected_addr
 
     # ====================================================================
-    # Phase 1: Forward-only expansion (signature starts at target_inst)
+    # Forward-only expansion (signature starts at target_inst)
+    # May extend beyond the current function into CC padding or next function.
     # ====================================================================
-    limit_end = min(f.end_ea, target_inst + max_sig_bytes)
+    limit_end = target_inst + max_sig_bytes
     fwd_tokens = []
     fwd_boundaries = []
     cursor = target_inst
@@ -216,7 +212,7 @@ def main():
     target_inst_len = None
 
     while (
-        cursor < f.end_ea
+        cursor < search_end
         and cursor < limit_end
         and len(fwd_tokens) < max_sig_bytes
         and inst_count < max_instructions
@@ -254,7 +250,7 @@ def main():
 
     min_boundary = max(min_sig_bytes, target_inst_len)
 
-    # Try forward-only first
+    # Try expanding at each instruction boundary until unique
     phase1_sig = None
     phase1_boundary = 0
     for boundary in fwd_boundaries:
@@ -280,159 +276,14 @@ def main():
         }))
         return
 
-    # ====================================================================
-    # Phase 2: Backward expansion (prepend wildcarded instructions)
-    # ====================================================================
-
-    # Collect all instructions in the function from f.start_ea up to target_inst.
-    pre_instructions = []   # list of (addr, insn, raw_bytes)
-    cursor = f.start_ea
-    while cursor < target_inst:
-        insn = idautils.DecodeInstruction(cursor)
-        if not insn or insn.size <= 0:
-            break
-        raw = ida_bytes.get_bytes(cursor, insn.size)
-        if not raw:
-            break
-        pre_instructions.append((cursor, insn, raw))
-        cursor += insn.size
-
-    if not pre_instructions:
-        # Nothing to prepend, truly failed.
-        print(json.dumps({
-            "vfunc_sig_va": hex(target_inst),
-            "vfunc_offset": hex(target_vfunc_offset),
-            "first_inst_bytes": " ".join(f"{b:02X}" for b in raw0),
-            "total_fwd_tokens": len(fwd_tokens),
-            "sig_full_fwd": " ".join(fwd_tokens),
-            "error": "no unique signature found: forward exhausted, no preceding instructions available",
-            "status": "failed"
-        }))
-        return
-
-    # Build wildcarded tokens for each preceding instruction (in order).
-    pre_token_groups = []   # list of token lists, in forward order
-    for addr, insn, raw in pre_instructions:
-        toks = wildcard_instruction(addr, insn, raw)
-        pre_token_groups.append(toks)
-
-    # Prepend one instruction at a time (from the nearest predecessor backward).
-    prepend_tokens = []
-    phase2_prepend_bytes = 0
-
-    for i in range(len(pre_token_groups) - 1, -1, -1):
-        group = pre_token_groups[i]
-        prepend_tokens = group + prepend_tokens
-        phase2_prepend_bytes += len(group)
-
-        if phase2_prepend_bytes + len(fwd_tokens) > max_sig_bytes:
-            break
-
-        # Try with full forward extent first, then shrink forward if possible.
-        for boundary in reversed(fwd_boundaries):
-            candidate = prepend_tokens + fwd_tokens[:boundary]
-            if len(candidate) < min_sig_bytes:
-                continue
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate, sig_start_addr):
-                print(json.dumps({
-                    "vfunc_sig": " ".join(candidate),
-                    "sig_bytes": len(candidate),
-                    "vfunc_sig_va": hex(sig_start_addr),
-                    "vfunc_sig_disp": phase2_prepend_bytes,
-                    "vfunc_inst_length": target_inst_len,
-                    "vfunc_disp_offset": disp_off + phase2_prepend_bytes,
-                    "vfunc_disp_size": disp_size,
-                    "vfunc_offset": hex(target_vfunc_offset),
-                    "status": "success"
-                }))
-                return
-
-        # Also try prepend + target_inst only (minimal forward)
-        candidate_min = prepend_tokens + fwd_tokens[:target_inst_len]
-        if len(candidate_min) >= min_sig_bytes:
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate_min, sig_start_addr):
-                print(json.dumps({
-                    "vfunc_sig": " ".join(candidate_min),
-                    "sig_bytes": len(candidate_min),
-                    "vfunc_sig_va": hex(sig_start_addr),
-                    "vfunc_sig_disp": phase2_prepend_bytes,
-                    "vfunc_inst_length": target_inst_len,
-                    "vfunc_disp_offset": disp_off + phase2_prepend_bytes,
-                    "vfunc_disp_size": disp_size,
-                    "vfunc_offset": hex(target_vfunc_offset),
-                    "status": "success"
-                }))
-                return
-
-    # ====================================================================
-    # Phase 3: Backward expansion with fully-fixed preceding instructions
-    # ====================================================================
-    # Phase 2 failed because wildcarding erased the distinguishing bytes.
-    # Retry with fully-fixed (no wildcard) preceding instructions.
-
-    pre_fixed_groups = []
-    for addr, insn, raw in pre_instructions:
-        toks = [f"{raw[idx]:02X}" for idx in range(insn.size)]
-        pre_fixed_groups.append(toks)
-
-    prepend_tokens = []
-    phase3_prepend_bytes = 0
-
-    for i in range(len(pre_fixed_groups) - 1, -1, -1):
-        group = pre_fixed_groups[i]
-        prepend_tokens = group + prepend_tokens
-        phase3_prepend_bytes += len(group)
-
-        if phase3_prepend_bytes + len(fwd_tokens) > max_sig_bytes:
-            break
-
-        for boundary in reversed(fwd_boundaries):
-            candidate = prepend_tokens + fwd_tokens[:boundary]
-            if len(candidate) < min_sig_bytes:
-                continue
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate, sig_start_addr):
-                print(json.dumps({
-                    "vfunc_sig": " ".join(candidate),
-                    "sig_bytes": len(candidate),
-                    "vfunc_sig_va": hex(sig_start_addr),
-                    "vfunc_sig_disp": phase3_prepend_bytes,
-                    "vfunc_inst_length": target_inst_len,
-                    "vfunc_disp_offset": disp_off + phase3_prepend_bytes,
-                    "vfunc_disp_size": disp_size,
-                    "vfunc_offset": hex(target_vfunc_offset),
-                    "status": "success"
-                }))
-                return
-
-        candidate_min = prepend_tokens + fwd_tokens[:target_inst_len]
-        if len(candidate_min) >= min_sig_bytes:
-            sig_start_addr = pre_instructions[i][0]
-            if test_unique(candidate_min, sig_start_addr):
-                print(json.dumps({
-                    "vfunc_sig": " ".join(candidate_min),
-                    "sig_bytes": len(candidate_min),
-                    "vfunc_sig_va": hex(sig_start_addr),
-                    "vfunc_sig_disp": phase3_prepend_bytes,
-                    "vfunc_inst_length": target_inst_len,
-                    "vfunc_disp_offset": disp_off + phase3_prepend_bytes,
-                    "vfunc_disp_size": disp_size,
-                    "vfunc_offset": hex(target_vfunc_offset),
-                    "status": "success"
-                }))
-                return
-
-    # All attempts exhausted.
+    # Forward-only expansion exhausted without finding a unique signature.
     print(json.dumps({
         "vfunc_sig_va": hex(target_inst),
         "vfunc_offset": hex(target_vfunc_offset),
         "first_inst_bytes": " ".join(f"{b:02X}" for b in raw0),
         "total_fwd_tokens": len(fwd_tokens),
-        "total_pre_instructions": len(pre_instructions),
         "sig_full_fwd": " ".join(fwd_tokens),
-        "error": "no unique signature found after all phases",
+        "error": "no unique signature found with forward-only expansion",
         "status": "failed"
     }))
 
@@ -461,14 +312,14 @@ Required:
 - `vfunc_sig`: Space-separated hex bytes with `??` for wildcards.
 
 Recommended metadata:
-- `vfunc_sig_va`: VA of signature start (may be before target instruction if backward expansion was used).
-- `vfunc_sig_disp`: Byte displacement from signature start to the target instruction. `0` means signature starts at target instruction (forward-only). Non-zero means backward expansion was used.
+- `vfunc_sig_va`: VA of signature start (always equals target instruction VA since `vfunc_sig_disp` is always `0`).
+- `vfunc_sig_disp`: Always `0` — signature always starts at the target instruction.
 - `vfunc_inst_length`: Length of the target instruction in bytes.
-- `vfunc_disp_offset`: Byte position of the vfunc offset displacement within the **signature** (= `vfunc_sig_disp` + displacement position within target instruction).
+- `vfunc_disp_offset`: Byte position of the vfunc offset displacement within the **signature** (= displacement position within target instruction, since `vfunc_sig_disp` is always `0`).
 - `vfunc_disp_size`: Displacement byte size.
 - `vfunc_offset`: The expected vfunc offset used for validation.
 
-### Example Output (Forward-only, vfunc_sig_disp = 0)
+### Example Output
 
 ```yaml
 vfunc_sig: "FF 90 38 05 00 00 48 8B ?? ?? ?? ?? 48 85 C0 74 ??"
@@ -479,22 +330,3 @@ vfunc_disp_offset: 2
 vfunc_disp_size: 4
 vfunc_offset: 0x538
 ```
-
-### Example Output (Backward expansion, vfunc_sig_disp > 0)
-
-When the target instruction is `call qword ptr [rax+538h]` and forward-only expansion cannot produce a unique signature, backward expansion prepends preceding instructions:
-
-```yaml
-vfunc_sig: "48 8B 01 FF 90 38 05 00 00 48 8B ?? ?? ?? ?? 48 85 C0"
-vfunc_sig_va: 0x180123453
-vfunc_sig_disp: 3
-vfunc_inst_length: 6
-vfunc_disp_offset: 5
-vfunc_disp_size: 4
-vfunc_offset: 0x538
-```
-
-In this example:
-- Signature starts 3 bytes before the target instruction (`vfunc_sig_disp: 3`)
-- The vfunc offset bytes `38 05 00 00` are at byte position 5 within the signature (`vfunc_disp_offset: 5` = `vfunc_sig_disp(3)` + displacement within target instruction `(2)`)
-- Runtime: scan for `vfunc_sig`, then add `vfunc_sig_disp` to get the target instruction address
