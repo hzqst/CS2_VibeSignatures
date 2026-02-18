@@ -33,8 +33,12 @@ GAMEDATA_PATH = "gamedata/cs2fixes.games.txt"
 # These are hand-crafted to point at a specific instruction (e.g. the patch target)
 # rather than the function start, so our auto-generated function-start signatures
 # would be incorrect for CS2Fixes' purposes.
-SKIP_SIG_UPDATE = {
-    "CPhysBox_Use",
+SKIP_SIG_UPDATE = set()
+
+# Mapping from CS2Fixes Patches entry names to YAML symbol names.
+# Used when the VDF entry name differs from the YAML patch symbol name.
+PATCH_ALIAS_MAP = {
+    "CPhysBox_Use": "CPhysBox_Use_PatchCaller",
 }
 
 # Struct member offsets that need to be divided by a factor before writing.
@@ -185,6 +189,42 @@ def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debu
                             "type": "struct_offset",
                             "platform": platform
                         })
+
+    # Update Patches
+    patches = csgo.get("Patches", {})
+    for patch_name, entry in patches.items():
+        # Resolve via PATCH_ALIAS_MAP first, then alias_to_name_map
+        yaml_patch_name = PATCH_ALIAS_MAP.get(patch_name)
+        if not yaml_patch_name:
+            yaml_patch_name = normalize_func_name_colons_to_underscore(
+                patch_name, alias_to_name_map
+            )
+
+        # Find matching YAML data
+        yaml_entry = yaml_data.get(yaml_patch_name)
+        if not yaml_entry:
+            skipped_count += 1
+            if debug:
+                skipped_symbols.append({
+                    "name": patch_name,
+                    "reason": "no matching YAML data (patch)"
+                })
+            continue
+
+        # Update platform patch bytes
+        for platform in platforms:
+            if platform in yaml_entry and "patch_bytes" in yaml_entry[platform]:
+                patch_bytes = convert_sig_to_cs2fixes(
+                    yaml_entry[platform]["patch_bytes"]
+                )
+                entry[platform] = patch_bytes
+                updated_count += 1
+                if debug:
+                    updated_symbols.append({
+                        "name": patch_name,
+                        "type": "patch",
+                        "platform": platform
+                    })
 
     # Write back with BOM
     # Use vdf.dumps() to get string, then manually fix escaped backslashes
