@@ -168,6 +168,18 @@ modules:
         prerequisite:
           - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
 
+      - name: find-CCSPlayer_MovementServices_CheckJumpButton
+        expected_output:
+          - CCSPlayer_MovementServices_CheckJumpButton.{platform}.yaml
+
+      - name: find-CCSPlayer_MovementServices_CheckJumpButton_WaterPatch
+        expected_output:
+          - CCSPlayer_MovementServices_CheckJumpButton_WaterPatch.{platform}.yaml
+        expected_input:
+          - CCSPlayer_MovementServices_CheckJumpButton.{platform}.yaml
+        prerequisite:
+          - find-CCSPlayer_MovementServices_CheckJumpButton
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -782,6 +794,12 @@ modules:
         expected_output:
           - CNavMesh_GetNearestNavArea.{platform}.yaml
 
+      - name: find-CCSBotManager_AddBot-AND-g_pCSBotManager-AND-g_pNavMesh
+        expected_output:
+          - CCSBotManager_AddBot.{platform}.yaml
+          - g_pCSBotManager.{platform}.yaml
+          - g_pNavMesh.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -841,6 +859,17 @@ modules:
         category: patch
         alias:
           - ServerMovementUnlock
+
+      - name: CCSPlayer_MovementServices_CheckJumpButton
+        category: func
+        alias:
+          - CCSPlayer_MovementServices::CheckJumpButton
+
+      - name: CCSPlayer_MovementServices_CheckJumpButton_WaterPatch
+        category: patch
+        alias:
+          - CheckJumpButtonWater
+          - FixWaterFloorJump
 
       - name: CEntityInstance_vtable
         category: vtable
@@ -1460,3 +1489,14 @@ modules:
         category: func
         alias:
           - CNavMesh::GetNearestNavArea
+
+      - name: CCSBotManager_AddBot
+        category: func
+        alias:
+          - CCSBotManager::AddBot
+
+      - name: g_pCSBotManager
+        category: gv
+
+      - name: g_pNavMesh
+        category: gv
