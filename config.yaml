@@ -114,8 +114,47 @@ modules:
     path_linux: game/csgo/bin/linuxsteamrt64/libclient.so
 
     skills:
+      - name: find-IGameSystem_vtable
+        expected_output:
+          - IGameSystem_vtable.{platform}.yaml
+
+      - name: find-CDecalGameSystem_vtable
+        expected_output:
+          - CDecalGameSystem_vtable.{platform}.yaml
+
+      - name: find-CDecalGameSystem_UpdateDecals-AND-CDecalGameSystem_ClientPreUpdate
+        expected_output:
+          - CDecalGameSystem_UpdateDecals.{platform}.yaml
+          - CDecalGameSystem_ClientPreUpdate.{platform}.yaml
+        expected_input:
+          - CDecalGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-CDecalGameSystem_vtable
+
+      - name: find-IGameSystem_ClientPreUpdate
+        expected_output:
+          - IGameSystem_ClientPreUpdate.{platform}.yaml
+        expected_input:
+          - CDecalGameSystem_ClientPreUpdate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CDecalGameSystem_UpdateDecals-AND-CDecalGameSystem_ClientPreUpdate
 
     symbols:
+      - name: CDecalGameSystem_vtable
+        category: vtable
+
+      - name: CDecalGameSystem_UpdateDecals
+        category: func
+        alias:
+          - CDecalGameSystem::UpdateDecals
+          - UpdateDecals
+
+      - name: CDecalGameSystem_ClientPreUpdate
+        category: vfunc
+        alias:
+          - CDecalGameSystem::ClientPreUpdate
+          - ClientPreUpdate
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
