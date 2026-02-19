@@ -175,7 +175,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
   - The SKILL should: generate CBaseModelEntity_SetModel.{platform}.yaml, with func_sig.
 
-  - After successfully written the yaml, we **SHOULD** create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH**. DO NOT pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-func-as-yaml" invocation for references.
+  - After successfully written the yaml, we **SHOULD** create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to previous operations. DO NOT pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-func-as-yaml" invocation for references.
 
 2. Create preprocessor script
 
