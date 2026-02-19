@@ -150,11 +150,9 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 * For human contributor: You should write new initial prompts when working with new functions, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Verify and Create SKILL
+1. Look for desired symbols in IDA
 
-  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
-
-  - The SKILL should: search string "weapons/models/defuser/defuser.vmdl" in IDA, look for code snippet with following pattern in xrefs to the string:
+  - Search string "weapons/models/defuser/defuser.vmdl" in IDA, look for code snippet with following pattern in xrefs to the string:
 
 ```c
     v2 = a2;
@@ -173,19 +171,25 @@ python update_gamedata.py -gamever 14135 [-debug]
                         0i64);
 ```
 
-  - The SKILL should: generate CBaseModelEntity_SetModel.{platform}.yaml, with func_sig.
+2. Create SKILL
 
-  - After successfully written the yaml, we **SHOULD** create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to previous operations. DO NOT pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-func-as-yaml" invocation for references.
+  - Create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to what we did in IDA.
+  
+  - The SKILL should generate `CBaseModelEntity_SetModel.{platform}.yaml`, with `func_sig`.
 
-2. Create preprocessor script
+  - The SKILL should be working with both `server.dll` and `server.so`.
+  
+  - DO NOT pack skill.
+  
+  - **ALWAYS** check existing SKILLs with `/write-func-as-yaml` invocation for references.
 
-  - Create a copy of `ida_preprocessor_scripts/find-CCSPlayerController_ChangeTeam.py` as `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
+3. Create preprocessor script
 
-  - Don't forget to update the `TARGET_FUNCTION_NAMES` in the preprocessor script.
+  - Create `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
 
-  - The preprocessor script will be used when signature from older version of game is available.
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` for references.
 
-3. Add the new SKILL to `config.yaml`, under `skills`.
+4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -195,7 +199,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CBaseModelEntity_SetModel.{platform}.yaml
 ```
 
-4. Add the new symbol to `config.yaml`, under `symbols`.
+5. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CBaseModelEntity_SetModel
@@ -212,11 +216,9 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 * For human contributor: You should write new initial prompts when working with new functions, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Verify and Create SKILL
+1. Look for desired symbols in IDA
 
-  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
-
-  - The SKILL should: search string "GMR_BeginRound" in IDA and look for a function with reference to it, decompile the function who reference "GMR_BeginRound" and look for code pattern:
+  - Search string "GMR_BeginRound" in IDA and look for a function with reference to it, decompile the function who reference "GMR_BeginRound" and look for code pattern:
 
 ```c
       do
@@ -244,19 +246,25 @@ python update_gamedata.py -gamever 14135 [-debug]
       while ( v28 != v29 );
 ```
 
-  - The SKILL should: generate `CBasePlayerController_Respawn.{platform}.yaml`, with `func_sig` (or `vfunc_sig` if `CBasePlayerController_Respawn` is too short or too generic).
+2. Create SKILL
 
-  - After successfully written the yaml, we **SHOULD** create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH**. DO NOT pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-vfunc-as-yaml" invocation for references.
+  - Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH**.
+  
+  - The SKILL should generate `CBasePlayerController_Respawn.{platform}.yaml`, with `func_sig`. (or `vfunc_sig` if `CBasePlayerController_Respawn` is too short or too generic).
 
-2. Create preprocessor script
+  - The SKILL should be working with both `server.dll` and `server.so`.
 
-  - Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController.py` as `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
+  - DO NOT pack skill.
+  
+  - **ALWAYS** check existing SKILLs with `/write-vfunc-as-yaml` invocation for references.
 
-  - Don't forget to update `TARGET_FUNCTION_NAMES` in the preprocessor script.
+3. Create preprocessor script
 
-  - The preprocessor script will be used when signature from older version of game is available.
+  - Create `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
-3. Add the new SKILL to `config.yaml`, under `skills`.
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` for references.
+
+4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -270,7 +278,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - find-CBasePlayerController_vtable
 ```
 
-4. Add the new symbol to `config.yaml`, under `symbols`.
+5. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CBasePlayerController_Respawn
@@ -281,35 +289,41 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for global variable
 
-`IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example
-
 * Always make sure you have ida-pro-mcp server running.
 
 * For human contributor: You should write new initial prompts when working with new global variables, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Verify and Create SKILL
+`IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example
 
-  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
+1. Look for desired symbols in IDA
 
-  - The SKILL should: search string "IGameSystem::InitAllSystems" in IDA, search xrefs for the string. the function with xref to the string is IGameSystem_InitAllSystems. rename it to IGameSystem_InitAllSystems if not renamed yet.
+  - Search string "IGameSystem::InitAllSystems" in IDA, search xrefs for the string. the function with xref to the string is `IGameSystem_InitAllSystems`. 
+  
+  - Rename it to `IGameSystem_InitAllSystems` if not renamed yet.
  
-  - The SKILL should: look for code pattern at very beginning of IGameSystem_InitAllSystems: "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )"
+  - Look for code pattern at very beginning of IGameSystem_InitAllSystems: "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )"
  
-  - The SKILL should: rename "( i = qword_XXXXXX; i; i = *(_QWORD *)(i + 8) )" to "for ( i = IGameSystem_InitAllSystems_pFirst; i; i = *(_QWORD *)(i + 8) )" if it was not renamed yet.
+  - Rename `qword_XXXXXX` previously found to `IGameSystem_InitAllSystems_pFirst` if it was not renamed yet.
 
-  - The SKILL should: generate `IGameSystem_InitAllSystems.{platform}.yaml`, with `func_sig`.
+2. Create SKILL
 
-  - The SKILL should: generate `IGameSystem_InitAllSystems_pFirst.{platform}.yaml`, with `gv_sig`.
+  - Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH**.
+  
+  - The SKILL should generate `IGameSystem_InitAllSystems.{platform}.yaml`, with `func_sig`.
 
-  - After successfully written the yaml, we **SHOULD** create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH**. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-func-as-yaml" and "write-globalvar-as-yaml" invocation for references.
+  - The SKILL should generate `IGameSystem_InitAllSystems_pFirst.{platform}.yaml`, with `gv_sig`.
+
+  - DO NOT pack skill.
+  
+  - The SKILL should be working with both `server.dll` and `server.so`.
+  
+  - **ALWAYS** check existing SKILLs with `/write-func-as-yaml` and `/write-globalvar-as-yaml` invocation for references.
  
 2. Create preprocessor script
 
-  - Create a copy of `ida_preprocessor_scripts/find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager.py` as `ida_preprocessor_scripts/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.py`
+  - Create `ida_preprocessor_scripts/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.py`
 
-  - Don't forget to update `TARGET_FUNCTION_NAMES` and `TARGET_GLOBALVAR_NAMES` in the new preprocessor script.
-
-  - The preprocessor script will be used when signature from older version of game is available.
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` and `TARGET_GLOBALVAR_NAMES` for references.
 
 3. Add the new SKILL to `config.yaml`, under `skills`.
 
@@ -338,41 +352,37 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for struct offset
 
-`CGameResourceService_BuildResourceManifest` AND `CGameResourceService_m_pEntitySystem` for example.
-
 * Always make sure you have ida-pro-mcp server running.
 
 * For human contributor: You should write new initial prompts when working with new struct offsets, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Verify and Create SKILL
+`CGameResourceService_BuildResourceManifest` AND `CGameResourceService_m_pEntitySystem` for example.
 
-  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
+1. Look for desired symbols in IDA
 
-  - The SKILL should: search string "CGameResourceService::BuildResourceManifest(start)" in IDA, search xrefs for the string. 
-      
-      Get xrefs to the `CGameResourceService::BuildResourceManifest(start) [%d entities - %s]` variant string address:
+  - Search string "CGameResourceService::BuildResourceManifest(start)" in IDA, search xrefs for the string. 
 
-      ```
-      mcp__ida-pro-mcp__xrefs_to addrs="<string_address>"
-      ```
+  - The xref should point to a function - this is `CGameResourceService_BuildResourceManifest`. rename it to `CGameResourceService_BuildResourceManifest` if not renamed yet.
 
-      The xref should point to a function - this is `CGameResourceService_BuildResourceManifest`. rename it to `CGameResourceService_BuildResourceManifest` if not renamed yet.
+2. Create SKILL
 
-  - The SKILL should: generate `CGameResourceService_BuildResourceManifest.{platform}.yaml`, with `func_sig`.
+  - Create project-level skill "find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem" in **ENGLISH**. 
+  
+  - The SKILL should generate `CGameResourceService_BuildResourceManifest.{platform}.yaml`, with `func_sig`.
 
-  - The SKILL should: generate `CGameResourceService_m_pEntitySystem.{platform}.yaml`, with `offset` and `offset_sig`.
+  - The SKILL should generate `CGameResourceService_m_pEntitySystem.{platform}.yaml`, with `offset` and `offset_sig`.
 
-  - After successfully written the yaml, we **SHOULD** create project-level skill "find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem" in **ENGLISH**. DO NOT pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check other existing SKILL with "write-structoffset-as-yaml" for references.
+  - DO NOT pack skill.
+  
+  - The SKILL should be working with both `server.dll` and `server.so`.
+  
+  - **ALWAYS** check existing SKILLs with `/write-structoffset-as-yaml` invocation for references.
 
 2. Create preprocessor script
 
-```
- - Create a copy of `ida_preprocessor_scripts/find-FireBullets-AND-TraceAttack-AND-CTakeDamageInfo.py` as `ida_preprocessor_scripts/find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem.py`
+ - Create `ida_preprocessor_scripts/find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem.py`
 
- - Don't forget to update `TARGET_FUNCTION_NAMES` and `TARGET_STRUCT_MEMBER_NAMES` in the new preprocessor script.
-
- - The preprocessor script will be used when signature from older version of game is available.
-```
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` and `TARGET_STRUCT_MEMBER_NAMES` for references.
 
 3. Add the new SKILL to `config.yaml`, under `skills`.
 
@@ -408,17 +418,15 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for patch
 
-A patch SKILL locates a specific instruction inside a known function and generates replacement bytes to change its behavior at runtime (e.g., force/skip a branch, NOP a call). The prerequisite function must already have a find-SKILL.
+* A patch SKILL locates a specific instruction inside a known function and generates replacement bytes to change its behavior at runtime (e.g., force/skip a branch, NOP a call). The prerequisite function must already have a find-SKILL.
 
 * Always make sure you have ida-pro-mcp server running.
 
 `CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` for example — patching the velocity clamping `jbe` to an unconditional `jmp` inside `CCSPlayer_MovementServices_FullWalkMove`.
 
-1. Verify and Create SKILL
+1. Look for desired symbols in IDA
 
-  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
-
-  - The SKILL should: decompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
+  - Ddecompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
 
 ```c
   v20 = (float)((float)(v16 * v16) + (float)(v19 * v19)) + (float)(v17 * v17);
@@ -428,9 +436,9 @@ A patch SKILL locates a specific instruction inside a known function and generat
   }
 ```
 
-  - The SKILL should: Disassemble around the comparison to find the exact conditional jump instruction.
+  - Disassemble around the comparison to find the exact conditional jump instruction.
 
-  - The SKILL should: Disassemble around the comparison address to find the comiss + jbe instruction pair.
+  - Disassemble around the comparison address to find the comiss + jbe instruction pair.
 
 ```
   Expected assembly pattern:
@@ -439,30 +447,32 @@ A patch SKILL locates a specific instruction inside a known function and generat
     jbe     loc_XXXXXXXX         ; skip clamp block if v20 <= v18*v18
 ```
 
-```
-  Determine the patch bytes based on the instruction encoding.
+  - Determine the patch bytes based on the instruction encoding.
 
+```
   * Near `jbe` (`0F 86 rel32` — 6 bytes) → `E9 <new_rel32> 90` (unconditional `jmp` + `nop`)
   * Short `jbe` (`76 rel8` — 2 bytes) → `EB rel8` (unconditional `jmp short`)
 ```
 
- - The SKILL should: generate `CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml`, with `patch_sig` and `patch_bytes`.
+2. Create SKILL
 
- - After successfully written the yaml, we **SHOULD** create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check existing SKILL with "write-patch-as-yaml" invocation for references.
+ - Create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**.
 
-2. Create preprocessor script.
+ - The SKILL should generate `CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml`, with `patch_sig` and `patch_bytes`.
 
- - Create `ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py` and delegate to `preprocess_common_skill` with `patch_names`.
+ - DO NOT pack skill.
+ 
+ - The SKILL should be working with both `server.dll` and `server.so`.
+ 
+ - **ALWAYS** check existing SKILL with `/write-patch-as-yaml` invocation for references.
 
- - Define `TARGET_PATCH_NAMES = ["CCSPlayer_MovementServices_FullWalkMove_SpeedClamp"]`.
+3. Create preprocessor script.
 
- - Pass `patch_names=TARGET_PATCH_NAMES` in `preprocess_common_skill(...)`.
+ - Create `ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py`
 
- - The preprocessor will reuse old patch YAML and requires `patch_sig` to be uniquely matched in new binary (`find_bytes` result must be `== 1`), otherwise preprocessing fails and falls back to normal SKILL execution.
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_PATCH_NAMES` for references.
 
- * The preprocessor script will be used when patch YAML from older version of game is available.
-
-3. Add the new SKILL to `config.yaml`, under `skills`.
+4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
