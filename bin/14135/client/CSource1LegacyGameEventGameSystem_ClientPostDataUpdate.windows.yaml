@@ -1,0 +1,8 @@
+func_name: CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
+func_va: '0x18092fed0'
+func_rva: '0x92fed0'
+func_size: '0x13c'
+func_sig: 40 56 57 48 83 EC ?? 48 8B F9 48 63 89 ?? ?? ?? ??
+vtable_name: CSource1LegacyGameEventGameSystem
+vfunc_offset: '0xa0'
+vfunc_index: 20

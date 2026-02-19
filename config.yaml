@@ -182,6 +182,27 @@ modules:
           - find-IGameSystem_vtable
           - find-CBuildCubemapsGameSystem_ClientPostRender
 
+      - name: find-CSource1LegacyGameEventGameSystem_vtable
+        expected_output:
+          - CSource1LegacyGameEventGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
+        expected_output:
+          - CSource1LegacyGameEventGameSystem_ClientPostDataUpdate.{platform}.yaml
+        expected_input:
+          - CSource1LegacyGameEventGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-CSource1LegacyGameEventGameSystem_vtable
+
+      - name: find-IGameSystem_ClientPostDataUpdate
+        expected_output:
+          - IGameSystem_ClientPostDataUpdate.{platform}.yaml
+        expected_input:
+          - CSource1LegacyGameEventGameSystem_ClientPostDataUpdate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -213,6 +234,14 @@ modules:
         category: vfunc
         alias:
           - CBuildCubemapsGameSystem::ClientPostRender
+
+      - name: CSource1LegacyGameEventGameSystem_vtable
+        category: vtable
+
+      - name: CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
+        category: vfunc
+        alias:
+          - CSource1LegacyGameEventGameSystem::ClientPostDataUpdate
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
