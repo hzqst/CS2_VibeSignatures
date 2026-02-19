@@ -414,41 +414,44 @@ A patch SKILL locates a specific instruction inside a known function and generat
 
 `CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` for example — patching the velocity clamping `jbe` to an unconditional `jmp` inside `CCSPlayer_MovementServices_FullWalkMove`.
 
-1. Create SKILL
+1. Verify and Create SKILL
 
-```
- - The SKILL should: decompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
+  - We **SHOULD** verify the SKILL steps via ida-pro-mcp first
 
+  - The SKILL should: decompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
+
+```c
   v20 = (float)((float)(v16 * v16) + (float)(v19 * v19)) + (float)(v17 * v17);
   if ( v20 > (float)(v18 * v18) )
   {
     ...velocity clamping logic...
   }
+```
 
-  Disassemble around the comparison to find the exact conditional jump instruction.
+  - The SKILL should: Disassemble around the comparison to find the exact conditional jump instruction.
 
-  Disassemble around the comparison address to find the comiss + jbe instruction pair.
+  - The SKILL should: Disassemble around the comparison address to find the comiss + jbe instruction pair.
 
+```
   Expected assembly pattern:
     addss   xmm2, xmm1          ; v20 = sum of squares
     comiss  xmm2, xmm0          ; compare v20 vs v18*v18
     jbe     loc_XXXXXXXX         ; skip clamp block if v20 <= v18*v18
+```
 
+```
   Determine the patch bytes based on the instruction encoding.
 
   * Near `jbe` (`0F 86 rel32` — 6 bytes) → `E9 <new_rel32> 90` (unconditional `jmp` + `nop`)
   * Short `jbe` (`76 rel8` — 2 bytes) → `EB rel8` (unconditional `jmp short`)
-
- - The SKILL should: generate CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml, with patch_sig and patch_bytes.
-
- - Create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`.
-
- - **ALWAYS** check existing SKILL with "write-patch-as-yaml" for references.
 ```
+
+ - The SKILL should: generate `CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml`, with `patch_sig` and `patch_bytes`.
+
+ - After successfully written the yaml, we **SHOULD** create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**. Don't pack skill. Note that the SKILL should be working with both `server.dll` and `server.so`. **ALWAYS** check existing SKILL with "write-patch-as-yaml" invocation for references.
 
 2. Create preprocessor script.
 
-```
  - Create `ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py` and delegate to `preprocess_common_skill` with `patch_names`.
 
  - Define `TARGET_PATCH_NAMES = ["CCSPlayer_MovementServices_FullWalkMove_SpeedClamp"]`.
@@ -458,8 +461,6 @@ A patch SKILL locates a specific instruction inside a known function and generat
  - The preprocessor will reuse old patch YAML and requires `patch_sig` to be uniquely matched in new binary (`find_bytes` result must be `== 1`), otherwise preprocessing fails and falls back to normal SKILL execution.
 
  * The preprocessor script will be used when patch YAML from older version of game is available.
-
-```
 
 3. Add the new SKILL to `config.yaml`, under `skills`.
 
