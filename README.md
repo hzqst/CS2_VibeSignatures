@@ -119,9 +119,9 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 1. Create preprocessor script
 
- - Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py` as `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
+ - Create `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
- - Don't forget to change `CBaseEntity` to `CCSPlayerPawn` in the new preprocessor script.
+  - **ALWAYS** check existing preprocessor scripts with `TARGET_CLASS_NAMES` for references.
 
  - no LLM needed when finding vtable. everything done in the preprocessor script.
 
