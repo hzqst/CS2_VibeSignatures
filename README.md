@@ -117,15 +117,15 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 `CCSPlayerPawn` for example.
 
-1. Create preprocessor script
+#### 1. Create preprocessor script
 
  - Create a copy of `ida_preprocessor_scripts/find-CBaseEntity_vtable.py` as `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
  - Don't forget to change `CBaseEntity` to `CCSPlayerPawn` in the new preprocessor script.
 
- * no LLM needed when finding vtable. everything done in the preprocessor script.
+ - no LLM needed when finding vtable. everything done in the preprocessor script.
 
-2. Add the new SKILL to `config.yaml`, under `skills`.
+#### 2. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -135,7 +135,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CCSPlayerPawn_vtable.{platform}.yaml
 ```
 
-3. Add the new symbol to `config.yaml`, under `symbols`.
+#### 3. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CCSPlayerPawn_vtable
