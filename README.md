@@ -144,13 +144,13 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for regular function
 
-`CBaseModelEntity_SetModel` for example
-
 * Always make sure you have ida-pro-mcp server running.
 
-* For human contributor: You should write new initial prompts when working with new functions, **DO NOT** COPY-PASTE the initial prompts from README!!!
+* For human contributor: You should write new initial prompts when looking for new symbols, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Look for desired symbols in IDA
+`CBaseModelEntity_SetModel` for example
+
+#### 1.Look for desired symbols in IDA 
 
   - Search string "weapons/models/defuser/defuser.vmdl" in IDA, look for code snippet with following pattern in xrefs to the string:
 
@@ -171,7 +171,7 @@ python update_gamedata.py -gamever 14135 [-debug]
                         0i64);
 ```
 
-2. Create SKILL
+#### 2. Create SKILL
 
   - Create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to what we did in IDA.
   
@@ -183,13 +183,13 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - **ALWAYS** check existing SKILLs with `/write-func-as-yaml` invocation for references.
 
-3. Create preprocessor script
+#### 3. Create preprocessor script
 
   - Create `ida_preprocessor_scripts/find-CBaseModelEntity_SetModel.py`
 
   - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` for references.
 
-4. Add the new SKILL to `config.yaml`, under `skills`.
+#### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -210,15 +210,15 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for virtual function
 
-`CBasePlayerController_Respawn` for example
-
 * Always make sure you have ida-pro-mcp server running.
 
-* For human contributor: You should write new initial prompts when working with new functions, **DO NOT** COPY-PASTE the initial prompts from README!!!
+* For human contributor: You should write new initial prompts when looking for new symbols, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
-1. Look for desired symbols in IDA
+`CBasePlayerController_Respawn` for example
 
-  - Search string "GMR_BeginRound" in IDA and look for a function with reference to it, decompile the function who reference "GMR_BeginRound" and look for code pattern:
+#### 1. Look for desired symbols in IDA
+
+  - Search string "GMR_BeginRound" in IDA and look for a function with reference to it, decompile the function who reference "GMR_BeginRound" and look for code pattern in the decompiled function:
 
 ```c
       do
@@ -246,7 +246,7 @@ python update_gamedata.py -gamever 14135 [-debug]
       while ( v28 != v29 );
 ```
 
-2. Create SKILL
+#### 2. Create SKILL
 
   - Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH**.
   
@@ -258,13 +258,13 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - **ALWAYS** check existing SKILLs with `/write-vfunc-as-yaml` invocation for references.
 
-3. Create preprocessor script
+#### 3. Create preprocessor script
 
   - Create `ida_preprocessor_scripts/find-CCSPlayerController_Respawn.py`
 
   - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` for references.
 
-4. Add the new SKILL to `config.yaml`, under `skills`.
+#### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -278,7 +278,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - find-CBasePlayerController_vtable
 ```
 
-5. Add the new symbol to `config.yaml`, under `symbols`.
+#### 5. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CBasePlayerController_Respawn
@@ -291,11 +291,11 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 * Always make sure you have ida-pro-mcp server running.
 
-* For human contributor: You should write new initial prompts when working with new global variables, **DO NOT** COPY-PASTE the initial prompts from README!!!
+* For human contributor: You should write new initial prompts when looking for new symbols, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
 `IGameSystem_InitAllSystems` AND `IGameSystem_InitAllSystems_pFirst` for example
 
-1. Look for desired symbols in IDA
+#### 1. Look for desired symbols in IDA
 
   - Search string "IGameSystem::InitAllSystems" in IDA, search xrefs for the string. the function with xref to the string is `IGameSystem_InitAllSystems`. 
   
@@ -305,7 +305,7 @@ python update_gamedata.py -gamever 14135 [-debug]
  
   - Rename `qword_XXXXXX` previously found to `IGameSystem_InitAllSystems_pFirst` if it was not renamed yet.
 
-2. Create SKILL
+#### 2. Create SKILL
 
   - Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH**.
   
@@ -319,13 +319,13 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - **ALWAYS** check existing SKILLs with `/write-func-as-yaml` and `/write-globalvar-as-yaml` invocation for references.
  
-2. Create preprocessor script
+#### 3. Create preprocessor script
 
   - Create `ida_preprocessor_scripts/find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst.py`
 
   - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` and `TARGET_GLOBALVAR_NAMES` for references.
 
-3. Add the new SKILL to `config.yaml`, under `skills`.
+#### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -336,7 +336,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - IGameSystem_InitAllSystems_pFirst.{platform}.yaml
 ```
 
-4. Add the new symbols to `config.yaml`, under `symbols`.
+#### 5. Add the new symbols to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: IGameSystem_InitAllSystems
@@ -354,17 +354,17 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 * Always make sure you have ida-pro-mcp server running.
 
-* For human contributor: You should write new initial prompts when working with new struct offsets, **DO NOT** COPY-PASTE the initial prompts from README!!!
+* For human contributor: You should write new initial prompts when looking for new symbols, **DO NOT** COPY-PASTE the initial prompts from README!!!
 
 `CGameResourceService_BuildResourceManifest` AND `CGameResourceService_m_pEntitySystem` for example.
 
-1. Look for desired symbols in IDA
+#### 1. Look for desired symbols in IDA
 
   - Search string "CGameResourceService::BuildResourceManifest(start)" in IDA, search xrefs for the string. 
 
   - The xref should point to a function - this is `CGameResourceService_BuildResourceManifest`. rename it to `CGameResourceService_BuildResourceManifest` if not renamed yet.
 
-2. Create SKILL
+#### 2. Create SKILL
 
   - Create project-level skill "find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem" in **ENGLISH**. 
   
@@ -378,13 +378,13 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - **ALWAYS** check existing SKILLs with `/write-structoffset-as-yaml` invocation for references.
 
-2. Create preprocessor script
+#### 3. Create preprocessor script
 
  - Create `ida_preprocessor_scripts/find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem.py`
 
   - **ALWAYS** check existing preprocessor scripts with `TARGET_FUNCTION_NAMES` and `TARGET_STRUCT_MEMBER_NAMES` for references.
 
-3. Add the new SKILL to `config.yaml`, under `skills`.
+#### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -395,7 +395,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CGameResourceService_m_pEntitySystem.{platform}.yaml
 ```
 
-4. Add the new symbols to `config.yaml`, under `symbols`.
+#### 5. Add the new symbols to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CGameResourceService_BuildResourceManifest
@@ -422,11 +422,13 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 * Always make sure you have ida-pro-mcp server running.
 
+* For human contributor: You should write new initial prompts when looking for new symbols, **DO NOT** COPY-PASTE the initial prompts from README!!!
+
 `CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` for example — patching the velocity clamping `jbe` to an unconditional `jmp` inside `CCSPlayer_MovementServices_FullWalkMove`.
 
-1. Look for desired symbols in IDA
+#### 1. Look for desired symbols in IDA
 
-  - Ddecompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
+  - Decompile CCSPlayer_MovementServices_FullWalkMove and look for code pattern - whatever a float > A square of whatever a float:
 
 ```c
   v20 = (float)((float)(v16 * v16) + (float)(v19 * v19)) + (float)(v17 * v17);
@@ -454,7 +456,7 @@ python update_gamedata.py -gamever 14135 [-debug]
   * Short `jbe` (`76 rel8` — 2 bytes) → `EB rel8` (unconditional `jmp short`)
 ```
 
-2. Create SKILL
+#### 2. Create SKILL
 
  - Create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**.
 
@@ -466,13 +468,13 @@ python update_gamedata.py -gamever 14135 [-debug]
  
  - **ALWAYS** check existing SKILL with `/write-patch-as-yaml` invocation for references.
 
-3. Create preprocessor script.
+#### 3. Create preprocessor script.
 
  - Create `ida_preprocessor_scripts/find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.py`
 
   - **ALWAYS** check existing preprocessor scripts with `TARGET_PATCH_NAMES` for references.
 
-4. Add the new SKILL to `config.yaml`, under `skills`.
+#### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
  * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
 
@@ -486,7 +488,7 @@ python update_gamedata.py -gamever 14135 [-debug]
           - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
 ```
 
-4. Add the new symbol to `config.yaml`, under `symbols`.
+#### 5. Add the new symbol to `config.yaml`, under `symbols`.
 
 ```yaml
       - name: CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
