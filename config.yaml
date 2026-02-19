@@ -203,6 +203,36 @@ modules:
           - find-IGameSystem_vtable
           - find-CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
 
+      - name: find-CLightQueryGameSystem_vtable
+        expected_output:
+          - CLightQueryGameSystem_vtable.{platform}.yaml
+
+      - name: find-CLightQueryGameSystem_OnPostSimulate
+        expected_output:
+          - CLightQueryGameSystem_OnPostSimulate.{platform}.yaml
+
+      - name: find-CLightQueryGameSystem_ServerGamePostSimulate-AND-CLightQueryGameSystem_ClientGamePostSimulate
+        expected_output:
+          - CLightQueryGameSystem_ServerGamePostSimulate.{platform}.yaml
+          - CLightQueryGameSystem_ClientGamePostSimulate.{platform}.yaml
+        expected_input:
+          - CLightQueryGameSystem_OnPostSimulate.{platform}.yaml
+          - CLightQueryGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-CLightQueryGameSystem_vtable
+          - find-CLightQueryGameSystem_OnPostSimulate
+
+      - name: find-IGameSystem_ServerGamePostSimulate-AND-IGameSystem_ClientGamePostSimulate
+        expected_output:
+          - IGameSystem_ServerGamePostSimulate.{platform}.yaml
+          - IGameSystem_ClientGamePostSimulate.{platform}.yaml
+        expected_input:
+          - CLightQueryGameSystem_ServerGamePostSimulate.{platform}.yaml
+          - CLightQueryGameSystem_ClientGamePostSimulate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLightQueryGameSystem_ServerGamePostSimulate-AND-CLightQueryGameSystem_ClientGamePostSimulate
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -242,6 +272,24 @@ modules:
         category: vfunc
         alias:
           - CSource1LegacyGameEventGameSystem::ClientPostDataUpdate
+
+      - name: CLightQueryGameSystem_vtable
+        category: vtable
+
+      - name: CLightQueryGameSystem_OnPostSimulate
+        category: func
+        alias:
+          - CLightQueryGameSystem::OnPostSimulate
+
+      - name: CLightQueryGameSystem_ServerGamePostSimulate
+        category: vfunc
+        alias:
+          - CLightQueryGameSystem::ServerGamePostSimulate
+
+      - name: CLightQueryGameSystem_ClientGamePostSimulate
+        category: vfunc
+        alias:
+          - CLightQueryGameSystem::ClientGamePostSimulate
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
