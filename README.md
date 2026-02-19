@@ -218,6 +218,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
   - The SKILL should: search string "GMR_BeginRound" in IDA and look for a function with reference to it, decompile the function who reference "GMR_BeginRound" and look for code pattern:
 
+```c
       do
       {
         //.......
@@ -241,6 +242,7 @@ python update_gamedata.py -gamever 14135 [-debug]
         ++v28;
       }
       while ( v28 != v29 );
+```
 
   - The SKILL should: generate `CBasePlayerController_Respawn.{platform}.yaml`, with `func_sig` (or `vfunc_sig` if `CBasePlayerController_Respawn` is too short or too generic).
 
