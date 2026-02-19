@@ -1,10 +1,10 @@
 ---
-name: find-CGameResourceService_BuildResourceManifest
-description: Find and identify the CGameResourceService_BuildResourceManifest function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 engine2.dll or libengine2.so to locate the CGameResourceService::BuildResourceManifest function by searching for the log string pattern and analyzing xrefs.
+name: find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem
+description: Find and identify the CGameResourceService_BuildResourceManifest function and CGameResourceService_m_pEntitySystem offset in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 engine2.dll or libengine2.so to locate the CGameResourceService::BuildResourceManifest function by searching for the log string pattern and analyzing xrefs.
 disable-model-invocation: true
 ---
 
-# Find CGameResourceService_BuildResourceManifest
+# Find CGameResourceService_BuildResourceManifest and CGameResourceService_m_pEntitySystem
 
 Locate `CGameResourceService::BuildResourceManifest` in CS2 engine2.dll or libengine2.so using IDA Pro MCP tools.
 
@@ -54,7 +54,7 @@ The function handles resource manifest building for entities. Key characteristic
 **Common identifying features:**
 - References `"CGameResourceService::BuildResourceManifest(start) [%d entities - %s]"` log string
 - References `"CGameResourceService::BuildResourceManifest(finish) [%d entities - %s]"` log string
-- Accesses `CGameResourceService::m_pEntitySystem` at offset 0x58
+- Accesses `CGameResourceService::m_pEntitySystem` at offset 0x58 (can change on game update)
 - Calls a virtual function on `m_pEntitySystem` (vtable index 4, offset 0x20)
 
 **Expected function signature:**
@@ -67,6 +67,16 @@ void __fastcall CGameResourceService_BuildResourceManifest(
         __int64 a5,
         __int64 a6,
         __int64 a7)
+```
+
+### Key Code Pattern
+
+```c
+// Access m_pEntitySystem at offset 0x58
+v16 = *(_QWORD *)(a1 + 88);  // 88 = 0x58, This is CGameResourceService::m_pEntitySystem, and can change on game update.
+if (v16)
+    // Call virtual function at vtable index 4 (offset 0x20)
+    (*(void**)(*v16 + 32))(v16, a2, a3, a4, a5, 0, a7);
 ```
 
 ### 4. Rename the Function
@@ -93,15 +103,17 @@ Required parameters:
 For each struct member, **ALWAYS** generate a dedicated `offset_sig` first, then write a dedicated YAML file for that member.
 
 For `CGameResourceService::m_pEntitySystem`:
-- Offset: `0x58` (size `8`)
+- Offset: `0x58` (size `8`) (can change on game update)
 - Locate the instruction that accesses this member offset in `CGameResourceService_BuildResourceManifest` (for example: `*(_QWORD *)(a1 + 88)` where `88 = 0x58`)
+
 - Use SKILL `/generate-signature-for-structoffset` with:
   - `inst_addr`: address of the instruction containing offset `0x58`
   - `struct_offset`: `0x58`
+
 - Use SKILL `/write-structoffset-as-yaml` with:
   - `struct_name`: `CGameResourceService`
   - `member_name`: `m_pEntitySystem`
-  - `offset`: `0x58`
+  - `offset`: `0x58` (can change on game update)
   - `size`: `8`
   - `offset_sig`: validated signature from `/generate-signature-for-structoffset`
 
@@ -110,16 +122,6 @@ For `CGameResourceService::m_pEntitySystem`:
 - **Type**: Regular function (not virtual)
 - **Parameters**: `(this, a2, entityCount, a4, a5, a6, a7)`
 - **Purpose**: Builds resource manifest for entities, delegates to entity system
-
-### Key Code Pattern
-
-```c
-// Access m_pEntitySystem at offset 0x58
-v16 = *(_QWORD *)(a1 + 88);  // 88 = 0x58, This is CGameResourceService::m_pEntitySystem, and can change on game update.
-if (v16)
-    // Call virtual function at vtable index 4 (offset 0x20)
-    (*(void**)(*v16 + 32))(v16, a2, a3, a4, a5, 0, a7);
-```
 
 ### Platform Differences
 

@@ -173,7 +173,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Create SKILL
 
-  - Create project-level skill "find-CBaseModelEntity_SetModel" in **ENGLISH** according to what we did in IDA.
+  - Create project-level skill `find-CBaseModelEntity_SetModel` in **ENGLISH** according to what we did in IDA.
   
   - The SKILL should generate `CBaseModelEntity_SetModel.{platform}.yaml`, with `func_sig`.
 
@@ -248,7 +248,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Create SKILL
 
-  - Create project-level skill "find-CBasePlayerController_Respawn" in **ENGLISH**.
+  - Create project-level skill `find-CBasePlayerController_Respawn` in **ENGLISH**.
   
   - The SKILL should generate `CBasePlayerController_Respawn.{platform}.yaml`, with `func_sig`. (or `vfunc_sig` if `CBasePlayerController_Respawn` is too short or too generic).
 
@@ -307,7 +307,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Create SKILL
 
-  - Create project-level skill "find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst" in **ENGLISH**.
+  - Create project-level skill `find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst` in **ENGLISH**.
   
   - The SKILL should generate `IGameSystem_InitAllSystems.{platform}.yaml`, with `func_sig`.
 
@@ -366,7 +366,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Create SKILL
 
-  - Create project-level skill "find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem" in **ENGLISH**. 
+  - Create project-level skill `find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem` in **ENGLISH**. 
   
   - The SKILL should generate `CGameResourceService_BuildResourceManifest.{platform}.yaml`, with `func_sig`.
 
@@ -458,7 +458,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Create SKILL
 
- - Create project-level skill "find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp" in **ENGLISH**.
+ - Create project-level skill `find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` in **ENGLISH**.
 
  - The SKILL should generate `CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml`, with `patch_sig` and `patch_bytes`.
 

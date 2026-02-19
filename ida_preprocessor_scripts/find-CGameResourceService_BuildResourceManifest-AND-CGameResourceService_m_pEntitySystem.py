@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CGameResourceService_BuildResourceManifest skill."""
+"""Preprocess script for find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
