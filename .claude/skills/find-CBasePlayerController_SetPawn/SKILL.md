@@ -1,12 +1,12 @@
 ---
 name: find-CBasePlayerController_SetPawn
-description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetPawn function by finding CSource2GameClients_ClientDisconnect (via "player_disconnect" + "xuid" string xrefs) and identifying the characteristic call pattern within it.
+description: Find and identify the CBasePlayerController_SetPawn function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SetPawn function by finding CSource2GameClients_ClientDisconnect (via "player_disconnect" + "xuid" string xrefs) and identifying the characteristic call pattern within it.
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_SetPawn
 
-Locate `CBasePlayerController_SetPawn` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerController_SetPawn` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -94,4 +94,4 @@ Required parameters:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerController_SetPawn.windows.yaml`
-- `server.so` → `CBasePlayerController_SetPawn.linux.yaml`
+- `libserver.so` → `CBasePlayerController_SetPawn.linux.yaml`

@@ -1,12 +1,12 @@
 ---
 name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
-description: Find and identify the CSource2GameEntities::CheckTransmit (virtual function) and CCheckTransmitInfo (struct) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2GameEntities::CheckTransmit function by searching for the assertion string pattern and analyzing xrefs.
+description: Find and identify the CSource2GameEntities::CheckTransmit (virtual function) and CCheckTransmitInfo (struct) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CSource2GameEntities::CheckTransmit function by searching for the assertion string pattern and analyzing xrefs.
 disable-model-invocation: true
 ---
 
 # Find CSource2GameEntities::CheckTransmit
 
-Locate `CSource2GameEntities::CheckTransmit` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CSource2GameEntities::CheckTransmit` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -167,4 +167,4 @@ For `CCheckTransmitInfo::m_nPlayerSlot`:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CSource2GameEntities_CheckTransmit.windows.yaml`, `CCheckTransmitInfo_m_nPlayerSlot.windows.yaml`
-- `server.so` → `CSource2GameEntities_CheckTransmit.linux.yaml`, `CCheckTransmitInfo_m_nPlayerSlot.linux.yaml`
+- `libserver.so` → `CSource2GameEntities_CheckTransmit.linux.yaml`, `CCheckTransmitInfo_m_nPlayerSlot.linux.yaml`

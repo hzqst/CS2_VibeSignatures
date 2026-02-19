@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_TakeDamageOld
-description: Find and identify the CBaseEntity_TakeDamageOld function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TakeDamageOld function by searching for the TakeDamageOld debug string references and analyzing cross-references.
+description: Find and identify the CBaseEntity_TakeDamageOld function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the TakeDamageOld function by searching for the TakeDamageOld debug string references and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_TakeDamageOld, CBaseEntity_TakeDamage, CBaseEntity_TakeDamage_Alive, CBaseEntity_TakeDamage_Dying, CBaseEntity_TakeDamage_Dead
 
-Locate `CBaseEntity_TakeDamageOld`, `CBaseEntity_TakeDamage`, `CBaseEntity_TakeDamage_Alive`, `CBaseEntity_TakeDamage_Dying`, `CBaseEntity_TakeDamage_Dead` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBaseEntity_TakeDamageOld`, `CBaseEntity_TakeDamage`, `CBaseEntity_TakeDamage_Alive`, `CBaseEntity_TakeDamage_Dying`, `CBaseEntity_TakeDamage_Dead` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -281,7 +281,7 @@ mcp__ida-pro-mcp__rename(batch={"func": [
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -295,4 +295,4 @@ The output YAML filename depends on the platform:
 
 - `server.dll` → `CBaseEntity_TakeDamageOld.windows.yaml`, `CBasePlayerPawn_OnTakeDamage.windows.yaml`, `CBasePlayerPawn_OnTakeDamage_Alive.windows.yaml`, `CBasePlayerPawn_OnTakeDamage_Dying.windows.yaml`, `CBasePlayerPawn_OnTakeDamage_Dead.windows.yaml`
 
-- `server.so` → `CBaseEntity_TakeDamageOld.linux.yaml`, `CBasePlayerPawn_OnTakeDamage.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Alive.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Dying.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Dead.linux.yaml`
+- `libserver.so` → `CBaseEntity_TakeDamageOld.linux.yaml`, `CBasePlayerPawn_OnTakeDamage.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Alive.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Dying.linux.yaml`, `CBasePlayerPawn_OnTakeDamage_Dead.linux.yaml`

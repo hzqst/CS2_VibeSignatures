@@ -1,12 +1,12 @@
 ---
 name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
-description: Find and identify the CBaseModelEntity_SetModel and CBaseEntity_SetGravityScale functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these functions by searching for the "weapons/models/grenade/flashbang/weapon_flashbang.vmdl" string reference and analyzing the flashbang grenade initializer function.
+description: Find and identify the CBaseModelEntity_SetModel and CBaseEntity_SetGravityScale functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate these functions by searching for the "weapons/models/grenade/flashbang/weapon_flashbang.vmdl" string reference and analyzing the flashbang grenade initializer function.
 disable-model-invocation: true
 ---
 
 # Find CBaseModelEntity_SetModel and CBaseEntity_SetGravityScale
 
-Locate `CBaseModelEntity_SetModel` and `CBaseEntity_SetGravityScale` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `CBaseModelEntity_SetModel` and `CBaseEntity_SetGravityScale` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -100,7 +100,7 @@ Locate `CBaseModelEntity_SetModel` and `CBaseEntity_SetGravityScale` in CS2 `ser
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -113,4 +113,4 @@ Locate `CBaseModelEntity_SetModel` and `CBaseEntity_SetGravityScale` in CS2 `ser
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CBaseModelEntity_SetModel.windows.yaml`, `CBaseEntity_SetGravityScale.windows.yaml`
-- `server.so` -> `CBaseModelEntity_SetModel.linux.yaml`, `CBaseEntity_SetGravityScale.linux.yaml`
+- `libserver.so` -> `CBaseModelEntity_SetModel.linux.yaml`, `CBaseEntity_SetGravityScale.linux.yaml`

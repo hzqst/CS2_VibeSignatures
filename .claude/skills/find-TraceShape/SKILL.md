@@ -1,12 +1,12 @@
 ---
 name: find-TraceShape
-description: Find and identify the TraceShape function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TraceShape function by searching for the VProf counter string "Physics/TraceShape (Server)" and analyzing cross-references.
+description: Find and identify the TraceShape function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the TraceShape function by searching for the VProf counter string "Physics/TraceShape (Server)" and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find TraceShape
 
-Locate `TraceShape` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `TraceShape` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -68,4 +68,4 @@ This string is passed to `VProf_FindOrCreateCounter` inside a one-time initializ
 
 The output YAML filename depends on the platform:
 - `server.dll` → `TraceShape.windows.yaml`
-- `server.so` → `TraceShape.linux.yaml`
+- `libserver.so` → `TraceShape.linux.yaml`

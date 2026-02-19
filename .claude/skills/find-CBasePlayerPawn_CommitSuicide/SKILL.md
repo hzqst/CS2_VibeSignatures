@@ -1,12 +1,12 @@
 ---
 name: find-CBasePlayerPawn_CommitSuicide
-description: Find and identify the CBasePlayerPawn_CommitSuicide function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CommitSuicide function by searching for the "bot_kill" command string, tracing to its handler, and identifying the CommitSuicide vfunc call in the kill loop.
+description: Find and identify the CBasePlayerPawn_CommitSuicide function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CommitSuicide function by searching for the "bot_kill" command string, tracing to its handler, and identifying the CommitSuicide vfunc call in the kill loop.
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_CommitSuicide
 
-Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -191,7 +191,7 @@ Locate `CBasePlayerPawn_CommitSuicide` in CS2 server.dll or server.so using IDA 
 - **VTable Index**: Changes with game updates. Resolve via `<CommitSuicide_offset> / 8`.
 - **VTable Offset**: Changes with game updates. Extract from the `bot_kill` handler loop.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV16CBasePlayerPawn` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV16CBasePlayerPawn` + `0x10`.
 
 ## String-Based Discovery
 
@@ -210,4 +210,4 @@ This is more robust than scanning vtable entries because:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerPawn_CommitSuicide.windows.yaml`
-- `server.so` → `CBasePlayerPawn_CommitSuicide.linux.yaml`
+- `libserver.so` → `CBasePlayerPawn_CommitSuicide.linux.yaml`

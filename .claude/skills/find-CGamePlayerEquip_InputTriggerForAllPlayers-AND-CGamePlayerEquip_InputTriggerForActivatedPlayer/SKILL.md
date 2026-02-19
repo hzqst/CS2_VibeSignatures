@@ -1,12 +1,12 @@
 ---
 name: find-CGamePlayerEquip_InputTriggerForAllPlayers-AND-CGamePlayerEquip_InputTriggerForActivatedPlayer
-description: Find and identify the CGamePlayerEquip_InputTriggerForAllPlayers and CGamePlayerEquip_InputTriggerForActivatedPlayer functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these input handlers by searching for their string pointers in the data section and resolving the function pointers at string_ptr + 0x10.
+description: Find and identify the CGamePlayerEquip_InputTriggerForAllPlayers and CGamePlayerEquip_InputTriggerForActivatedPlayer functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate these input handlers by searching for their string pointers in the data section and resolving the function pointers at string_ptr + 0x10.
 disable-model-invocation: true
 ---
 
 # Find CGamePlayerEquip_InputTriggerForAllPlayers and CGamePlayerEquip_InputTriggerForActivatedPlayer
 
-Locate both `CGamePlayerEquip_InputTriggerForAllPlayers` and `CGamePlayerEquip_InputTriggerForActivatedPlayer` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate both `CGamePlayerEquip_InputTriggerForAllPlayers` and `CGamePlayerEquip_InputTriggerForActivatedPlayer` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 Both functions use the same string-pointer + offset pattern in the `.data` section.
 
@@ -171,4 +171,4 @@ Both functions are located by finding entity input descriptors in the `.data` se
 
 The output YAML filenames depend on the platform:
 - `server.dll` → `CGamePlayerEquip_InputTriggerForAllPlayers.windows.yaml`, `CGamePlayerEquip_InputTriggerForActivatedPlayer.windows.yaml`
-- `server.so` / `libserver.so` → `CGamePlayerEquip_InputTriggerForAllPlayers.linux.yaml`, `CGamePlayerEquip_InputTriggerForActivatedPlayer.linux.yaml`
+- `libserver.so` / `libserver.so` → `CGamePlayerEquip_InputTriggerForAllPlayers.linux.yaml`, `CGamePlayerEquip_InputTriggerForActivatedPlayer.linux.yaml`

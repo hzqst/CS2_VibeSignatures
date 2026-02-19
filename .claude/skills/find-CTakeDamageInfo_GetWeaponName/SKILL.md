@@ -1,12 +1,12 @@
 ---
 name: find-CTakeDamageInfo_GetWeaponName
-description: Find and identify the CTakeDamageInfo_GetWeaponName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetWeaponName function by searching for the "_projectile" string reference and analyzing cross-references.
+description: Find and identify the CTakeDamageInfo_GetWeaponName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GetWeaponName function by searching for the "_projectile" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CTakeDamageInfo_GetWeaponName
 
-Locate `CTakeDamageInfo::GetWeaponName` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CTakeDamageInfo::GetWeaponName` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -81,7 +81,7 @@ The function contains:
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -92,4 +92,4 @@ The function contains:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CTakeDamageInfo_GetWeaponName.windows.yaml`
-- `server.so` → `CTakeDamageInfo_GetWeaponName.linux.yaml`
+- `libserver.so` → `CTakeDamageInfo_GetWeaponName.linux.yaml`

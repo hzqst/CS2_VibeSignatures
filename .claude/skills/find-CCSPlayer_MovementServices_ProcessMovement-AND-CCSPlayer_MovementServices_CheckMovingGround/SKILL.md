@@ -2,7 +2,7 @@
 name: find-CCSPlayer_MovementServices_ProcessMovement-AND-CCSPlayer_MovementServices_CheckMovingGround
 description: |
   Find and identify CCSPlayer_MovementServices_ProcessMovement and CCSPlayer_MovementServices_CheckMovingGround functions in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the movement processing functions.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the movement processing functions.
   Trigger: CCSPlayer_MovementServices_ProcessMovement, CCSPlayer_MovementServices_CheckMovingGround, ProcessMovement, CheckMovingGround, movement services, Force Down
 disable-model-invocation: true
 ---

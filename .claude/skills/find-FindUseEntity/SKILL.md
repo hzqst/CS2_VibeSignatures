@@ -1,12 +1,12 @@
 ---
 name: find-FindUseEntity
-description: Find and identify the FindUseEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the FindUseEntity function by searching for the known debug string "Radial using: %s" and analyzing cross-references.
+description: Find and identify the FindUseEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the FindUseEntity function by searching for the known debug string "Radial using: %s" and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find FindUseEntity
 
-Locate `FindUseEntity` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `FindUseEntity` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -62,4 +62,4 @@ The function contains a debug log call with format string:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `FindUseEntity.windows.yaml`
-- `server.so` → `FindUseEntity.linux.yaml`
+- `libserver.so` → `FindUseEntity.linux.yaml`

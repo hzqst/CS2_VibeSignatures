@@ -2,7 +2,7 @@
 name: find-CBaseEntity_SetStateChanged
 description: |
   Find and identify the CBaseEntity_SetStateChanged virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetStateChanged function,
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SetStateChanged function,
   which handles network state change notifications for entities.
   Trigger: CBaseEntity_SetStateChanged, SetStateChanged, NetworkStateChanged callback, state change handler
 disable-model-invocation: true
@@ -93,7 +93,7 @@ The `CBaseEntity::SetStateChanged` function contains the following signature str
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_SetStateChanged.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_SetStateChanged.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_SetStateChanged.linux.yaml`
 
 ## Related Functions
 

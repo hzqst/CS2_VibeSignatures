@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayerController_SwitchTeam
-description: Find and identify the CCSPlayerController_SwitchTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the SwitchTeam function by searching for known debug string references and analyzing cross-references.
+description: Find and identify the CCSPlayerController_SwitchTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SwitchTeam function by searching for known debug string references and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayerController_SwitchTeam
 
-Locate `CCSPlayerController_SwitchTeam` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayerController_SwitchTeam` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -94,4 +94,4 @@ __int64 CCSPlayerController_SwitchTeam(__int64 this, unsigned int team_id)
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerController_SwitchTeam.windows.yaml`
-- `server.so` → `CCSPlayerController_SwitchTeam.linux.yaml`
+- `libserver.so` → `CCSPlayerController_SwitchTeam.linux.yaml`

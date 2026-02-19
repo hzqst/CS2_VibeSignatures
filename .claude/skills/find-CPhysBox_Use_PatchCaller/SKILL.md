@@ -4,7 +4,7 @@ description: |
   Find and identify the CPhysBox_Use_PatchCaller patch in CS2 binary using IDA Pro MCP.
   This patch changes the third argument of the sub_XXXXXXXX call inside CPhysBox_Use from
   inputdata->pCaller to this (the CPhysBox entity pointer), so the caller is the physbox itself.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the caller argument.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate and patch the caller argument.
   Trigger: CPhysBox_Use patch caller, CPhysBox_Use_PatchCaller, physbox use caller patch
 disable-model-invocation: true
 ---

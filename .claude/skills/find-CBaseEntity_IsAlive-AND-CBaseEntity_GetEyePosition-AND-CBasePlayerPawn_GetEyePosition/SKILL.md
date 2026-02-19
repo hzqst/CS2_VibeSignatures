@@ -2,7 +2,7 @@
 name: find-CBaseEntity_IsAlive-AND-CBaseEntity_GetEyePosition-AND-CBasePlayerPawn_GetEyePosition
 description: |
   Find and identify the CBaseEntity_IsAlive, CBaseEntity_GetEyePosition and CBasePlayerPawn_GetEyePosition virtual functions in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate these functions.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate these functions.
   CBaseEntity_IsAlive checks m_lifeState == 0 (LIFE_ALIVE).
   CBasePlayerPawn_GetEyePosition retrieves the player eye position via camera services.
   Trigger: CBaseEntity_IsAlive, CBasePlayerPawn_GetEyePosition, IsAlive, GetEyePosition
@@ -215,4 +215,4 @@ Output YAML filenames depend on the platform:
 
 - `server.dll` → `CBaseEntity_IsAlive.windows.yaml`, `CBaseEntity_GetEyePosition.windows.yaml`, `CBasePlayerPawn_GetEyePosition.windows.yaml`
 
-- `server.so` / `libserver.so` → `CBaseEntity_IsAlive.linux.yaml`, `CBaseEntity_GetEyePosition.linux.yaml`, `CBasePlayerPawn_GetEyePosition.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_IsAlive.linux.yaml`, `CBaseEntity_GetEyePosition.linux.yaml`, `CBasePlayerPawn_GetEyePosition.linux.yaml`

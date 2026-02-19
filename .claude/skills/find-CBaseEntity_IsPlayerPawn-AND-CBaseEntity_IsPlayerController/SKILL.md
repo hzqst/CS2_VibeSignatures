@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController
-description: Find and identify the CBaseEntity_IsPlayerPawn and CBaseEntity_IsPlayerController virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate both vfuncs by decompiling ShowHudHint, following its first callee, and extracting the vtable offsets for IsPlayerPawn and IsPlayerController.
+description: Find and identify the CBaseEntity_IsPlayerPawn and CBaseEntity_IsPlayerController virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate both vfuncs by decompiling ShowHudHint, following its first callee, and extracting the vtable offsets for IsPlayerPawn and IsPlayerController.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_IsPlayerPawn and CBaseEntity_IsPlayerController
 
-Locate both `CBaseEntity_IsPlayerPawn` and `CBaseEntity_IsPlayerController` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate both `CBaseEntity_IsPlayerPawn` and `CBaseEntity_IsPlayerController` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 Both virtual functions are found by decompiling `ShowHudHint` and analyzing its first callee.
 
@@ -128,13 +128,13 @@ VTable parameters:
 - **VTable Index**: 169 - This can change when game updates.
 - **VTable Offset**: 0x548 (169 * 8 = 1352) - This can change when game updates.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
 
 ## Output YAML Format
 
 The output YAML filenames depend on the platform:
 - `server.dll` → `CBaseEntity_IsPlayerPawn.windows.yaml`, `CBaseEntity_IsPlayerController.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_IsPlayerPawn.linux.yaml`, `CBaseEntity_IsPlayerController.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_IsPlayerPawn.linux.yaml`, `CBaseEntity_IsPlayerController.linux.yaml`
 
 ## Notes
 

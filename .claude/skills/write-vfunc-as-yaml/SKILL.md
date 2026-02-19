@@ -113,7 +113,7 @@ The output YAML filename follows this pattern:
 
 Examples:
 - `server.dll` → `CCSPlayerController_ChangeTeam.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayerController_ChangeTeam.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSPlayerController_ChangeTeam.linux.yaml`
 
 ## Output YAML Format
 

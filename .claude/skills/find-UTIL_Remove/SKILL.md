@@ -1,12 +1,12 @@
 ---
 name: find-UTIL_Remove
-description: Find and identify the UTIL_Remove function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the UTIL_Remove function by analyzing the Molotov extinguish pattern and identifying the finalization call after particle effects.
+description: Find and identify the UTIL_Remove function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the UTIL_Remove function by analyzing the Molotov extinguish pattern and identifying the finalization call after particle effects.
 disable-model-invocation: true
 ---
 
 # Find UTIL_Remove
 
-Locate `UTIL_Remove` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `UTIL_Remove` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -81,4 +81,4 @@ sub_14FE9C0(a1);  // <- This is UTIL_Remove
 
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_Remove.windows.yaml`
-- `server.so` → `UTIL_Remove.linux.yaml`
+- `libserver.so` → `UTIL_Remove.linux.yaml`

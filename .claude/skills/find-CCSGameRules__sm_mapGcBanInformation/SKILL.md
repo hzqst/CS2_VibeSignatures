@@ -1,12 +1,12 @@
 ---
 name: find-CCSGameRules__sm_mapGcBanInformation
-description: Find and identify the CCSGameRules__sm_mapGcBanInformation global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GC ban information map structure by decompiling CCSPlayerController_ResourceDataThink's sub-function (Linux) or searching for the "Notification about user penalty" string (Windows).
+description: Find and identify the CCSGameRules__sm_mapGcBanInformation global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GC ban information map structure by decompiling CCSPlayerController_ResourceDataThink's sub-function (Linux) or searching for the "Notification about user penalty" string (Windows).
 disable-model-invocation: true
 ---
 
 # Find CCSGameRules__sm_mapGcBanInformation
 
-Locate `CCSGameRules__sm_mapGcBanInformation` (global variable) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSGameRules__sm_mapGcBanInformation` (global variable) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Prerequisites
 
@@ -156,7 +156,7 @@ Required parameters:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSGameRules__sm_mapGcBanInformation.windows.yaml`
-- `server.so` / `libserver.so` → `CCSGameRules__sm_mapGcBanInformation.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSGameRules__sm_mapGcBanInformation.linux.yaml`
 
 ## Notes
 

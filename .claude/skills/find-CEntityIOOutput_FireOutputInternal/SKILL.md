@@ -1,12 +1,12 @@
 ---
 name: find-CEntityIOOutput_FireOutputInternal
-description: Find and identify the CEntityIOOutput_FireOutputInternal function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the FireOutputInternal function by searching for the error message string "Couldn't find output named '%s' on entity '%s'.\n" and analyzing cross-references.
+description: Find and identify the CEntityIOOutput_FireOutputInternal function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the FireOutputInternal function by searching for the error message string "Couldn't find output named '%s' on entity '%s'.\n" and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CEntityIOOutput_FireOutputInternal
 
-Locate `CEntityIOOutput_FireOutputInternal` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CEntityIOOutput_FireOutputInternal` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -89,4 +89,4 @@ This string appears in a helper function that validates entity outputs. The call
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntityIOOutput_FireOutputInternal.windows.yaml`
-- `server.so` → `CEntityIOOutput_FireOutputInternal.linux.yaml`
+- `libserver.so` → `CEntityIOOutput_FireOutputInternal.linux.yaml`

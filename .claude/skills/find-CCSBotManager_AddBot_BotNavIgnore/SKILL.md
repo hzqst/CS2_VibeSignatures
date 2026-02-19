@@ -3,7 +3,7 @@ name: find-CCSBotManager_AddBot_BotNavIgnore
 description: |
   Find and patch the g_pNavMesh null-check inside CCSBotManager_AddBot in CS2 binary using IDA Pro MCP.
   This patch removes the navigation mesh requirement so bots can be added even without a nav mesh loaded.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the nav mesh check in AddBot.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate and patch the nav mesh check in AddBot.
   Trigger: bot nav ignore, AddBot nav mesh patch, bot without nav, CCSBotManager nav ignore
 disable-model-invocation: true
 ---

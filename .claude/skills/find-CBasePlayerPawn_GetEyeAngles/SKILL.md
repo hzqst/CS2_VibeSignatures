@@ -2,7 +2,7 @@
 name: find-CBasePlayerPawn_GetEyeAngles
 description: |
   Find and identify the CBasePlayerPawn_GetEyeAngles virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetEyeAngles function on CBasePlayerPawn.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GetEyeAngles function on CBasePlayerPawn.
   Trigger: CBasePlayerPawn_GetEyeAngles, GetEyeAngles, eye angles
 disable-model-invocation: true
 ---
@@ -148,4 +148,4 @@ The `CBasePlayerPawn_GetEyeAngles` function:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerPawn_GetEyeAngles.windows.yaml`, `CBaseEntity_GetEyeAngles.windows.yaml`
-- `server.so` / `libserver.so` → `CBasePlayerPawn_GetEyeAngles.linux.yaml`, `CBaseEntity_GetEyeAngles.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBasePlayerPawn_GetEyeAngles.linux.yaml`, `CBaseEntity_GetEyeAngles.linux.yaml`

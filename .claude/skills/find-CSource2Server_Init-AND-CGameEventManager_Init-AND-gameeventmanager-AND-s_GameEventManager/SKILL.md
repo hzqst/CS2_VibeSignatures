@@ -1,12 +1,12 @@
 ---
 name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager
-description: Find and identify the CSource2Server_Init, CGameEventManager_Init, gameeventmanager, s_GameEventManagerin CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
+description: Find and identify the CSource2Server_Init, CGameEventManager_Init, gameeventmanager, s_GameEventManagerin CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CSource2Server::Init function by searching for the "gameeventmanager->Init()" debug string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CSource2Server_Init
 
-Locate `CSource2Server_Init`, `CGameEventManager_Init`, `gameeventmanager`, `s_GameEventManager` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CSource2Server_Init`, `CGameEventManager_Init`, `gameeventmanager`, `s_GameEventManager` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -215,19 +215,19 @@ COM_TimestampedLog("CLoopModeRegistry::RegisterLoopModes()");
 
 The output YAML filename for CSource2Server_Init depends on the platform:
 - `server.dll` → `CSource2Server_Init.windows.yaml`
-- `server.so` / `libserver.so` → `CSource2Server_Init.linux.yaml`
+- `libserver.so` / `libserver.so` → `CSource2Server_Init.linux.yaml`
 
 The output YAML filename for CGameEventManager_Init depends on the platform:
 - `server.dll` → `CGameEventManager_Init.windows.yaml`
-- `server.so` → `CGameEventManager_Init.linux.yaml`
+- `libserver.so` → `CGameEventManager_Init.linux.yaml`
 
 The output YAML filename for gameeventmanager depends on the platform:
 - `server.dll` → `gameeventmanager.windows.yaml`
-- `server.so` → `gameeventmanager.linux.yaml`
+- `libserver.so` → `gameeventmanager.linux.yaml`
 
 The output YAML filename for s_GameEventManager depends on the platform:
 - `server.dll` → `s_GameEventManager.windows.yaml`
-- `server.so` → `s_GameEventManager.linux.yaml`
+- `libserver.so` → `s_GameEventManager.linux.yaml`
 
 ## Related Globals
 

@@ -1,12 +1,12 @@
 ---
 name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
-description: Find and identify the g_pGameTypes global variable and IGameTypes_CreateWorkshopMapGroup virtual function call in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the IGameTypes interface pointer by searching for the "mapgroup workshop" string reference and analyzing the virtual function call pattern.
+description: Find and identify the g_pGameTypes global variable and IGameTypes_CreateWorkshopMapGroup virtual function call in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the IGameTypes interface pointer by searching for the "mapgroup workshop" string reference and analyzing the virtual function call pattern.
 disable-model-invocation: true
 ---
 
 # Find g_pGameTypes and IGameTypes_CreateWorkshopMapGroup
 
-Locate `g_pGameTypes` (global variable) and `IGameTypes_CreateWorkshopMapGroup` (virtual function offset) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `g_pGameTypes` (global variable) and `IGameTypes_CreateWorkshopMapGroup` (virtual function offset) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -142,8 +142,8 @@ The function contains a workshop map group registration pattern:
 
 The output YAML filename for IGameTypes_CreateWorkshopMapGroup depends on the platform:
 - `server.dll` → `IGameTypes_CreateWorkshopMapGroup.windows.yaml`
-- `server.so` / `libserver.so` → `IGameTypes_CreateWorkshopMapGroup.linux.yaml`
+- `libserver.so` / `libserver.so` → `IGameTypes_CreateWorkshopMapGroup.linux.yaml`
 
 The output YAML filename for g_pGameTypes depends on the platform:
 - `server.dll` → `g_pGameTypes.windows.yaml`
-- `server.so` / `libserver.so` → `g_pGameTypes.linux.yaml`
+- `libserver.so` / `libserver.so` → `g_pGameTypes.linux.yaml`

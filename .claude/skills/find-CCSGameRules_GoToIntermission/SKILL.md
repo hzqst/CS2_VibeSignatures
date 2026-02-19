@@ -1,12 +1,12 @@
 ---
 name: find-CCSGameRules_GoToIntermission
-description: Find and identify the CCSGameRules_GoToIntermission function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GoToIntermission function by searching for the "Going to intermission..." string reference.
+description: Find and identify the CCSGameRules_GoToIntermission function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GoToIntermission function by searching for the "Going to intermission..." string reference.
 disable-model-invocation: true
 ---
 
 # Find CCSGameRules_GoToIntermission
 
-Locate `CCSGameRules_GoToIntermission` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSGameRules_GoToIntermission` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -66,13 +66,13 @@ VTable parameters:
 - **VTable Index**: 128 - This can change when game updates.
 - **VTable Offset**: 0x400 (128 * 8 = 1024) - This can change when game updates.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV12CCSGameRules` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV12CCSGameRules` + `0x10`.
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSGameRules_GoToIntermission.windows.yaml`
-- `server.so` → `CCSGameRules_GoToIntermission.linux.yaml`
+- `libserver.so` → `CCSGameRules_GoToIntermission.linux.yaml`
 
 ```yaml
 func_name: CCSGameRules_GoToIntermission

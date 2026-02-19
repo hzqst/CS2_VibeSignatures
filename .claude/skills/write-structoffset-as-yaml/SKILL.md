@@ -89,7 +89,7 @@ The output YAML filename follows this pattern:
 
 Examples:
 - `server.dll` → `CBaseEntity_m_skeletonInstance.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_m_skeletonInstance.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_m_skeletonInstance.linux.yaml`
 
 ## Output YAML Format
 

@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayerController_InventoryUpdateThink
-description: Find and identify the CCSPlayerController_InventoryUpdateThink wrapper function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the InventoryUpdateThink think function wrapper by searching for the think function name string in schema registration and tracing through the schema structure to find the wrapper function pointer.
+description: Find and identify the CCSPlayerController_InventoryUpdateThink wrapper function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the InventoryUpdateThink think function wrapper by searching for the think function name string in schema registration and tracing through the schema structure to find the wrapper function pointer.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayerController_InventoryUpdateThink
 
-Locate `CCSPlayerController_InventoryUpdateThink` (the think function wrapper) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayerController_InventoryUpdateThink` (the think function wrapper) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Background
 
@@ -60,7 +60,7 @@ raw_bytes = ida_bytes.get_bytes(name_storage_addr - 0x38, 128)
 # Look for function pointers (addresses in .text segment range)
 for i in range(0, len(raw_bytes) - 7, 8):
     ptr = int.from_bytes(raw_bytes[i:i+8], 'little')
-    if 0x900000 < ptr < 0x2100000:  # Typical .text range for server.so
+    if 0x900000 < ptr < 0x2100000:  # Typical .text range for libserver.so
         print(f"Potential function pointer at offset {hex(i - 0x38)}: {hex(ptr)}")
 """
 ```
@@ -131,7 +131,7 @@ E9 XX XX XX XX          jmp  InventoryUpdateThink ; Tail call
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerController_InventoryUpdateThink.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayerController_InventoryUpdateThink.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSPlayerController_InventoryUpdateThink.linux.yaml`
 
 ## Notes
 

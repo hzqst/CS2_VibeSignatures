@@ -1,12 +1,12 @@
 ---
 name: find-WeaponBuy
-description: Find and identify the WeaponBuy (item purchase handler) function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the WeaponBuy function by searching for the "item_purchase" string reference and analyzing cross-references.
+description: Find and identify the WeaponBuy (item purchase handler) function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the WeaponBuy function by searching for the "item_purchase" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find WeaponBuy
 
-Locate `WeaponBuy` (item purchase handler) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `WeaponBuy` (item purchase handler) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -76,7 +76,7 @@ The function uses the `item_purchase` game event string which is used when a pla
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -89,4 +89,4 @@ The function uses the `item_purchase` game event string which is used when a pla
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `WeaponBuy.windows.yaml`
-- `server.so` -> `WeaponBuy.linux.yaml`
+- `libserver.so` -> `WeaponBuy.linux.yaml`

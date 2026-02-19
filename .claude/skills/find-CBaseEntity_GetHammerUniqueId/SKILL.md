@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_GetHammerUniqueId
-description: Find and identify the CBaseEntity_GetHammerUniqueId virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetHammerUniqueId vfunc by searching for the "hammerUniqueId" string and identifying the function that calls a vtable method guarded by an OR condition, then writes the result to a CUtlString member.
+description: Find and identify the CBaseEntity_GetHammerUniqueId virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GetHammerUniqueId vfunc by searching for the "hammerUniqueId" string and identifying the function that calls a vtable method guarded by an OR condition, then writes the result to a CUtlString member.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_GetHammerUniqueId
 
-Locate `CBaseEntity_GetHammerUniqueId` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBaseEntity_GetHammerUniqueId` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -120,13 +120,13 @@ VTable parameters:
 - **VTable Index**: 111 - This can change when game updates.
 - **VTable Offset**: 0x378 (111 * 8 = 888) - This can change when game updates.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CBaseEntity_GetHammerUniqueId.windows.yaml`
-- `server.so` -> `CBaseEntity_GetHammerUniqueId.linux.yaml`
+- `libserver.so` -> `CBaseEntity_GetHammerUniqueId.linux.yaml`
 
 ```yaml
 func_name: CBaseEntity_GetHammerUniqueId

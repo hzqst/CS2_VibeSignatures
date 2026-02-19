@@ -2,7 +2,7 @@
 name: find-CBasePlayerController_Respawn
 description: |
   Find and identify the CBasePlayerController_Respawn virtual function call in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the Respawn vfunc call
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the Respawn vfunc call
   by searching for the "GMR_BeginRound" log string, tracing to the CCSGameRules_BeginRound function,
   and identifying the Respawn vfunc call in the player respawn loop.
   Trigger: CBasePlayerController_Respawn
@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 # Find CBasePlayerController_Respawn
 
-Locate `CBasePlayerController_Respawn` vfunc call in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerController_Respawn` vfunc call in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -144,4 +144,4 @@ This is robust because:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerController_Respawn.windows.yaml`
-- `server.so` / `libserver.so` → `CBasePlayerController_Respawn.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBasePlayerController_Respawn.linux.yaml`

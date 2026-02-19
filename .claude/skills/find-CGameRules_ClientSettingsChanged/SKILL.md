@@ -1,12 +1,12 @@
 ---
 name: find-CGameRules_ClientSettingsChanged
-description: Find and identify the CGameRules_ClientSettingsChanged function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ClientSettingsChanged function by searching for the "fov_desired" string reference and analyzing cross-references.
+description: Find and identify the CGameRules_ClientSettingsChanged function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the ClientSettingsChanged function by searching for the "fov_desired" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CGameRules_ClientSettingsChanged
 
-Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CGameRules::ClientSettingsChanged` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -85,10 +85,10 @@ And contains string references related to player name changes:
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CGameRules_ClientSettingsChanged.windows.yaml`
-- `server.so` → `CGameRules_ClientSettingsChanged.linux.yaml`
+- `libserver.so` → `CGameRules_ClientSettingsChanged.linux.yaml`

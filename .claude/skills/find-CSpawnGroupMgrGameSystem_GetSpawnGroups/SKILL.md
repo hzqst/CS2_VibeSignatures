@@ -1,12 +1,12 @@
 ---
 name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
-description: Find and identify the CSpawnGroupMgrGameSystem_GetSpawnGroups function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetSpawnGroups function by searching for known format string references and analyzing cross-references.
+description: Find and identify the CSpawnGroupMgrGameSystem_GetSpawnGroups function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GetSpawnGroups function by searching for known format string references and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CSpawnGroupMgrGameSystem_GetSpawnGroups
 
-Locate `CSpawnGroupMgrGameSystem_GetSpawnGroups` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CSpawnGroupMgrGameSystem_GetSpawnGroups` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -71,4 +71,4 @@ Source file: `game\shared\spawngroupmgrgamesystem.cpp`
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CSpawnGroupMgrGameSystem_GetSpawnGroups.windows.yaml`
-- `server.so` → `CSpawnGroupMgrGameSystem_GetSpawnGroups.linux.yaml`
+- `libserver.so` → `CSpawnGroupMgrGameSystem_GetSpawnGroups.linux.yaml`

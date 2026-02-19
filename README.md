@@ -177,7 +177,7 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - The SKILL should generate `CBaseModelEntity_SetModel.{platform}.yaml`, with `func_sig`.
 
-  - The SKILL should be working with both `server.dll` and `server.so`.
+  - The SKILL should be working with both `server.dll` and `libserver.so`.
   
   - DO NOT pack skill.
   
@@ -252,7 +252,7 @@ python update_gamedata.py -gamever 14135 [-debug]
   
   - The SKILL should generate `CBasePlayerController_Respawn.{platform}.yaml`, with `func_sig`. (or `vfunc_sig` if `CBasePlayerController_Respawn` is too short or too generic).
 
-  - The SKILL should be working with both `server.dll` and `server.so`.
+  - The SKILL should be working with both `server.dll` and `libserver.so`.
 
   - DO NOT pack skill.
   
@@ -315,7 +315,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
   - DO NOT pack skill.
   
-  - The SKILL should be working with both `server.dll` and `server.so`.
+  - The SKILL should be working with both `server.dll` and `libserver.so`.
   
   - **ALWAYS** check existing SKILLs with `/write-func-as-yaml` and `/write-globalvar-as-yaml` invocation for references.
  
@@ -374,7 +374,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
   - DO NOT pack skill.
   
-  - The SKILL should be working with both `server.dll` and `server.so`.
+  - The SKILL should be working with both `server.dll` and `libserver.so`.
   
   - **ALWAYS** check existing SKILLs with `/write-structoffset-as-yaml` invocation for references.
 
@@ -464,7 +464,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
  - DO NOT pack skill.
  
- - The SKILL should be working with both `server.dll` and `server.so`.
+ - The SKILL should be working with both `server.dll` and `libserver.so`.
  
  - **ALWAYS** check existing SKILL with `/write-patch-as-yaml` invocation for references.
 

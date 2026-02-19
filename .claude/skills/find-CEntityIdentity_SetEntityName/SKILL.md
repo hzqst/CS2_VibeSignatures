@@ -2,7 +2,7 @@
 name: find-CEntityIdentity_SetEntityName
 description: |
   Find and identify the CEntityIdentity_SetEntityName function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetEntityName function
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SetEntityName function
   on CEntityIdentity, which sets the targetname of an entity.
   Triggers: CEntityIdentity_SetEntityName, SetEntityName, entity name, set entity name
 disable-model-invocation: true
@@ -101,4 +101,4 @@ The `CEntityIdentity_SetEntityName` function:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntityIdentity_SetEntityName.windows.yaml`
-- `server.so` / `libserver.so` → `CEntityIdentity_SetEntityName.linux.yaml`
+- `libserver.so` / `libserver.so` → `CEntityIdentity_SetEntityName.linux.yaml`

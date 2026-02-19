@@ -1,12 +1,12 @@
 ---
 name: find-CBasePlayerController_HandleCommand_JoinTeam
-description: Find and identify the CBasePlayerController_HandleCommand_JoinTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the HandleCommand_JoinTeam function by searching for known debug string references and analyzing cross-references.
+description: Find and identify the CBasePlayerController_HandleCommand_JoinTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the HandleCommand_JoinTeam function by searching for known debug string references and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_HandleCommand_JoinTeam
 
-Locate `CBasePlayerController_HandleCommand_JoinTeam` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerController_HandleCommand_JoinTeam` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -70,4 +70,4 @@ HandleCommand_JoinTeam( %d ) - invalid team index.
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerController_HandleCommand_JoinTeam.windows.yaml`
-- `server.so` → `CBasePlayerController_HandleCommand_JoinTeam.linux.yaml`
+- `libserver.so` → `CBasePlayerController_HandleCommand_JoinTeam.linux.yaml`

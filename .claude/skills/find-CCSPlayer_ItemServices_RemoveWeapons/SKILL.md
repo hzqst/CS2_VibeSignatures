@@ -2,7 +2,7 @@
 name: find-CCSPlayer_ItemServices_RemoveWeapons
 description: |
   Find and identify the CCSPlayer_ItemServices_RemoveWeapons function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the RemoveWeapons virtual function
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the RemoveWeapons virtual function
   in the CCSPlayer_ItemServices vtable.
   Trigger: CCSPlayer_ItemServices_RemoveWeapons
 disable-model-invocation: true
@@ -104,7 +104,7 @@ The `CCSPlayer_ItemServices_RemoveWeapons` function:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_ItemServices_RemoveWeapons.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayer_ItemServices_RemoveWeapons.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSPlayer_ItemServices_RemoveWeapons.linux.yaml`
 
 ## Related Functions
 

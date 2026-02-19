@@ -84,7 +84,7 @@ The output YAML filename follows this pattern:
 
 Examples:
 - `server.dll` → `IGameSystem_InitAllSystems_pFirst.windows.yaml`
-- `server.so` / `libserver.so` → `IGameSystem_InitAllSystems_pFirst.linux.yaml`
+- `libserver.so` / `libserver.so` → `IGameSystem_InitAllSystems_pFirst.linux.yaml`
 
 ## Output YAML Format
 

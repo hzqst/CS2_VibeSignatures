@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayer_WeaponServices_Weapon_GetSlot
-description: Find and identify the CCSPlayer_WeaponServices_Weapon_GetSlot function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the Weapon_GetSlot function by searching for a known string in a caller function and tracing the call target.
+description: Find and identify the CCSPlayer_WeaponServices_Weapon_GetSlot function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the Weapon_GetSlot function by searching for a known string in a caller function and tracing the call target.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayer_WeaponServices_Weapon_GetSlot
 
-Locate `CCSPlayer_WeaponServices_Weapon_GetSlot` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayer_WeaponServices_Weapon_GetSlot` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 This is a **non-virtual function** found indirectly through a caller that references a known debug string.
 
@@ -73,4 +73,4 @@ MoveToInitialEncounter: Can't find battlefront!
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CCSPlayer_WeaponServices_Weapon_GetSlot.windows.yaml`
-- `server.so` -> `CCSPlayer_WeaponServices_Weapon_GetSlot.linux.yaml`
+- `libserver.so` -> `CCSPlayer_WeaponServices_Weapon_GetSlot.linux.yaml`

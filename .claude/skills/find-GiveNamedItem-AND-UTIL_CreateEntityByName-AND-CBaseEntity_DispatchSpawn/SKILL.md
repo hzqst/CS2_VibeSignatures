@@ -1,12 +1,12 @@
 ---
 name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
-description: Find and identify the GiveNamedItem, UTIL_CreateEntityByName and CBaseEntity_DispatchSpawn functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these related entity creation functions by searching for the "GiveNamedItem: interpreting" debug string and analyzing cross-references.
+description: Find and identify the GiveNamedItem, UTIL_CreateEntityByName and CBaseEntity_DispatchSpawn functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate these related entity creation functions by searching for the "GiveNamedItem: interpreting" debug string and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find GiveNamedItem, UTIL_CreateEntityByName and CBaseEntity_DispatchSpawn
 
-Locate `GiveNamedItem`, `UTIL_CreateEntityByName` and `CBaseEntity_DispatchSpawn` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `GiveNamedItem`, `UTIL_CreateEntityByName` and `CBaseEntity_DispatchSpawn` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -172,7 +172,7 @@ GiveNamedItem
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -186,4 +186,4 @@ GiveNamedItem
 
 The output YAML filenames depend on the platform:
 - `server.dll` → `GiveNamedItem.windows.yaml`, `UTIL_CreateEntityByName.windows.yaml`, `CBaseEntity_DispatchSpawn.windows.yaml`
-- `server.so` → `GiveNamedItem.linux.yaml`, `UTIL_CreateEntityByName.linux.yaml`, `CBaseEntity_DispatchSpawn.linux.yaml`
+- `libserver.so` → `GiveNamedItem.linux.yaml`, `UTIL_CreateEntityByName.linux.yaml`, `CBaseEntity_DispatchSpawn.linux.yaml`

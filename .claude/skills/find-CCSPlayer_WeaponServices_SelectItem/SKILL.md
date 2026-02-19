@@ -2,7 +2,7 @@
 name: find-CCSPlayer_WeaponServices_SelectItem
 description: |
   Find and identify the CCSPlayer_WeaponServices_SelectItem virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the SelectItem function
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SelectItem function
   in CCSPlayer_WeaponServices vtable.
   Trigger: CCSPlayer_WeaponServices_SelectItem, SelectItem, weapon select, switch weapon
 disable-model-invocation: true
@@ -132,7 +132,7 @@ The `CCSPlayer_WeaponServices_SelectItem` function:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_WeaponServices_SelectItem.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayer_WeaponServices_SelectItem.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSPlayer_WeaponServices_SelectItem.linux.yaml`
 
 ## Related Functions
 

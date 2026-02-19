@@ -1,12 +1,12 @@
 ---
 name: find-LegacyGameEventListener
-description: Find and identify the LegacyGameEventListener function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the LegacyGameEventListener function by searching for the "CSource2GameClients::StartHLTVServer: game event %s not found" string reference and analyzing cross-references.
+description: Find and identify the LegacyGameEventListener function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the LegacyGameEventListener function by searching for the "CSource2GameClients::StartHLTVServer: game event %s not found" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find LegacyGameEventListener
 
-Locate `LegacyGameEventListener` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `LegacyGameEventListener` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -90,4 +90,4 @@ The function performs bounds checking:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `LegacyGameEventListener.windows.yaml`
-- `server.so` → `LegacyGameEventListener.linux.yaml`
+- `libserver.so` → `LegacyGameEventListener.linux.yaml`

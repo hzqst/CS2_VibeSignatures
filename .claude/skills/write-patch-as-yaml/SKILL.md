@@ -79,7 +79,7 @@ The output YAML filename follows this pattern:
 
 Examples:
 - `server.dll` → `ServerMovementUnlock.windows.yaml`
-- `server.so` / `libserver.so` → `ServerMovementUnlock.linux.yaml`
+- `libserver.so` / `libserver.so` → `ServerMovementUnlock.linux.yaml`
 
 ## Output YAML Format
 

@@ -1,12 +1,12 @@
 ---
 name: find-CBasePlayerController_ProcessUsercmds
-description: Find and identify the CBasePlayerController_ProcessUsercmds function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ProcessUsercmds function by searching for the known usercmd debug format string and analyzing cross-references.
+description: Find and identify the CBasePlayerController_ProcessUsercmds function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the ProcessUsercmds function by searching for the known usercmd debug format string and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerController_ProcessUsercmds
 
-Locate `CBasePlayerController_ProcessUsercmds` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerController_ProcessUsercmds` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -70,4 +70,4 @@ This string is unique in the binary — only one function references it.
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CBasePlayerController_ProcessUsercmds.windows.yaml`
-- `server.so` / `libserver.so` -> `CBasePlayerController_ProcessUsercmds.linux.yaml`
+- `libserver.so` / `libserver.so` -> `CBasePlayerController_ProcessUsercmds.linux.yaml`

@@ -1,7 +1,7 @@
 ---
 name: find-CGameSceneNode_GetSkeletonInstance
 description: |
-  Find and identify the CGameSceneNode_GetSkeletonInstance virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GetSkeletonInstance function in CGameSceneNode vtable.
+  Find and identify the CGameSceneNode_GetSkeletonInstance virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GetSkeletonInstance function in CGameSceneNode vtable.
   Trigger: CGameSceneNode_GetSkeletonInstance, GetSkeletonInstance, skeleton instance
 disable-model-invocation: true
 ---
@@ -153,7 +153,7 @@ The `CGameSceneNode_GetSkeletonInstance` function:
 
 The output YAML filenames depend on the platform:
 - `server.dll` → `*.windows.yaml`
-- `server.so` / `libserver.so` → `*.linux.yaml`
+- `libserver.so` / `libserver.so` → `*.linux.yaml`
 
 ### CGameSceneNode_GetSkeletonInstance.{platform}.yaml
 

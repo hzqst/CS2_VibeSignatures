@@ -1,12 +1,12 @@
 ---
 name: find-CTriggerGravity_GravityTouch
-description: Find and identify the CTriggerGravity_GravityTouch function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GravityTouch handler by searching for the "GravityTouch" string reference and analyzing the registration pattern.
+description: Find and identify the CTriggerGravity_GravityTouch function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GravityTouch handler by searching for the "GravityTouch" string reference and analyzing the registration pattern.
 disable-model-invocation: true
 ---
 
 # Find CTriggerGravity_GravityTouch
 
-Locate `CTriggerGravity_GravityTouch` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `CTriggerGravity_GravityTouch` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -80,10 +80,10 @@ The function is registered via a `("CTriggerGravity", "GravityTouch")` call in a
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CTriggerGravity_GravityTouch.windows.yaml`
-- `server.so` → `CTriggerGravity_GravityTouch.linux.yaml`
+- `libserver.so` → `CTriggerGravity_GravityTouch.linux.yaml`

@@ -1,12 +1,12 @@
 ---
 name: find-UTIL_CreateEntityByName
-description: Find and identify the UTIL_CreateEntityByName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the entity creation utility function by searching for the "Attempted to spawn a not-spawnable entity classname" error string reference and analyzing cross-references to identify the semantic wrapper function.
+description: Find and identify the UTIL_CreateEntityByName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the entity creation utility function by searching for the "Attempted to spawn a not-spawnable entity classname" error string reference and analyzing cross-references to identify the semantic wrapper function.
 disable-model-invocation: true
 ---
 
 # Find UTIL_CreateEntityByName
 
-Locate `UTIL_CreateEntityByName` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `UTIL_CreateEntityByName` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -82,4 +82,4 @@ Among the caller functions to the internal spawn function, identify the semantic
 
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_CreateEntityByName.windows.yaml`
-- `server.so` → `UTIL_CreateEntityByName.linux.yaml`
+- `libserver.so` → `UTIL_CreateEntityByName.linux.yaml`

@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_EmitSoundParams
-description: Find and identify the CBaseEntity_EmitSoundParams function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the EmitSoundParams function by searching for the "Stops a named sound playing from this" string, tracing xrefs, and identifying the function via a volume-check code pattern.
+description: Find and identify the CBaseEntity_EmitSoundParams function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the EmitSoundParams function by searching for the "Stops a named sound playing from this" string, tracing xrefs, and identifying the function via a volume-check code pattern.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_EmitSoundParams
 
-Locate `CBaseEntity_EmitSoundParams` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBaseEntity_EmitSoundParams` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -71,4 +71,4 @@ Locate `CBaseEntity_EmitSoundParams` in CS2 server.dll or server.so using IDA Pr
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_EmitSoundParams.windows.yaml`
-- `server.so` → `CBaseEntity_EmitSoundParams.linux.yaml`
+- `libserver.so` → `CBaseEntity_EmitSoundParams.linux.yaml`

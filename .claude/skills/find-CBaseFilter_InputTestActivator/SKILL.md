@@ -1,12 +1,12 @@
 ---
 name: find-CBaseFilter_InputTestActivator
-description: Find and identify the CBaseFilter_InputTestActivator function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the InputTestActivator handler by searching for the "InputTestActivator" string and analyzing cross-references.
+description: Find and identify the CBaseFilter_InputTestActivator function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the InputTestActivator handler by searching for the "InputTestActivator" string and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CBaseFilter_InputTestActivator
 
-Locate `CBaseFilter_InputTestActivator` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBaseFilter_InputTestActivator` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -72,4 +72,4 @@ The function is located by finding the entity input descriptor registration that
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseFilter_InputTestActivator.windows.yaml`
-- `server.so` → `CBaseFilter_InputTestActivator.linux.yaml`
+- `libserver.so` → `CBaseFilter_InputTestActivator.linux.yaml`

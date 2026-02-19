@@ -1,12 +1,12 @@
 ---
 name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
-description: Find and identify the CNetworkGameServer global pointer and CServerSideClientBase_ClientPrintf virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CNetworkGameServer instance by searching for the "tried to sprint to a non-client" debug string reference and analyzing the function that validates client slot indices and calls ClientPrintf via vtable.
+description: Find and identify the CNetworkGameServer global pointer and CServerSideClientBase_ClientPrintf virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CNetworkGameServer instance by searching for the "tried to sprint to a non-client" debug string reference and analyzing the function that validates client slot indices and calls ClientPrintf via vtable.
 disable-model-invocation: true
 ---
 
 # Find CNetworkGameServer and CServerSideClientBase_ClientPrintf
 
-Locate `CNetworkGameServer` (global pointer) and `CServerSideClientBase_ClientPrintf` (virtual function) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CNetworkGameServer` (global pointer) and `CServerSideClientBase_ClientPrintf` (virtual function) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -139,8 +139,8 @@ The output YAML filenames depend on the platform:
 
 For CNetworkGameServer struct member:
 - `server.dll` → `CNetworkGameServer_ClientList.windows.yaml`
-- `server.so` → `CNetworkGameServer_ClientList.linux.yaml`
+- `libserver.so` → `CNetworkGameServer_ClientList.linux.yaml`
 
 For CServerSideClientBase_ClientPrintf vfunc:
 - `server.dll` → `CServerSideClientBase_ClientPrintf.windows.yaml`
-- `server.so` → `CServerSideClientBase_ClientPrintf.linux.yaml`
+- `libserver.so` → `CServerSideClientBase_ClientPrintf.linux.yaml`

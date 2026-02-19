@@ -116,4 +116,4 @@ Key identification points:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_Precache.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_Precache.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_Precache.linux.yaml`

@@ -2,7 +2,7 @@
 name: find-CBaseEntity_SetOwner
 description: |
   Find and identify the CBaseEntity_SetOwner virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the SetOwner function.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the SetOwner function.
   CBaseEntity_SetOwner is a virtual function on CBaseEntity, resolved via vtable offset in CCSPlayer_WeaponServices_EquipWeapon.
   Trigger: CBaseEntity_SetOwner, SetOwner
 disable-model-invocation: true
@@ -125,7 +125,7 @@ VTable parameters:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_SetOwner.windows.yaml`
-- `server.so` / `libserver.so` → `CBaseEntity_SetOwner.linux.yaml`
+- `libserver.so` / `libserver.so` → `CBaseEntity_SetOwner.linux.yaml`
 
 ## Troubleshooting
 

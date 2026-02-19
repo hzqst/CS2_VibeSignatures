@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
-description: Find and identify the CBaseEntity_StartTouch, CBaseEntity_Touch, and CBaseEntity_EndTouch virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate these touch-related virtual functions by searching for the "INVALID CGameEventStartTouchCollideAdaptor" string reference and analyzing the touch event handler functions.
+description: Find and identify the CBaseEntity_StartTouch, CBaseEntity_Touch, and CBaseEntity_EndTouch virtual functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate these touch-related virtual functions by searching for the "INVALID CGameEventStartTouchCollideAdaptor" string reference and analyzing the touch event handler functions.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_StartTouch, CBaseEntity_Touch, and CBaseEntity_EndTouch
 
-Locate these touch-related virtual functions in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate these touch-related virtual functions in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -333,11 +333,11 @@ Required parameters for each function:
 
 The output YAML filenames depend on the platform:
 - `server.dll` -> `CBaseEntity_StartTouch.windows.yaml`, `CBaseEntity_Touch.windows.yaml`, `CBaseEntity_EndTouch.windows.yaml`, `CVPhys2World_GetTouchingList.windows.yaml`
-- `server.so` -> `CBaseEntity_StartTouch.linux.yaml`, `CBaseEntity_Touch.linux.yaml`, `CBaseEntity_EndTouch.linux.yaml`, `CVPhys2World_GetTouchingList.linux.yaml`
+- `libserver.so` -> `CBaseEntity_StartTouch.linux.yaml`, `CBaseEntity_Touch.linux.yaml`, `CBaseEntity_EndTouch.linux.yaml`, `CVPhys2World_GetTouchingList.linux.yaml`
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 

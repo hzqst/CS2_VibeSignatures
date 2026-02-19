@@ -1,12 +1,12 @@
 ---
 name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
-description: Find and identify the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 function by searching for the "%s %s @ %s:" string reference and analyzing cross-references.
+description: Find and identify the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2 function by searching for the "%s %s @ %s:" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find Host_Say, UTIL_SayTextFilter and UTIL_SayTextFilter2
 
-Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -160,7 +160,7 @@ Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -171,4 +171,4 @@ Locate `Host_Say`, `UTIL_SayTextFilter` and `UTIL_SayTextFilter2` in CS2 `server
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `UTIL_SayTextFilter.windows.yaml`, `UTIL_SayTextFilter2.windows.yaml`
-- `server.so` -> `UTIL_SayTextFilter.linux.yaml`, `UTIL_SayTextFilter2.linux.yaml`
+- `libserver.so` -> `UTIL_SayTextFilter.linux.yaml`, `UTIL_SayTextFilter2.linux.yaml`

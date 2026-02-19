@@ -1,12 +1,12 @@
 ---
 name: find-CGameEntitySystem_FindEntityByClassName
-description: Find and identify the CGameEntitySystem_FindEntityByClassName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the entity-by-classname lookup function by searching for known debug string references in a caller function and analyzing cross-references.
+description: Find and identify the CGameEntitySystem_FindEntityByClassName function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the entity-by-classname lookup function by searching for known debug string references in a caller function and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CGameEntitySystem_FindEntityByClassName
 
-Locate `CGameEntitySystem_FindEntityByClassName` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CGameEntitySystem_FindEntityByClassName` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -80,4 +80,4 @@ do {
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CGameEntitySystem_FindEntityByClassName.windows.yaml`
-- `server.so` → `CGameEntitySystem_FindEntityByClassName.linux.yaml`
+- `libserver.so` → `CGameEntitySystem_FindEntityByClassName.linux.yaml`

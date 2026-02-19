@@ -2,7 +2,7 @@
 name: find-CBaseEntity_Use
 description: |
   Find and identify the CBaseEntity_Use virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the Use function.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the Use function.
   CBaseEntity_Use is a virtual function on CBaseEntity, resolved via vtable offset found in the function
   that references both "Radio.YouTakeThePoint" and "#Cstrike_TitlesTXT_Game_afk_bomb_drop".
   Trigger: CBaseEntity_Use, Use
@@ -143,7 +143,7 @@ The containing function also references:
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CBaseEntity_Use.windows.yaml`
-- `server.so` / `libserver.so` -> `CBaseEntity_Use.linux.yaml`
+- `libserver.so` / `libserver.so` -> `CBaseEntity_Use.linux.yaml`
 
 ## Troubleshooting
 

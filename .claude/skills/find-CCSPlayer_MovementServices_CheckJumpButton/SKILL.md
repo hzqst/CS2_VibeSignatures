@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayer_MovementServices_CheckJumpButton
-description: Find and identify the CCSPlayer_MovementServices_CheckJumpButton function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CheckJumpButton function by searching for the "player_jump" game event string and analyzing cross-references.
+description: Find and identify the CCSPlayer_MovementServices_CheckJumpButton function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CheckJumpButton function by searching for the "player_jump" game event string and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayer_MovementServices_CheckJumpButton
 
-Locate `CCSPlayer_MovementServices_CheckJumpButton` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayer_MovementServices_CheckJumpButton` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -77,4 +77,4 @@ The function fires the `"player_jump"` game event using the game event manager:
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CCSPlayer_MovementServices_CheckJumpButton.windows.yaml`
-- `server.so` -> `CCSPlayer_MovementServices_CheckJumpButton.linux.yaml`
+- `libserver.so` -> `CCSPlayer_MovementServices_CheckJumpButton.linux.yaml`

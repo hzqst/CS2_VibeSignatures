@@ -1,12 +1,12 @@
 ---
 name: find-IGameSystem_LoopPostInitAllSystems_pEventDispatcher-AND-IGameSystem_LoopDestroyAllSystems_s_GameSystems
-description: Find and identify the IGameSystem_LoopPostInitAllSystems_pEventDispatcher and IGameSystem_LoopDestroyAllSystems_s_GameSystems global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the event dispatcher pointer by searching for the "IGameSystem::LoopPostInitAllSystems(finish)" string reference and analyzing cross-references.
+description: Find and identify the IGameSystem_LoopPostInitAllSystems_pEventDispatcher and IGameSystem_LoopDestroyAllSystems_s_GameSystems global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the event dispatcher pointer by searching for the "IGameSystem::LoopPostInitAllSystems(finish)" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find IGameSystem_LoopPostInitAllSystems_pEventDispatcher and IGameSystem_LoopDestroyAllSystems_s_GameSystems
 
-Locate `IGameSystem::LoopPostInitAllSystems` (function), `IGameSystem_LoopPostInitAllSystems_pEventDispatcher` (global variable), `IGameSystem_LoopDestroyAllSystems_s_GameSystems` (global variable) in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `IGameSystem::LoopPostInitAllSystems` (function), `IGameSystem_LoopPostInitAllSystems_pEventDispatcher` (global variable), `IGameSystem_LoopDestroyAllSystems_s_GameSystems` (global variable) in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -18,7 +18,7 @@ Windows binary (server.dll):
 mcp__ida-pro-mcp__find_regex pattern="IGameSystem::LoopPostInitAllSystems\(finish\)"
 ```
 
-Linux binary (server.so):
+Linux binary (libserver.so):
 
 ```
 mcp__ida-pro-mcp__find_regex pattern="IGameSystem::LoopInitAllSystems\(finish\)"
@@ -256,7 +256,7 @@ The function is identified by the debug string `"%s:  IGameSystem::LoopPostInitA
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` or `libserver.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` or `libserver.so` (Linux)
 
 ## Notes
 
@@ -270,9 +270,9 @@ The function is identified by the debug string `"%s:  IGameSystem::LoopPostInitA
 
 The output YAML filename depends on the platform:
 - `server.dll` → `IGameSystem_LoopPostInitAllSystems_pEventDispatcher.windows.yaml`
-- `server.so` / `libserver.so` → `IGameSystem_LoopPostInitAllSystems_pEventDispatcher.linux.yaml`
+- `libserver.so` / `libserver.so` → `IGameSystem_LoopPostInitAllSystems_pEventDispatcher.linux.yaml`
 - `server.dll` → `IGameSystem_LoopDestroyAllSystems_s_GameSystems.windows.yaml`
-- `server.so` / `libserver.so` → `IGameSystem_LoopDestroyAllSystems_s_GameSystems.linux.yaml`
+- `libserver.so` / `libserver.so` → `IGameSystem_LoopDestroyAllSystems_s_GameSystems.linux.yaml`
 
 ### IGameSystem_LoopPostInitAllSystems_pEventDispatcher
 

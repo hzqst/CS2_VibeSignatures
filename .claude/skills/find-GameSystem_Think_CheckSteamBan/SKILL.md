@@ -1,12 +1,12 @@
 ---
 name: find-GameSystem_Think_CheckSteamBan
-description: Find and identify the GameSystem_Think_CheckSteamBan function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GameSystem_Think_CheckSteamBan function by searching for the known debug string "Kicking user %s (sv_kick_players_with_cooldown=%d)" and analyzing cross-references.
+description: Find and identify the GameSystem_Think_CheckSteamBan function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GameSystem_Think_CheckSteamBan function by searching for the known debug string "Kicking user %s (sv_kick_players_with_cooldown=%d)" and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find GameSystem_Think_CheckSteamBan
 
-Locate `GameSystem_Think_CheckSteamBan` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `GameSystem_Think_CheckSteamBan` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -62,4 +62,4 @@ The function contains a debug log call with format string:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `GameSystem_Think_CheckSteamBan.windows.yaml`
-- `server.so` / `libserver.so` → `GameSystem_Think_CheckSteamBan.linux.yaml`
+- `libserver.so` / `libserver.so` → `GameSystem_Think_CheckSteamBan.linux.yaml`

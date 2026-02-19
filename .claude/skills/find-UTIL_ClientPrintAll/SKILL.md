@@ -1,12 +1,12 @@
 ---
 name: find-UTIL_ClientPrintAll
-description: Find and identify the UTIL_ClientPrintAll function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the UTIL_ClientPrintAll function by searching for the "#Game_idle_kick" string reference and analyzing cross-references.
+description: Find and identify the UTIL_ClientPrintAll function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the UTIL_ClientPrintAll function by searching for the "#Game_idle_kick" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find UTIL_ClientPrintAll
 
-Locate `UTIL_ClientPrintAll` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `UTIL_ClientPrintAll` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -90,4 +90,4 @@ sub     rsp, 38h
 
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_ClientPrintAll.windows.yaml`
-- `server.so` → `UTIL_ClientPrintAll.linux.yaml`
+- `libserver.so` → `UTIL_ClientPrintAll.linux.yaml`

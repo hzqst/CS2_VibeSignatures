@@ -1,12 +1,12 @@
 ---
 name: find-CBaseTrigger_PassesTriggerFilters
-description: Find and identify the CBaseTrigger_PassesTriggerFilters virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the PassesTriggerFilters function by first finding CBaseTrigger_StartTouch and extracting the first virtual call offset from its decompiled code.
+description: Find and identify the CBaseTrigger_PassesTriggerFilters virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the PassesTriggerFilters function by first finding CBaseTrigger_StartTouch and extracting the first virtual call offset from its decompiled code.
 disable-model-invocation: true
 ---
 
 # Find CBaseTrigger_PassesTriggerFilters
 
-Locate `CBaseTrigger_PassesTriggerFilters` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `CBaseTrigger_PassesTriggerFilters` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -70,13 +70,13 @@ VTable parameters:
 - **VTable Index**: 266 - This can change when game updates.
 - **VTable Offset**: 0x850 (266 * 8 = 2128) - This can change when game updates.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV12CBaseTrigger` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV12CBaseTrigger` + `0x10`.
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseTrigger_PassesTriggerFilters.windows.yaml`
-- `server.so` → `CBaseTrigger_PassesTriggerFilters.linux.yaml`
+- `libserver.so` → `CBaseTrigger_PassesTriggerFilters.linux.yaml`
 
 ```yaml
 func_name: CBaseTrigger_PassesTriggerFilters
@@ -88,7 +88,7 @@ vfunc_index: 266
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 

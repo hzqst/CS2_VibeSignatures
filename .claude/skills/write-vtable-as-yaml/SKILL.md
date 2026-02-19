@@ -112,7 +112,7 @@ The output YAML filename follows this pattern:
 
 Examples:
 - `server.dll` → `CSource2Server_vtable.windows.yaml`
-- `server.so` / `libserver.so` → `CSource2Server_vtable.linux.yaml`
+- `libserver.so` / `libserver.so` → `CSource2Server_vtable.linux.yaml`
 
 ## Output YAML Format
 

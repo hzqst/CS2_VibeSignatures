@@ -1,12 +1,12 @@
 ---
 name: find-ClientPrint
-description: Find and identify the ClientPrint function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ClientPrint function by searching for known localization string references like "#Player_Cash_Award_ExplainSuicide_TeammateGotCash" and analyzing cross-references to find the print function.
+description: Find and identify the ClientPrint function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the ClientPrint function by searching for known localization string references like "#Player_Cash_Award_ExplainSuicide_TeammateGotCash" and analyzing cross-references to find the print function.
 disable-model-invocation: true
 ---
 
 # Find ClientPrint
 
-Locate `ClientPrint` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `ClientPrint` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -82,4 +82,4 @@ The function is commonly called with these localization strings:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `ClientPrint.windows.yaml`
-- `server.so` → `ClientPrint.linux.yaml`
+- `libserver.so` → `ClientPrint.linux.yaml`

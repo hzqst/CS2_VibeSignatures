@@ -1,12 +1,12 @@
 ---
 name: find-CEntitySystem_AddEntityIOEvent
-description: Find and identify the CEntitySystem_AddEntityIOEvent function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the AddEntityIOEvent function by searching for the "_DisableUpdateTarget" string reference and analyzing cross-references to find the function called with "SetPosition" parameter.
+description: Find and identify the CEntitySystem_AddEntityIOEvent function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the AddEntityIOEvent function by searching for the "_DisableUpdateTarget" string reference and analyzing cross-references to find the function called with "SetPosition" parameter.
 disable-model-invocation: true
 ---
 
 # Find CEntitySystem_AddEntityIOEvent
 
-Locate `CEntitySystem_AddEntityIOEvent` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CEntitySystem_AddEntityIOEvent` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -85,4 +85,4 @@ The function is identified by finding code that:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntitySystem_AddEntityIOEvent.windows.yaml`
-- `server.so` → `CEntitySystem_AddEntityIOEvent.linux.yaml`
+- `libserver.so` → `CEntitySystem_AddEntityIOEvent.linux.yaml`

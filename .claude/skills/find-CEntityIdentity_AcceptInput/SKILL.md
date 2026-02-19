@@ -2,7 +2,7 @@
 name: find-CEntityIdentity_AcceptInput
 description: |
   Find and identify the CEntityIdentity_AcceptInput function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate the AcceptInput function
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the AcceptInput function
   on CEntityIdentity, which dispatches entity I/O inputs.
   Triggers: CEntityIdentity_AcceptInput, AcceptInput, entity input dispatch, entity IO accept
 disable-model-invocation: true
@@ -95,4 +95,4 @@ The `CEntityIdentity_AcceptInput` function:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CEntityIdentity_AcceptInput.windows.yaml`
-- `server.so` / `libserver.so` → `CEntityIdentity_AcceptInput.linux.yaml`
+- `libserver.so` / `libserver.so` → `CEntityIdentity_AcceptInput.linux.yaml`

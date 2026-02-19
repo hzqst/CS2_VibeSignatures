@@ -1,12 +1,12 @@
 ---
 name: find-DispatchParticleEffect
-description: Find and identify the DispatchParticleEffect function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the DispatchParticleEffect function by searching for the string "Invalid attach type specified for particle_test in cvar 'particle_test_attach_mode." and analyzing the decompiled code of the referencing function.
+description: Find and identify the DispatchParticleEffect function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the DispatchParticleEffect function by searching for the string "Invalid attach type specified for particle_test in cvar 'particle_test_attach_mode." and analyzing the decompiled code of the referencing function.
 disable-model-invocation: true
 ---
 
 # Find DispatchParticleEffect
 
-Locate `DispatchParticleEffect` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `DispatchParticleEffect` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -110,4 +110,4 @@ Required parameters:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `DispatchParticleEffect.windows.yaml`
-- `server.so` / `libserver.so` → `DispatchParticleEffect.linux.yaml`
+- `libserver.so` / `libserver.so` → `DispatchParticleEffect.linux.yaml`

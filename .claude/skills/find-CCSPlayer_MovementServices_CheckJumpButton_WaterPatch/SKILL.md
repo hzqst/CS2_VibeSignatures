@@ -3,7 +3,7 @@ name: find-CCSPlayer_MovementServices_CheckJumpButton_WaterPatch
 description: |
   Find and patch the water jump velocity inside CCSPlayer_MovementServices_CheckJumpButton in CS2 binary using IDA Pro MCP.
   This patch changes the water jump velocity from 100.0f to 145.0f by modifying the immediate operand of a mov instruction.
-  Use this skill when reverse engineering CS2 server.dll or server.so to locate and patch the water jump height value.
+  Use this skill when reverse engineering CS2 server.dll or libserver.so to locate and patch the water jump height value.
   Trigger: water jump patch, CheckJumpButton water velocity, jump height patch, water jump 145
 disable-model-invocation: true
 ---

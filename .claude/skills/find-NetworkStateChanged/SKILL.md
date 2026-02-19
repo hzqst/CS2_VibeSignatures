@@ -1,12 +1,12 @@
 ---
 name: find-NetworkStateChanged
-description: Find and identify the NetworkStateChanged function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the NetworkStateChanged function by searching for the "light_capsule" string reference and analyzing cross-references.
+description: Find and identify the NetworkStateChanged function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the NetworkStateChanged function by searching for the "light_capsule" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find NetworkStateChanged
 
-Locate `NetworkStateChanged` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `NetworkStateChanged` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -97,7 +97,7 @@ Locate `NetworkStateChanged` in CS2 server.dll or server.so using IDA Pro MCP to
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -109,4 +109,4 @@ Locate `NetworkStateChanged` in CS2 server.dll or server.so using IDA Pro MCP to
 
 The output YAML filename depends on the platform:
 - `server.dll` → `NetworkStateChanged.windows.yaml`
-- `server.so` → `NetworkStateChanged.linux.yaml`
+- `libserver.so` → `NetworkStateChanged.linux.yaml`

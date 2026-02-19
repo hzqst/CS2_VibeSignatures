@@ -1,12 +1,12 @@
 ---
 name: find-CBaseEntity_CollisionRulesChanged
-description: Find and identify the CBaseEntity_CollisionRulesChanged virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CollisionRulesChanged function by first finding CBaseEntity_SetOwner and extracting the very last virtual call offset from its decompiled code.
+description: Find and identify the CBaseEntity_CollisionRulesChanged virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CollisionRulesChanged function by first finding CBaseEntity_SetOwner and extracting the very last virtual call offset from its decompiled code.
 disable-model-invocation: true
 ---
 
 # Find CBaseEntity_CollisionRulesChanged
 
-Locate `CBaseEntity_CollisionRulesChanged` in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `CBaseEntity_CollisionRulesChanged` in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -71,13 +71,13 @@ VTable parameters:
 - **VTable Index**: 185 - This can change when game updates.
 - **VTable Offset**: 0x5C8 (185 * 8 = 1480) - This can change when game updates.
 
-* Note that for `server.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
+* Note that for `libserver.so`, the first 16 bytes of "vftable" are for RTTI. The real vftable = `_ZTV11CBaseEntity` + `0x10`.
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBaseEntity_CollisionRulesChanged.windows.yaml`
-- `server.so` → `CBaseEntity_CollisionRulesChanged.linux.yaml`
+- `libserver.so` → `CBaseEntity_CollisionRulesChanged.linux.yaml`
 
 ```yaml
 func_name: CBaseEntity_CollisionRulesChanged
@@ -89,7 +89,7 @@ vfunc_index: 185
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 

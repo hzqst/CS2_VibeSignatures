@@ -1,12 +1,12 @@
 ---
 name: find-UTIL_PlayerSlotToPlayerController
-description: Find and identify the UTIL_PlayerSlotToPlayerController function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the function by searching for the "game_playerleave" string reference and identifying its callee.
+description: Find and identify the UTIL_PlayerSlotToPlayerController function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the function by searching for the "game_playerleave" string reference and identifying its callee.
 disable-model-invocation: true
 ---
 
 # Find UTIL_PlayerSlotToPlayerController
 
-Locate `UTIL_PlayerSlotToPlayerController` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `UTIL_PlayerSlotToPlayerController` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -89,7 +89,7 @@ Locate `UTIL_PlayerSlotToPlayerController` in CS2 server.dll or server.so using 
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Notes
 
@@ -101,4 +101,4 @@ Locate `UTIL_PlayerSlotToPlayerController` in CS2 server.dll or server.so using 
 
 The output YAML filename depends on the platform:
 - `server.dll` → `UTIL_PlayerSlotToPlayerController.windows.yaml`
-- `server.so` → `UTIL_PlayerSlotToPlayerController.linux.yaml`
+- `libserver.so` → `UTIL_PlayerSlotToPlayerController.linux.yaml`

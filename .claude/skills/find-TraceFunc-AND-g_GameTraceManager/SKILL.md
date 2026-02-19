@@ -1,12 +1,12 @@
 ---
 name: find-TraceFunc-AND-g_GameTraceManager
-description: Find and identify the TraceFunc function and g_GameTraceManager global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate TraceFunc by analyzing the FindUseEntity function and identifying the trace call with CTraceFilter vftable setup and the g_GameTraceManager global pointer.
+description: Find and identify the TraceFunc function and g_GameTraceManager global variable in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate TraceFunc by analyzing the FindUseEntity function and identifying the trace call with CTraceFilter vftable setup and the g_GameTraceManager global pointer.
 disable-model-invocation: true
 ---
 
 # Find TraceFunc AND g_GameTraceManager
 
-Locate `TraceFunc` (regular function) and `g_GameTraceManager` (global variable) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `TraceFunc` (regular function) and `g_GameTraceManager` (global variable) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Prerequisites
 
@@ -143,11 +143,11 @@ Required parameters:
 
 The output YAML filename for TraceFunc depends on the platform:
 - `server.dll` → `TraceFunc.windows.yaml`
-- `server.so` / `libserver.so` → `TraceFunc.linux.yaml`
+- `libserver.so` / `libserver.so` → `TraceFunc.linux.yaml`
 
 The output YAML filename for g_GameTraceManager depends on the platform:
 - `server.dll` → `g_GameTraceManager.windows.yaml`
-- `server.so` / `libserver.so` → `g_GameTraceManager.linux.yaml`
+- `libserver.so` / `libserver.so` → `g_GameTraceManager.linux.yaml`
 
 ## Troubleshooting
 

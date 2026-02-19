@@ -1,12 +1,12 @@
 ---
 name: find-g_pGameRules-AND-CGameRules_FindPickerEntity
-description: Find and identify the g_pGameRules and CCSGameRules_FindPickerEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the FindPickerEntity function by searching for the "[%03d] Found: %s, firing" string and tracing its caller to identify g_pGameRules and the vfunc call pattern.
+description: Find and identify the g_pGameRules and CCSGameRules_FindPickerEntity function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the FindPickerEntity function by searching for the "[%03d] Found: %s, firing" string and tracing its caller to identify g_pGameRules and the vfunc call pattern.
 disable-model-invocation: true
 ---
 
 # Find g_pGameRules and CGameRules_FindPickerEntity
 
-Locate `g_pGameRules` (global variable) and `CGameRules_FindPickerEntity` (virtual function) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `g_pGameRules` (global variable) and `CGameRules_FindPickerEntity` (virtual function) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -148,8 +148,8 @@ The output YAML filenames depend on the platform:
 
 For CGameRules_FindPickerEntity:
 - `server.dll` → `CGameRules_FindPickerEntity.windows.yaml`
-- `server.so` → `CGameRules_FindPickerEntity.linux.yaml`
+- `libserver.so` → `CGameRules_FindPickerEntity.linux.yaml`
 
 For g_pGameRules:
 - `server.dll` → `g_pGameRules.windows.yaml`
-- `server.so` → `g_pGameRules.linux.yaml`
+- `libserver.so` → `g_pGameRules.linux.yaml`

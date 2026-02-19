@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayer_ItemServices_GiveNamedItem
-description: Find and identify the CCSPlayer_ItemServices_GiveNamedItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the GiveNamedItem wrapper function in CCSPlayer_ItemServices vtable by searching for the "GiveNamedItem: interpreting" string reference and analyzing vtable entries.
+description: Find and identify the CCSPlayer_ItemServices_GiveNamedItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the GiveNamedItem wrapper function in CCSPlayer_ItemServices vtable by searching for the "GiveNamedItem: interpreting" string reference and analyzing vtable entries.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayer_ItemServices_GiveNamedItem
 
-Locate `CCSPlayer_ItemServices_GiveNamedItem` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayer_ItemServices_GiveNamedItem` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -134,7 +134,7 @@ This pattern makes the function very short (typically 15 bytes) and requires inc
 - **Vtable Index**: 20 - May change with game updates
 - **Vtable Offset**: 0xb0 - May change with game updates
 
-### Linux (server.so)
+### Linux (libserver.so)
 - **Vtable Name**: `vtable for CCSPlayer_ItemServices`
 - **Vtable Mangled Name**: `_ZTV22CCSPlayer_ItemServices`
 - **Vtable Index**: 20 - May change with game updates
@@ -146,7 +146,7 @@ This pattern makes the function very short (typically 15 bytes) and requires inc
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayer_ItemServices_GiveNamedItem.windows.yaml`
-- `server.so` → `CCSPlayer_ItemServices_GiveNamedItem.linux.yaml`
+- `libserver.so` → `CCSPlayer_ItemServices_GiveNamedItem.linux.yaml`
 
 ## Related Functions
 

@@ -97,7 +97,7 @@ The `CCSPlayerPawnBase_PostThink` function contains the following signature stri
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerPawnBase_PostThink.windows.yaml`
-- `server.so` / `libserver.so` → `CCSPlayerPawnBase_PostThink.linux.yaml`
+- `libserver.so` / `libserver.so` → `CCSPlayerPawnBase_PostThink.linux.yaml`
 
 ## Related Functions
 

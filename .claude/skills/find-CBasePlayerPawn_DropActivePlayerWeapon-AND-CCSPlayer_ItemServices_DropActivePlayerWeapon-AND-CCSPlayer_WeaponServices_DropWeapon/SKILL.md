@@ -1,14 +1,14 @@
 ---
 name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_WeaponServices_DropWeapon
 description: |
-  Find and identify CCSPlayer_ItemServices_DropActivePlayerWeapon and CCSPlayer_ItemServices_RemoveWeapons functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the weapon drop call chain: CBasePlayerPawn_DropActivePlayerWeapon (vtable thunk) -> CCSPlayer_ItemServices_DropActivePlayerWeapon -> CCSPlayer_WeaponServices_DropWeapon. Located via "KilledNPC" string xref in the death handler function.
+  Find and identify CCSPlayer_ItemServices_DropActivePlayerWeapon and CCSPlayer_ItemServices_RemoveWeapons functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the weapon drop call chain: CBasePlayerPawn_DropActivePlayerWeapon (vtable thunk) -> CCSPlayer_ItemServices_DropActivePlayerWeapon -> CCSPlayer_WeaponServices_DropWeapon. Located via "KilledNPC" string xref in the death handler function.
   Trigger: CBasePlayerPawn_DropActivePlayerWeapon, CCSPlayer_ItemServices_DropActivePlayerWeapon, CCSPlayer_WeaponServices_DropWeapon, DropActivePlayerWeapon, DropWeapon, KilledNPC
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_DropActivePlayerWeapon, CCSPlayer_ItemServices_DropActivePlayerWeapon, and CCSPlayer_WeaponServices_DropWeapon
 
-Locate the weapon drop call chain in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate the weapon drop call chain in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Overview
 
@@ -285,7 +285,7 @@ This skill generates **three separate YAML files**:
   - `CBasePlayerPawn_DropActivePlayerWeapon.windows.yaml`
   - `CCSPlayer_ItemServices_DropActivePlayerWeapon.windows.yaml`
   - `CCSPlayer_WeaponServices_DropWeapon.windows.yaml`
-- `server.so` / `libserver.so` (Linux):
+- `libserver.so` / `libserver.so` (Linux):
   - `CBasePlayerPawn_DropActivePlayerWeapon.linux.yaml`
   - `CCSPlayer_ItemServices_DropActivePlayerWeapon.linux.yaml`
   - `CCSPlayer_WeaponServices_DropWeapon.linux.yaml`
@@ -312,7 +312,7 @@ Death Handler (contains "KilledNPC" string)
 ## Troubleshooting
 
 **If "KilledNPC" string not found:**
-- Verify the binary is a CS2 server binary (server.dll or server.so)
+- Verify the binary is a CS2 server binary (server.dll or libserver.so)
 - The string may have been changed in a game update
 
 **If the death handler has different structure:**

@@ -1,14 +1,14 @@
 ---
 name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon
 description: |
-  Find and identify CCSPlayer_WeaponServices_PickupItem , CCSPlayer_WeaponServices_CanUse and CCSPlayer_WeaponServices_EquipWeapon functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the weapon pickup functions. CCSPlayer_WeaponServices_PickupItem is a virtual function on CCSPlayer_WeaponServices found via "Player.PickupGrenadeAudible" string xref. CCSPlayer_WeaponServices_EquipWeapon is called within PickupItem.
+  Find and identify CCSPlayer_WeaponServices_PickupItem , CCSPlayer_WeaponServices_CanUse and CCSPlayer_WeaponServices_EquipWeapon functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the weapon pickup functions. CCSPlayer_WeaponServices_PickupItem is a virtual function on CCSPlayer_WeaponServices found via "Player.PickupGrenadeAudible" string xref. CCSPlayer_WeaponServices_EquipWeapon is called within PickupItem.
   Trigger: CCSPlayer_WeaponServices_PickupItem, CCSPlayer_WeaponServices_EquipWeapon, PickupItem, EquipWeapon, Player.PickupGrenadeAudible, item_pickup
 disable-model-invocation: true
 ---
 
 # Find CCSPlayer_WeaponServices_PickupItem, CCSPlayer_WeaponServices_CanUse and CCSPlayer_WeaponServices_EquipWeapon
 
-Locate the weapon pickup functions in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate the weapon pickup functions in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Overview
 
@@ -219,14 +219,14 @@ This skill generates **two YAML files**:
 - `server.dll` (Windows):
   - `CCSPlayer_WeaponServices_PickupItem.windows.yaml`
   - `CCSPlayer_WeaponServices_EquipWeapon.windows.yaml`
-- `server.so` / `libserver.so` (Linux):
+- `libserver.so` / `libserver.so` (Linux):
   - `CCSPlayer_WeaponServices_PickupItem.linux.yaml`
   - `CCSPlayer_WeaponServices_EquipWeapon.linux.yaml`
 
 ## Troubleshooting
 
 **If "Player.PickupGrenadeAudible" string not found:**
-- Verify the binary is a CS2 server binary (server.dll or server.so)
+- Verify the binary is a CS2 server binary (server.dll or libserver.so)
 - The string may have been changed in a game update, indicate an error to user
 
 **If the function structure differs:**

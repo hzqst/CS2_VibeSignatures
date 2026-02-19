@@ -1,12 +1,12 @@
 ---
 name: find-CCSBotManager_AddBot-AND-g_pCSBotManager-AND-g_pNavMesh
-description: Find and identify the CCSBotManager_AddBot function, g_pCSBotManager and g_pNavMesh global variables in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the bot manager's AddBot function by searching for the "Error - cannot add bots after game is over." string reference and analyzing cross-references.
+description: Find and identify the CCSBotManager_AddBot function, g_pCSBotManager and g_pNavMesh global variables in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the bot manager's AddBot function by searching for the "Error - cannot add bots after game is over." string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CCSBotManager_AddBot, g_pCSBotManager, g_pNavMesh
 
-Locate `CCSBotManager_AddBot`, `g_pCSBotManager`, and `g_pNavMesh` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSBotManager_AddBot`, `g_pCSBotManager`, and `g_pNavMesh` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -175,15 +175,15 @@ Error - cannot add bots after game is over.
 
 The output YAML filename for CCSBotManager_AddBot depends on the platform:
 - `server.dll` -> `CCSBotManager_AddBot.windows.yaml`
-- `server.so` / `libserver.so` -> `CCSBotManager_AddBot.linux.yaml`
+- `libserver.so` / `libserver.so` -> `CCSBotManager_AddBot.linux.yaml`
 
 The output YAML filename for g_pCSBotManager depends on the platform:
 - `server.dll` -> `g_pCSBotManager.windows.yaml`
-- `server.so` / `libserver.so` -> `g_pCSBotManager.linux.yaml`
+- `libserver.so` / `libserver.so` -> `g_pCSBotManager.linux.yaml`
 
 The output YAML filename for g_pNavMesh depends on the platform:
 - `server.dll` -> `g_pNavMesh.windows.yaml`
-- `server.so` / `libserver.so` -> `g_pNavMesh.linux.yaml`
+- `libserver.so` / `libserver.so` -> `g_pNavMesh.linux.yaml`
 
 ## Related Globals
 

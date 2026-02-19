@@ -1,12 +1,12 @@
 ---
 name: find-CTriggerPush_Touch
-description: Find and identify the CTriggerPush_Touch (CTriggerPush::Touch) virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the CTriggerPush touch handler function by using vtable information and the inherited vtable index from CBaseEntity::Touch.
+description: Find and identify the CTriggerPush_Touch (CTriggerPush::Touch) virtual function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the CTriggerPush touch handler function by using vtable information and the inherited vtable index from CBaseEntity::Touch.
 disable-model-invocation: true
 ---
 
 # Find CTriggerPush_Touch
 
-Locate `CTriggerPush_Touch` (`CTriggerPush::Touch`) virtual function in CS2 `server.dll` or `server.so` using IDA Pro MCP tools.
+Locate `CTriggerPush_Touch` (`CTriggerPush::Touch`) virtual function in CS2 `server.dll` or `libserver.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -95,13 +95,13 @@ VTable parameters:
 
 ## DLL Information
 
-- **DLL**: `server.dll` (Windows) / `server.so` (Linux)
+- **DLL**: `server.dll` (Windows) / `libserver.so` (Linux)
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` -> `CTriggerPush_Touch.windows.yaml`
-- `server.so` -> `CTriggerPush_Touch.linux.yaml`
+- `libserver.so` -> `CTriggerPush_Touch.linux.yaml`
 
 ## Notes
 

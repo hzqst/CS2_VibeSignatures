@@ -1,12 +1,12 @@
 ---
 name: find-CCSPlayerController_ChangeTeam
-description: Find and identify the CCSPlayerController_ChangeTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the ChangeTeam function by searching for known debug string references and analyzing cross-references.
+description: Find and identify the CCSPlayerController_ChangeTeam function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the ChangeTeam function by searching for known debug string references and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CCSPlayerController_ChangeTeam
 
-Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CCSPlayerController_ChangeTeam` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -79,10 +79,10 @@ The function contains a debug log call with format string:
 - **VTable Index**: 102 (0x66) - This can change when game updates.
 - **VTable Offset**: 0x330  - This can change when game updates.
 
-* Note that for `server.so`, The first 16 bytes of "vftable" are for RTTI. the real vftable =  `_ZTV19CCSPlayerController (0x221e390)` + `0x10` = `0x221e3A0`.
+* Note that for `libserver.so`, The first 16 bytes of "vftable" are for RTTI. the real vftable =  `_ZTV19CCSPlayerController (0x221e390)` + `0x10` = `0x221e3A0`.
 
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CCSPlayerController_ChangeTeam.windows.yaml`
-- `server.so` → `CCSPlayerController_ChangeTeam.linux.yaml`
+- `libserver.so` → `CCSPlayerController_ChangeTeam.linux.yaml`

@@ -1,12 +1,12 @@
 ---
 name: find-FireBullets-AND-TraceAttack-AND-CTakeDamageInfo
-description: Find and identify the TraceAttack function and CTakeDamageInfo struct in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the TraceAttack function by searching for the "FireBullets" debug string pattern, then tracing through FireBullets to find TraceAttack, and identifying CTakeDamageInfo struct member offsets.
+description: Find and identify the TraceAttack function and CTakeDamageInfo struct in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the TraceAttack function by searching for the "FireBullets" debug string pattern, then tracing through FireBullets to find TraceAttack, and identifying CTakeDamageInfo struct member offsets.
 disable-model-invocation: true
 ---
 
 # Find TraceAttack and CTakeDamageInfo
 
-Locate `TraceAttack` function and `CTakeDamageInfo` struct in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `TraceAttack` function and `CTakeDamageInfo` struct in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -199,7 +199,7 @@ For `CTakeDamageInfo::HitGroupInfo`:
 
 Output YAML:
 - `server.dll` → `CTakeDamageInfo_HitGroupInfo.windows.yaml`
-- `server.so` / `libserver.so` → `CTakeDamageInfo_HitGroupInfo.linux.yaml`
+- `libserver.so` / `libserver.so` → `CTakeDamageInfo_HitGroupInfo.linux.yaml`
 
 ## Function Characteristics
 

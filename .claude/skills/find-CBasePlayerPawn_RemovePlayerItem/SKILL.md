@@ -1,12 +1,12 @@
 ---
 name: find-CBasePlayerPawn_RemovePlayerItem
-description: Find and identify the CBasePlayerPawn_RemovePlayerItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the RemovePlayerItem function by searching for the "DestroyWeapon" string reference and analyzing cross-references.
+description: Find and identify the CBasePlayerPawn_RemovePlayerItem function in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the RemovePlayerItem function by searching for the "DestroyWeapon" string reference and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find CBasePlayerPawn_RemovePlayerItem
 
-Locate `CBasePlayerPawn_RemovePlayerItem` in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `CBasePlayerPawn_RemovePlayerItem` in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -87,4 +87,4 @@ The function is called when destroying a weapon from a player's inventory. The c
 
 The output YAML filename depends on the platform:
 - `server.dll` → `CBasePlayerPawn_RemovePlayerItem.windows.yaml`
-- `server.so` → `CBasePlayerPawn_RemovePlayerItem.linux.yaml`
+- `libserver.so` → `CBasePlayerPawn_RemovePlayerItem.linux.yaml`

@@ -1,12 +1,12 @@
 ---
 name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
-description: Find and identify IGameSystem_InitAllSystems (function) and IGameSystem_InitAllSystems_pFirst (global variable) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or server.so to locate the game system initialization linked list head pointer by searching for the "IGameSystem::InitAllSystems" string and analyzing cross-references.
+description: Find and identify IGameSystem_InitAllSystems (function) and IGameSystem_InitAllSystems_pFirst (global variable) in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 server.dll or libserver.so to locate the game system initialization linked list head pointer by searching for the "IGameSystem::InitAllSystems" string and analyzing cross-references.
 disable-model-invocation: true
 ---
 
 # Find IGameSystem_InitAllSystems and IGameSystem_InitAllSystems_pFirst
 
-Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_pFirst` (global variable) in CS2 server.dll or server.so using IDA Pro MCP tools.
+Locate `IGameSystem_InitAllSystems` (function) and `IGameSystem_InitAllSystems_pFirst` (global variable) in CS2 server.dll or libserver.so using IDA Pro MCP tools.
 
 ## Method
 
@@ -116,7 +116,7 @@ The global variable is typically accessed with a RIP-relative MOV instruction:
 
 The output YAML filename depends on the platform:
 - `server.dll` → `IGameSystem_InitAllSystems.windows.yaml`, `IGameSystem_InitAllSystems_pFirst.windows.yaml`
-- `server.so` → `IGameSystem_InitAllSystems.linux.yaml`, `IGameSystem_InitAllSystems_pFirst.linux.yaml`
+- `libserver.so` → `IGameSystem_InitAllSystems.linux.yaml`, `IGameSystem_InitAllSystems_pFirst.linux.yaml`
 
 ## Runtime Resolution
 
