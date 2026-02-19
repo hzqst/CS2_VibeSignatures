@@ -1,0 +1,8 @@
+func_name: CCSItemIconGeneratorGameSystem_ClientUpdate
+func_va: '0x180dc6230'
+func_rva: '0xdc6230'
+func_size: '0x6c1'
+func_sig: 48 89 5C 24 ?? 48 89 6C 24 ?? 57 48 81 EC ?? ?? ?? ?? 33 ED
+vtable_name: CCSItemIconGeneratorGameSystem
+vfunc_offset: '0xe0'
+vfunc_index: 28

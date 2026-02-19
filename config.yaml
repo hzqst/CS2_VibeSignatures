@@ -140,6 +140,27 @@ modules:
           - find-IGameSystem_vtable
           - find-CDecalGameSystem_UpdateDecals-AND-CDecalGameSystem_ClientPreUpdate
 
+      - name: find-CCSItemIconGeneratorGameSystem_vtable
+        expected_output:
+          - CCSItemIconGeneratorGameSystem_vtable.{platform}.yaml
+
+      - name: find-CCSItemIconGeneratorGameSystem_ClientUpdate
+        expected_output:
+          - CCSItemIconGeneratorGameSystem_ClientUpdate.{platform}.yaml
+        expected_input:
+          - CCSItemIconGeneratorGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-CCSItemIconGeneratorGameSystem_vtable
+
+      - name: find-IGameSystem_ClientUpdate
+        expected_output:
+          - IGameSystem_ClientUpdate.{platform}.yaml
+        expected_input:
+          - CCSItemIconGeneratorGameSystem_ClientUpdate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CCSItemIconGeneratorGameSystem_ClientUpdate
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -155,6 +176,14 @@ modules:
         alias:
           - CDecalGameSystem::ClientPreUpdate
           - ClientPreUpdate
+
+      - name: CCSItemIconGeneratorGameSystem_vtable
+        category: vtable
+
+      - name: CCSItemIconGeneratorGameSystem_ClientUpdate
+        category: vfunc
+        alias:
+          - CCSItemIconGeneratorGameSystem::ClientUpdate
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
