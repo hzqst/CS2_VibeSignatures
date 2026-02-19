@@ -161,6 +161,27 @@ modules:
           - find-IGameSystem_vtable
           - find-CCSItemIconGeneratorGameSystem_ClientUpdate
 
+      - name: find-CBuildCubemapsGameSystem_vtable
+        expected_output:
+          - CBuildCubemapsGameSystem_vtable.{platform}.yaml
+
+      - name: find-CBuildCubemapsGameSystem_ClientPostRender
+        expected_output:
+          - CBuildCubemapsGameSystem_ClientPostRender.{platform}.yaml
+        expected_input:
+          - CBuildCubemapsGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-CBuildCubemapsGameSystem_vtable
+
+      - name: find-IGameSystem_ClientPostRender
+        expected_output:
+          - IGameSystem_ClientPostRender.{platform}.yaml
+        expected_input:
+          - CBuildCubemapsGameSystem_ClientPostRender.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CBuildCubemapsGameSystem_ClientPostRender
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -184,6 +205,14 @@ modules:
         category: vfunc
         alias:
           - CCSItemIconGeneratorGameSystem::ClientUpdate
+
+      - name: CBuildCubemapsGameSystem_vtable
+        category: vtable
+
+      - name: CBuildCubemapsGameSystem_ClientPostRender
+        category: vfunc
+        alias:
+          - CBuildCubemapsGameSystem::ClientPostRender
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
