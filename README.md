@@ -32,13 +32,13 @@ Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counter
 
 ## Overall workflow
 
-1. Download CS2 binaries
+#### 1. Download CS2 binaries
 
 ```bash
 python download_bin.py -gamever 14135
 ```
 
-2. Find and generate signatures for all symbols declared in `config.yaml`
+#### 2. Find and generate signatures for all symbols declared in `config.yaml`
 
  ```bash
  python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]
@@ -46,7 +46,7 @@ python download_bin.py -gamever 14135
 
 * Old signatures from `from bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` will be used to find symbols directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
 
-3. Convert yaml(s) to gamedata json / txt
+#### 3. Convert yaml(s) to gamedata json / txt
 
 ```bash
 python update_gamedata.py -gamever 14135 [-debug]
@@ -121,7 +121,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
  - Create `ida_preprocessor_scripts/find-CCSPlayerPawn_vtable.py`
 
-  - **ALWAYS** check existing preprocessor scripts with `TARGET_CLASS_NAMES` for references.
+ - **ALWAYS** check existing preprocessor scripts with `TARGET_CLASS_NAMES` for references.
 
  - no LLM needed when finding vtable. everything done in the preprocessor script.
 
