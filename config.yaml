@@ -277,6 +277,15 @@ modules:
         expected_output:
           - CSource2Client_OnDisconnect.{platform}.yaml
 
+      - name: find-IGameSystem_Disconnect
+        expected_output:
+          - IGameSystem_Disconnect.{platform}.yaml
+        expected_input:
+          - CSource2Client_OnDisconnect.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CSource2Client_OnDisconnect
+
     symbols:
 
       - name: CCSItemIconGeneratorGameSystem_vtable
@@ -447,6 +456,11 @@ modules:
         category: func
         alias:
           - CSource2Client::OnDisconnect
+
+      - name: IGameSystem_Disconnect
+        category: vfunc
+        alias:
+          - IGameSystem::Disconnect
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
