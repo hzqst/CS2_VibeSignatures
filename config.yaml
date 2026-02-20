@@ -118,27 +118,6 @@ modules:
         expected_output:
           - IGameSystem_vtable.{platform}.yaml
 
-      - name: find-CCSItemIconGeneratorGameSystem_vtable
-        expected_output:
-          - CCSItemIconGeneratorGameSystem_vtable.{platform}.yaml
-
-      - name: find-CCSItemIconGeneratorGameSystem_ClientUpdate
-        expected_output:
-          - CCSItemIconGeneratorGameSystem_ClientUpdate.{platform}.yaml
-        expected_input:
-          - CCSItemIconGeneratorGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSItemIconGeneratorGameSystem_vtable
-
-      - name: find-IGameSystem_ClientUpdate
-        expected_output:
-          - IGameSystem_ClientUpdate.{platform}.yaml
-        expected_input:
-          - CCSItemIconGeneratorGameSystem_ClientUpdate.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CCSItemIconGeneratorGameSystem_ClientUpdate
-
       - name: find-CLoopModeGame_RegisterEventMapInternal_client
         expected_output:
           - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
@@ -269,6 +248,15 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
 
+      - name: find-IGameSystem_ClientPreEntityThink
+        expected_output:
+          - IGameSystem_ClientPreEntityThink.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPreOutputParallelWithServer.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal_client
+
       - name: find-CSource2Client_vtable
         expected_output:
           - CSource2Client_vtable.{platform}.yaml
@@ -287,14 +275,6 @@ modules:
           - find-CSource2Client_OnDisconnect
 
     symbols:
-
-      - name: CCSItemIconGeneratorGameSystem_vtable
-        category: vtable
-
-      - name: CCSItemIconGeneratorGameSystem_ClientUpdate
-        category: vfunc
-        alias:
-          - CCSItemIconGeneratorGameSystem::ClientUpdate
 
       - name: CLoopModeGame_RegisterEventMapInternal
         category: func
@@ -461,6 +441,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::Disconnect
+
+      - name: IGameSystem_ClientPreEntityThink
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPreEntityThink
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
