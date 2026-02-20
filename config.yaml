@@ -272,6 +272,15 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_ClientPostRender
+        expected_output:
+          - IGameSystem_ClientPostRender.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPostOutput.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -433,6 +442,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::ClientPostAdvanceTick
+
+      - name: IGameSystem_ClientPostRender
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPostRender
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
