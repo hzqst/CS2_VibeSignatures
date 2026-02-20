@@ -182,27 +182,6 @@ modules:
           - find-IGameSystem_vtable
           - find-CBuildCubemapsGameSystem_ClientPostRender
 
-      - name: find-CSource1LegacyGameEventGameSystem_vtable
-        expected_output:
-          - CSource1LegacyGameEventGameSystem_vtable.{platform}.yaml
-
-      - name: find-CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
-        expected_output:
-          - CSource1LegacyGameEventGameSystem_ClientPostDataUpdate.{platform}.yaml
-        expected_input:
-          - CSource1LegacyGameEventGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-CSource1LegacyGameEventGameSystem_vtable
-
-      - name: find-IGameSystem_ClientPostDataUpdate
-        expected_output:
-          - IGameSystem_ClientPostDataUpdate.{platform}.yaml
-        expected_input:
-          - CSource1LegacyGameEventGameSystem_ClientPostDataUpdate.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
-
       - name: find-CLightQueryGameSystem_vtable
         expected_output:
           - CLightQueryGameSystem_vtable.{platform}.yaml
@@ -290,6 +269,15 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_ClientPostDataUpdate
+        expected_output:
+          - IGameSystem_ClientPostDataUpdate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnPostDataUpdate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -321,14 +309,6 @@ modules:
         category: vfunc
         alias:
           - CBuildCubemapsGameSystem::ClientPostRender
-
-      - name: CSource1LegacyGameEventGameSystem_vtable
-        category: vtable
-
-      - name: CSource1LegacyGameEventGameSystem_ClientPostDataUpdate
-        category: vfunc
-        alias:
-          - CSource1LegacyGameEventGameSystem::ClientPostDataUpdate
 
       - name: CLightQueryGameSystem_vtable
         category: vtable
@@ -385,6 +365,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::ClientUpdate
+
+      - name: IGameSystem_ClientPostDataUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPostDataUpdate
 
       - name: CLoopModeGame_OnClientAdvanceTick
         category: func
