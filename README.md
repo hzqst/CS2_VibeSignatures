@@ -127,7 +127,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 2. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-CCSPlayerPawn_vtable
@@ -191,7 +191,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-CBaseModelEntity_SetModel
@@ -266,7 +266,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-CBasePlayerController_Respawn
@@ -274,8 +274,6 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CBasePlayerController_Respawn.{platform}.yaml
         expected_input:
           - CBasePlayerController_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerController_vtable
 ```
 
 #### 5. Add the new symbol to `config.yaml`, under `symbols`.
@@ -327,7 +325,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst
@@ -386,7 +384,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem
@@ -418,7 +416,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 ## How to create SKILL for patch
 
-* A patch SKILL locates a specific instruction inside a known function and generates replacement bytes to change its behavior at runtime (e.g., force/skip a branch, NOP a call). The prerequisite function must already have a find-SKILL.
+* A patch SKILL locates a specific instruction inside a known function and generates replacement bytes to change its behavior at runtime (e.g., force/skip a branch, NOP a call). The target function should already have a corresponding find-SKILL output available (typically via `expected_input`).
 
 * Always make sure you have ida-pro-mcp server running.
 
@@ -476,7 +474,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 
 #### 4. Add the new SKILL to `config.yaml`, under `skills`.
 
- * with `expected_output` , `expected_input` (optional), `prerequisite` (optional) explicitly declared.
+ * with `expected_output` and `expected_input` (optional) explicitly declared.
 
 ```yaml
       - name: find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
@@ -484,8 +482,6 @@ python update_gamedata.py -gamever 14135 [-debug]
           - CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.{platform}.yaml
         expected_input:
           - CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
 ```
 
 #### 5. Add the new symbol to `config.yaml`, under `symbols`.

@@ -36,9 +36,6 @@ modules:
         expected_input:
           - CServerSideClient_vtable.{platform}.yaml
           - CSVCMsg_PeerList_t_vtable.{platform}.yaml
-        prerequisite:
-          - find-CServerSideClient_vtable
-          - find-CSVCMsg_PeerList_t_vtable
 
       - name: find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem
         expected_output:
@@ -55,8 +52,6 @@ modules:
           - CServerSideClientBase_ClientPrintf.{platform}.yaml
         expected_input:
           - CNetworkGameServer_vtable.{platform}.yaml
-        prerequisite:
-          - find-CNetworkGameServer_vtable
 
     symbols:
       - name: CNetworkGameServer_vtable
@@ -144,9 +139,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPollNetworking.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientGamePostSimulate
         expected_output:
@@ -154,9 +146,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPostSimulate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPauseSimulate
         expected_output:
@@ -164,9 +153,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPauseSimulate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_PreClientUpdate-AND-IGameSystem_ClientUpdate
         expected_output:
@@ -175,9 +161,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientSimulate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPostDataUpdate
         expected_output:
@@ -185,9 +168,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnPostDataUpdate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_GameFrameBoundary
         expected_output:
@@ -195,9 +175,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnFrameBoundary.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientAdvanceNonRenderedFrame
         expected_output:
@@ -205,9 +182,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientAdvanceNonRenderedFrame.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientFrameSimulate
         expected_output:
@@ -215,9 +189,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientFrameSimulate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientAdvanceTick
         expected_output:
@@ -225,9 +196,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientAdvanceTick.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPostAdvanceTick
         expected_output:
@@ -235,9 +203,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPostAdvanceTick.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPostRender
         expected_output:
@@ -245,9 +210,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPostOutput.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPreRender-AND-IGameSystem_ClientPreRenderEx
         expected_output:
@@ -256,9 +218,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPreOutput.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-IGameSystem_ClientPreEntityThink
         expected_output:
@@ -266,9 +225,6 @@ modules:
         expected_input:
           - CLoopModeGame_OnClientPreOutputParallelWithServer.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLoopModeGame_RegisterEventMapInternal_client
 
       - name: find-CSource2Client_vtable
         expected_output:
@@ -284,9 +240,6 @@ modules:
         expected_input:
           - CSource2Client_OnDisconnect.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CSource2Client_OnDisconnect
 
     symbols:
 
@@ -504,8 +457,6 @@ modules:
           - CCSPlayer_MovementServices_CheckMovingGround.{platform}.yaml
         expected_input:
           - CCSPlayer_MovementServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_MovementServices_vtable
 
       - name: find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
         expected_output:
@@ -518,8 +469,6 @@ modules:
           - CCSPlayer_MovementServices_FullWalkMove_SpeedClamp.{platform}.yaml
         expected_input:
           - CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_MovementServices_FullWalkMove-AND-CCSPlayer_MovementServices_CheckVelocity-AND-CCSPlayer_MovementServices_WaterMove
 
       - name: find-CCSPlayer_MovementServices_CheckJumpButton
         expected_output:
@@ -530,8 +479,6 @@ modules:
           - CCSPlayer_MovementServices_CheckJumpButton_WaterPatch.{platform}.yaml
         expected_input:
           - CCSPlayer_MovementServices_CheckJumpButton.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_MovementServices_CheckJumpButton
 
       - name: find-CEntityInstance_vtable
         expected_output:
@@ -590,8 +537,6 @@ modules:
           - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
         expected_input:
           - CBasePlayerPawn_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerPawn_vtable
         max_retries: 6
 
       - name: find-CCSPlayerPawn_OnTakeDamage
@@ -606,9 +551,6 @@ modules:
           - CBasePlayerPawn_OnTakeDamage_Alive.{platform}.yaml
           - CBasePlayerPawn_OnTakeDamage_Dying.{platform}.yaml
           - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerPawn_vtable
-          - find-CBaseEntity_TakeDamageOld
 
       - name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
         expected_output:
@@ -628,8 +570,6 @@ modules:
           - CBasePlayerController_SetPawn.{platform}.yaml
         expected_input:
           - CBasePlayerController_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerController_vtable
 
       - name: find-CBasePlayerController_SetPlayerName
         expected_output:
@@ -645,8 +585,6 @@ modules:
           - CGameRules_FindPickerEntity.{platform}.yaml
         expected_input:
           - CGameRules_vtable.{platform}.yaml
-        prerequisite:
-          - find-CGameRules_vtable
 
       - name: find-CCSGameRules_FindPickerEntity
         expected_output:
@@ -654,9 +592,6 @@ modules:
         expected_input:
           - CGameRules_FindPickerEntity.{platform}.yaml
           - CCSGameRules_vtable.{platform}.yaml
-        prerequisite:
-          - find-g_pGameRules-AND-CGameRules_FindPickerEntity
-          - find-CCSGameRules_vtable
         max_retries: 4
 
       - name: find-CCSGameRules_GoToIntermission
@@ -664,8 +599,6 @@ modules:
           - CCSGameRules_GoToIntermission.{platform}.yaml
         expected_input:
           - CCSGameRules_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSGameRules_vtable
 
       - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
         expected_output:
@@ -690,8 +623,6 @@ modules:
           - CCSPlayer_ItemServices_GiveNamedItem.{platform}.yaml
         expected_input:
           - CCSPlayer_ItemServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_ItemServices_vtable
 
       - name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon
         expected_output:
@@ -700,8 +631,6 @@ modules:
           - CCSPlayer_WeaponServices_EquipWeapon.{platform}.yaml
         expected_input:
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_WeaponServices_vtable
 
       - name: find-CCSPlayer_WeaponServices_Weapon_GetSlot
         expected_output:
@@ -712,8 +641,6 @@ modules:
           - CCSPlayerController_ChangeTeam.{platform}.yaml
         expected_input:
           - CCSPlayerController_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerController_vtable
 
       - name: find-CCSPlayerController_InventoryUpdateThink
         expected_output:
@@ -728,16 +655,12 @@ modules:
           - CCSGameRules__sm_mapGcBanInformation.{platform}.yaml
         expected_input:
           - CCSPlayerController_ResourceDataThink.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerController_ResourceDataThink
 
       - name: find-CBasePlayerController_Respawn
         expected_output:
           - CBasePlayerController_Respawn.{platform}.yaml
         expected_input:
           - CBasePlayerController_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerController_vtable
 
       - name: find-CCSPlayerController_Respawn
         expected_output:
@@ -745,9 +668,6 @@ modules:
         expected_input:
           - CCSPlayerController_vtable.{platform}.yaml
           - CBasePlayerController_Respawn.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerController_vtable
-          - find-CBasePlayerController_Respawn
 
       - name: find-CCSPlayerController_SwitchTeam
         expected_output:
@@ -758,8 +678,6 @@ modules:
           - CCSPlayerPawnBase_PostThink.{platform}.yaml
         expected_input:
           - CCSPlayerPawn_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerPawn_vtable
 
       - name: find-CSource2Server_Init-AND-CGameEventManager_Init-AND-gameeventmanager-AND-s_GameEventManager
         expected_output:
@@ -769,8 +687,6 @@ modules:
           - s_GameEventManager.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
-        prerequisite:
-          - find-CSource2Server_vtable
         max_retries: 6
 
       - name: find-CGameRules_ClientSettingsChanged
@@ -779,9 +695,6 @@ modules:
         expected_input:
           - CGameRules_vtable.{platform}.yaml
           - CCSGameRules_vtable.{platform}.yaml
-        prerequisite:
-          - find-CGameRules_vtable
-          - find-CCSGameRules_vtable
 
       - name: find-CTakeDamageInfo_GetWeaponName
         expected_output:
@@ -810,8 +723,6 @@ modules:
           - CBaseEntity_SetStateChanged.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
 
       - name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_WeaponServices_DropWeapon
         expected_output:
@@ -822,10 +733,6 @@ modules:
           - CBasePlayerPawn_vtable.{platform}.yaml
           - CCSPlayer_ItemServices_vtable.{platform}.yaml
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerPawn_vtable
-          - find-CCSPlayer_ItemServices_vtable
-          - find-CCSPlayer_WeaponServices_vtable
         max_retries: 6
 
       - name: find-CCSPlayer_ItemServices_RemoveWeapons
@@ -834,9 +741,6 @@ modules:
         expected_input:
           - CCSPlayerStateDeathAnim_vtable.{platform}.yaml
           - CCSPlayer_ItemServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayerStateDeathAnim_vtable
-          - find-CCSPlayer_ItemServices_vtable
         max_retries: 4
 
       - name: find-CCSPlayer_WeaponServices_SelectItem
@@ -844,8 +748,6 @@ modules:
           - CCSPlayer_WeaponServices_SelectItem.{platform}.yaml
         expected_input:
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
-        prerequisite:
-          - find-CCSPlayer_WeaponServices_vtable
         max_retries: 4
 
       - name: find-NetworkStateChanged
@@ -893,8 +795,6 @@ modules:
           - CCheckTransmitInfo_m_nPlayerSlot.{platform}.yaml
         expected_input:
           - CSource2GameEntities_vtable.{platform}.yaml
-        prerequisite:
-          - find-CSource2GameEntities_vtable
 
       - name: find-CBaseEntity_EmitSoundFilter
         expected_output:
@@ -905,8 +805,6 @@ modules:
           - CBaseEntity_Precache.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
 
       - name: find-CBaseEntity_EmitSoundParams
         expected_output:
@@ -921,8 +819,6 @@ modules:
           - CBasePlayerPawn_CommitSuicide.{platform}.yaml
         expected_input:
           - CBasePlayerPawn_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBasePlayerPawn_vtable
 
       - name: find-CBasePlayerPawn_RemovePlayerItem
         expected_output:
@@ -936,9 +832,6 @@ modules:
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
           - CBasePlayerPawn_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
-          - find-CBasePlayerPawn_vtable
 
       - name: find-CBasePlayerPawn_GetEyeAngles
         expected_output:
@@ -947,9 +840,6 @@ modules:
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
           - CBasePlayerPawn_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
-          - find-CBasePlayerPawn_vtable
 
       - name: find-CBaseEntity_SetOwner
         expected_output:
@@ -957,17 +847,12 @@ modules:
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
           - CCSPlayer_WeaponServices_EquipWeapon.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
-          - find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_EquipWeapon
 
       - name: find-CBaseEntity_Use
         expected_output:
           - CBaseEntity_Use.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
 
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
@@ -997,8 +882,6 @@ modules:
           - CVPhys2World_GetTouchingList.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
         max_retries: 6
 
       - name: find-CTriggerPush_Touch
@@ -1007,9 +890,6 @@ modules:
         expected_input:
           - CTriggerPush_vtable.{platform}.yaml
           - CBaseEntity_Touch.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
-          - find-CTriggerPush_vtable
 
       - name: find-CPhysBox_Use
         expected_output:
@@ -1017,25 +897,18 @@ modules:
         expected_input:
           - CBaseEntity_Use.{platform}.yaml
           - CPhysBox_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_Use
-          - find-CPhysBox_vtable
 
       - name: find-CPhysBox_Use_PatchCaller
         expected_output:
           - CPhysBox_Use_PatchCaller.{platform}.yaml
         expected_input:
           - CPhysBox_Use.{platform}.yaml
-        prerequisite:
-          - find-CPhysBox_Use
 
       - name: find-CBaseEntity_SetGroundEntity
         expected_output:
           - CBaseEntity_SetGroundEntity.{platform}.yaml
         expected_input:
           - CTriggerPush_Touch.{platform}.yaml
-        prerequisite:
-          - find-CTriggerPush_Touch
 
       - name: find-CBaseEntity_IsPlayerPawn-AND-CBaseEntity_IsPlayerController
         expected_output:
@@ -1043,16 +916,12 @@ modules:
           - CBaseEntity_IsPlayerController.{platform}.yaml
         expected_input:
           - ShowHudHint.{platform}.yaml
-        prerequisite:
-          - find-ShowHudHint
 
       - name: find-CBaseEntity_GetHammerUniqueId
         expected_output:
           - CBaseEntity_GetHammerUniqueId.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_vtable
 
       - name: find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
         expected_output:
@@ -1063,9 +932,6 @@ modules:
           - CBaseEntity_StartTouch.{platform}.yaml
           - CBaseEntity_Touch.{platform}.yaml
           - CBaseEntity_EndTouch.{platform}.yaml
-        prerequisite:
-          - find-CBaseTrigger_vtable
-          - find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
 
       - name: find-CBaseTrigger_PassesTriggerFilters
         expected_output:
@@ -1073,9 +939,6 @@ modules:
         expected_input:
           - CBaseTrigger_vtable.{platform}.yaml
           - CBaseTrigger_StartTouch.{platform}.yaml
-        prerequisite:
-          - find-CBaseTrigger_vtable
-          - find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
 
       - name: find-CGameSceneNode_GetSkeletonInstance
         expected_output:
@@ -1088,8 +951,6 @@ modules:
           - CPointTeleport_Teleport.{platform}.yaml
         expected_input:
           - CPointTeleport_vtable.{platform}.yaml
-        prerequisite:
-          - find-CPointTeleport_vtable
 
       - name: find-CBaseEntity_Teleport
         expected_output:
@@ -1097,17 +958,12 @@ modules:
         expected_input:
           - CPointTeleport_Teleport.{platform}.yaml
           - CBaseEntity_vtable.{platform}.yaml
-        prerequisite:
-          - find-CPointTeleport_Teleport
-          - find-CBaseEntity_vtable
 
       - name: find-CBaseEntity_CollisionRulesChanged
         expected_output:
           - CBaseEntity_CollisionRulesChanged.{platform}.yaml
         expected_input:
           - CBaseEntity_SetOwner.{platform}.yaml
-        prerequisite:
-          - find-CBaseEntity_SetOwner
 
       - name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
         expected_output:
@@ -1128,8 +984,6 @@ modules:
           - g_GameTraceManager.{platform}.yaml
         expected_input:
           - FindUseEntity.{platform}.yaml
-        prerequisite:
-          - find-FindUseEntity
 
       - name: find-TraceShape
         expected_output:
@@ -1167,8 +1021,6 @@ modules:
           - CCSBotManager_AddBot_BotNavIgnore.{platform}.yaml
         expected_input:
           - CCSBotManager_AddBot.{platform}.yaml
-        prerequisite:
-          - find-CCSBotManager_AddBot-AND-g_pCSBotManager-AND-g_pNavMesh
 
       - name: find-ShowHudHint
         expected_output:
