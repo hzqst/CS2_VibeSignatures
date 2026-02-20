@@ -143,6 +143,7 @@ modules:
           - IGameSystem_ClientPollNetworking.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPollNetworking.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -152,6 +153,7 @@ modules:
           - IGameSystem_ClientGamePostSimulate.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPostSimulate.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -161,6 +163,7 @@ modules:
           - IGameSystem_ClientPauseSimulate.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPauseSimulate.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -171,6 +174,7 @@ modules:
           - IGameSystem_ClientUpdate.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientSimulate.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -180,6 +184,7 @@ modules:
           - IGameSystem_ClientPostDataUpdate.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnPostDataUpdate.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -189,6 +194,7 @@ modules:
           - IGameSystem_GameFrameBoundary.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnFrameBoundary.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -198,6 +204,7 @@ modules:
           - IGameSystem_ClientAdvanceNonRenderedFrame.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientAdvanceNonRenderedFrame.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -207,6 +214,7 @@ modules:
           - IGameSystem_ClientFrameSimulate.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientFrameSimulate.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -216,6 +224,7 @@ modules:
           - IGameSystem_ClientAdvanceTick.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientAdvanceTick.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -225,6 +234,7 @@ modules:
           - IGameSystem_ClientPostAdvanceTick.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPostAdvanceTick.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -234,6 +244,7 @@ modules:
           - IGameSystem_ClientPostRender.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPostOutput.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -244,6 +255,7 @@ modules:
           - IGameSystem_ClientPreRenderEx.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPreOutput.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -253,6 +265,7 @@ modules:
           - IGameSystem_ClientPreEntityThink.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPreOutputParallelWithServer.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal_client
@@ -270,6 +283,7 @@ modules:
           - IGameSystem_Disconnect.{platform}.yaml
         expected_input:
           - CSource2Client_OnDisconnect.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
         prerequisite:
           - find-IGameSystem_vtable
           - find-CSource2Client_OnDisconnect
