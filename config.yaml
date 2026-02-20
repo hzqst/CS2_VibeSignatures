@@ -182,36 +182,6 @@ modules:
           - find-IGameSystem_vtable
           - find-CBuildCubemapsGameSystem_ClientPostRender
 
-      - name: find-CLightQueryGameSystem_vtable
-        expected_output:
-          - CLightQueryGameSystem_vtable.{platform}.yaml
-
-      - name: find-CLightQueryGameSystem_OnPostSimulate
-        expected_output:
-          - CLightQueryGameSystem_OnPostSimulate.{platform}.yaml
-
-      - name: find-CLightQueryGameSystem_ServerGamePostSimulate-AND-CLightQueryGameSystem_ClientGamePostSimulate
-        expected_output:
-          - CLightQueryGameSystem_ServerGamePostSimulate.{platform}.yaml
-          - CLightQueryGameSystem_ClientGamePostSimulate.{platform}.yaml
-        expected_input:
-          - CLightQueryGameSystem_OnPostSimulate.{platform}.yaml
-          - CLightQueryGameSystem_vtable.{platform}.yaml
-        prerequisite:
-          - find-CLightQueryGameSystem_vtable
-          - find-CLightQueryGameSystem_OnPostSimulate
-
-      - name: find-IGameSystem_ServerGamePostSimulate-AND-IGameSystem_ClientGamePostSimulate
-        expected_output:
-          - IGameSystem_ServerGamePostSimulate.{platform}.yaml
-          - IGameSystem_ClientGamePostSimulate.{platform}.yaml
-        expected_input:
-          - CLightQueryGameSystem_ServerGamePostSimulate.{platform}.yaml
-          - CLightQueryGameSystem_ClientGamePostSimulate.{platform}.yaml
-        prerequisite:
-          - find-IGameSystem_vtable
-          - find-CLightQueryGameSystem_ServerGamePostSimulate-AND-CLightQueryGameSystem_ClientGamePostSimulate
-
       - name: find-CLoopModeGame_RegisterEventMapInternal
         expected_output:
           - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
@@ -354,24 +324,6 @@ modules:
         category: vfunc
         alias:
           - CBuildCubemapsGameSystem::ClientPostRender
-
-      - name: CLightQueryGameSystem_vtable
-        category: vtable
-
-      - name: CLightQueryGameSystem_OnPostSimulate
-        category: func
-        alias:
-          - CLightQueryGameSystem::OnPostSimulate
-
-      - name: CLightQueryGameSystem_ServerGamePostSimulate
-        category: vfunc
-        alias:
-          - CLightQueryGameSystem::ServerGamePostSimulate
-
-      - name: CLightQueryGameSystem_ClientGamePostSimulate
-        category: vfunc
-        alias:
-          - CLightQueryGameSystem::ClientGamePostSimulate
 
       - name: CLoopModeGame_RegisterEventMapInternal
         category: func

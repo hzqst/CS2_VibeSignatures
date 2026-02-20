@@ -1,7 +1,0 @@
-func_name: CLightQueryGameSystem_ServerGamePostSimulate
-func_va: '0x18036bf20'
-func_rva: '0x36bf20'
-func_size: '0x5'
-vtable_name: CLightQueryGameSystem
-vfunc_offset: '0x128'
-vfunc_index: 37
