@@ -280,6 +280,16 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_PreClientUpdate-AND-IGameSystem_ClientUpdate
+        expected_output:
+          - IGameSystem_PreClientUpdate.{platform}.yaml
+          - IGameSystem_ClientUpdate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientSimulate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -365,6 +375,16 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::ClientPauseSimulate
+
+      - name: IGameSystem_PreClientUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::PreClientUpdate
+
+      - name: IGameSystem_ClientUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientUpdate
 
       - name: CLoopModeGame_OnClientAdvanceTick
         category: func
