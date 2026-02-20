@@ -1005,6 +1005,24 @@ modules:
         expected_output:
           - CSpawnGroupMgrGameSystem_GetSpawnGroups.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal.{platform}.yaml
+
+      - name: find-IGameSystem_PreSpawnGroupLoad
+        expected_output:
+          - IGameSystem_PreSpawnGroupLoad.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_PostSpawnGroupLoad
+        expected_output:
+          - IGameSystem_PostSpawnGroupLoad.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
       - name: find-FindUseEntity
         expected_output:
           - FindUseEntity.{platform}.yaml
@@ -1730,6 +1748,22 @@ modules:
         alias:
           - CSpawnGroupMgrGameSystem::GetSpawnGroups
           - GetSpawnGroups
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
+        category: func
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupSpawnEntitiesInternal
+          - SpawnGroupSpawnEntitiesInternal
+
+      - name: IGameSystem_PreSpawnGroupLoad
+        category: vfunc
+        alias:
+          - IGameSystem::PreSpawnGroupLoad
+
+      - name: IGameSystem_PostSpawnGroupLoad
+        category: vfunc
+        alias:
+          - IGameSystem::PostSpawnGroupLoad
 
       - name: FindUseEntity
         category: func
