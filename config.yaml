@@ -262,6 +262,24 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_ClientGamePostSimulate
+        expected_output:
+          - IGameSystem_ClientGamePostSimulate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPostSimulate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
+      - name: find-IGameSystem_ClientPauseSimulate
+        expected_output:
+          - IGameSystem_ClientPauseSimulate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPauseSimulate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -337,6 +355,16 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::ClientPollNetworking
+
+      - name: IGameSystem_ClientGamePostSimulate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientGamePostSimulate
+
+      - name: IGameSystem_ClientPauseSimulate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPauseSimulate
 
       - name: CLoopModeGame_OnClientAdvanceTick
         category: func
