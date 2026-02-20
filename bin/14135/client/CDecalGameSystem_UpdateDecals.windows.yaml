@@ -1,5 +1,0 @@
-func_name: CDecalGameSystem_UpdateDecals
-func_va: '0x180382b70'
-func_rva: '0x382b70'
-func_size: '0x341'
-func_sig: 48 89 5C 24 ?? 55 56 57 41 56 41 57 48 83 EC ?? 48 8D 05 ?? ?? ?? ??
