@@ -77,14 +77,23 @@ async def _call_py_eval_json(session, code, debug=False, error_label="py_eval"):
         return None
 
 
-def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper):
-    """Build a platform-aware py_eval script for extracting vfunc entries."""
+def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper, platform):
+    """Build a platform-aware py_eval script for extracting vfunc entries.
+
+    Windows uses ``lea rdx, callback`` to pass function-pointer callbacks,
+    then each callback contains ``call/jmp [reg+vfunc_offset]``.
+
+    Linux uses ``mov esi/rsi, imm`` (odd immediate > 1) followed by ``call``
+    where ``imm - 1`` equals the vfunc byte-offset.
+    """
     wrapper_flag = 1 if via_internal_wrapper else 0
+    is_windows = 1 if platform == "windows" else 0
     return (
         "import idaapi, idautils, idc, json\n"
         f"func_addr = {source_func_va}\n"
         f"target_count = {target_count}\n"
         f"use_wrapper = {wrapper_flag}\n"
+        f"is_windows = {is_windows}\n"
         "func = idaapi.get_func(func_addr)\n"
         "result_obj = None\n"
         "if func:\n"
@@ -104,46 +113,46 @@ def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper):
         "            search_func = None\n"
         "\n"
         "    if search_func:\n"
-        "        lea_targets = []\n"
-        "        for head in idautils.Heads(search_func.start_ea, search_func.end_ea):\n"
-        "            if idc.print_insn_mnem(head) == 'lea' and idc.print_operand(head, 0) == 'rdx':\n"
-        "                target = idc.get_operand_value(head, 1)\n"
-        "                if idaapi.get_func(target):\n"
-        "                    lea_targets.append(target)\n"
-        "                    if len(lea_targets) == target_count:\n"
+        "        entries = []\n"
+        "        if is_windows:\n"
+        "            lea_targets = []\n"
+        "            for head in idautils.Heads(search_func.start_ea, search_func.end_ea):\n"
+        "                if idc.print_insn_mnem(head) == 'lea' and idc.print_operand(head, 0) == 'rdx':\n"
+        "                    target = idc.get_operand_value(head, 1)\n"
+        "                    if idaapi.get_func(target):\n"
+        "                        lea_targets.append(target)\n"
+        "                        if len(lea_targets) == target_count:\n"
+        "                            break\n"
+        "\n"
+        "            if len(lea_targets) == target_count:\n"
+        "                for t in lea_targets:\n"
+        "                    gef = idaapi.get_func(t)\n"
+        "                    if not gef:\n"
+        "                        break\n"
+        "                    found = False\n"
+        "                    for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
+        "                        mnem = idc.print_insn_mnem(head)\n"
+        "                        if mnem in ('call', 'jmp'):\n"
+        "                            insn = idaapi.insn_t()\n"
+        "                            if idaapi.decode_insn(insn, head):\n"
+        "                                op = insn.ops[0]\n"
+        "                                if op.type == idaapi.o_displ:\n"
+        "                                    entries.append({\n"
+        "                                        'game_event_addr': hex(t),\n"
+        "                                        'vfunc_offset': op.addr,\n"
+        "                                        'vfunc_index': op.addr // 8,\n"
+        "                                    })\n"
+        "                                    found = True\n"
+        "                                    break\n"
+        "                    if not found:\n"
         "                        break\n"
         "\n"
-        "        entries = []\n"
-        "        if len(lea_targets) == target_count:\n"
-        "            for t in lea_targets:\n"
-        "                gef = idaapi.get_func(t)\n"
-        "                if not gef:\n"
-        "                    break\n"
-        "                found = False\n"
-        "                for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
-        "                    mnem = idc.print_insn_mnem(head)\n"
-        "                    if mnem in ('call', 'jmp'):\n"
-        "                        insn = idaapi.insn_t()\n"
-        "                        if idaapi.decode_insn(insn, head):\n"
-        "                            op = insn.ops[0]\n"
-        "                            if op.type == idaapi.o_displ:\n"
-        "                                entries.append({\n"
-        "                                    'game_event_addr': hex(t),\n"
-        "                                    'vfunc_offset': op.addr,\n"
-        "                                    'vfunc_index': op.addr // 8,\n"
-        "                                })\n"
-        "                                found = True\n"
-        "                                break\n"
-        "                if not found:\n"
-        "                    break\n"
-        "\n"
-        "            if len(entries) == target_count:\n"
-        "                result_obj = {'entries': entries}\n"
-        "                if internal_addr is not None:\n"
-        "                    result_obj['internal_addr'] = hex(internal_addr)\n"
+        "                if len(entries) == target_count:\n"
+        "                    result_obj = {'entries': entries}\n"
+        "                    if internal_addr is not None:\n"
+        "                        result_obj['internal_addr'] = hex(internal_addr)\n"
         "\n"
         "        else:\n"
-        "            entries = []\n"
         "            last_esi_imm = None\n"
         "            for head in idautils.Heads(search_func.start_ea, search_func.end_ea):\n"
         "                mnem = idc.print_insn_mnem(head)\n"
@@ -206,6 +215,7 @@ async def preprocess_igamesystem_dispatch_skill(
     via_internal_wrapper,
     internal_rename_to,
     multi_order,
+    entry_start_index=0,
     debug=False,
 ):
     """Common preprocess routine for dispatch-like IGameSystem skills.
@@ -223,6 +233,9 @@ async def preprocess_igamesystem_dispatch_skill(
         via_internal_wrapper: Whether source function first jumps/calls an internal func.
         internal_rename_to: Optional rename for resolved internal wrapper function.
         multi_order: "scan" or "index" for multi-target mapping order.
+        entry_start_index: 0-based offset in extracted dispatch entries before
+            mapping to target_specs. Useful when a skill needs the 2nd/3rd
+            dispatcher callback rather than the 1st.
         debug: Enable debug logs.
     """
     if yaml is None:
@@ -255,6 +268,19 @@ async def preprocess_igamesystem_dispatch_skill(
         )
 
     target_count = len(normalized_specs)
+    try:
+        entry_start_index = _parse_int(entry_start_index)
+    except Exception:
+        if debug:
+            print(f"    Preprocess: invalid entry_start_index: {entry_start_index}")
+        return False
+
+    if entry_start_index < 0:
+        if debug:
+            print(f"    Preprocess: entry_start_index must be >= 0, got {entry_start_index}")
+        return False
+
+    query_count = target_count + entry_start_index
     if target_count > 1 and multi_order not in ("scan", "index"):
         if debug:
             print(f"    Preprocess: invalid multi_order: {multi_order}")
@@ -306,8 +332,9 @@ async def preprocess_igamesystem_dispatch_skill(
 
     py_code = _build_dispatch_py_eval(
         source_func_va=src_func_va,
-        target_count=target_count,
+        target_count=query_count,
         via_internal_wrapper=via_internal_wrapper,
+        platform=platform,
     )
 
     parsed = await _call_py_eval_json(
@@ -323,10 +350,20 @@ async def preprocess_igamesystem_dispatch_skill(
         return False
 
     entries = parsed.get("entries")
-    if not isinstance(entries, list) or len(entries) != target_count:
+    if not isinstance(entries, list) or len(entries) != query_count:
         if debug:
             print(f"    Preprocess: invalid entry count from {source_yaml_stem}")
         return False
+
+    if entry_start_index:
+        entries = entries[entry_start_index:entry_start_index + target_count]
+        if len(entries) != target_count:
+            if debug:
+                print(
+                    "    Preprocess: insufficient entries after applying "
+                    f"entry_start_index={entry_start_index}"
+                )
+            return False
 
     internal_addr = parsed.get("internal_addr")
     if target_count > 1 and multi_order == "index":
