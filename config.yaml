@@ -278,6 +278,51 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_GameFrameBoundary
+        expected_output:
+          - IGameSystem_GameFrameBoundary.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnFrameBoundary.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
+      - name: find-IGameSystem_ClientAdvanceNonRenderedFrame
+        expected_output:
+          - IGameSystem_ClientAdvanceNonRenderedFrame.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientAdvanceNonRenderedFrame.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
+      - name: find-IGameSystem_ClientFrameSimulate
+        expected_output:
+          - IGameSystem_ClientFrameSimulate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientFrameSimulate.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
+      - name: find-IGameSystem_ClientAdvanceTick
+        expected_output:
+          - IGameSystem_ClientAdvanceTick.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientAdvanceTick.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
+      - name: find-IGameSystem_ClientPostAdvanceTick
+        expected_output:
+          - IGameSystem_ClientPostAdvanceTick.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPostAdvanceTick.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
@@ -340,36 +385,6 @@ modules:
         category: func
         alias:
           - CLoopModeGame::OnClientPollNetworking
-
-      - name: IGameSystem_ClientPollNetworking
-        category: vfunc
-        alias:
-          - IGameSystem::ClientPollNetworking
-
-      - name: IGameSystem_ClientGamePostSimulate
-        category: vfunc
-        alias:
-          - IGameSystem::ClientGamePostSimulate
-
-      - name: IGameSystem_ClientPauseSimulate
-        category: vfunc
-        alias:
-          - IGameSystem::ClientPauseSimulate
-
-      - name: IGameSystem_PreClientUpdate
-        category: vfunc
-        alias:
-          - IGameSystem::PreClientUpdate
-
-      - name: IGameSystem_ClientUpdate
-        category: vfunc
-        alias:
-          - IGameSystem::ClientUpdate
-
-      - name: IGameSystem_ClientPostDataUpdate
-        category: vfunc
-        alias:
-          - IGameSystem::ClientPostDataUpdate
 
       - name: CLoopModeGame_OnClientAdvanceTick
         category: func
@@ -440,6 +455,61 @@ modules:
         category: func
         alias:
           - CLoopModeGame::OnFrameBoundary
+
+      - name: IGameSystem_ClientPollNetworking
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPollNetworking
+
+      - name: IGameSystem_ClientGamePostSimulate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientGamePostSimulate
+
+      - name: IGameSystem_ClientPauseSimulate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPauseSimulate
+
+      - name: IGameSystem_PreClientUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::PreClientUpdate
+
+      - name: IGameSystem_ClientUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientUpdate
+
+      - name: IGameSystem_ClientPostDataUpdate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPostDataUpdate
+
+      - name: IGameSystem_GameFrameBoundary
+        category: vfunc
+        alias:
+          - IGameSystem::GameFrameBoundary
+
+      - name: IGameSystem_ClientAdvanceNonRenderedFrame
+        category: vfunc
+        alias:
+          - IGameSystem::ClientAdvanceNonRenderedFrame
+
+      - name: IGameSystem_ClientFrameSimulate
+        category: vfunc
+        alias:
+          - IGameSystem::ClientFrameSimulate
+
+      - name: IGameSystem_ClientAdvanceTick
+        category: vfunc
+        alias:
+          - IGameSystem::ClientAdvanceTick
+
+      - name: IGameSystem_ClientPostAdvanceTick
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPostAdvanceTick
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
