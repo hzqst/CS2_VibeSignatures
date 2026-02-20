@@ -4,9 +4,12 @@
 Programmatically determines IGameSystem_ClientPreEntityThink by:
 1. Reading CLoopModeGame_OnClientPreOutputParallelWithServer func_va from its YAML.
 2. Finding the first call target (= CLoopModeGame_OnClientPreOutputParallelWithServerInternal).
-3. Finding `lea rdx, sub_XXXXXXX` in the internal function (= GameSystem_OnClientPreEntityThink).
-4. Finding the virtual call offset inside GameSystem_OnClientPreEntityThink.
-5. Resolving the IGameSystem vtable entry at that offset.
+3. Platform-specific vfunc offset extraction from the internal function:
+   - Windows: Finding `lea rdx, sub_XXXXXXX` (= GameSystem_OnClientPreEntityThink callback),
+     then extracting the vfunc offset from its `call/jmp [rax+offset]`.
+   - Linux: Finding `mov esi, <odd_imm>` before the dispatcher call,
+     where vfunc_offset = imm - 1.
+4. Resolving the IGameSystem vtable entry at that offset.
 """
 
 import json
@@ -91,7 +94,10 @@ async def preprocess_skill(
 
     # 3. CLoopModeGame_OnClientPreOutputParallelWithServer is a thin wrapper that calls
     #    CLoopModeGame_OnClientPreOutputParallelWithServerInternal. Find that internal
-    #    function, then find `lea rdx, sub_XXXXXXX` inside it and extract the vfunc offset.
+    #    function, then extract the vfunc offset (platform-aware).
+    #
+    # Windows: internal func has `lea rdx, sub_XXX` → callback → `call/jmp [rax+offset]`
+    # Linux:   internal func has `mov esi, <odd_imm>` → dispatcher call
     py_code = (
         "import idaapi, idautils, idc, json\n"
         f"func_addr = {src_func_va}\n"
@@ -109,6 +115,7 @@ async def preprocess_skill(
         "    if internal_addr:\n"
         "        ifunc = idaapi.get_func(internal_addr)\n"
         "        if ifunc:\n"
+        "            # Try Windows pattern: lea rdx, sub_XXX in internal func\n"
         "            game_system_addr = None\n"
         "            for head in idautils.Heads(ifunc.start_ea, ifunc.end_ea):\n"
         "                if idc.print_insn_mnem(head) == 'lea' and idc.print_operand(head, 0) == 'rdx':\n"
@@ -133,6 +140,27 @@ async def preprocess_skill(
         "                                        'vfunc_index': op.addr // 8\n"
         "                                    })\n"
         "                                    break\n"
+        "            else:\n"
+        "                # Linux pattern: mov esi, <odd_imm> before dispatcher call\n"
+        "                last_esi_imm = None\n"
+        "                for head in idautils.Heads(ifunc.start_ea, ifunc.end_ea):\n"
+        "                    mnem = idc.print_insn_mnem(head)\n"
+        "                    if mnem == 'mov':\n"
+        "                        op0 = idc.print_operand(head, 0)\n"
+        "                        if op0 in ('esi', 'rsi'):\n"
+        "                            insn = idaapi.insn_t()\n"
+        "                            if idaapi.decode_insn(insn, head):\n"
+        "                                op = insn.ops[1]\n"
+        "                                if op.type == idaapi.o_imm and (op.value & 1) != 0 and op.value > 1:\n"
+        "                                    last_esi_imm = op.value\n"
+        "                    elif mnem == 'call' and last_esi_imm is not None:\n"
+        "                        vfunc_off = last_esi_imm - 1\n"
+        "                        result = json.dumps({\n"
+        "                            'internal_addr': hex(internal_addr),\n"
+        "                            'vfunc_offset': vfunc_off,\n"
+        "                            'vfunc_index': vfunc_off // 8\n"
+        "                        })\n"
+        "                        break\n"
     )
 
     try:

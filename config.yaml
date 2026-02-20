@@ -241,6 +241,10 @@ modules:
           - CSource2Client_OnDisconnect.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
 
+      - name: find-CGameEntitySystem_vtable
+        expected_output:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
     symbols:
 
       - name: CLoopModeGame_RegisterEventMapInternal
@@ -414,6 +418,9 @@ modules:
         alias:
           - IGameSystem::ClientPreEntityThink
 
+      - name: CGameEntitySystem_vtable
+        category: vtable
+
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
     path_linux: game/csgo/bin/linuxsteamrt64/libserver.so
@@ -430,6 +437,14 @@ modules:
       - name: find-CSpawnGroupMgrGameSystem_vtable
         expected_output:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_vtable
+        expected_output:
+          - IGameSystem_vtable.{platform}.yaml
+
+      - name: find-CGameEntitySystem_vtable
+        expected_output:
+          - CGameEntitySystem_vtable.{platform}.yaml
 
       - name: find-CGameRules_vtable
         expected_output:
@@ -869,6 +884,22 @@ modules:
       - name: find-CGameEntitySystem_FindEntityByName
         expected_output:
           - CGameEntitySystem_FindEntityByName.{platform}.yaml
+
+      - name: find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
+        expected_output:
+          - CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_BuildGameSessionManifest
+        expected_output:
+          - IGameSystem_BuildGameSessionManifest.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
 
       - name: find-LegacyGameEventListener
         expected_output:
@@ -1553,6 +1584,22 @@ modules:
         category: func
         alias:
           - CGameEntitySystem::FindEntityByName
+
+      - name: IGameSystem_vtable
+        category: vtable
+
+      - name: CGameEntitySystem_vtable
+        category: vtable
+
+      - name: CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
+        category: vfunc
+        alias:
+          - CGameEntitySystem::BuildResourceManifest_ManifestNameOrGroupName
+
+      - name: IGameSystem_BuildGameSessionManifest
+        category: vfunc
+        alias:
+          - IGameSystem::BuildGameSessionManifest
 
       - name: LegacyGameEventListener
         category: func

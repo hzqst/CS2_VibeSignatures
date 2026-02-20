@@ -3,10 +3,11 @@
 
 Programmatically determines IGameSystem_PreClientUpdate and IGameSystem_ClientUpdate by:
 1. Reading CLoopModeGame_OnClientSimulate func_va from its YAML.
-2. Finding the first two `lea rdx, sub_XXXXXXX` in that function:
-   - 1st = GameSystem_OnPreClientUpdate
-   - 2nd = GameSystem_OnClientUpdate
-3. Finding the virtual call offset inside each GameSystem function.
+2. Platform-specific vfunc offset extraction:
+   - Windows: Finding the first two `lea rdx, sub_XXXXXXX` targets and extracting vfunc offsets.
+   - Linux: Finding two `mov esi, <odd_imm>` + dispatcher call pairs,
+     where vfunc_offset = imm - 1 for each.
+3. 1st entry = IGameSystem_PreClientUpdate, 2nd = IGameSystem_ClientUpdate.
 4. Resolving the IGameSystem vtable entries at those offsets.
 """
 
@@ -90,13 +91,17 @@ async def preprocess_skill(
         except (TypeError, ValueError):
             pass
 
-    # 3. Use py_eval to find the first two `lea rdx, sub_XXXXXXX` targets and their vfunc offsets
+    # 3. Use py_eval to find the two vfunc offsets (platform-aware)
+    #
+    # Windows: two `lea rdx, sub_XXX` → callbacks → `call/jmp [rax+offset]`
+    # Linux:   two `mov esi, <odd_imm>` → dispatcher calls
     py_code = (
         "import idaapi, idautils, idc, json\n"
         f"func_addr = {src_func_va}\n"
         "func = idaapi.get_func(func_addr)\n"
         "result = json.dumps(None)\n"
         "if func:\n"
+        "    # Try Windows pattern: two lea rdx, sub_XXX\n"
         "    lea_targets = []\n"
         "    for head in idautils.Heads(func.start_ea, func.end_ea):\n"
         "        if idc.print_insn_mnem(head) == 'lea' and idc.print_operand(head, 0) == 'rdx':\n"
@@ -105,25 +110,51 @@ async def preprocess_skill(
         "                lea_targets.append(target)\n"
         "                if len(lea_targets) == 2:\n"
         "                    break\n"
-        "    entries = []\n"
-        "    for t in lea_targets:\n"
-        "        gef = idaapi.get_func(t)\n"
-        "        if gef:\n"
-        "            for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
-        "                mnem = idc.print_insn_mnem(head)\n"
-        "                if mnem in ('call', 'jmp'):\n"
+        "    if len(lea_targets) == 2:\n"
+        "        entries = []\n"
+        "        for t in lea_targets:\n"
+        "            gef = idaapi.get_func(t)\n"
+        "            if gef:\n"
+        "                for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
+        "                    mnem = idc.print_insn_mnem(head)\n"
+        "                    if mnem in ('call', 'jmp'):\n"
+        "                        insn = idaapi.insn_t()\n"
+        "                        if idaapi.decode_insn(insn, head):\n"
+        "                            op = insn.ops[0]\n"
+        "                            if op.type == idaapi.o_displ:\n"
+        "                                entries.append({\n"
+        "                                    'game_event_addr': hex(t),\n"
+        "                                    'vfunc_offset': op.addr,\n"
+        "                                    'vfunc_index': op.addr // 8\n"
+        "                                })\n"
+        "                                break\n"
+        "        if len(entries) == 2:\n"
+        "            result = json.dumps(entries)\n"
+        "    else:\n"
+        "        # Linux pattern: two mov esi, <odd_imm> + call pairs\n"
+        "        entries = []\n"
+        "        last_esi_imm = None\n"
+        "        for head in idautils.Heads(func.start_ea, func.end_ea):\n"
+        "            mnem = idc.print_insn_mnem(head)\n"
+        "            if mnem == 'mov':\n"
+        "                op0 = idc.print_operand(head, 0)\n"
+        "                if op0 in ('esi', 'rsi'):\n"
         "                    insn = idaapi.insn_t()\n"
         "                    if idaapi.decode_insn(insn, head):\n"
-        "                        op = insn.ops[0]\n"
-        "                        if op.type == idaapi.o_displ:\n"
-        "                            entries.append({\n"
-        "                                'game_event_addr': hex(t),\n"
-        "                                'vfunc_offset': op.addr,\n"
-        "                                'vfunc_index': op.addr // 8\n"
-        "                            })\n"
-        "                            break\n"
-        "    if len(entries) == 2:\n"
-        "        result = json.dumps(entries)\n"
+        "                        op = insn.ops[1]\n"
+        "                        if op.type == idaapi.o_imm and (op.value & 1) != 0 and op.value > 1:\n"
+        "                            last_esi_imm = op.value\n"
+        "            elif mnem == 'call' and last_esi_imm is not None:\n"
+        "                vfunc_off = last_esi_imm - 1\n"
+        "                entries.append({\n"
+        "                    'vfunc_offset': vfunc_off,\n"
+        "                    'vfunc_index': vfunc_off // 8\n"
+        "                })\n"
+        "                last_esi_imm = None\n"
+        "                if len(entries) == 2:\n"
+        "                    break\n"
+        "        if len(entries) == 2:\n"
+        "            result = json.dumps(entries)\n"
     )
 
     try:

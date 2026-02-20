@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-IGameSystem_ClientAdvanceNonRenderedFrame skill.
+"""Preprocess script for find-IGameSystem_BuildGameSessionManifest skill.
 
-Programmatically determines IGameSystem_ClientAdvanceNonRenderedFrame by:
-1. Reading CLoopModeGame_OnClientAdvanceNonRenderedFrame func_va from its YAML.
+Programmatically determines IGameSystem_BuildGameSessionManifest by:
+1. Reading CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName func_va from its YAML.
 2. Platform-specific vfunc offset extraction:
-   - Windows: Finding `lea rdx, sub_XXXXXXX` (= GameSystem_OnClientAdvanceNonRenderedFrame callback),
+   - Windows: Finding `lea rdx, sub_XXXXXXX` (= GameEvent_OnBuildGameSessionManifest callback),
      then extracting the vfunc offset from its `call/jmp [rax+offset]`.
    - Linux: Finding `mov esi, <odd_imm>` before the dispatcher call,
-     where vfunc_offset = imm - 1.
+     where vfunc_offset = imm - 1 (the dispatcher uses `a2 & 1` as flag and `a2 - 1` as offset).
 3. Resolving the IGameSystem vtable entry at that offset.
 """
 
@@ -32,7 +32,7 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Resolve IGameSystem_ClientAdvanceNonRenderedFrame from CLoopModeGame_OnClientAdvanceNonRenderedFrame."""
+    """Resolve IGameSystem_BuildGameSessionManifest from CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName."""
     _ = skill_name
 
     if yaml is None:
@@ -47,22 +47,15 @@ async def preprocess_skill(
         except Exception:
             return None
 
-    def _parse_int(value):
-        if isinstance(value, int):
-            return value
-        if isinstance(value, str):
-            return int(value.strip(), 0)
-        return int(value)
-
-    # 1. Read CLoopModeGame_OnClientAdvanceNonRenderedFrame YAML to get func_va
+    # 1. Read CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName YAML to get func_va
     src_path = os.path.join(
         new_binary_dir,
-        f"CLoopModeGame_OnClientAdvanceNonRenderedFrame.{platform}.yaml",
+        f"CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml",
     )
     src_data = _read_yaml(src_path)
     if not isinstance(src_data, dict) or not src_data.get("func_va"):
         if debug:
-            print("    Preprocess: failed to read CLoopModeGame_OnClientAdvanceNonRenderedFrame YAML")
+            print("    Preprocess: failed to read CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName YAML")
         return False
 
     src_func_va = str(src_data["func_va"])
@@ -173,7 +166,7 @@ async def preprocess_skill(
 
     if not isinstance(vfunc_info, dict):
         if debug:
-            print("    Preprocess: failed to determine vfunc offset from CLoopModeGame_OnClientAdvanceNonRenderedFrame")
+            print("    Preprocess: failed to determine vfunc offset from CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName")
         return False
 
     vfunc_offset = vfunc_info["vfunc_offset"]
@@ -183,16 +176,16 @@ async def preprocess_skill(
     if debug:
         print(f"    Preprocess: found vfunc_offset=0x{vfunc_offset:X}, vfunc_index={vfunc_index}")
 
-    # 3b. Rename GameSystem_OnClientAdvanceNonRenderedFrame in IDA
+    # 3b. Rename GameEvent_OnBuildGameSessionManifest in IDA (Windows only)
     if game_event_addr:
         try:
             await session.call_tool(
                 name="rename",
-                arguments={"batch": {"func": {"addr": game_event_addr, "name": "GameSystem_OnClientAdvanceNonRenderedFrame"}}},
+                arguments={"batch": {"func": {"addr": game_event_addr, "name": "GameEvent_OnBuildGameSessionManifest"}}},
             )
         except Exception:
             if debug:
-                print("    Preprocess: failed to rename GameSystem_OnClientAdvanceNonRenderedFrame (non-fatal)")
+                print("    Preprocess: failed to rename GameEvent_OnBuildGameSessionManifest (non-fatal)")
 
     # 4. Look up function address in IGameSystem vtable
     target_addr_hex = vtable_entries.get(vfunc_index)
@@ -235,7 +228,7 @@ async def preprocess_skill(
 
     if not isinstance(func_info, dict):
         if debug:
-            print("    Preprocess: failed to query function info for IGameSystem_ClientAdvanceNonRenderedFrame")
+            print("    Preprocess: failed to query function info for IGameSystem_BuildGameSessionManifest")
         return False
 
     func_va_hex = func_info.get("func_va")
@@ -253,7 +246,7 @@ async def preprocess_skill(
         return False
 
     # 6. Build and write output YAML
-    target_name = "IGameSystem_ClientAdvanceNonRenderedFrame"
+    target_name = "IGameSystem_BuildGameSessionManifest"
     payload = {
         "func_name": target_name,
         "func_va": str(func_va_hex),

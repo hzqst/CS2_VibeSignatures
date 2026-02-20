@@ -3,9 +3,12 @@
 
 Programmatically determines IGameSystem_ClientPollNetworking by:
 1. Reading CLoopModeGame_OnClientPollNetworking func_va from its YAML.
-2. Finding `lea rdx, sub_XXXXXXX` in that function (= GameEvent_OnClientPollNetworking).
-3. Finding the virtual call offset inside GameEvent_OnClientPollNetworking.
-4. Resolving the IGameSystem vtable entry at that offset.
+2. Platform-specific vfunc offset extraction:
+   - Windows: Finding `lea rdx, sub_XXXXXXX` (= GameEvent_OnClientPollNetworking callback),
+     then extracting the vfunc offset from its `call/jmp [rax+offset]`.
+   - Linux: Finding `mov esi, <odd_imm>` before the dispatcher call,
+     where vfunc_offset = imm - 1.
+3. Resolving the IGameSystem vtable entry at that offset.
 """
 
 import json
@@ -88,14 +91,21 @@ async def preprocess_skill(
         except (TypeError, ValueError):
             pass
 
-    # 3. Use py_eval to find GameEvent_OnClientPollNetworking and its vfunc offset
-    #    GameEvent function uses tail-call: `jmp qword ptr [rax+offset]` (not `call`).
+    # 3. Use py_eval to extract vfunc offset (platform-aware)
+    #
+    # Windows: `lea rdx, sub_XXX` loads callback pointer; callback does
+    #          `jmp/call [rax+offset]` where offset is the vfunc byte offset.
+    #
+    # Linux:   Dispatcher is called with `mov esi, <odd_imm>` where
+    #          vfunc_offset = imm - 1 (dispatcher uses `a2 & 1` as flag,
+    #          `a2 - 1` as vtable byte offset).
     py_code = (
         "import idaapi, idautils, idc, json\n"
         f"func_addr = {src_func_va}\n"
         "func = idaapi.get_func(func_addr)\n"
         "result = json.dumps(None)\n"
         "if func:\n"
+        "    # Try Windows pattern: lea rdx, sub_XXX\n"
         "    game_event_addr = None\n"
         "    for head in idautils.Heads(func.start_ea, func.end_ea):\n"
         "        if idc.print_insn_mnem(head) == 'lea' and idc.print_operand(head, 0) == 'rdx':\n"
@@ -119,6 +129,26 @@ async def preprocess_skill(
         "                                'vfunc_index': op.addr // 8\n"
         "                            })\n"
         "                            break\n"
+        "    else:\n"
+        "        # Linux pattern: mov esi, <odd_imm> before dispatcher call\n"
+        "        last_esi_imm = None\n"
+        "        for head in idautils.Heads(func.start_ea, func.end_ea):\n"
+        "            mnem = idc.print_insn_mnem(head)\n"
+        "            if mnem == 'mov':\n"
+        "                op0 = idc.print_operand(head, 0)\n"
+        "                if op0 in ('esi', 'rsi'):\n"
+        "                    insn = idaapi.insn_t()\n"
+        "                    if idaapi.decode_insn(insn, head):\n"
+        "                        op = insn.ops[1]\n"
+        "                        if op.type == idaapi.o_imm and (op.value & 1) != 0 and op.value > 1:\n"
+        "                            last_esi_imm = op.value\n"
+        "            elif mnem == 'call' and last_esi_imm is not None:\n"
+        "                vfunc_off = last_esi_imm - 1\n"
+        "                result = json.dumps({\n"
+        "                    'vfunc_offset': vfunc_off,\n"
+        "                    'vfunc_index': vfunc_off // 8\n"
+        "                })\n"
+        "                break\n"
     )
 
     try:
