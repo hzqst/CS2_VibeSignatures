@@ -114,6 +114,7 @@ async def preprocess_skill(
         "                        op = insn.ops[0]\n"
         "                        if op.type == idaapi.o_displ:\n"
         "                            result = json.dumps({\n"
+        "                                'game_event_addr': hex(game_event_addr),\n"
         "                                'vfunc_offset': op.addr,\n"
         "                                'vfunc_index': op.addr // 8\n"
         "                            })\n"
@@ -147,9 +148,21 @@ async def preprocess_skill(
 
     vfunc_offset = vfunc_info["vfunc_offset"]
     vfunc_index = vfunc_info["vfunc_index"]
+    game_event_addr = vfunc_info.get("game_event_addr")
 
     if debug:
         print(f"    Preprocess: found vfunc_offset=0x{vfunc_offset:X}, vfunc_index={vfunc_index}")
+
+    # 3b. Rename GameEvent_OnClientPollNetworking in IDA
+    if game_event_addr:
+        try:
+            await session.call_tool(
+                name="rename",
+                arguments={"batch": {"func": {"addr": game_event_addr, "name": "GameEvent_OnClientPollNetworking"}}},
+            )
+        except Exception:
+            if debug:
+                print("    Preprocess: failed to rename GameEvent_OnClientPollNetworking (non-fatal)")
 
     # 4. Look up function address in IGameSystem vtable
     target_addr_hex = vtable_entries.get(vfunc_index)
