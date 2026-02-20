@@ -1,4 +1,4 @@
-func_name: IGameSystem_OnClientPollNetworking
+func_name: IGameSystem_ClientPollNetworking
 func_va: '0x18014c4d0'
 func_rva: '0x14c4d0'
 func_size: '0x3'

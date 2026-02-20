@@ -253,9 +253,9 @@ modules:
           - CLoopModeGame_OnPreDataUpdate.{platform}.yaml
           - CLoopModeGame_OnFrameBoundary.{platform}.yaml
 
-      - name: find-IGameSystem_OnClientPollNetworking
+      - name: find-IGameSystem_ClientPollNetworking
         expected_output:
-          - IGameSystem_OnClientPollNetworking.{platform}.yaml
+          - IGameSystem_ClientPollNetworking.{platform}.yaml
         expected_input:
           - CLoopModeGame_OnClientPollNetworking.{platform}.yaml
         prerequisite:
@@ -332,6 +332,11 @@ modules:
         category: func
         alias:
           - CLoopModeGame::OnClientPollNetworking
+
+      - name: IGameSystem_ClientPollNetworking
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPollNetworking
 
       - name: CLoopModeGame_OnClientAdvanceTick
         category: func

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-IGameSystem_OnClientPollNetworking skill.
+"""Preprocess script for find-IGameSystem_ClientPollNetworking skill.
 
-Programmatically determines IGameSystem_OnClientPollNetworking by:
+Programmatically determines IGameSystem_ClientPollNetworking by:
 1. Reading CLoopModeGame_OnClientPollNetworking func_va from its YAML.
 2. Finding `lea rdx, sub_XXXXXXX` in that function (= GameEvent_OnClientPollNetworking).
 3. Finding the virtual call offset inside GameEvent_OnClientPollNetworking.
@@ -29,7 +29,7 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Resolve IGameSystem_OnClientPollNetworking from CLoopModeGame_OnClientPollNetworking."""
+    """Resolve IGameSystem_ClientPollNetworking from CLoopModeGame_OnClientPollNetworking."""
     _ = skill_name
 
     if yaml is None:
@@ -205,7 +205,7 @@ async def preprocess_skill(
 
     if not isinstance(func_info, dict):
         if debug:
-            print("    Preprocess: failed to query function info for IGameSystem_OnClientPollNetworking")
+            print("    Preprocess: failed to query function info for IGameSystem_ClientPollNetworking")
         return False
 
     func_va_hex = func_info.get("func_va")
@@ -223,7 +223,7 @@ async def preprocess_skill(
         return False
 
     # 6. Build and write output YAML
-    target_name = "IGameSystem_OnClientPollNetworking"
+    target_name = "IGameSystem_ClientPollNetworking"
     payload = {
         "func_name": target_name,
         "func_va": str(func_va_hex),
