@@ -1,5 +1,5 @@
 ---
-name: find-CLoopModeGame_RegisterEventMapInternal_client
+name: find-CLoopModeGame_RegisterEventMapInternal
 description: Find and identify CLoopModeGame_RegisterEventMapInternal, RegisterEventListener_Abstract, and CLoopModeGame_OnXXXXXXX event handler functions in CS2 binary using IDA Pro MCP. Use this skill when reverse engineering CS2 client binary to locate these functions by searching for the "CLoopModeGame::OnClientPollNetworking" string reference.
 disable-model-invocation: true
 ---
