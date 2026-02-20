@@ -5,8 +5,8 @@
 
 ## 职责
 - 解析 CLI 参数并生成运行上下文（平台过滤、模块过滤、`oldgamever` 推断、默认重试次数等）。
-- 解析 `config.yaml` 的 `modules[*].skills[*]` 元数据，提取 `expected_input/expected_output/prerequisite/max_retries`。
-- 对每个二进制内的技能做拓扑排序与跳过判定（输出已存在则直接跳过）。
+- 解析 `config.yaml` 的 `modules[*].skills[*]` 元数据，提取 `expected_input/expected_output/max_retries`（`prerequisite` 仅作兼容兜底）。
+- 对每个二进制内的技能基于输入/输出依赖关系做拓扑排序与跳过判定（输出已存在则直接跳过）。
 - 启动并管理 `idalib-mcp` 生命周期（启动等待、任务执行、优雅退出/强制回收）。
 - 执行“预处理 -> 失败回退 Agent”的单阶段产出流程，并统计成功/失败/跳过数。
 - 汇总成功/失败/跳过统计，并在存在失败时以非 0 退出码结束。
@@ -27,7 +27,7 @@ flowchart TD
   A[parse_args] --> B[parse_config]
   B --> C[遍历模块/平台]
   C --> D[process_binary]
-  D --> E[topological_sort_skills]
+  D --> E[topological_sort_skills 依赖推导]
   E --> F[检查 expected_output 是否已存在]
   F -->|全部存在| G[skip]
   F -->|存在待处理技能| H[start_idalib_mcp]
@@ -44,7 +44,10 @@ flowchart TD
 ```
 
 关键实现点：
-- `topological_sort_skills` 使用 Kahn 算法，并对同层节点排序，保证执行顺序稳定。
+- `topological_sort_skills` 基于 `expected_output -> producer` 建索引，再用各技能 `expected_input` 反查生产者，推导依赖关系。
+- 依赖匹配先走规范化后的完整路径（`normpath + normcase`），匹配不到再回退到文件名匹配（basename）。
+- `prerequisite` 仍会被读取并合并进依赖图，作为旧配置兼容与补充机制。
+- 排序采用 Kahn 算法，并对同层节点排序，保证执行顺序稳定。
 - `run_skill` 按 `agent` 名称分流：
   - Claude：`--session-id/--resume` 复用会话重试。
   - Codex：读取 `.claude/agents/sig-finder.md`，去除 frontmatter 后通过 `developer_instructions=` 注入；重试时 `exec resume --last`。
@@ -63,6 +66,7 @@ flowchart TD
 - `expected_input` 缺失会直接记失败，不会进入 Agent 回退路径。
 - 预处理返回成功但输出文件缺失时会记失败，不会继续回退 Agent。
 - MCP 启动失败时，该二进制下所有待处理技能直接计为失败。
+- 若多个技能声明了同一产物，消费者会依赖全部匹配到的生产者，可能引入额外边；出现循环依赖时会告警并按原顺序兜底追加。
 
 ## 调用方（可选）
 - 命令行直接执行：`python ida_analyze_bin.py -gamever 14135 [-agent=claude] [-platform windows] [-debug]`

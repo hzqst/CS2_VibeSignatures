@@ -257,42 +257,72 @@ def parse_config(config_path):
 
 def topological_sort_skills(skills):
     """
-    Perform topological sort on skills based on their prerequisites.
+    Perform topological sort on skills by building dependencies from
+    expected_input and expected_output relations.
 
     Args:
-        skills: List of skill dicts with 'name' and 'prerequisite' keys
+        skills: List of skill dicts with 'name', 'expected_input', and
+            'expected_output' keys. Legacy 'prerequisite' is accepted as fallback.
 
     Returns:
         List of skill names in topologically sorted order (dependencies first)
     """
-    # Build name -> skill dict and adjacency list
-    skill_map = {skill["name"]: skill for skill in skills}
-    skill_names = set(skill_map.keys())
+    skill_names = {skill["name"] for skill in skills}
+
+    def normalize_artifact_path(path):
+        """Normalize artifact path for matching expected input/output."""
+        return os.path.normcase(os.path.normpath(path))
+
+    # output_path -> producer skill names
+    producers_by_output = {}
+    for skill in skills:
+        producer_name = skill["name"]
+        for output_path in skill.get("expected_output", []):
+            if not output_path:
+                continue
+            normalized_output = normalize_artifact_path(output_path)
+            output_name = normalize_artifact_path(os.path.basename(output_path))
+            producers_by_output.setdefault(normalized_output, set()).add(producer_name)
+            producers_by_output.setdefault(output_name, set()).add(producer_name)
+
+    # Infer dependencies from expected_input files.
+    # If a skill consumes an artifact produced by another skill, it depends on it.
+    dependencies = {name: set() for name in skill_names}
+    for skill in skills:
+        consumer_name = skill["name"]
+        for input_path in skill.get("expected_input", []):
+            if not input_path:
+                continue
+
+            normalized_input = normalize_artifact_path(input_path)
+            input_name = normalize_artifact_path(os.path.basename(input_path))
+
+            inferred_prereqs = set(producers_by_output.get(normalized_input, set()))
+            if not inferred_prereqs:
+                inferred_prereqs.update(producers_by_output.get(input_name, set()))
+            inferred_prereqs.discard(consumer_name)
+            dependencies[consumer_name].update(inferred_prereqs)
+
+        # Backward compatibility: retain explicit prerequisite links if configured.
+        for prereq in skill.get("prerequisite", []) or []:
+            if prereq in skill_names and prereq != consumer_name:
+                dependencies[consumer_name].add(prereq)
 
     # Build in-degree count and adjacency list
-    in_degree = {name: 0 for name in skill_names}
-    dependents = {name: [] for name in skill_names}  # prereq -> list of skills that depend on it
-
-    for skill in skills:
-        name = skill["name"]
-        for prereq in skill["prerequisite"]:
-            if prereq in skill_names:
-                in_degree[name] += 1
-                dependents[prereq].append(name)
+    in_degree = {name: len(dependencies[name]) for name in skill_names}
+    dependents = {name: [] for name in skill_names}  # prereq -> list of dependent skills
+    for consumer_name, prereqs in dependencies.items():
+        for prereq in prereqs:
+            dependents[prereq].append(consumer_name)
 
     # Kahn's algorithm for topological sort
-    # Start with skills that have no prerequisites (in_degree == 0)
-    queue = [name for name in skill_names if in_degree[name] == 0]
-    # Sort to ensure deterministic order for skills at the same level
-    queue.sort()
+    queue = sorted(name for name in skill_names if in_degree[name] == 0)
 
     sorted_names = []
     while queue:
-        # Pop the first item (maintains stable order)
         current = queue.pop(0)
         sorted_names.append(current)
 
-        # Reduce in-degree for dependents
         for dependent in sorted(dependents[current]):
             in_degree[dependent] -= 1
             if in_degree[dependent] == 0:
@@ -554,7 +584,8 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
 
     Args:
         binary_path: Path to binary file
-        skills: List of skill dicts with 'name', 'expected_output', 'expected_input', 'prerequisite', and optional 'max_retries' keys
+        skills: List of skill dicts with 'name', 'expected_output', 'expected_input',
+            optional legacy 'prerequisite', and optional 'max_retries' keys
         agent: Agent type ("claude" or "codex")
         host: MCP server host
         port: MCP server port
@@ -577,7 +608,7 @@ def process_binary(binary_path, skills, agent, host, port, ida_args, platform, d
     # Build skill_map for lookup
     skill_map = {skill["name"]: skill for skill in skills}
 
-    # Topological sort skills based on prerequisites
+    # Topological sort skills based on inferred dependency tree
     sorted_skill_names = topological_sort_skills(skills)
 
     # Filter skills that need processing (skip if all expected outputs already exist)
