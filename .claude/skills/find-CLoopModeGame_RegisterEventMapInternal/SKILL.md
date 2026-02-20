@@ -52,11 +52,39 @@ Key identifiers:
 - **`RegisterEventListener_Abstract`**: The function called with 7 arguments including the event name string as the last argument — it is the same function called for every event registration in the function
 - **`CLoopModeGame_OnClientPollNetworking`**: The callback function pointer stored before the call with string `"CLoopModeGame::OnClientPollNetworking"`
 - **`CLoopModeGame_OnClientAdvanceTick`**: The callback function pointer stored before the call with string `"CLoopModeGame::OnClientAdvanceTick"`
-- Other `CLoopModeGame_OnXXXXXXX` callbacks: Each one is the function pointer stored before the corresponding `RegisterEventListener_Abstract` call with the matching `"CLoopModeGame::OnXXXXXXX"` string
+- **`CLoopModeGame_OnClientPostAdvanceTick`**: The callback for `"CLoopModeGame::OnClientPostAdvanceTick"`
+- **`CLoopModeGame_OnClientPreSimulate`**: The callback for `"CLoopModeGame::OnClientPreSimulate"`
+- **`CLoopModeGame_OnClientPreOutput`**: The callback for `"CLoopModeGame::OnClientPreOutput"`
+- **`CLoopModeGame_OnClientPreOutputParallelWithServer`**: The callback for `"CLoopModeGame::OnClientPreOutputParallelWithServer"`
+- **`CLoopModeGame_OnClientPostOutput`**: The callback for `"CLoopModeGame::OnClientPostOutput"`
+- **`CLoopModeGame_OnClientFrameSimulate`**: The callback for `"CLoopModeGame::OnClientFrameSimulate"`
+- **`CLoopModeGame_OnClientAdvanceNonRenderedFrame`**: The callback for `"CLoopModeGame::OnClientAdvanceNonRenderedFrame"`
+- **`CLoopModeGame_OnClientPostSimulate`**: The callback for `"CLoopModeGame::OnClientPostSimulate"`
+- **`CLoopModeGame_OnClientPauseSimulate`**: The callback for `"CLoopModeGame::OnClientPauseSimulate"`
+- **`CLoopModeGame_OnClientSimulate`**: The callback for `"CLoopModeGame::OnClientSimulate"`
+- **`CLoopModeGame_OnPostDataUpdate`**: The callback for `"CLoopModeGame::OnPostDataUpdate"`
+- **`CLoopModeGame_OnPreDataUpdate`**: The callback for `"CLoopModeGame::OnPreDataUpdate"`
+- **`CLoopModeGame_OnFrameBoundary`**: The callback for `"CLoopModeGame::OnFrameBoundary"`
 
 ### 5. Identify all event handler callbacks
 
-Scan through the entire register branch and collect ALL `CLoopModeGame_OnXXXXXXX` callback function addresses paired with their event name strings. The event name strings follow the pattern `"CLoopModeGame::OnXXXXXXX"`.
+Scan through the entire register branch and collect ALL callback function addresses paired with their event name strings. The following 15 callbacks should be found:
+
+1. `CLoopModeGame_OnClientPollNetworking` — `"CLoopModeGame::OnClientPollNetworking"`
+2. `CLoopModeGame_OnClientAdvanceTick` — `"CLoopModeGame::OnClientAdvanceTick"`
+3. `CLoopModeGame_OnClientPostAdvanceTick` — `"CLoopModeGame::OnClientPostAdvanceTick"`
+4. `CLoopModeGame_OnClientPreSimulate` — `"CLoopModeGame::OnClientPreSimulate"`
+5. `CLoopModeGame_OnClientPreOutput` — `"CLoopModeGame::OnClientPreOutput"`
+6. `CLoopModeGame_OnClientPreOutputParallelWithServer` — `"CLoopModeGame::OnClientPreOutputParallelWithServer"`
+7. `CLoopModeGame_OnClientPostOutput` — `"CLoopModeGame::OnClientPostOutput"`
+8. `CLoopModeGame_OnClientFrameSimulate` — `"CLoopModeGame::OnClientFrameSimulate"`
+9. `CLoopModeGame_OnClientAdvanceNonRenderedFrame` — `"CLoopModeGame::OnClientAdvanceNonRenderedFrame"`
+10. `CLoopModeGame_OnClientPostSimulate` — `"CLoopModeGame::OnClientPostSimulate"`
+11. `CLoopModeGame_OnClientPauseSimulate` — `"CLoopModeGame::OnClientPauseSimulate"`
+12. `CLoopModeGame_OnClientSimulate` — `"CLoopModeGame::OnClientSimulate"`
+13. `CLoopModeGame_OnPostDataUpdate` — `"CLoopModeGame::OnPostDataUpdate"`
+14. `CLoopModeGame_OnPreDataUpdate` — `"CLoopModeGame::OnPreDataUpdate"`
+15. `CLoopModeGame_OnFrameBoundary` — `"CLoopModeGame::OnFrameBoundary"`
 
 For each registration block:
 1. The callback function pointer is assigned to a local variable just before the `RegisterEventListener_Abstract` call
@@ -76,7 +104,19 @@ mcp__ida-pro-mcp__rename batch={"func": [
   {"addr": "<addr>", "name": "RegisterEventListener_Abstract"},
   {"addr": "<addr>", "name": "CLoopModeGame_OnClientPollNetworking"},
   {"addr": "<addr>", "name": "CLoopModeGame_OnClientAdvanceTick"},
-  ... (all other CLoopModeGame_OnXXXXXXX callbacks)
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPostAdvanceTick"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPreSimulate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPreOutput"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPreOutputParallelWithServer"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPostOutput"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientFrameSimulate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientAdvanceNonRenderedFrame"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPostSimulate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientPauseSimulate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnClientSimulate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnPostDataUpdate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnPreDataUpdate"},
+  {"addr": "<addr>", "name": "CLoopModeGame_OnFrameBoundary"}
 ]}
 ```
 
@@ -86,7 +126,21 @@ mcp__ida-pro-mcp__rename batch={"func": [
 
 - `CLoopModeGame_RegisterEventMapInternal`
 - `RegisterEventListener_Abstract`
-- Each `CLoopModeGame_OnXXXXXXX` callback function
+- `CLoopModeGame_OnClientPollNetworking`
+- `CLoopModeGame_OnClientAdvanceTick`
+- `CLoopModeGame_OnClientPostAdvanceTick`
+- `CLoopModeGame_OnClientPreSimulate`
+- `CLoopModeGame_OnClientPreOutput`
+- `CLoopModeGame_OnClientPreOutputParallelWithServer`
+- `CLoopModeGame_OnClientPostOutput`
+- `CLoopModeGame_OnClientFrameSimulate`
+- `CLoopModeGame_OnClientAdvanceNonRenderedFrame`
+- `CLoopModeGame_OnClientPostSimulate`
+- `CLoopModeGame_OnClientPauseSimulate`
+- `CLoopModeGame_OnClientSimulate`
+- `CLoopModeGame_OnPostDataUpdate`
+- `CLoopModeGame_OnPreDataUpdate`
+- `CLoopModeGame_OnFrameBoundary`
 
 ### 9. Write IDA analysis output as YAML beside the binary
 
@@ -104,11 +158,28 @@ Required parameters:
 - `func_addr`: The function address from step 4
 - `func_sig`: The validated signature from step 8
 
-#### For each `CLoopModeGame_OnXXXXXXX`:
+#### For each callback:
 Required parameters:
-- `func_name`: The callback name (e.g., `CLoopModeGame_OnClientPollNetworking`)
+- `func_name`: The callback name from the list below
 - `func_addr`: The callback function address from step 5
 - `func_sig`: The validated signature from step 8
+
+Callbacks to write:
+- `CLoopModeGame_OnClientPollNetworking`
+- `CLoopModeGame_OnClientAdvanceTick`
+- `CLoopModeGame_OnClientPostAdvanceTick`
+- `CLoopModeGame_OnClientPreSimulate`
+- `CLoopModeGame_OnClientPreOutput`
+- `CLoopModeGame_OnClientPreOutputParallelWithServer`
+- `CLoopModeGame_OnClientPostOutput`
+- `CLoopModeGame_OnClientFrameSimulate`
+- `CLoopModeGame_OnClientAdvanceNonRenderedFrame`
+- `CLoopModeGame_OnClientPostSimulate`
+- `CLoopModeGame_OnClientPauseSimulate`
+- `CLoopModeGame_OnClientSimulate`
+- `CLoopModeGame_OnPostDataUpdate`
+- `CLoopModeGame_OnPreDataUpdate`
+- `CLoopModeGame_OnFrameBoundary`
 
 Note: These are all regular functions, NOT virtual functions, so no vtable parameters are needed.
 
@@ -136,7 +207,25 @@ Note: These are all regular functions, NOT virtual functions, so no vtable param
   - `a6`: Additional parameter
   - `pszEventName`: Debug name string like `"CLoopModeGame::OnClientPollNetworking"`
 
-### CLoopModeGame_OnXXXXXXX (event callbacks)
+### Event Callbacks
+
+The following 15 callbacks are individual event handler functions for various game loop events:
+
+- `CLoopModeGame_OnClientPollNetworking`
+- `CLoopModeGame_OnClientAdvanceTick`
+- `CLoopModeGame_OnClientPostAdvanceTick`
+- `CLoopModeGame_OnClientPreSimulate`
+- `CLoopModeGame_OnClientPreOutput`
+- `CLoopModeGame_OnClientPreOutputParallelWithServer`
+- `CLoopModeGame_OnClientPostOutput`
+- `CLoopModeGame_OnClientFrameSimulate`
+- `CLoopModeGame_OnClientAdvanceNonRenderedFrame`
+- `CLoopModeGame_OnClientPostSimulate`
+- `CLoopModeGame_OnClientPauseSimulate`
+- `CLoopModeGame_OnClientSimulate`
+- `CLoopModeGame_OnPostDataUpdate`
+- `CLoopModeGame_OnPreDataUpdate`
+- `CLoopModeGame_OnFrameBoundary`
 
 - **Prototype**: `void CLoopModeGame_OnXXXXXXX(void *pEvent)` (exact signature may vary)
 - **Purpose**: Individual event handler callbacks for various game loop events
@@ -155,5 +244,24 @@ Note: These are all regular functions, NOT virtual functions, so no vtable param
 ## Output YAML Format
 
 The output YAML filenames depend on the platform:
-- `client.dll` → `CLoopModeGame_RegisterEventMapInternal.windows.yaml`, `RegisterEventListener_Abstract.windows.yaml`, `CLoopModeGame_OnClientPollNetworking.windows.yaml`, `CLoopModeGame_OnClientAdvanceTick.windows.yaml`, etc.
-- `libclient.so` → `CLoopModeGame_RegisterEventMapInternal.linux.yaml`, `RegisterEventListener_Abstract.linux.yaml`, `CLoopModeGame_OnClientPollNetworking.linux.yaml`, `CLoopModeGame_OnClientAdvanceTick.linux.yaml`, etc.
+- `client.dll` → `<func_name>.windows.yaml`
+- `libclient.so` → `<func_name>.linux.yaml`
+
+The following 17 YAML files should be generated (where `{platform}` is `windows` or `linux`):
+- `CLoopModeGame_RegisterEventMapInternal.{platform}.yaml`
+- `RegisterEventListener_Abstract.{platform}.yaml`
+- `CLoopModeGame_OnClientPollNetworking.{platform}.yaml`
+- `CLoopModeGame_OnClientAdvanceTick.{platform}.yaml`
+- `CLoopModeGame_OnClientPostAdvanceTick.{platform}.yaml`
+- `CLoopModeGame_OnClientPreSimulate.{platform}.yaml`
+- `CLoopModeGame_OnClientPreOutput.{platform}.yaml`
+- `CLoopModeGame_OnClientPreOutputParallelWithServer.{platform}.yaml`
+- `CLoopModeGame_OnClientPostOutput.{platform}.yaml`
+- `CLoopModeGame_OnClientFrameSimulate.{platform}.yaml`
+- `CLoopModeGame_OnClientAdvanceNonRenderedFrame.{platform}.yaml`
+- `CLoopModeGame_OnClientPostSimulate.{platform}.yaml`
+- `CLoopModeGame_OnClientPauseSimulate.{platform}.yaml`
+- `CLoopModeGame_OnClientSimulate.{platform}.yaml`
+- `CLoopModeGame_OnPostDataUpdate.{platform}.yaml`
+- `CLoopModeGame_OnPreDataUpdate.{platform}.yaml`
+- `CLoopModeGame_OnFrameBoundary.{platform}.yaml`

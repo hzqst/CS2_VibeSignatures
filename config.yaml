@@ -253,6 +253,15 @@ modules:
           - CLoopModeGame_OnPreDataUpdate.{platform}.yaml
           - CLoopModeGame_OnFrameBoundary.{platform}.yaml
 
+      - name: find-IGameSystem_OnClientPollNetworking
+        expected_output:
+          - IGameSystem_OnClientPollNetworking.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPollNetworking.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
       - name: CDecalGameSystem_vtable
         category: vtable
