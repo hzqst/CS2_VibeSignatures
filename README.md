@@ -4,7 +4,7 @@ To generate signatures/offsets for CS2 via Agent SKILLS & MCP Calls.
 
 Our goal is to update signatures/offsets without human involved.
 
-Currently, all signatures/offsets from `CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json` can be updated automatically with this project.
+Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** can be updated automatically with this project.
 
 * Signatures from old version of game will be used when available - to save as many tokens as possible.
 
