@@ -259,6 +259,16 @@ modules:
           - find-IGameSystem_vtable
           - find-CLoopModeGame_RegisterEventMapInternal
 
+      - name: find-IGameSystem_ClientPreRender-AND-IGameSystem_ClientPreRenderEx
+        expected_output:
+          - IGameSystem_ClientPreRender.{platform}.yaml
+          - IGameSystem_ClientPreRenderEx.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnClientPreOutput.{platform}.yaml
+        prerequisite:
+          - find-IGameSystem_vtable
+          - find-CLoopModeGame_RegisterEventMapInternal
+
     symbols:
 
       - name: CCSItemIconGeneratorGameSystem_vtable
@@ -411,6 +421,16 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::ClientPostRender
+
+      - name: IGameSystem_ClientPreRender
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPreRender
+
+      - name: IGameSystem_ClientPreRenderEx
+        category: vfunc
+        alias:
+          - IGameSystem::ClientPreRenderEx
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
