@@ -1,69 +1,81 @@
 # _igamesystem_dispatch_common
 
 ## Overview
-`ida_preprocessor_scripts/_igamesystem_dispatch_common.py` provides shared async preprocessing logic for dispatch-style IGameSystem skills. It resolves target IGameSystem virtual functions from a source dispatch function (with platform-specific IDA pattern extraction), optionally renames helper/callback functions, and writes per-target YAML function metadata.
+`ida_preprocessor_scripts/_igamesystem_dispatch_common.py` is the shared preprocess entry for IGameSystem dispatch-style skills. The current design no longer depends on scan/decompiler order. It now collects all dispatch calls first, then maps targets deterministically by `vfunc_index`/`vfunc_offset`.
 
-## Responsibilities
-- Validate and normalize `target_specs`, `entry_start_index`, and `multi_order`.
-- Load required YAML inputs: source function YAML and `IGameSystem_vtable.{platform}.yaml`.
-- Build platform-specific `py_eval` code (`windows`/`linux`) to extract dispatch entries (`vfunc_offset`, `vfunc_index`, optional `game_event_addr`, optional `internal_addr`).
-- Map extracted entries to `target_specs`, query function info from vtable-resolved addresses, and write normalized function YAML payloads.
-- Perform best-effort IDA renaming via MCP `rename` for internal wrapper and callback functions when configured.
+## Key Design Update (2026-02)
+### 1) Collect all dispatch entries (no early truncation)
+- `_build_dispatch_py_eval(...)` no longer takes `target_count`.
+- Windows path: scans `lea rdx, callback`, then extracts `call/jmp [reg+disp]` in callback bodies.
+- Linux path: scans `mov esi/rsi, odd_imm` + subsequent `call`, using `vfunc_off = imm - 1`.
+- Basic filtering added on both paths: only non-negative, 8-byte aligned offsets are accepted.
 
-## Files Involved (no line numbers)
-- ida_preprocessor_scripts/_igamesystem_dispatch_common.py
-- ida_analyze_util.py
-- ida_preprocessor_scripts/find-IGameSystem_*.py
-- `<new_binary_dir>/{source_yaml_stem}.{platform}.yaml`
-- `<new_binary_dir>/IGameSystem_vtable.{platform}.yaml`
-- `<new_binary_dir>/{target_name}.{platform}.yaml`
+### 2) Strict total-count validation
+- New argument: `expected_dispatch_count` (optional).
+- Preprocess requires `len(entries) == expected_dispatch_count`; otherwise fail-fast.
+- If omitted:
+  - without `dispatch_rank`: defaults to `target_count`
+  - with `dispatch_rank`: defaults to `max(dispatch_rank) + 1`
 
-## Architecture
-`preprocess_igamesystem_dispatch_skill(...)` is the public entry and orchestrates helper functions:
+### 3) Stable mapping with `dispatch_rank`
+- `target_specs` now supports:
+  - `target_name` (required)
+  - `rename_to` (optional)
+  - `dispatch_rank` (optional)
+- With `dispatch_rank`:
+  - all entries are sorted by `(vfunc_index, vfunc_offset)` ascending
+  - each target picks entry by rank
+- Validation rules:
+  - all specs must provide rank once rank mode is used
+  - ranks must be non-negative and unique
+  - `expected_dispatch_count > max(rank)`
 
-- `_read_yaml`: safe YAML reader with failure-to-None behavior.
-- `_parse_int`: tolerant integer parser (supports decimal/hex-like strings).
-- `_build_dispatch_py_eval`: generates inline IDA Python for dispatch extraction.
-- `_call_py_eval_json`: executes `py_eval` and parses JSON payload.
-- `_query_func_info`: validates function boundary (`start_ea == addr`) and returns `func_va/func_size`.
-- `_rename_func_best_effort`: non-fatal wrapper around MCP `rename`.
+### 4) `entry_start_index` is now legacy compatibility
+- `entry_start_index` still works, but is deprecated.
+- Internally converted to contiguous `dispatch_rank` (`start + i`) and
+  `expected_dispatch_count = start + target_count`.
+- Cannot be mixed with explicit `dispatch_rank` or explicit `expected_dispatch_count`.
 
-```mermaid
-flowchart TD
-    A[Validate args/specs] --> B[Match expected output files]
-    B --> C[Read source yaml + IGameSystem_vtable yaml]
-    C --> D[py_eval extract dispatch entries]
-    D --> E[Apply entry_start_index and optional index sort]
-    E --> F[Optional rename internal/callback funcs]
-    F --> G[For each target: resolve vtable address]
-    G --> H[py_eval query func_va/func_size]
-    H --> I[write_func_yaml target output]
-```
+## Public API Snapshot
+`preprocess_igamesystem_dispatch_skill(...)` relevant parameters:
+- `target_specs`
+- `multi_order` (`scan` / `index`)
+- `expected_dispatch_count=None`
+- `entry_start_index=0` (legacy/deprecated)
 
-Platform extraction heuristics in `_build_dispatch_py_eval`:
-- Windows path: scans `lea rdx, <callback>` then inspects callback `call/jmp [reg+disp]`.
-- Linux path: scans `mov esi/rsi, odd_imm` plus next `call`, then computes `vfunc_offset = imm - 1`.
+## Behavior Notes
+- Still fail-fast: returns `False` on validation/extraction mismatches.
+- `multi_order == "index"` controls index-based ordering for multi-target scan mode.
+- If `dispatch_rank` is used, stable index sorting is forced even when `multi_order="scan"`.
+- Internal/callback renaming remains best-effort (non-fatal on rename failure).
 
-## Dependencies
-- Standard library: `json`, `os`.
-- Optional package: `PyYAML` (`yaml`); preprocessing returns `False` early when unavailable.
-- Internal utilities: `parse_mcp_result`, `write_func_yaml` from `ida_analyze_util`.
-- IDA MCP tools used through session:
-  - `py_eval` (entry extraction and function-info query)
-  - `rename` (best-effort symbol naming)
+## Updated Callers (Migrated)
+### SpawnGroup series
+- `find-IGameSystem_PreSpawnGroupLoad.py`
+  - `dispatch_rank=0`
+  - `EXPECTED_DISPATCH_COUNT=2`
+- `find-IGameSystem_PostSpawnGroupLoad.py`
+  - `dispatch_rank=1`
+  - `EXPECTED_DISPATCH_COUNT=2`
+- `find-IGameSystem_PostSpawnGroupUnload.py`
+  - `dispatch_rank=1`
+  - `EXPECTED_DISPATCH_COUNT=2`
+- `find-IGameSystem_PreSpawnGroupUnload.py`
+  - removed redundant `ENTRY_START_INDEX=0` pass-through (single-target default mapping)
 
-## Notes
-- Fail-fast behavior: most validation/extraction mismatches return `False` for upstream fallback.
-- `expected_outputs` must contain exactly one basename match per target (`{target_name}.{platform}.yaml`).
-- `vfunc_index`/`vfunc_offset` logic assumes 64-bit vtable slots (`index * 8` and `offset // 8`).
-- Renaming is intentionally non-fatal; failures only print when `debug=True`.
-- Windows/Linux extraction relies on compiler-pattern heuristics and can break when codegen changes.
+### ClientPreEntityThink case
+- `find-IGameSystem_ClientPreEntityThink.py`
+  - observed 3 dispatch indices: `22 / 23 / 24`
+  - `IGameSystem_ClientPreEntityThink` mapped with `dispatch_rank=0` (index 22)
+  - `EXPECTED_DISPATCH_COUNT=3`
 
-## Callers (optional)
-- Imported and called by multiple dispatch finder scripts in `ida_preprocessor_scripts/find-IGameSystem_*.py`.
-- Confirmed direct callers include:
-  - `ida_preprocessor_scripts/find-IGameSystem_ClientAdvanceTick.py`
-  - `ida_preprocessor_scripts/find-IGameSystem_ClientPreRender-AND-IGameSystem_ClientPreRenderEx.py`
-  - `ida_preprocessor_scripts/find-IGameSystem_PreSpawnGroupLoad.py`
-  - `ida_preprocessor_scripts/find-IGameSystem_PostSpawnGroupLoad.py`
-  - plus other `find-IGameSystem_*` wrappers that delegate their `preprocess_skill` to this common routine.
+## Rationale
+The old "scan/decompiler order + ENTRY_START_INDEX" approach was unstable under compiler/reordering changes. The new design uses vfunc-index-based deterministic mapping plus strict count assertions to reduce false matches.
+
+## Files Involved
+- `ida_preprocessor_scripts/_igamesystem_dispatch_common.py`
+- `ida_preprocessor_scripts/find-IGameSystem_PreSpawnGroupLoad.py`
+- `ida_preprocessor_scripts/find-IGameSystem_PostSpawnGroupLoad.py`
+- `ida_preprocessor_scripts/find-IGameSystem_PostSpawnGroupUnload.py`
+- `ida_preprocessor_scripts/find-IGameSystem_PreSpawnGroupUnload.py`
+- `ida_preprocessor_scripts/find-IGameSystem_ClientPreEntityThink.py`
