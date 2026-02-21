@@ -92,6 +92,9 @@ else:
                 break
         if ptr_value == 0xFFFFFFFFFFFFFFFF:
             break
+        target_seg = ida_segment.getseg(ptr_value)
+        if not target_seg or not (target_seg.perm & ida_segment.SEGPERM_EXEC):
+            break
         func = idaapi.get_func(ptr_value)
         if func is not None:
             entries[count] = hex(ptr_value)
