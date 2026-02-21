@@ -6,8 +6,6 @@ Our goal is to update signatures/offsets/cppheaders without human involved.
 
 Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** can be updated automatically with this project.
 
-* Signatures from old version of game will be used when available - to save as many tokens as possible.
-
 * Avg cost for the first run: ~ 60$ for claude sonnet 4.5, or ~ 30$ for codex-5.3-high
 
 * Avg time consume for the first run: 60 ~ 120 mins, depending on the model you are using.
@@ -60,7 +58,7 @@ python update_gamedata.py -gamever 14135 [-debug]
 python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/codex]
 ```
 
-* When with `-fixheader`, an agent will be initiated to fix the cpp headers.
+* When with `-fixheader`, an agent will be initiated to fix the mismatches in cpp headers.
 
 ### Currently supported gamedata
 
