@@ -77,8 +77,8 @@ async def _call_py_eval_json(session, code, debug=False, error_label="py_eval"):
         return None
 
 
-def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper, platform):
-    """Build a platform-aware py_eval script for extracting vfunc entries.
+def _build_dispatch_py_eval(source_func_va, via_internal_wrapper, platform):
+    """Build a platform-aware py_eval script for collecting all vfunc entries.
 
     Windows uses ``lea rdx, callback`` to pass function-pointer callbacks,
     then each callback contains ``call/jmp [reg+vfunc_offset]``.
@@ -91,7 +91,6 @@ def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper, 
     return (
         "import idaapi, idautils, idc, json\n"
         f"func_addr = {source_func_va}\n"
-        f"target_count = {target_count}\n"
         f"use_wrapper = {wrapper_flag}\n"
         f"is_windows = {is_windows}\n"
         "func = idaapi.get_func(func_addr)\n"
@@ -121,36 +120,24 @@ def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper, 
         "                    target = idc.get_operand_value(head, 1)\n"
         "                    if idaapi.get_func(target):\n"
         "                        lea_targets.append(target)\n"
-        "                        if len(lea_targets) == target_count:\n"
-        "                            break\n"
         "\n"
-        "            if len(lea_targets) == target_count:\n"
-        "                for t in lea_targets:\n"
-        "                    gef = idaapi.get_func(t)\n"
-        "                    if not gef:\n"
-        "                        break\n"
-        "                    found = False\n"
-        "                    for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
-        "                        mnem = idc.print_insn_mnem(head)\n"
-        "                        if mnem in ('call', 'jmp'):\n"
-        "                            insn = idaapi.insn_t()\n"
-        "                            if idaapi.decode_insn(insn, head):\n"
-        "                                op = insn.ops[0]\n"
-        "                                if op.type == idaapi.o_displ:\n"
-        "                                    entries.append({\n"
-        "                                        'game_event_addr': hex(t),\n"
-        "                                        'vfunc_offset': op.addr,\n"
-        "                                        'vfunc_index': op.addr // 8,\n"
-        "                                    })\n"
-        "                                    found = True\n"
-        "                                    break\n"
-        "                    if not found:\n"
-        "                        break\n"
-        "\n"
-        "                if len(entries) == target_count:\n"
-        "                    result_obj = {'entries': entries}\n"
-        "                    if internal_addr is not None:\n"
-        "                        result_obj['internal_addr'] = hex(internal_addr)\n"
+        "            for t in lea_targets:\n"
+        "                gef = idaapi.get_func(t)\n"
+        "                if not gef:\n"
+        "                    continue\n"
+        "                for head in idautils.Heads(gef.start_ea, gef.end_ea):\n"
+        "                    mnem = idc.print_insn_mnem(head)\n"
+        "                    if mnem in ('call', 'jmp'):\n"
+        "                        insn = idaapi.insn_t()\n"
+        "                        if idaapi.decode_insn(insn, head):\n"
+        "                            op = insn.ops[0]\n"
+        "                            if op.type == idaapi.o_displ and op.addr >= 0 and (op.addr % 8) == 0:\n"
+        "                                entries.append({\n"
+        "                                    'game_event_addr': hex(t),\n"
+        "                                    'vfunc_offset': op.addr,\n"
+        "                                    'vfunc_index': op.addr // 8,\n"
+        "                                })\n"
+        "                                break\n"
         "\n"
         "        else:\n"
         "            last_esi_imm = None\n"
@@ -166,18 +153,16 @@ def _build_dispatch_py_eval(source_func_va, target_count, via_internal_wrapper, 
         "                                last_esi_imm = op.value\n"
         "                elif mnem == 'call' and last_esi_imm is not None:\n"
         "                    vfunc_off = last_esi_imm - 1\n"
-        "                    entries.append({\n"
-        "                        'vfunc_offset': vfunc_off,\n"
-        "                        'vfunc_index': vfunc_off // 8,\n"
-        "                    })\n"
+        "                    if vfunc_off >= 0 and (vfunc_off % 8) == 0:\n"
+        "                        entries.append({\n"
+        "                            'vfunc_offset': vfunc_off,\n"
+        "                            'vfunc_index': vfunc_off // 8,\n"
+        "                        })\n"
         "                    last_esi_imm = None\n"
-        "                    if len(entries) == target_count:\n"
-        "                        break\n"
         "\n"
-        "            if len(entries) == target_count:\n"
-        "                result_obj = {'entries': entries}\n"
-        "                if internal_addr is not None:\n"
-        "                    result_obj['internal_addr'] = hex(internal_addr)\n"
+        "        result_obj = {'entries': entries}\n"
+        "        if internal_addr is not None:\n"
+        "            result_obj['internal_addr'] = hex(internal_addr)\n"
         "\n"
         "result = json.dumps(result_obj)\n"
     )
@@ -215,6 +200,7 @@ async def preprocess_igamesystem_dispatch_skill(
     via_internal_wrapper,
     internal_rename_to,
     multi_order,
+    expected_dispatch_count=None,
     entry_start_index=0,
     debug=False,
 ):
@@ -230,12 +216,16 @@ async def preprocess_igamesystem_dispatch_skill(
         target_specs: List[dict] with keys:
             - target_name (required)
             - rename_to (optional)
+            - dispatch_rank (optional): use sorted-by-vfunc-index rank
+              when selecting from all collected dispatch entries.
         via_internal_wrapper: Whether source function first jumps/calls an internal func.
         internal_rename_to: Optional rename for resolved internal wrapper function.
         multi_order: "scan" or "index" for multi-target mapping order.
-        entry_start_index: 0-based offset in extracted dispatch entries before
-            mapping to target_specs. Useful when a skill needs the 2nd/3rd
-            dispatcher callback rather than the 1st.
+        expected_dispatch_count: Expected total count of dispatch entries
+            collected from source function. If None, defaults to target_count,
+            or ``max(dispatch_rank)+1`` when dispatch_rank is provided.
+        entry_start_index: Legacy 0-based selector offset. Deprecated; prefer
+            dispatch_rank + expected_dispatch_count.
         debug: Enable debug logs.
     """
     if yaml is None:
@@ -249,6 +239,7 @@ async def preprocess_igamesystem_dispatch_skill(
         return False
 
     normalized_specs = []
+    has_dispatch_rank = False
     for item in target_specs:
         if not isinstance(item, dict):
             if debug:
@@ -260,14 +251,38 @@ async def preprocess_igamesystem_dispatch_skill(
                 print("    Preprocess: target spec missing target_name")
             return False
         rename_to = item.get("rename_to")
+        dispatch_rank = item.get("dispatch_rank")
+        if dispatch_rank is not None:
+            try:
+                dispatch_rank = _parse_int(dispatch_rank)
+            except Exception:
+                if debug:
+                    print(f"    Preprocess: invalid dispatch_rank for {target_name}")
+                return False
+            if dispatch_rank < 0:
+                if debug:
+                    print(f"    Preprocess: dispatch_rank must be >= 0 for {target_name}")
+                return False
+            has_dispatch_rank = True
         normalized_specs.append(
             {
                 "target_name": str(target_name),
                 "rename_to": str(rename_to) if rename_to else None,
+                "dispatch_rank": dispatch_rank,
             }
         )
 
     target_count = len(normalized_specs)
+    if has_dispatch_rank and any(spec["dispatch_rank"] is None for spec in normalized_specs):
+        if debug:
+            print("    Preprocess: dispatch_rank must be provided for all target_specs")
+        return False
+
+    if target_count > 1 and multi_order not in ("scan", "index"):
+        if debug:
+            print(f"    Preprocess: invalid multi_order: {multi_order}")
+        return False
+
     try:
         entry_start_index = _parse_int(entry_start_index)
     except Exception:
@@ -280,10 +295,75 @@ async def preprocess_igamesystem_dispatch_skill(
             print(f"    Preprocess: entry_start_index must be >= 0, got {entry_start_index}")
         return False
 
-    query_count = target_count + entry_start_index
-    if target_count > 1 and multi_order not in ("scan", "index"):
+    explicit_expected_dispatch_count = expected_dispatch_count is not None
+    if explicit_expected_dispatch_count:
+        try:
+            expected_dispatch_count = _parse_int(expected_dispatch_count)
+        except Exception:
+            if debug:
+                print(
+                    f"    Preprocess: invalid expected_dispatch_count: "
+                    f"{expected_dispatch_count}"
+                )
+            return False
+        if expected_dispatch_count <= 0:
+            if debug:
+                print(
+                    f"    Preprocess: expected_dispatch_count must be > 0, got "
+                    f"{expected_dispatch_count}"
+                )
+            return False
+    else:
+        if has_dispatch_rank:
+            expected_dispatch_count = max(spec["dispatch_rank"] for spec in normalized_specs) + 1
+        else:
+            expected_dispatch_count = target_count
+
+    if entry_start_index:
+        if has_dispatch_rank:
+            if debug:
+                print(
+                    "    Preprocess: entry_start_index cannot be used together with "
+                    "dispatch_rank"
+                )
+            return False
+        if explicit_expected_dispatch_count:
+            if debug:
+                print(
+                    "    Preprocess: entry_start_index cannot be used together with "
+                    "expected_dispatch_count"
+                )
+            return False
         if debug:
-            print(f"    Preprocess: invalid multi_order: {multi_order}")
+            print(
+                "    Preprocess: entry_start_index is deprecated; consider using "
+                "dispatch_rank + expected_dispatch_count"
+            )
+        has_dispatch_rank = True
+        for idx, spec in enumerate(normalized_specs):
+            spec["dispatch_rank"] = entry_start_index + idx
+        expected_dispatch_count = entry_start_index + target_count
+
+    if has_dispatch_rank:
+        ranks = [spec["dispatch_rank"] for spec in normalized_specs]
+        if len(set(ranks)) != len(ranks):
+            if debug:
+                print("    Preprocess: dispatch_rank values must be unique")
+            return False
+        max_rank = max(ranks)
+        if expected_dispatch_count <= max_rank:
+            if debug:
+                print(
+                    "    Preprocess: expected_dispatch_count is too small for the "
+                    "largest dispatch_rank"
+                )
+            return False
+    elif expected_dispatch_count != target_count:
+        if debug:
+            print(
+                "    Preprocess: expected_dispatch_count differs from target count; "
+                "provide dispatch_rank for all targets"
+            )
         return False
 
     matched_outputs = {}
@@ -332,7 +412,6 @@ async def preprocess_igamesystem_dispatch_skill(
 
     py_code = _build_dispatch_py_eval(
         source_func_va=src_func_va,
-        target_count=query_count,
         via_internal_wrapper=via_internal_wrapper,
         platform=platform,
     )
@@ -350,29 +429,46 @@ async def preprocess_igamesystem_dispatch_skill(
         return False
 
     entries = parsed.get("entries")
-    if not isinstance(entries, list) or len(entries) != query_count:
+    if not isinstance(entries, list) or len(entries) != expected_dispatch_count:
         if debug:
-            print(f"    Preprocess: invalid entry count from {source_yaml_stem}")
+            print(
+                f"    Preprocess: invalid entry count from {source_yaml_stem}, "
+                f"expected {expected_dispatch_count}, got "
+                f"{len(entries) if isinstance(entries, list) else 'N/A'}"
+            )
         return False
 
-    if entry_start_index:
-        entries = entries[entry_start_index:entry_start_index + target_count]
-        if len(entries) != target_count:
-            if debug:
-                print(
-                    "    Preprocess: insufficient entries after applying "
-                    f"entry_start_index={entry_start_index}"
-                )
-            return False
+    if debug:
+        print(
+            f"    Preprocess: collected {len(entries)} dispatch entries from "
+            f"{source_yaml_stem}"
+        )
 
     internal_addr = parsed.get("internal_addr")
-    if target_count > 1 and multi_order == "index":
+    should_sort_by_index = has_dispatch_rank or (target_count > 1 and multi_order == "index")
+    if should_sort_by_index:
         try:
-            entries.sort(key=lambda e: _parse_int(e.get("vfunc_index")))
+            entries = sorted(
+                entries,
+                key=lambda e: (
+                    _parse_int(e.get("vfunc_index")),
+                    _parse_int(e.get("vfunc_offset")),
+                ),
+            )
         except Exception:
             if debug:
                 print("    Preprocess: failed to sort entries by vfunc_index")
             return False
+
+    if has_dispatch_rank:
+        try:
+            selected_entries = [entries[spec["dispatch_rank"]] for spec in normalized_specs]
+        except Exception:
+            if debug:
+                print("    Preprocess: failed to map entries by dispatch_rank")
+            return False
+    else:
+        selected_entries = entries[:target_count]
 
     if internal_rename_to and internal_addr:
         await _rename_func_best_effort(
@@ -382,9 +478,10 @@ async def preprocess_igamesystem_dispatch_skill(
             debug=debug,
         )
 
-    for entry, spec in zip(entries, normalized_specs):
+    for entry, spec in zip(selected_entries, normalized_specs):
         target_name = spec["target_name"]
         rename_to = spec["rename_to"]
+        dispatch_rank = spec.get("dispatch_rank")
 
         try:
             vfunc_offset = _parse_int(entry.get("vfunc_offset"))
@@ -404,9 +501,10 @@ async def preprocess_igamesystem_dispatch_skill(
             )
 
         if debug:
+            rank_suffix = f", dispatch_rank={dispatch_rank}" if dispatch_rank is not None else ""
             print(
                 f"    Preprocess: [{target_name}] "
-                f"vfunc_offset=0x{vfunc_offset:X}, vfunc_index={vfunc_index}"
+                f"vfunc_offset=0x{vfunc_offset:X}, vfunc_index={vfunc_index}{rank_suffix}"
             )
 
         target_addr_hex = vtable_entries.get(vfunc_index)

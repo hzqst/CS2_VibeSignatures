@@ -7,12 +7,16 @@ from ida_preprocessor_scripts._igamesystem_dispatch_common import (
 
 SOURCE_YAML_STEM = "CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal"
 TARGET_SPECS = [
-    {"target_name": "IGameSystem_PostSpawnGroupLoad", "rename_to": "GameEvent_PostSpawnGroupLoad"},
+    {
+        "target_name": "IGameSystem_PostSpawnGroupLoad",
+        "rename_to": "GameEvent_PostSpawnGroupLoad",
+        "dispatch_rank": 1,
+    },
 ]
 VIA_INTERNAL_WRAPPER = False
 INTERNAL_RENAME_TO = None
 MULTI_ORDER = "scan"
-ENTRY_START_INDEX = 1
+EXPECTED_DISPATCH_COUNT = 2
 
 
 async def preprocess_skill(
@@ -38,6 +42,6 @@ async def preprocess_skill(
         via_internal_wrapper=VIA_INTERNAL_WRAPPER,
         internal_rename_to=INTERNAL_RENAME_TO,
         multi_order=MULTI_ORDER,
-        entry_start_index=ENTRY_START_INDEX,
+        expected_dispatch_count=EXPECTED_DISPATCH_COUNT,
         debug=debug,
     )

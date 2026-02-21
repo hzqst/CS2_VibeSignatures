@@ -12,7 +12,6 @@ TARGET_SPECS = [
 VIA_INTERNAL_WRAPPER = False
 INTERNAL_RENAME_TO = None
 MULTI_ORDER = "scan"
-ENTRY_START_INDEX = 0
 
 
 async def preprocess_skill(
@@ -38,6 +37,5 @@ async def preprocess_skill(
         via_internal_wrapper=VIA_INTERNAL_WRAPPER,
         internal_rename_to=INTERNAL_RENAME_TO,
         multi_order=MULTI_ORDER,
-        entry_start_index=ENTRY_START_INDEX,
         debug=debug,
     )
