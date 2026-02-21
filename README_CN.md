@@ -4,11 +4,11 @@
 
 这是一个主要用于为 CS2 生成 signatures/offsets，并通过 Agent SKILLS 与 MCP Calls 更新 HL2SDK_CS2 C++ 头文件的项目。
 
-我们的目标是在**无需人工参与**的情况下更新 signatures/offsets/cpp headers。
+该项目的设计目标是在**完全无需人工参与**的情况下更新 signatures/offsets/cpp headers。
 
 目前，本项目已可自动更新 **CounterStrikeSharp** 和 **CS2Fixes** 的全部 signatures/offsets。
 
-* 欢迎通过 PR 贡献你的 SKILL！见[这里](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed) `TODO: Add skill support for XXXXXXX`
+* 欢迎通过 PR 贡献你的 SKILL！[如何创建SKILL? 见这里](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed) - `TODO: Add skill support for XXXXXXX`
 
 ## 依赖要求
 
@@ -20,9 +20,9 @@
 
 4. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
 
-5. [idalib](https://docs.hex-rays.com/user-guide/idalib)（`ida_analyze_bin.py` 必需）
+5. [idalib](https://docs.hex-rays.com/user-guide/idalib)（运行 `ida_analyze_bin.py` 的必需项）
 
-6. Clang-LLVM（`run_cpp_tests.py` 必需）
+6. Clang-LLVM（运行 `run_cpp_tests.py` 的必需项）
 
 ## 整体工作流
 
@@ -38,7 +38,7 @@ python download_bin.py -gamever 14135
  python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]
  ```
 
-* 在真正运行 Agent SKILL(s) 前，会先通过 mcp call 直接使用 `bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` 中的旧 signature 查找当前版本游戏二进制中的符号。在这种情况下不会消耗 token。
+* 在真正运行 Agent SKILL(s) 前，会先通过 mcp call 直接使用 `bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` 中的旧 signature 查找当前版本游戏二进制中的符号。这种情况不会消耗 token。
 
 #### 3. 将 yaml(s) 转换为 gamedata json / txt
 
@@ -60,16 +60,16 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 `dist/CounterStrikeSharp/config/addons/counterstrikesharp/gamedata/gamedata.json`
 
- - 跳过 2 个符号。
+ - 已跳过 2 个符号。
 
- - `GameEventManager`：CSS 已不再使用。
- - `CEntityResourceManifest_AddResource`：游戏更新时几乎不会变化。
+ - `GameEventManager`：在CSS中已废弃。
+ - `CEntityResourceManifest_AddResource`：游戏更新时基本不会改动。
 
 [CS2Fixes](https://github.com/Source2ZE/CS2Fixes)
 
 `dist/CS2Fixes/gamedata/cs2fixes.games.txt`
 
- - 跳过 1 个符号。
+ - 已跳过 1 个符号。
 
  - `CCSPlayerPawn_GetMaxSpeed`，因为它并不存在于 `server.dll` 中。
 
@@ -79,19 +79,19 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 `dist/swiftlys2/plugin_files/gamedata/cs2/core/signatures.jsonc`
 
- - 跳过 44 个符号。
+ - 已跳过 44 个符号。
 
 [plugify](https://github.com/untrustedmodders/plugify-plugin-s2sdk)
 
 `dist/plugify-plugin-s2sdk/assets/gamedata.jsonc`
 
- - 跳过 14 个符号。
+ - 已跳过 14 个符号。
 
 [cs2kz-metamod](https://github.com/Source2ZE/CS2Fixes)
 
 `dist/cs2kz-metamod/gamedata/cs2kz-core.games.txt`
 
- - 跳过 42 个符号。
+ - 已跳过 42 个符号。
 
 [modsharp](https://github.com/Kxnrl/modsharp-public)
 
@@ -107,13 +107,13 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 `dist/modsharp-public/.asset/gamedata/tier0.games.jsonc`
 
- - 跳过 230 个符号。
+ - 已跳过 230 个符号。
 
 [CS2Surf/Timer](https://github.com/CS2Surf-CN/Timer)
 
 `dist/cs2surf/gamedata/cs2surf-core.games.jsonc`
 
- - 跳过 26 个符号。
+ - 已跳过 26 个符号。
 
 ## 如何为 vtable 创建 SKILL
 
@@ -148,7 +148,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 * 务必确保 ida-pro-mcp server 正在运行。
 
-* 对于人工贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
+* 对于人类贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
 
 以 `CBaseModelEntity_SetModel` 为例
 
@@ -175,7 +175,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 #### 2. 创建 SKILL
 
-  - 根据你在 IDA 里的分析，创建项目级 skill `find-CBaseModelEntity_SetModel`（**英文编写**）。
+  - 根据你在 IDA 里的分析，创建项目级 skill `find-CBaseModelEntity_SetModel`（**使用英文编写**）。
 
   - 该 SKILL 应生成 `CBaseModelEntity_SetModel.{platform}.yaml`，并包含 `func_sig`。
 
@@ -214,7 +214,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 * 务必确保 ida-pro-mcp server 正在运行。
 
-* 对于人工贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
+* 对于人类贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
 
 以 `CBasePlayerController_Respawn` 为例
 
@@ -250,7 +250,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 #### 2. 创建 SKILL
 
-  - 创建项目级 skill `find-CBasePlayerController_Respawn`（**英文编写**）。
+  - 创建项目级 skill `find-CBasePlayerController_Respawn`（**使用英文编写**）。
 
   - 该 SKILL 应生成 `CBasePlayerController_Respawn.{platform}.yaml`，并包含 `func_sig`。（如果 `CBasePlayerController_Respawn` 太短或过于通用，可改用 `vfunc_sig`）。
 
@@ -291,7 +291,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 * 务必确保 ida-pro-mcp server 正在运行。
 
-* 对于人工贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
+* 对于人类贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
 
 以 `IGameSystem_InitAllSystems` 和 `IGameSystem_InitAllSystems_pFirst` 为例
 
@@ -307,7 +307,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 #### 2. 创建 SKILL
 
-  - 创建项目级 skill `find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst`（**英文编写**）。
+  - 创建项目级 skill `find-IGameSystem_InitAllSystems-AND-IGameSystem_InitAllSystems_pFirst`（**使用英文编写**）。
 
   - 该 SKILL 应生成 `IGameSystem_InitAllSystems.{platform}.yaml`，并包含 `func_sig`。
 
@@ -354,7 +354,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 * 务必确保 ida-pro-mcp server 正在运行。
 
-* 对于人工贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
+* 对于人类贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
 
 以 `CGameResourceService_BuildResourceManifest` 和 `CGameResourceService_m_pEntitySystem` 为例。
 
@@ -366,7 +366,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 #### 2. 创建 SKILL
 
-  - 创建项目级 skill `find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem`（**英文编写**）。
+  - 创建项目级 skill `find-CGameResourceService_BuildResourceManifest-AND-CGameResourceService_m_pEntitySystem`（**使用英文编写**）。
 
   - 该 SKILL 应生成 `CGameResourceService_BuildResourceManifest.{platform}.yaml`，并包含 `func_sig`。
 
@@ -422,9 +422,9 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 * 务必确保 ida-pro-mcp server 正在运行。
 
-* 对于人工贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
+* 对于人类贡献者：当你查找新符号时，应编写新的初始提示词，**不要**从 README 直接复制粘贴！
 
-以 `CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` 为例——在 `CCSPlayer_MovementServices_FullWalkMove` 内把速度限制逻辑对应的 `jbe` 补丁为无条件 `jmp`。
+以 `CCSPlayer_MovementServices_FullWalkMove_SpeedClamp` 为例 —— 在 `CCSPlayer_MovementServices_FullWalkMove` 内把速度限制逻辑对应的 `jbe` 补丁为无条件 `jmp`。
 
 #### 1. 在 IDA 中查找目标符号
 
@@ -458,7 +458,7 @@ python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 #### 2. 创建 SKILL
 
- - 创建项目级 skill `find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp`（**英文编写**）。
+ - 创建项目级 skill `find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp`（**使用英文编写**）。
 
  - 该 SKILL 应生成 `CCSPlayer_MovementServices_FullWalkMove.{platform}.yaml`，并包含 `patch_sig` 与 `patch_bytes`。
 

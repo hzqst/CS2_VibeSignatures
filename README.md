@@ -8,7 +8,7 @@ Our goal is to update signatures/offsets/cppheaders without human involved.
 
 Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** can be updated automatically with this project.
 
-* Feel free to contribute your SKILLS with PR! See `TODO: Add skill support for XXXXXXX` [here](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed).
+* Feel free to contribute your SKILLS with PR! [How to create SKILL? See here](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed) -  `TODO: Add skill support for XXXXXXX` 
 
 ## Requirements
 
