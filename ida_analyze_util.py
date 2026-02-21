@@ -74,6 +74,7 @@ if vtable_start is None:
 if vtable_start is None:
     result = json.dumps(None)
 else:
+    vtable_seg = ida_segment.getseg(vtable_start)
     entries = {}
     count = 0
     for i in range(1000):
@@ -93,7 +94,13 @@ else:
         if ptr_value == 0xFFFFFFFFFFFFFFFF:
             break
         target_seg = ida_segment.getseg(ptr_value)
-        if not target_seg or not (target_seg.perm & ida_segment.SEGPERM_EXEC):
+        if not target_seg:
+            break
+        # If an entry points back into the vtable's own segment (.rdata/.rodata),
+        # it is metadata or unrelated data, not a virtual function.
+        if vtable_seg and (vtable_seg.start_ea <= ptr_value < vtable_seg.end_ea):
+            break
+        if not (target_seg.perm & ida_segment.SEGPERM_EXEC):
             break
         func = idaapi.get_func(ptr_value)
         if func is not None:
