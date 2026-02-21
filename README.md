@@ -46,7 +46,7 @@ python download_bin.py -gamever 14135
  python ida_analyze_bin.py -gamever=14135 [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex] [-maxretry=3] [-debug]
  ```
 
-* Old signatures from `from bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` will be used to find symbols directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
+* Old signatures from `bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` will be used to find symbols in current version of game binaries directly through mcp call before actually running Agent SKILL(s). No token will be consumed in this case.
 
 #### 3. Convert yaml(s) to gamedata json / txt
 
