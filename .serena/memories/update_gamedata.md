@@ -1,16 +1,16 @@
 # update_gamedata
 
-## 概述
-从版本化的 YAML 签名数据生成并更新多个插件/框架的 gamedata（JSON/VDF/JSONC 等），实现跨平台签名与偏移统一同步。
+## Overview
+Generate and update gamedata (JSON/VDF/JSONC, etc.) for multiple plugins/frameworks from versioned YAML signature data, enabling unified cross-platform synchronization of signatures and offsets.
 
-## 职责
-- 解析命令行参数与读取 `config.yaml`
-- 读取指定 `bin_dir/gamever` 下各模块的 YAML 签名文件
-- 构建函数名到库名/分类/别名的映射
-- 将 YAML 签名转换到各目标格式并写回对应 gamedata 文件
-- 输出更新/跳过统计
+## Responsibilities
+- Parse command-line arguments and read `config.yaml`.
+- Load YAML signature files for each module under `bin_dir/gamever`.
+- Build mappings from function names to library/category/alias.
+- Convert YAML signatures into target formats and write back to corresponding gamedata files.
+- Output update/skip statistics.
 
-## 涉及文件 (不要带行号)
+## Files Involved (no line numbers)
 - update_gamedata.py
 - config.yaml
 - bin/<gamever>/<module>/<func>.<platform>.yaml
@@ -21,33 +21,33 @@
 - SwiftlyS2/gamedata/offsets.jsonc
 - plugify/gamedata/gamedata.jsonc
 
-## 架构
-核心流程为“加载配置 -> 汇总 YAML -> 按格式更新” 的串行管线：
+## Architecture
+Core flow is a serial pipeline of "load config -> aggregate YAML -> update by format":
 ```
 parse_args
   -> load_config
   -> build_function_library_map / build_alias_to_name_map
-  -> load_all_yaml_data (读取 bin_dir/gamever 下各模块签名 YAML)
+  -> load_all_yaml_data (load module signature YAML under bin_dir/gamever)
   -> update_counterstrikesharp (JSON)
   -> update_cs2fixes (VDF)
   -> update_cs2kz (VDF)
   -> update_swiftlys2 (JSONC: signatures/offsets)
   -> update_plugify (JSONC)
 ```
-格式转换由 `convert_sig_to_css` / `convert_sig_to_cs2fixes` / `convert_sig_to_swiftly` 负责；对含 `::` 的名称通过 `normalize_func_name_colons_to_underscore` 与 `alias_to_name_map` 做映射。VDF 输出会处理反斜杠转义以匹配目标插件格式要求。
+Format conversion is handled by `convert_sig_to_css` / `convert_sig_to_cs2fixes` / `convert_sig_to_swiftly`; names containing `::` are mapped through `normalize_func_name_colons_to_underscore` and `alias_to_name_map`. VDF output handles backslash escaping to satisfy target plugin format requirements.
 
-## 依赖
-- PyYAML（读取 `config.yaml` 与 YAML 签名）
-- requests（不使用）
-- vdf（解析/生成 VDF）
-- JSON/JSONC 读写（自带 json + JSONC 去注释）
-- 目录结构：`bin/<gamever>/<module>/` 与各插件 gamedata 目标路径
+## Dependencies
+- PyYAML (read `config.yaml` and YAML signatures)
+- requests (unused)
+- vdf (parse/generate VDF)
+- JSON/JSONC read-write (builtin `json` + JSONC comment stripping)
+- Directory layout: `bin/<gamever>/<module>/` and target gamedata paths for each plugin
 
-## 注意事项
-- JSONC 写回不保留注释（`save_jsonc` 直接写入纯 JSON）
-- YAML 不存在会打印 Warning 并跳过
-- `::` 名称与别名映射不完整时会导致跳过
-- VDF 输出需替换 `\\x` 为 `\x`，否则 CS2Fixes/CS2KZ 读取不匹配
+## Notes
+- JSONC write-back does not preserve comments (`save_jsonc` writes plain JSON directly).
+- Missing YAML files trigger a warning and are skipped.
+- Incomplete `::` name or alias mapping causes skips.
+- VDF output must replace `\\x` with `\x`; otherwise CS2Fixes/CS2KZ parsing will not match.
 
-## 调用方（可选）
-- 命令行直接调用：`python update_gamedata.py -gamever 14135 [-debug]`
+## Callers (optional)
+- Direct CLI invocation: `python update_gamedata.py -gamever 14135 [-debug]`
