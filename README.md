@@ -1,5 +1,7 @@
 # CS2 VibeSignatures
 
+[中文文档](README_CN.md)
+
 This is a project mainly for generating signatures/offsets for CS2, updating HL2SDK_CS2 cpp headers via Agent SKILLS & MCP Calls.
 
 Our goal is to update signatures/offsets/cppheaders without human involved.
