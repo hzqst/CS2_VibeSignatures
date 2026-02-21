@@ -7,11 +7,16 @@ from ida_preprocessor_scripts._igamesystem_dispatch_common import (
 
 SOURCE_YAML_STEM = "CLoopModeGame_OnClientPreOutputParallelWithServer"
 TARGET_SPECS = [
-    {"target_name": "IGameSystem_ClientPreEntityThink", "rename_to": "GameSystem_OnClientPreEntityThink"},
+    {
+        "target_name": "IGameSystem_ClientPreEntityThink",
+        "rename_to": "GameSystem_OnClientPreEntityThink",
+        "dispatch_rank": 0,
+    },
 ]
 VIA_INTERNAL_WRAPPER = True
 INTERNAL_RENAME_TO = "CLoopModeGame_OnClientPreOutputParallelWithServerInternal"
 MULTI_ORDER = "scan"
+EXPECTED_DISPATCH_COUNT = 3
 
 
 async def preprocess_skill(
@@ -37,5 +42,6 @@ async def preprocess_skill(
         via_internal_wrapper=VIA_INTERNAL_WRAPPER,
         internal_rename_to=INTERNAL_RENAME_TO,
         multi_order=MULTI_ORDER,
+        expected_dispatch_count=EXPECTED_DISPATCH_COUNT,
         debug=debug,
     )
