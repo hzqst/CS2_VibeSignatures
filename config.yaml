@@ -1045,6 +1045,26 @@ modules:
           - CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupPrecache
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupPrecache.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_SpawnGroupPrecache
+        expected_output:
+          - IGameSystem_SpawnGroupPrecache.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupPrecache.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_SpawnGroupUncache
+        expected_output:
+          - IGameSystem_SpawnGroupUncache.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
       - name: find-FindUseEntity
         expected_output:
           - FindUseEntity.{platform}.yaml
@@ -1808,6 +1828,22 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::PostSpawnGroupUnload
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupPrecache
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupPrecache
+          - SpawnGroupPrecache
+
+      - name: IGameSystem_SpawnGroupPrecache
+        category: vfunc
+        alias:
+          - IGameSystem::SpawnGroupPrecache
+
+      - name: IGameSystem_SpawnGroupUncache
+        category: vfunc
+        alias:
+          - IGameSystem::SpawnGroupUncache
 
       - name: FindUseEntity
         category: func

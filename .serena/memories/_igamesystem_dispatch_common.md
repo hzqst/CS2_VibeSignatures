@@ -67,10 +67,21 @@
 ## Rationale
 Mapping now relies on deterministic index ordering plus strict entry-count assertions, which is more stable under compiler/reordering differences.
 
+### SpawnGroupPrecache / SpawnGroupUncache
+- `find-IGameSystem_SpawnGroupPrecache.py`
+  - source: `CSpawnGroupMgrGameSystem_SpawnGroupPrecache`
+  - single-target default mapping (1 dispatch)
+- `find-IGameSystem_SpawnGroupUncache.py`
+  - source: `CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown`
+  - `dispatch_rank=0`
+  - `EXPECTED_DISPATCH_COUNT=2`
+
 ## Files Involved
 - `ida_preprocessor_scripts/_igamesystem_dispatch_common.py`
 - `ida_preprocessor_scripts/find-IGameSystem_PreSpawnGroupLoad.py`
 - `ida_preprocessor_scripts/find-IGameSystem_PostSpawnGroupLoad.py`
 - `ida_preprocessor_scripts/find-IGameSystem_PostSpawnGroupUnload.py`
 - `ida_preprocessor_scripts/find-IGameSystem_PreSpawnGroupUnload.py`
+- `ida_preprocessor_scripts/find-IGameSystem_SpawnGroupPrecache.py`
+- `ida_preprocessor_scripts/find-IGameSystem_SpawnGroupUncache.py`
 - `ida_preprocessor_scripts/find-IGameSystem_ClientPreEntityThink.py`
