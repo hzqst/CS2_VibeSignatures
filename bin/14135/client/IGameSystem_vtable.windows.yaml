@@ -2,8 +2,8 @@ vtable_class: IGameSystem
 vtable_symbol: ??_7IGameSystem@@6B@
 vtable_va: '0x181912e28'
 vtable_rva: '0x1912e28'
-vtable_size: '0x1f8'
-vtable_numvfunc: 63
+vtable_size: '0x1f0'
+vtable_numvfunc: 62
 vtable_entries:
   0: '0x18014c2f0'
   1: '0x18014c300'
@@ -67,4 +67,3 @@ vtable_entries:
   59: '0x18014c6e0'
   60: '0x18014c6f0'
   61: '0x18014c700'
-  62: '0x181854884'
