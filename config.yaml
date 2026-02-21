@@ -1021,6 +1021,30 @@ modules:
           - CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupShutdown
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupShutdown.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown.{platform}.yaml
+
+      - name: find-IGameSystem_PreSpawnGroupUnload
+        expected_output:
+          - IGameSystem_PreSpawnGroupUnload.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupShutdown.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
+      - name: find-IGameSystem_PostSpawnGroupUnload
+        expected_output:
+          - IGameSystem_PostSpawnGroupUnload.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
       - name: find-FindUseEntity
         expected_output:
           - FindUseEntity.{platform}.yaml
@@ -1762,6 +1786,28 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::PostSpawnGroupLoad
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupShutdown
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupShutdown
+          - SpawnGroupShutdown
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupActuallyShutdown
+        category: func
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupActuallyShutdown
+          - SpawnGroupActuallyShutdown
+
+      - name: IGameSystem_PreSpawnGroupUnload
+        category: vfunc
+        alias:
+          - IGameSystem::PreSpawnGroupUnload
+
+      - name: IGameSystem_PostSpawnGroupUnload
+        category: vfunc
+        alias:
+          - IGameSystem::PostSpawnGroupUnload
 
       - name: FindUseEntity
         category: func
