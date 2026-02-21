@@ -73,3 +73,49 @@
 ## Notes
 - `offset_sig_disp` exists in writer/preprocess schema but was not observed in current `bin/` files.
 - `vtable_symbol` is optional in practice (present in older subsets, absent in some newer vtable files).
+
+
+## func_sig: Generation Principle and Usage
+
+### Generation Principle
+- Canonical auto-generation is implemented by `preprocess_gen_func_sig_via_mcp` in `ida_analyze_util.py`.
+- Input is a known function start address (`func_va`). The algorithm reads bytes from the function head instruction-by-instruction.
+- It wildcards volatile bytes (`??`), including immediates/displacements and relative branch/call offsets.
+- Candidate signatures grow only at instruction boundaries.
+- For each candidate, `find_bytes(limit=2)` is used to enforce uniqueness.
+- A valid candidate must match exactly one location, and that location must be the same function head address.
+- The shortest valid candidate is selected as `func_sig`.
+
+### Usage Method
+- In version-to-version preprocessing (`preprocess_func_sig_via_mcp`), `func_sig` is the primary relocation anchor.
+- Workflow:
+  1. Run `find_bytes` with old `func_sig`.
+  2. Require exactly one match.
+  3. Query IDA function info at the match address (`func_va`, `func_size`).
+  4. Recompute `func_rva` and write new YAML.
+- Important behavior: if old YAML already has `func_sig`, preprocessing takes this path first and does not auto-fallback to `vfunc_sig` on failure.
+- Downstream gamedata modules mainly consume `func_sig` (converted to target pattern formats), so `func_sig` is the main runtime-facing signature field.
+
+## vfunc_sig: Generation Principle and Usage
+
+### Generation Principle
+- In this repository, `vfunc_sig` is typically produced by the skill `/generate-signature-for-vfuncoffset` (see `.claude/skills/generate-signature-for-vfuncoffset/SKILL.md`).
+- Target anchor is a virtual-call instruction that encodes the vtable slot displacement (e.g., call/jmp through `[reg+imm]`).
+- Generation is forward-expanding from that anchor instruction; the skill documents `vfunc_sig_disp` as `0` in its default strategy (signature starts at the target instruction).
+- As with `func_sig`, candidates are validated by uniqueness (`find_bytes`) and robustness, then the shortest unique pattern is kept.
+- The displacement bytes tied to the virtual slot are intentionally preserved/represented so the signature remains slot-specific.
+
+### Usage Method
+- `vfunc_sig` is mainly a preprocessing fallback anchor, not the primary downstream gamedata field.
+- In `preprocess_func_sig_via_mcp`, it is used when old YAML has no `func_sig`:
+  1. Require `vfunc_sig` + `vtable_name` + (`vfunc_index` or `vfunc_offset`).
+  2. Unique-match `vfunc_sig` in new binary.
+  3. Load/generate target `vtable` YAML and resolve function VA from `vtable_entries[vfunc_index]`.
+  4. Query function info and emit function YAML with vfunc metadata.
+- This path is especially useful when function-head signatures are too short/unstable but vtable slot semantics are stable.
+- Current dist gamedata updaters primarily consume `vfunc_index` (offset metadata), while `vfunc_sig` is used by the analysis/preprocess pipeline for cross-version relocation.
+
+## Practical Selection Guidance
+- Prefer `func_sig` when a stable, unique function-head signature can be generated.
+- Prefer `vfunc_sig` fallback for virtual methods where head bytes are weak but the vtable slot identity is reliable.
+- Keep both uniqueness and target-address correctness checks mandatory; do not accept multi-hit signatures.
