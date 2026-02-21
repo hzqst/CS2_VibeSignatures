@@ -8,9 +8,7 @@
 
 目前，本项目已可自动更新 **CounterStrikeSharp** 和 **CS2Fixes** 的全部 signatures/offsets。
 
-* 欢迎通过 PR 贡献你的 SKILL！
-
-* 可在[这里](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed)查看 `TODO: Add skill support for XXXXXXX`。
+* 欢迎通过 PR 贡献你的 SKILL！见[这里](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed) `TODO: Add skill support for XXXXXXX`
 
 ## 依赖要求
 
