@@ -30,6 +30,8 @@ Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** c
 
 6. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
+7. Clang-LLVM (mandatory for `run_cpp_tests.py`)
+
 ## Overall workflow
 
 #### 1. Download CS2 binaries
@@ -51,6 +53,14 @@ python download_bin.py -gamever 14135
 ```bash
 python update_gamedata.py -gamever 14135 [-debug]
 ```
+
+#### 4. Run cpp tests and check if cpp headers mismatch from yaml(s)
+
+```bash
+python run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/codex]
+```
+
+* When with `-fixheader`, an agent will be initiated to fix the cpp headers.
 
 ### Currently supported gamedata
 
@@ -527,4 +537,10 @@ python ida_analyze_bin.py -gamever %CS2_GAMEVER% -agent="claude.cmd" -platform %
 @echo Update gamedata with generated yamls
 
 python update_gamedata.py -gamever %CS2_GAMEVER% -debug
+```
+
+```bash
+@echo Find mismatches in CS2SDK headers and fix them
+
+python run_cpp_tests.py -gamever %CS2_GAMEVER% -debug -fixheader -agent="claude.cmd"
 ```
