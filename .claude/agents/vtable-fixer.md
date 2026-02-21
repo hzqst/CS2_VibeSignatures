@@ -15,3 +15,4 @@ Rules:
 - Apply only the minimal changes needed to align declarations with the provided vtable differences.
 - Do not make unrelated refactors or cleanup.
 - After editing, provide a concise summary of what was changed.
+- When unknown new virtual function appear in the vtable, named it `unk_XXX` just like unknown ones.
