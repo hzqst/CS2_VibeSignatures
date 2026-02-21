@@ -301,38 +301,59 @@ def run_one_test(
             "output": compile_output,
         }
 
-    compare_report = None
+    compare_reports = None
     if should_parse_vtable:
         platform = map_target_triple_to_platform(target)
         if platform is None:
-            compare_report = {
+            compare_reports = [
+                {
                 "class_name": symbol,
                 "platform": "unknown",
+                "requested_modules": _to_list(test_item.get("reference_modules")),
                 "compiler_found": False,
                 "reference_found": False,
                 "differences": [],
                 "notes": [
                     f"Cannot map target triple '{target}' to yaml platform; vtable compare skipped."
                 ],
-            }
+                }
+            ]
         else:
             reference_modules = _to_list(test_item.get("reference_modules"))
-            compare_report = compare_compiler_vtable_with_yaml(
-                class_name=symbol,
-                compiler_output=compile_output,
-                bindir=bindir,
-                gamever=args.gamever,
-                platform=platform,
-                reference_modules=reference_modules,
-                pointer_size=pointer_size_from_target_triple(target),
-            )
+            compare_reports = []
+            if not reference_modules:
+                # Keep behavior stable even when reference_modules is omitted.
+                compare_reports.append(
+                    compare_compiler_vtable_with_yaml(
+                        class_name=symbol,
+                        compiler_output=compile_output,
+                        bindir=bindir,
+                        gamever=args.gamever,
+                        platform=platform,
+                        reference_modules=reference_modules,
+                        pointer_size=pointer_size_from_target_triple(target),
+                    )
+                )
+            else:
+                for module_name in reference_modules:
+                    compare_reports.append(
+                        compare_compiler_vtable_with_yaml(
+                            class_name=symbol,
+                            compiler_output=compile_output,
+                            bindir=bindir,
+                            gamever=args.gamever,
+                            platform=platform,
+                            reference_modules=[module_name],
+                            pointer_size=pointer_size_from_target_triple(target),
+                        )
+                    )
 
     return {
         "name": test_name,
         "status": "ok",
         "command": command,
         "output": compile_output,
-        "compare_report": compare_report,
+        "compare_reports": compare_reports,
     }
 
 
@@ -431,14 +452,15 @@ def main():
         if args.debug:
             print(f"Command: {_format_command(result['command'])}")
 
-        compare_report = result.get("compare_report")
-        if compare_report is not None:
-            compare_run_count += 1
-            lines = format_vtable_compare_report(compare_report)
-            for line in lines:
-                print(f"  {line}")
-            if compare_report.get("differences"):
-                compare_diff_count += 1
+        compare_reports = result.get("compare_reports")
+        if compare_reports:
+            for compare_report in compare_reports:
+                compare_run_count += 1
+                lines = format_vtable_compare_report(compare_report)
+                for line in lines:
+                    print(f"  {line}")
+                if compare_report.get("differences"):
+                    compare_diff_count += 1
         elif args.debug and result.get("output"):
             print("  (Compiler output)")
             print(result["output"])

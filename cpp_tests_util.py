@@ -268,6 +268,7 @@ def compare_compiler_vtable_with_yaml(
     report: Dict[str, Any] = {
         "class_name": class_name,
         "platform": platform,
+        "requested_modules": list(reference_modules),
         "compiler_found": compiler_section is not None,
         "reference_found": reference is not None,
         "reference_module": reference["module"] if reference else None,
@@ -396,7 +397,13 @@ def format_vtable_compare_report(report: Dict[str, Any]) -> List[str]:
             f"reference functions: {report.get('reference_functions_count', 0)}"
         )
     else:
-        lines.append("Reference module: not found")
+        requested_modules = report.get("requested_modules", [])
+        if requested_modules:
+            lines.append(
+                f"Reference module (requested): {', '.join(requested_modules)}; not found"
+            )
+        else:
+            lines.append("Reference module: not found")
 
     diffs = report.get("differences", [])
     if diffs:
