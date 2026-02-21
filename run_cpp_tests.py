@@ -4,9 +4,12 @@ Run C++ tests declared in config.yaml and compare clang vtable dumps with YAML r
 """
 
 import argparse
+import json
+import shlex
 import subprocess
 import sys
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Sequence
 
@@ -20,6 +23,7 @@ except ImportError as e:
 from cpp_tests_util import (
     compare_compiler_vtable_with_yaml,
     format_vtable_compare_report,
+    format_vtable_differences_for_agent,
     map_target_triple_to_platform,
     pointer_size_from_target_triple,
 )
@@ -29,6 +33,10 @@ DEFAULT_CONFIG_FILE = "config.yaml"
 DEFAULT_BIN_DIR = "bin"
 DEFAULT_CLANG = "clang++"
 DEFAULT_CPP_STD = "c++20"
+DEFAULT_AGENT = "claude"
+DEFAULT_MAX_RETRY = 3
+SKILL_TIMEOUT = 600
+VTABLE_FIXER_AGENT_FILE = Path(".claude/agents/vtable-fixer.md")
 
 
 def parse_args():
@@ -66,6 +74,37 @@ def parse_args():
         action="store_true",
         help="Enable debug output",
     )
+    parser.add_argument(
+        "-fixheader",
+        action="store_true",
+        help="When vtable differences are found, invoke agent to fix configured C++ headers",
+    )
+    parser.add_argument(
+        "-agent",
+        default=DEFAULT_AGENT,
+        help=f"Agent executable to use for header fixing, e.g. claude/codex (default: {DEFAULT_AGENT})",
+    )
+    parser.add_argument(
+        "-maxretry",
+        type=int,
+        default=DEFAULT_MAX_RETRY,
+        help=f"Maximum retry attempts for header-fix agent runs (default: {DEFAULT_MAX_RETRY})",
+    )
+    parser.add_argument(
+        "-claude_allowed_tools",
+        default="",
+        help="Pass-through value for Claude '--allowedTools' during -fixheader runs",
+    )
+    parser.add_argument(
+        "-claude_permission_mode",
+        default="",
+        help="Pass-through value for Claude '--permission-mode' during -fixheader runs",
+    )
+    parser.add_argument(
+        "-claude_extra_args",
+        default="",
+        help="Additional raw CLI arguments appended to Claude command during -fixheader runs",
+    )
     return parser.parse_args()
 
 
@@ -78,6 +117,29 @@ def _to_list(value: Any) -> List[str]:
         text = value.strip()
         return [text] if text else []
     return [str(value).strip()]
+
+
+def _to_text(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _choose_override(item_value: Any, fallback: str) -> str:
+    override = _to_text(item_value)
+    if override:
+        return override
+    return fallback
+
+
+def _split_cli_args(raw_args: str) -> List[str]:
+    text = _to_text(raw_args)
+    if not text:
+        return []
+    try:
+        return shlex.split(text, posix=False)
+    except ValueError:
+        return text.split()
 
 
 def _normalize_option(option_text: str) -> str:
@@ -130,6 +192,215 @@ def parse_config(config_path: Path) -> List[Dict[str, Any]]:
         sys.exit(1)
 
     return cpp_tests
+
+
+def _strip_optional_frontmatter(markdown_text: str) -> str:
+    """Remove optional YAML frontmatter from an agent markdown file."""
+    content = markdown_text.strip()
+    if not content.startswith("---"):
+        return content
+    lines = content.splitlines()
+    frontmatter_end = None
+    for idx, line in enumerate(lines[1:], start=1):
+        if line.strip() == "---":
+            frontmatter_end = idx
+            break
+    if frontmatter_end is None:
+        return content
+    return "\n".join(lines[frontmatter_end + 1 :]).strip()
+
+
+def _load_codex_developer_instructions(agent_md_path: Path) -> str:
+    """Load and normalize Codex developer_instructions from agent markdown."""
+    try:
+        raw = agent_md_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        print(f"Error: Codex agent prompt file not found: {agent_md_path}")
+        return ""
+    except OSError as exc:
+        print(f"Error: Failed to read Codex agent prompt file {agent_md_path}: {exc}")
+        return ""
+
+    prompt = _strip_optional_frontmatter(raw)
+    if not prompt:
+        print(f"Error: Codex agent prompt is empty in {agent_md_path}")
+        return ""
+    return f"developer_instructions={json.dumps(prompt)}"
+
+
+def _resolve_header_paths(test_item: Dict[str, Any], config_dir: Path) -> List[Path]:
+    """Resolve configured header paths to absolute paths."""
+    headers = _to_list(test_item.get("headers"))
+    resolved: List[Path] = []
+    for header in headers:
+        path = Path(header)
+        if not path.is_absolute():
+            path = (config_dir / path).resolve()
+        resolved.append(path)
+    return resolved
+
+
+def _build_fix_prompt(
+    *,
+    symbol: str,
+    header_paths: Sequence[Path],
+    diff_reports: Sequence[Dict[str, Any]],
+) -> str:
+    """Build English prompt for fixing C++ headers based on vtable differences."""
+    lines: List[str] = []
+    lines.append(
+        f"Please update the C++ header declarations for interface/class '{symbol}'."
+    )
+    lines.append(
+        "Follow the existing code style, formatting, and naming conventions in the header."
+    )
+    lines.append("Do not make unrelated edits.")
+    lines.append("")
+    lines.append("Header file paths to edit:")
+    for path in header_paths:
+        lines.append(f"- {path.as_posix()}")
+    lines.append("")
+    lines.append("VTable Differences:")
+    for report in diff_reports:
+        module_name = report.get("reference_module")
+        if not module_name:
+            requested = report.get("requested_modules", [])
+            module_name = ", ".join(requested) if requested else "unknown"
+        lines.append(f"Reference module: {module_name}")
+        for diff_line in format_vtable_differences_for_agent(report):
+            lines.append(f"  {diff_line}")
+    lines.append("")
+    lines.append(
+        "Apply the header updates now and keep the resulting declarations consistent with the latest vtable layout."
+    )
+    return "\n".join(lines)
+
+
+def run_fix_header_agent(
+    *,
+    fix_prompt: str,
+    agent: str,
+    debug: bool,
+    max_retries: int,
+    claude_allowed_tools: str = "",
+    claude_permission_mode: str = "",
+    claude_extra_args: str = "",
+) -> bool:
+    """Invoke claude/codex agent to apply header fixes."""
+    max_retries = max(1, int(max_retries))
+    claude_session_id = str(uuid.uuid4())
+
+    codex_developer_instructions = None
+    if "codex" in agent.lower():
+        codex_developer_instructions = _load_codex_developer_instructions(
+            VTABLE_FIXER_AGENT_FILE
+        )
+        if not codex_developer_instructions:
+            return False
+
+    for attempt in range(max_retries):
+        is_retry = attempt > 0
+        is_claude_agent = "claude" in agent.lower()
+        is_codex_agent = "codex" in agent.lower()
+
+        if is_claude_agent:
+            cmd = [
+                agent,
+                "-p",
+                fix_prompt,
+                "--agent",
+                "vtable-fixer",
+                "--settings",
+                '{"alwaysThinkingEnabled": false}',
+            ]
+            if _to_text(claude_allowed_tools):
+                cmd.extend(["--allowedTools", _to_text(claude_allowed_tools)])
+            if _to_text(claude_permission_mode):
+                cmd.extend(["--permission-mode", _to_text(claude_permission_mode)])
+            extra_args = _split_cli_args(claude_extra_args)
+            if extra_args:
+                cmd.extend(extra_args)
+            if is_retry:
+                cmd.extend(["--resume", claude_session_id])
+            else:
+                cmd.extend(["--session-id", claude_session_id])
+            retry_target_desc = f"session {claude_session_id}"
+        elif is_codex_agent:
+            if is_retry:
+                cmd = [
+                    agent,
+                    "-c",
+                    codex_developer_instructions,
+                    "-c",
+                    "model_reasoning_effort=high",
+                    "-c",
+                    "model_reasoning_summary=none",
+                    "-c",
+                    "model_verbosity=low",
+                    "exec",
+                    "resume",
+                    "--last",
+                    fix_prompt,
+                ]
+            else:
+                cmd = [
+                    agent,
+                    "-c",
+                    codex_developer_instructions,
+                    "-c",
+                    "model_reasoning_effort=high",
+                    "-c",
+                    "model_reasoning_summary=none",
+                    "-c",
+                    "model_verbosity=low",
+                    "exec",
+                    fix_prompt,
+                ]
+            retry_target_desc = "the latest codex session (--last)"
+        else:
+            print(
+                f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'."
+            )
+            return False
+
+        retry_tag = "[RETRY] " if is_retry else ""
+        attempt_str = f"(attempt {attempt + 1}/{max_retries})" if max_retries > 1 else ""
+        print(f"    {retry_tag}Running {attempt_str}: {agent} <vtable-fixer-prompt>")
+
+        try:
+            if debug:
+                result = subprocess.run(cmd, timeout=SKILL_TIMEOUT, check=False)
+            else:
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=SKILL_TIMEOUT,
+                    check=False,
+                )
+
+            if result.returncode == 0:
+                return True
+
+            print(f"    Agent failed with return code: {result.returncode}")
+            if not debug and result.stderr:
+                print(f"    stderr: {result.stderr[:500]}")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with {retry_target_desc}...")
+        except subprocess.TimeoutExpired:
+            print(f"    Error: Agent execution timeout ({SKILL_TIMEOUT} seconds)")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with {retry_target_desc}...")
+        except FileNotFoundError:
+            print(f"    Error: Agent '{agent}' not found. Please ensure it is installed and in PATH.")
+            return False
+        except Exception as exc:
+            print(f"    Error executing fix-header agent: {exc}")
+            if attempt < max_retries - 1:
+                print(f"    Retrying with {retry_target_desc}...")
+
+    print(f"    Failed after {max_retries} attempts")
+    return False
 
 
 def get_default_target_triple(clang: str) -> str:
@@ -422,9 +693,12 @@ def main():
     invalid_count = 0
     compare_diff_count = 0
     compare_run_count = 0
+    header_fix_run_count = 0
+    header_fix_fail_count = 0
 
     for test_item in runnable_tests:
         test_name = str(test_item.get("name", "unnamed_test"))
+        symbol = str(test_item.get("symbol", "")).strip()
         print(f"[RUN ] {test_name}")
 
         result = run_one_test(
@@ -454,6 +728,7 @@ def main():
 
         compare_reports = result.get("compare_reports")
         if compare_reports:
+            reports_with_diff: List[Dict[str, Any]] = []
             for compare_report in compare_reports:
                 compare_run_count += 1
                 lines = format_vtable_compare_report(compare_report)
@@ -461,6 +736,50 @@ def main():
                     print(f"  {line}")
                 if compare_report.get("differences"):
                     compare_diff_count += 1
+                    reports_with_diff.append(compare_report)
+
+            if args.fixheader and reports_with_diff:
+                header_paths = _resolve_header_paths(test_item, config_dir)
+                if not header_paths:
+                    header_fix_fail_count += 1
+                    print(
+                        f"  [FAIL] fixheader requested but no headers configured for test '{test_name}'."
+                    )
+                else:
+                    fix_prompt = _build_fix_prompt(
+                        symbol=symbol,
+                        header_paths=header_paths,
+                        diff_reports=reports_with_diff,
+                    )
+                    print(
+                        f"  [INFO] VTable differences detected; invoking agent '{args.agent}' to fix headers..."
+                    )
+                    claude_allowed_tools = _choose_override(
+                        test_item.get("claude_allowed_tools"),
+                        args.claude_allowed_tools,
+                    )
+                    claude_permission_mode = _choose_override(
+                        test_item.get("claude_permission_mode"),
+                        args.claude_permission_mode,
+                    )
+                    claude_extra_args = _choose_override(
+                        test_item.get("claude_extra_args"),
+                        args.claude_extra_args,
+                    )
+                    header_fix_run_count += 1
+                    if run_fix_header_agent(
+                        fix_prompt=fix_prompt,
+                        agent=args.agent,
+                        debug=args.debug,
+                        max_retries=args.maxretry,
+                        claude_allowed_tools=claude_allowed_tools,
+                        claude_permission_mode=claude_permission_mode,
+                        claude_extra_args=claude_extra_args,
+                    ):
+                        print("  [PASS] Header fix agent completed successfully.")
+                    else:
+                        header_fix_fail_count += 1
+                        print("  [FAIL] Header fix agent failed.")
         elif args.debug and result.get("output"):
             print("  (Compiler output)")
             print(result["output"])
@@ -470,8 +789,11 @@ def main():
     print(f"Invalid test items: {invalid_count}")
     print(f"VTable compares run: {compare_run_count}")
     print(f"VTable compares with differences: {compare_diff_count}")
+    if args.fixheader:
+        print(f"Header fix agent runs: {header_fix_run_count}")
+        print(f"Header fix agent failures: {header_fix_fail_count}")
 
-    if compile_failed_count > 0 or invalid_count > 0:
+    if compile_failed_count > 0 or invalid_count > 0 or header_fix_fail_count > 0:
         return 1
     return 0
 

@@ -1824,6 +1824,8 @@ cpp_tests:
   - name: IGameSystem_MSVC
     symbol: IGameSystem
     cpp: cpp_tests/igamesystem.cpp
+    headers: 
+    - hl2sdk_cs2/game/shared/igamesystem.h # This is for LLM agent
     target: x86_64-pc-windows-msvc
     include_directories:
       - hl2sdk_cs2/game/shared

@@ -415,3 +415,19 @@ def format_vtable_compare_report(report: Dict[str, Any]) -> List[str]:
             lines.append(note)
 
     return lines
+
+
+def format_vtable_differences_for_agent(report: Dict[str, Any]) -> List[str]:
+    """
+    Format only the differences section in a console-like style for agent prompts.
+
+    Example:
+      Differences found: 2
+      - Index 25 mismatch: ...
+      - Index 27 mismatch: ...
+    """
+    diffs = report.get("differences", [])
+    lines: List[str] = [f"Differences found: {len(diffs)}"]
+    for item in diffs:
+        lines.append(f"- {item['message']}")
+    return lines
