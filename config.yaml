@@ -1,5 +1,4 @@
 modules:
-
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
     path_linux: game/bin/linuxsteamrt64/libvphysics2.so
@@ -246,7 +245,6 @@ modules:
           - CGameEntitySystem_vtable.{platform}.yaml
 
     symbols:
-
       - name: CLoopModeGame_RegisterEventMapInternal
         category: func
         alias:
@@ -1275,8 +1273,8 @@ modules:
       - name: CCSGameRules_GoToIntermission
         category: vfunc
         alias:
-         - CCSGameRules::GoToIntermission
-         
+          - CCSGameRules::GoToIntermission
+
       - name: CEntityInstance_AcceptInput
         category: func
         alias:
@@ -1741,7 +1739,7 @@ modules:
       - name: IGameTypes_CreateWorkshopMapGroup
         category: vfunc
         alias:
-         - IGameTypes::CreateWorkshopMapGroup
+          - IGameTypes::CreateWorkshopMapGroup
 
       - name: CSpawnGroupMgrGameSystem_GetSpawnGroups
         category: func
@@ -1821,3 +1819,21 @@ modules:
 
       - name: ShowHudHint
         category: func
+
+cpp_tests:
+  - cpp: cpp_tests/igamesystem.cpp
+    symbol: IGameSystem
+    include_directories:
+      - hl2sdk_cs2/game/shared
+      - hl2sdk_cs2/public
+      - hl2sdk_cs2/public/tier0
+      - hl2sdk_cs2/public/tier1
+    defines:
+      - COMPILER_MSVC=1
+      - COMPILER_MSVC64=1
+    additional_compile_options:
+      - Xclang
+      - fdump-vtable-layouts
+    reference_modules:
+      - server # bin/{gamever}/server/IGameSystem_*.yaml
+      - client # bin/{gamever}/client/IGameSystem_*.yaml

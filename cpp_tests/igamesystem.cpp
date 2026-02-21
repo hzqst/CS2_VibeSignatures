@@ -11,76 +11,11 @@
 IGameSystem * gamesystem();
 
 /*
-clang++ -std=c++20 -c cpp_tests/igamesystem_smoke.cpp `
+clang++ -std=c++20 -c cpp_tests/igamesystem.cpp `
   -Ihl2sdk_cs2/game/shared -Ihl2sdk_cs2/public `
   -Ihl2sdk_cs2/public/tier0 -Ihl2sdk_cs2/public/tier1 `
   -DCOMPILER_MSVC=1 -DCOMPILER_MSVC64=1 `
   -Xclang -fdump-vtable-layouts
-
-VFTable for 'IGameSystem' (63 entries).
-   0 | IGameSystem RTTI
-   1 | bool IGameSystem::Init() [pure]
-   2 | void IGameSystem::PostInit() [pure]
-   3 | void IGameSystem::Shutdown() [pure]
-   4 | void IGameSystem::GameInit(const EventGameInit_t *const) [pure]
-   5 | void IGameSystem::GameShutdown(const EventGameShutdown_t *const) [pure]
-   6 | void IGameSystem::GamePostInit(const EventGamePostInit_t *const) [pure]
-   7 | void IGameSystem::GamePreShutdown(const EventGamePreShutdown_t *const) [pure]
-   8 | void IGameSystem::BuildGameSessionManifest(const EventBuildGameSessionManifest_t *const) [pure]
-   9 | void IGameSystem::GameActivate(const EventGameActivate_t *const) [pure]
-  10 | void IGameSystem::ClientFullySignedOn(const EventClientFullySignedOn_t *const) [pure]
-  11 | void IGameSystem::Disconnect(const EventDisconnect_t *const) [pure]
-  12 | void IGameSystem::unk_001(const void *const) [pure]
-  13 | void IGameSystem::GameDeactivate(const EventGameDeactivate_t *const) [pure]
-  14 | void IGameSystem::SpawnGroupPrecache(const EventSpawnGroupPrecache_t *const) [pure]
-  15 | void IGameSystem::SpawnGroupUncache(const EventSpawnGroupUncache_t *const) [pure]
-  16 | void IGameSystem::PreSpawnGroupLoad(const EventPreSpawnGroupLoad_t *const) [pure]
-  17 | void IGameSystem::PostSpawnGroupLoad(const EventPostSpawnGroupLoad_t *const) [pure]
-  18 | void IGameSystem::PreSpawnGroupUnload(const EventPreSpawnGroupUnload_t *const) [pure]
-  19 | void IGameSystem::PostSpawnGroupUnload(const EventPostSpawnGroupUnload_t *const) [pure]
-  20 | void IGameSystem::ActiveSpawnGroupChanged(const EventActiveSpawnGroupChanged_t *const) [pure]
-  21 | void IGameSystem::ClientPostDataUpdate(const EventClientPostDataUpdate_t *const) [pure]
-  22 | void IGameSystem::ClientPreRender(const EventClientPreRender_t *const) [pure]
-  23 | void IGameSystem::ClientPreEntityThink(const EventClientPreEntityThink_t *const) [pure]
-  24 | void IGameSystem::unk_101(const void *const) [pure]
-  25 | void IGameSystem::unk_102(const void *const) [pure]
-  26 | void IGameSystem::unk_103(const void *const) [pure]
-  27 | void IGameSystem::ClientPollNetworking(const EventClientPollNetworking_t *const) [pure]
-  28 | void IGameSystem::unk_201(const void *const) [pure]
-  29 | void IGameSystem::ClientUpdate(const EventClientUpdate_t *const) [pure]
-  30 | void IGameSystem::unk_301(const void *const) [pure]
-  31 | void IGameSystem::ClientPostRender(const EventClientPostRender_t *const) [pure]
-  32 | void IGameSystem::ServerPreEntityThink(const EventServerPreEntityThink_t *const) [pure]
-  33 | void IGameSystem::ServerPostEntityThink(const EventServerPostEntityThink_t *const) [pure]
-  34 | void IGameSystem::unk_401(const void *const) [pure]
-  35 | void IGameSystem::ServerPreClientUpdate(const EventServerPreClientUpdate_t *const) [pure]
-  36 | void IGameSystem::ServerAdvanceTick(const EventServerAdvanceTick_t *const) [pure]
-  37 | void IGameSystem::ClientAdvanceTick(const EventClientAdvanceTick_t *const) [pure]
-  38 | void IGameSystem::ServerGamePostSimulate(const EventServerGamePostSimulate_t *const) [pure]
-  39 | void IGameSystem::ClientGamePostSimulate(const EventClientGamePostSimulate_t *const) [pure]
-  40 | void IGameSystem::ServerPostAdvanceTick(const EventServerPostAdvanceTick_t *const) [pure]
-  41 | void IGameSystem::ClientPostAdvanceTick(const EventClientPostAdvanceTick_t *const) [pure]
-  42 | void IGameSystem::ServerBeginAsyncPostTickWork(const EventServerBeginAsyncPostTickWork_t *const) [pure]
-  43 | void IGameSystem::unk_501(const void *const) [pure]
-  44 | void IGameSystem::ServerEndAsyncPostTickWork(const EventServerEndAsyncPostTickWork_t *const) [pure]
-  45 | void IGameSystem::ClientFrameSimulate(const EventClientFrameSimulate_t *const) [pure]
-  46 | void IGameSystem::ClientPauseSimulate(const EventClientPauseSimulate_t *const) [pure]
-  47 | void IGameSystem::ClientAdvanceNonRenderedFrame(const EventClientAdvanceNonRenderedFrame_t *const) [pure]
-  48 | void IGameSystem::GameFrameBoundary(const EventGameFrameBoundary_t *const) [pure]
-  49 | void IGameSystem::OutOfGameFrameBoundary(const EventOutOfGameFrameBoundary_t *const) [pure]
-  50 | void IGameSystem::SaveGame(const EventSaveGame_t *const) [pure]
-  51 | void IGameSystem::RestoreGame(const EventRestoreGame_t *const) [pure]
-  52 | void IGameSystem::unk_601(const void *const) [pure]
-  53 | void IGameSystem::unk_602(const void *const) [pure]
-  54 | void IGameSystem::unk_603(const void *const) [pure]
-  55 | void IGameSystem::unk_604(const void *const) [pure]
-  56 | void IGameSystem::unk_605(const void *const) [pure]
-  57 | void IGameSystem::unk_606(const void *const) [pure]
-  58 | const char *IGameSystem::GetName() const [pure]
-  59 | void IGameSystem::SetGameSystemGlobalPtrs(void *) [pure]
-  60 | void IGameSystem::SetName(const char *) [pure]
-  61 | bool IGameSystem::DoesGameSystemReallocate() [pure]
-  62 | IGameSystem::~IGameSystem() [scalar deleting]
 
 VFTable indices for 'IGameSystem' (62 entries).
    0 | bool IGameSystem::Init()
