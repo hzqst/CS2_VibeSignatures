@@ -201,7 +201,6 @@ async def preprocess_igamesystem_dispatch_skill(
     internal_rename_to,
     multi_order,
     expected_dispatch_count=None,
-    entry_start_index=0,
     debug=False,
 ):
     """Common preprocess routine for dispatch-like IGameSystem skills.
@@ -224,8 +223,6 @@ async def preprocess_igamesystem_dispatch_skill(
         expected_dispatch_count: Expected total count of dispatch entries
             collected from source function. If None, defaults to target_count,
             or ``max(dispatch_rank)+1`` when dispatch_rank is provided.
-        entry_start_index: Legacy 0-based selector offset. Deprecated; prefer
-            dispatch_rank + expected_dispatch_count.
         debug: Enable debug logs.
     """
     if yaml is None:
@@ -283,18 +280,6 @@ async def preprocess_igamesystem_dispatch_skill(
             print(f"    Preprocess: invalid multi_order: {multi_order}")
         return False
 
-    try:
-        entry_start_index = _parse_int(entry_start_index)
-    except Exception:
-        if debug:
-            print(f"    Preprocess: invalid entry_start_index: {entry_start_index}")
-        return False
-
-    if entry_start_index < 0:
-        if debug:
-            print(f"    Preprocess: entry_start_index must be >= 0, got {entry_start_index}")
-        return False
-
     explicit_expected_dispatch_count = expected_dispatch_count is not None
     if explicit_expected_dispatch_count:
         try:
@@ -318,31 +303,6 @@ async def preprocess_igamesystem_dispatch_skill(
             expected_dispatch_count = max(spec["dispatch_rank"] for spec in normalized_specs) + 1
         else:
             expected_dispatch_count = target_count
-
-    if entry_start_index:
-        if has_dispatch_rank:
-            if debug:
-                print(
-                    "    Preprocess: entry_start_index cannot be used together with "
-                    "dispatch_rank"
-                )
-            return False
-        if explicit_expected_dispatch_count:
-            if debug:
-                print(
-                    "    Preprocess: entry_start_index cannot be used together with "
-                    "expected_dispatch_count"
-                )
-            return False
-        if debug:
-            print(
-                "    Preprocess: entry_start_index is deprecated; consider using "
-                "dispatch_rank + expected_dispatch_count"
-            )
-        has_dispatch_rank = True
-        for idx, spec in enumerate(normalized_specs):
-            spec["dispatch_rank"] = entry_start_index + idx
-        expected_dispatch_count = entry_start_index + target_count
 
     if has_dispatch_rank:
         ranks = [spec["dispatch_rank"] for spec in normalized_specs]
