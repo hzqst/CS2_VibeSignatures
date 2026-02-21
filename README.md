@@ -6,12 +6,6 @@ Our goal is to update signatures/offsets/cppheaders without human involved.
 
 Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** can be updated automatically with this project.
 
-* Avg cost for the first run: ~ 60$ for claude sonnet 4.5, or ~ 30$ for codex-5.3-high
-
-* Avg time consume for the first run: 60 ~ 120 mins, depending on the model you are using.
-
-* Avg time consume for the second run, when signatures from old version are available: 5mins ~ 15mins, depending on how many signatures are gone after game update.
-
 * Feel free to contribute your SKILLS with PR! 
 
 * See `TODO: Add skill support for XXXXXXX` [here](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed).
