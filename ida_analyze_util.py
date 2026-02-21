@@ -75,6 +75,7 @@ if vtable_start is None:
     result = json.dumps(None)
 else:
     vtable_seg = ida_segment.getseg(vtable_start)
+    func_noret_flag = getattr(idaapi, "FUNC_NORET", 0)
     entries = {}
     count = 0
     for i in range(1000):
@@ -104,6 +105,15 @@ else:
             break
         func = idaapi.get_func(ptr_value)
         if func is not None:
+            # Windows-side vtable overruns often land on shared noreturn stubs
+            # (fail-fast/abort helpers) located after the real table.
+            if (
+                (not is_linux)
+                and count > 0
+                and func_noret_flag
+                and (func.flags & func_noret_flag)
+            ):
+                break
             entries[count] = hex(ptr_value)
             count += 1
             continue
