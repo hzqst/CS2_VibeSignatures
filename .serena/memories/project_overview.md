@@ -20,7 +20,6 @@ Core workflow:
 Requirements:
 - Python deps: `pyyaml`, `requests`, `asyncio`, `mcp`, `vdf`
 - Agent runtime: Claude or Codex
-- Skill authoring helper: `skill-creator`
 - Reverse tools: IDA Pro 9.0+, `ida-pro-mcp`, `idalib` (mandatory for `ida_analyze_bin.py`)
 
 Key repository components:

@@ -24,15 +24,13 @@ Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** c
 
 2. claude / codex
 
-3. [skill-creator](https://github.com/anthropics/skills/blob/main/skills/skill-creator/SKILL.md), can be installed from claude marketplace.
+3. IDA Pro 9.0+
 
-4. IDA Pro 9.0+
+4. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
 
-5. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
+5. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
 
-6. [idalib](https://docs.hex-rays.com/user-guide/idalib) (mandatory for `ida_analyze_bin.py`)
-
-7. Clang-LLVM (mandatory for `run_cpp_tests.py`)
+6. Clang-LLVM (mandatory for `run_cpp_tests.py`)
 
 ## Overall workflow
 
