@@ -1,8 +1,8 @@
 # CS2 VibeSignatures
 
-To generate signatures/offsets for CS2 via Agent SKILLS & MCP Calls.
+This is a project mainly for generating signatures/offsets for CS2, fixing HL2SDK_CS2 cpp headers via Agent SKILLS & MCP Calls.
 
-Our goal is to update signatures/offsets without human involved.
+Our goal is to update signatures/offsets/cppheaders without human involved.
 
 Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** can be updated automatically with this project.
 
