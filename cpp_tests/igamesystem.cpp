@@ -11,11 +11,11 @@
 IGameSystem * gamesystem();
 
 /*
-clang++ -std=c++20 -c cpp_tests/igamesystem.cpp `
+clang++ -std=c++20 -c cpp_tests/igamesystem.cpp ` --target=x86_64-pc-windows-msvc
   -Ihl2sdk_cs2/game/shared -Ihl2sdk_cs2/public `
   -Ihl2sdk_cs2/public/tier0 -Ihl2sdk_cs2/public/tier1 `
   -DCOMPILER_MSVC=1 -DCOMPILER_MSVC64=1 `
-  -Xclang -fdump-vtable-layouts
+  -Xclang -fdump-vtable-layouts -fms-extensions -fms-compatibility
 
 VFTable indices for 'IGameSystem' (62 entries).
    0 | bool IGameSystem::Init()

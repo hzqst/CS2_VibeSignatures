@@ -1821,8 +1821,10 @@ modules:
         category: func
 
 cpp_tests:
-  - cpp: cpp_tests/igamesystem.cpp
+  - name: IGameSystem_MSVC
     symbol: IGameSystem
+    cpp: cpp_tests/igamesystem.cpp
+    target: x86_64-pc-windows-msvc
     include_directories:
       - hl2sdk_cs2/game/shared
       - hl2sdk_cs2/public
@@ -1831,9 +1833,11 @@ cpp_tests:
     defines:
       - COMPILER_MSVC=1
       - COMPILER_MSVC64=1
-    additional_compile_options:
+    additional_compiler_options:
+      - fms-extensions
+      - fms-compatibility
       - Xclang
       - fdump-vtable-layouts
     reference_modules:
-      - server # bin/{gamever}/server/IGameSystem_*.yaml
-      - client # bin/{gamever}/client/IGameSystem_*.yaml
+      - server # bin/{gamever}/server/IGameSystem_*.{platform}.yaml
+      - client # bin/{gamever}/client/IGameSystem_*.{platform}.yaml
