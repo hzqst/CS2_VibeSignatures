@@ -507,7 +507,7 @@ Mitigation: Overwrite `Python3**/Lib/site-packages/idapro/__init__.py` with `CS2
 
 ### error: could not create 'ida.egg-info': access denied
 
-Mitigation: You should run `uv pip install --python .\python.exe .` and `.\python.exe py-activate-idalib.py` under `C:\Program Files\IDA Professional 9.0\idalib\python` with **administrator** privilege.
+Mitigation: You should run `python py-activate-idalib.py` under `C:\Program Files\IDA Professional 9.0\idalib\python` with **administrator** privilege.
 
 ### Could not find idalib64.dll in .........
 

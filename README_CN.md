@@ -507,7 +507,7 @@ uv run run_cpp_tests.py -gamever 14135 [-debug] [-fixheader] [-agent=claude/code
 
 ### error: could not create 'ida.egg-info': access denied
 
-处理方式：在 `C:\Program Files\IDA Professional 9.0\idalib\python` 目录下，以**管理员权限**运行 `uv pip install --python .\python.exe .` 和 `.\python.exe py-activate-idalib.py`。
+处理方式：在 `C:\Program Files\IDA Professional 9.0\idalib\python` 目录下，以**管理员权限**运行 `python py-activate-idalib.py`。
 
 ### Could not find idalib64.dll in .........
 
