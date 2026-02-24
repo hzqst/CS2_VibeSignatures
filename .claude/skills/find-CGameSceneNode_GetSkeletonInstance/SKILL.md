@@ -126,8 +126,7 @@ Required parameters:
 - `vtable_name`: `CGameSceneNode`
 - `vfunc_offset`: `0x40` (can change on game update)
 - `vfunc_index`: `8` (can change on game update)
-
-Note: `func_addr` and `func_sig` are not needed for this virtual function.
+- `vfunc_sig`: validated signature from `/generate-signature-for-vfuncoffset`
 
 ## Function Characteristics
 
