@@ -11,6 +11,21 @@ modules:
     symbols:
       - name: CVPhys2World_vtable
         category: vtable
+        shared: true
+
+  - name: matchmaking
+    path_windows: game/csgo/bin/win64/matchmaking.dll
+    path_linux: game/csgo/bin/linuxsteamrt64/libmatchmaking.so
+
+    skills:
+      - name: find-IGameTypes_vtable
+        expected_output:
+          - IGameTypes_vtable.{platform}.yaml
+
+    symbols:
+      - name: IGameTypes_vtable
+        category: vtable
+        shared: true
 
   - name: engine
     path_windows: game/bin/win64/engine2.dll

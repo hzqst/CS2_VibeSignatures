@@ -572,6 +572,30 @@ async def preprocess_func_sig_via_mcp(
         if vfunc_match_addr is None:
             return None
 
+        # If the old YAML never had func_va, the vtable is only used as
+        # metadata (e.g. pure-interface classes like IGameTypes whose vtable
+        # symbol cannot be resolved).  Carry forward vfunc metadata as-is.
+        old_has_func_va = old_data.get("func_va") is not None
+        if not old_has_func_va:
+            if func_name is None:
+                func_name = old_data.get("func_name")
+            if func_name is None:
+                func_name = os.path.basename(new_path).rsplit(".", 2)[0]
+
+            new_data = {
+                "func_name": func_name,
+                "vfunc_sig": vfunc_sig,
+                "vtable_name": vtable_name,
+                "vfunc_offset": hex(vfunc_offset),
+                "vfunc_index": vfunc_index,
+            }
+            if debug:
+                print(
+                    "    Preprocess: reused vfunc_sig metadata (no vtable resolution) at "
+                    f"{vfunc_match_addr} for {os.path.basename(new_path)}"
+                )
+            return new_data
+
         vtable_data = await _load_vtable_data(vtable_name)
         if not isinstance(vtable_data, dict):
             return None
