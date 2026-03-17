@@ -396,7 +396,7 @@
 			}
 			"CCSPlayerPawn::OnTakeDamage_Alive"
 			{
-				"windows" "249"
+				"windows" "251"
 				"linux" "250"
 			}
 			"CBasePlayerPawn_CommitSuicide"

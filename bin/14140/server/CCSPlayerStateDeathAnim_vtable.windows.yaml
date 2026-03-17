@@ -1,0 +1,10 @@
+vtable_class: CCSPlayerStateDeathAnim
+vtable_symbol: ??_7CCSPlayerStateDeathAnim@@6B@
+vtable_va: '0x18154af78'
+vtable_rva: '0x154af78'
+vtable_size: '0x18'
+vtable_numvfunc: 3
+vtable_entries:
+  0: '0x180232c50'
+  1: '0x1801d7790'
+  2: '0x18025ac20'

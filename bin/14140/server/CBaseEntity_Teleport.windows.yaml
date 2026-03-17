@@ -1,0 +1,7 @@
+func_name: CBaseEntity_Teleport
+func_va: '0x180be90c0'
+func_rva: '0xbe90c0'
+func_size: '0x257'
+vtable_name: CBaseEntity
+vfunc_offset: '0x60'
+vfunc_index: 12

@@ -58,8 +58,8 @@ DEFAULT_MODULES = "*"
 DEFAULT_AGENT = "claude"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
-MCP_STARTUP_TIMEOUT = 600  # seconds to wait for MCP server
-SKILL_TIMEOUT = 600  # 10 minutes per skill
+MCP_STARTUP_TIMEOUT = 1200  # seconds to wait for MCP server
+SKILL_TIMEOUT = 1200  # 10 minutes per skill
 
 async def quit_ida_via_mcp(host=DEFAULT_HOST, port=DEFAULT_PORT):
     """
