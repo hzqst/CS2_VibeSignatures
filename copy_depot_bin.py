@@ -5,11 +5,12 @@ Depot Binary Copy Script for CS2_VibeSignatures
 Copies CS2 binary files from a local Steam depot directory based on entries in config.yaml.
 
 Usage:
-    python copy_depot_bin.py -gamever=<version> [-bindir=bin] [-platform=windows|linux] [-depotdir=cs2_depot]
+    python copy_depot_bin.py -gamever=<version> [-bindir=bin] [-platform=windows|linux|all-platform] [-depotdir=cs2_depot]
 
     -gamever: Game version subdirectory name (required)
     -bindir: Directory to save copied binaries (default: bin)
-    -platform: Filter by platform (windows or linux). If not specified, copies both.
+    -platform: Filter by platform (windows, linux, or all-platform). If not specified, copies both.
+              all-platform: depot has mixed binaries without platform subdirectories.
     -depotdir: Local depot root directory (default: cs2_depot)
 
 Requirements:
@@ -52,9 +53,11 @@ def parse_args():
     )
     parser.add_argument(
         "-platform",
-        choices=["windows", "linux"],
+        choices=["windows", "linux", "all-platform"],
         default=None,
-        help="Filter by platform (windows or linux). If not specified, copies both."
+        help="Filter by platform (windows, linux, or all-platform). "
+             "all-platform: depot has mixed binaries without platform subdirectories. "
+             "If not specified, copies both with platform subdirectories."
     )
     parser.add_argument(
         "-depotdir",
@@ -102,7 +105,7 @@ def parse_config(config_path):
     return modules
 
 
-def build_source_path(depot_dir, platform, path):
+def build_source_path(depot_dir, platform, path, flat=False):
     """
     Build the source file path within the depot directory.
 
@@ -110,10 +113,13 @@ def build_source_path(depot_dir, platform, path):
         depot_dir: Root depot directory
         platform: Platform name (windows or linux)
         path: Relative file path within the platform depot
+        flat: If True, skip the platform subdirectory (all-platform mode)
 
     Returns:
         Full source file path
     """
+    if flat:
+        return os.path.join(depot_dir, path)
     return os.path.join(depot_dir, platform, path)
 
 
@@ -161,8 +167,9 @@ def process_module(module, bin_dir, gamever, platform_filter, depot_dir):
     name = module["name"]
     success_count = 0
     fail_count = 0
+    flat = platform_filter == "all-platform"
 
-    if platform_filter:
+    if platform_filter and not flat:
         platforms = [platform_filter]
     else:
         platforms = ["windows", "linux"]
@@ -191,7 +198,7 @@ def process_module(module, bin_dir, gamever, platform_filter, depot_dir):
             continue
 
         # Build source path and verify it exists
-        source_path = build_source_path(depot_dir, platform, path)
+        source_path = build_source_path(depot_dir, platform, path, flat=flat)
         if not os.path.exists(source_path):
             print(f"  [ERROR] Source file not found in depot: {source_path}")
             fail_count += 1
