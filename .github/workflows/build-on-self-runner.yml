@@ -43,7 +43,10 @@ jobs:
           "MANIFESTID=$manifestId" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "WORKSPACE=${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Prepare persisted workspace links
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create persisted workspace links
         shell: cmd
         run: |
           @echo off
@@ -68,9 +71,6 @@ jobs:
           ) else (
             mklink /d "%WORKSPACE%\bin" "%PERSISTED_WORKSPACE%\bin"
           )
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Update CS2 depot
         shell: cmd
