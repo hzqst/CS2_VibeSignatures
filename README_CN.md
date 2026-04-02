@@ -14,17 +14,19 @@
 
 1. 安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
-2. `uv sync`
+2. [depotdownloader](https://github.com/steamre/depotdownloader)
 
-3. claude / codex
+3. `uv sync`
 
-4. IDA Pro 9.0+
+4. claude / codex
 
-5. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
+5. IDA Pro 9.0+
 
-6. [idalib](https://docs.hex-rays.com/user-guide/idalib)（运行 `ida_analyze_bin.py` 的必需项）
+6. [ida-pro-mcp](https://github.com/mrexodia/ida-pro-mcp)
 
-7. Clang-LLVM（运行 `run_cpp_tests.py` 的必需项）
+7. [idalib](https://docs.hex-rays.com/user-guide/idalib)（运行 `ida_analyze_bin.py` 的必需项）
+
+8. Clang-LLVM（运行 `run_cpp_tests.py` 的必需项）
 
 ## 整体工作流
 
