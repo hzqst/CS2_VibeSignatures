@@ -128,7 +128,7 @@ env:
 
 ### 2. 持久目录链接
 
-使用 `shell: cmd` 执行 runner 本地目录准备逻辑。
+使用 `shell: cmd` 执行 runner 本地目录准备逻辑，并使用 directory junction 而不是 directory symlink。
 
 目标行为：
 
@@ -137,25 +137,29 @@ env:
 - 将工作区中的：
   - `%WORKSPACE%cs2_depot`
   - `%WORKSPACE%bin`
-  创建为指向持久目录的目录链接
+  创建为指向持久目录的 directory junction
 
 参考逻辑：
 
 ```cmd
 if not exist "%PERSISTED_WORKSPACE%/cs2_depot" mkdir "%PERSISTED_WORKSPACE%/cs2_depot"
-mklink /d "%WORKSPACE%cs2_depot" "%PERSISTED_WORKSPACE%/cs2_depot"
+mklink /j "%WORKSPACE%cs2_depot" "%PERSISTED_WORKSPACE%/cs2_depot"
 
 if not exist "%PERSISTED_WORKSPACE%/bin" mkdir "%PERSISTED_WORKSPACE%/bin"
-mklink /d "%WORKSPACE%bin" "%PERSISTED_WORKSPACE%/bin"
+mklink /j "%WORKSPACE%bin" "%PERSISTED_WORKSPACE%/bin"
 ```
 
 为避免重复运行时报错，实际实现会加入保护：
 
-- 若工作区目标不存在，则创建链接
-- 若工作区目标已存在且是目录链接，则跳过
-- 若工作区目标已存在但不是目录链接，则直接失败并提示人工处理
+- 若工作区目标不存在，则创建 junction
+- 若工作区目标已存在且是 junction / symlink 且目标正确，则跳过
+- 若工作区目标已存在但不是 junction / symlink，则直接失败并提示人工处理
 
-本设计不主动删除已有目录，以避免误删 self-hosted runner 上的真实数据。
+选择 junction 的原因是：
+
+- `mklink /d` 在不少 self-hosted runner 账号下需要额外符号链接权限
+- `mklink /j` 更适合本场景的本地持久目录映射，可规避 `You do not have sufficient privilege to perform this operation.` 这一类权限错误
+- 本设计不主动删除已有目录，以避免误删 self-hosted runner 上的真实数据。
 
 ### 3. Depot 更新
 
@@ -293,7 +297,7 @@ permissions:
 - 当前仓库不是主仓库
 - `PERSISTED_WORKSPACE` secret 缺失
 - `RUNNER_AGENT` variable 缺失
-- 工作区 `bin` 或 `cs2_depot` 路径已存在但不是目录链接
+- 工作区 `bin` 或 `cs2_depot` 路径已存在但不是 junction / symlink
 - `DepotDownloader` 执行失败
 - 任一 `uv run ...` 步骤失败
 - 7z 打包失败
