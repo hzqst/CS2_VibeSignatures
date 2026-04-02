@@ -31,10 +31,9 @@
 #### 1. 下载最新的 CS2 二进制文件并复制dll/so到工作目录
 
 ```bash
-DepotDownloader -app 730 -os windows -dir "path/to/cs2_depot/windows"
-DepotDownloader -app 730 -os linux -dir "path/to/cs2_depot/linux"
+DepotDownloader -app 730 -os all-platform -dir "path/to/cs2_depot"
 
-uv run copy_depot_bin.py -gamever 14141
+uv run copy_depot_bin.py -gamever 14141 -platform all-platform
 ```
 
 #### 2. 为 `config.yaml` 的符号生成对应的 signatures
@@ -56,7 +55,7 @@ uv run update_gamedata.py -gamever 14141 [-debug]
 #### 4. 运行 C++ 测试并检查 cpp headers 是否与 yaml(s) 匹配
 
 ```bash
-uv run run_cpp_tests.py -gamever 14141 [-debug] [-fixheader] [-agent=claude/codex]
+uv run run_cpp_tests.py -gamever 14141 [-debug] [-fixheader] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] 
 ```
 
 * 使用 `-fixheader` 时，会启动一个 agent 来修复 cpp headers 中的不匹配项（会消耗少量token）

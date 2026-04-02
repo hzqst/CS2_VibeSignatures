@@ -119,8 +119,8 @@ def build_source_path(depot_dir, platform, path, flat=False):
         Full source file path
     """
     if flat:
-        return os.path.join(depot_dir, path)
-    return os.path.join(depot_dir, platform, path)
+        return os.path.normpath(os.path.join(depot_dir, path))
+    return os.path.normpath(os.path.join(depot_dir, platform, path))
 
 
 def copy_file(source_path, target_path):

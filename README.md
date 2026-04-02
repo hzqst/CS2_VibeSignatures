@@ -39,7 +39,7 @@ uv sync
 ```bash
 DepotDownloader -app 730 -os all-platform -dir "path/to/cs2_depot"
 
-uv run copy_depot_bin.py -gamever 14141 -platform=all-platform
+uv run copy_depot_bin.py -gamever 14141 -platform all-platform
 ```
 
 #### 2. Find and generate signatures for all symbols declared in `config.yaml`
@@ -61,7 +61,7 @@ uv run update_gamedata.py -gamever 14141 [-debug]
 #### 4. Run cpp tests and check if cpp headers mismatch from yaml(s)
 
 ```bash
-uv run run_cpp_tests.py -gamever 14141 [-debug] [-fixheader] [-agent=claude/codex]
+uv run run_cpp_tests.py -gamever 14141 [-debug] [-fixheader] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] 
 ```
 
 * When with `-fixheader`, an agent will be initiated to fix the mismatches in cpp headers.
