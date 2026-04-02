@@ -1,6 +1,0 @@
-func_name: CBaseEntity_EmitSoundParams
-func_va: '0x180c11460'
-func_rva: '0xc11460'
-func_size: '0x102'
-func_sig: 48 89 5C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 55 48 8B EC 48 81 EC ?? ??
-  ?? ?? 33 C0

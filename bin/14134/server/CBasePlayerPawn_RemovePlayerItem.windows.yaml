@@ -1,6 +1,0 @@
-func_va: 6453049904
-func_rva: 10598960
-func_size: 158
-func_sig: 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 5C 24 08 57 48 83 EC 30 48 8B DA 48 8B
-  F9 E8 ?? ?? ?? ??
-func_name: CBasePlayerPawn_RemovePlayerItem

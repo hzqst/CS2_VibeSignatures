@@ -1,5 +1,0 @@
-func_va: 6453515696
-func_rva: 11064752
-func_size: 63
-func_sig: 41 B8 80 00 00 00 48 8D 99 10 05 00 00
-func_name: CBasePlayerController_SetPlayerName
