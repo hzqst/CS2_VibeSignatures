@@ -5,28 +5,28 @@
             "linux": 80
         },
         "CBaseEntity::GetHammerUniqueId": {
-            "windows": 111,
-            "linux": 110
+            "windows": 112,
+            "linux": 111
         },
         "IsEntityPawn": {
-            "windows": 168,
-            "linux": 167
-        },
-        "IsEntityController": {
             "windows": 169,
             "linux": 168
         },
+        "IsEntityController": {
+            "windows": 170,
+            "linux": 169
+        },
         "CollisionRulesChanged": {
-            "windows": 185,
-            "linux": 184
+            "windows": 186,
+            "linux": 185
         },
         "ControllerChangeTeam": {
             "windows": 106,
             "linux": 105
         },
         "CommitSuicide": {
-            "windows": 400,
-            "linux": 400
+            "windows": 390,
+            "linux": 390
         },
         "ControllerRespawn": {
             "windows": 274,
@@ -41,24 +41,24 @@
             "linux": 640
         },
         "CBaseEntity::Use": {
-            "windows": 144,
-            "linux": 143
+            "windows": 145,
+            "linux": 144
         },
         "CBaseEntity::StartTouch": {
-            "windows": 147,
-            "linux": 146
-        },
-        "CBaseEntity::Touch": {
             "windows": 148,
             "linux": 147
         },
-        "CBaseEntity::EndTouch": {
+        "CBaseEntity::Touch": {
             "windows": 149,
             "linux": 148
         },
+        "CBaseEntity::EndTouch": {
+            "windows": 150,
+            "linux": 149
+        },
         "CBaseEntity::Teleport": {
-            "windows": 12,
-            "linux": 13
+            "windows": 13,
+            "linux": 14
         }
     },
     "Addresses": {

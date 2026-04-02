@@ -4,27 +4,27 @@
         "linux": 80
     },
     "CBasePlayerPawn::CommitSuicide": {
-        "windows": 400,
-        "linux": 400
+        "windows": 390,
+        "linux": 390
     },
     "CCSPlayerController::ChangeTeam": {
-        "windows": 102,
-        "linux": 101
+        "windows": 103,
+        "linux": 102
     },
     "CBaseEntity::Teleport": {
-        "windows": 12,
-        "linux": 13
+        "windows": 13,
+        "linux": 14
     },
     "CCSPlayerController::Respawn": {
-        "windows": 272,
-        "linux": 274
+        "windows": 273,
+        "linux": 275
     },
     "CBaseEntity::CollisionRulesChanged": {
-        "windows": 185,
-        "linux": 184
+        "windows": 186,
+        "linux": 185
     },
     "CGameSceneNode::GetSkeletonInstance": {
-        "windows": 8,
+        "windows": 10,
         "linux": 10
     },
     "GetHammerUniqueID": {
@@ -40,28 +40,28 @@
         "linux": 75
     },
     "CGameRules::FindPickerEntity": {
-        "windows": 25,
-        "linux": 26
+        "windows": 26,
+        "linux": 27
     },
     "CCSPlayer_ItemServices::DropActiveItem": {
         "windows": 22,
         "linux": 23
     },
     "CCSPlayer_ItemServices::RemoveWeapons": {
-        "windows": 23,
-        "linux": 24
-    },
-    "CCSPlayer_ItemServices::GiveNamedItem": {
-        "windows": 19,
-        "linux": 20
-    },
-    "CCSPlayer_WeaponServices::CanUse": {
-        "windows": 23,
-        "linux": 24
-    },
-    "CCSPlayer_WeaponServices::DropWeapon": {
         "windows": 24,
         "linux": 25
+    },
+    "CCSPlayer_ItemServices::GiveNamedItem": {
+        "windows": 20,
+        "linux": 21
+    },
+    "CCSPlayer_WeaponServices::CanUse": {
+        "windows": 24,
+        "linux": 25
+    },
+    "CCSPlayer_WeaponServices::DropWeapon": {
+        "windows": 25,
+        "linux": 26
     },
     "CCSPlayer_WeaponServices::SelectWeapon": {
         "windows": 26,
@@ -152,16 +152,16 @@
         "linux": 40
     },
     "CBaseEntity::StartTouch": {
-        "windows": 147,
-        "linux": 146
-    },
-    "CBaseEntity::Touch": {
         "windows": 148,
         "linux": 147
     },
-    "CBaseEntity::EndTouch": {
+    "CBaseEntity::Touch": {
         "windows": 149,
         "linux": 148
+    },
+    "CBaseEntity::EndTouch": {
+        "windows": 150,
+        "linux": 149
     },
     "CGameRules::GetViewVectors": {
         "windows": 32,
