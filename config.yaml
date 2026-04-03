@@ -124,6 +124,12 @@ modules:
         expected_output:
           - CNetworkGameClient_SendMove.{platform}.yaml
 
+      - name: find-CNetworkMessages_Serialize
+        expected_output:
+          - CNetworkMessages_Serialize.{platform}.yaml
+        expected_input:
+          - CNetworkGameClient_SendMovePacket.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -186,6 +192,11 @@ modules:
         alias:
           - CNetworkGameClient::SendMove
           - SendMove
+
+      - name: CNetworkMessages_Serialize
+        category: vfunc
+        alias:
+          - CNetworkMessages::Serialize
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
