@@ -2400,11 +2400,12 @@ async def preprocess_common_skill(
     vtable_class_names=None,
     inherit_vfuncs=None,
     func_xref_strings=None,
+    func_vtable_relations=None,
     debug=False,
 ):
-    """Reusable preprocess_skill implementation for func/vfunc, gv, patch, struct-member, vtable, inherit-vfunc, and xref-string targets.
+    """Reusable preprocess_skill implementation for func/vfunc, gv, patch, struct-member, vtable, inherit-vfunc, xref-string, and vtable-relation targets.
 
-    Handles any combination of the seven target types in a single call:
+    Handles any combination of the eight target types in a single call:
     - ``func_names``: func/vfunc targets via ``preprocess_func_sig_via_mcp``
       (which already supports vfunc_sig fallback internally).
     - ``gv_names``: global-variable targets via ``preprocess_gv_sig_via_mcp``.
@@ -2427,6 +2428,14 @@ async def preprocess_common_skill(
       ``preprocess_func_sig_via_mcp`` fails for a func target that has a
       matching xref-string entry, or as the sole resolution method for
       func targets that only appear in this list.
+    - ``func_vtable_relations``: enrich located function YAML with vtable
+      metadata.  Each element is a tuple of
+      ``(func_name, vtable_class, generate_vfunc_offset)``.  After a
+      function is located (via func_sig or xref-string fallback),
+      ``vtable_name`` is always populated.  When *generate_vfunc_offset*
+      is True, the vtable is looked up via ``preprocess_vtable_via_mcp``
+      and the function's address is matched against vtable entries to
+      populate ``vfunc_offset`` and ``vfunc_index``.
 
     Args:
         session: Active MCP ClientSession.
@@ -2443,6 +2452,9 @@ async def preprocess_common_skill(
         inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
         func_xref_strings: List of (func_name, xref_strings_list) tuples for
             string-xref-based function lookup (may be empty/None).
+        func_vtable_relations: List of (func_name, vtable_class,
+            generate_vfunc_offset) tuples for enriching function YAML with
+            vtable metadata (may be empty/None).
         debug: Enable debug output.
 
     Returns:
@@ -2455,11 +2467,17 @@ async def preprocess_common_skill(
     vtable_class_names = vtable_class_names or []
     inherit_vfuncs = inherit_vfuncs or []
     func_xref_strings = func_xref_strings or []
+    func_vtable_relations = func_vtable_relations or []
 
     # Build xref-string lookup: func_name -> list of xref strings
     xref_strings_map = {}
     for spec in func_xref_strings:
         xref_strings_map[spec[0]] = spec[1]
+
+    # Build vtable-relation lookup: func_name -> (vtable_class, generate_vfunc_offset)
+    vtable_relations_map = {}
+    for spec in func_vtable_relations:
+        vtable_relations_map[spec[0]] = (spec[1], spec[2])
 
     # --- vtable targets ---
     for vtable_class in vtable_class_names:
@@ -2653,6 +2671,58 @@ async def preprocess_common_skill(
             if debug:
                 print(f"    Preprocess: failed to locate {func_name}")
             return False
+
+        # Enrich with vtable metadata if a vtable relation is defined.
+        if func_name in vtable_relations_map:
+            vtable_class, generate_vfunc_offset = vtable_relations_map[func_name]
+            func_data["vtable_name"] = vtable_class
+
+            if generate_vfunc_offset:
+                func_va_hex = func_data.get("func_va")
+                if func_va_hex:
+                    try:
+                        func_va_int = int(str(func_va_hex), 16)
+                    except (TypeError, ValueError):
+                        func_va_int = None
+
+                    if func_va_int is not None:
+                        vtable_data = await preprocess_vtable_via_mcp(
+                            session=session,
+                            class_name=vtable_class,
+                            image_base=image_base,
+                            platform=platform,
+                            debug=debug,
+                        )
+                        if vtable_data is not None:
+                            vtable_entries = vtable_data.get("vtable_entries", {})
+                            matched_index = None
+                            for idx, addr in vtable_entries.items():
+                                try:
+                                    if int(str(addr), 16) == func_va_int:
+                                        matched_index = int(idx)
+                                        break
+                                except (TypeError, ValueError):
+                                    continue
+
+                            if matched_index is not None:
+                                func_data["vfunc_offset"] = hex(matched_index * 8)
+                                func_data["vfunc_index"] = matched_index
+                                if debug:
+                                    print(
+                                        f"    Preprocess: {func_name} matched "
+                                        f"{vtable_class} vtable index {matched_index} "
+                                        f"(offset {hex(matched_index * 8)})"
+                                    )
+                            elif debug:
+                                print(
+                                    f"    Preprocess: {func_name} at {func_va_hex} "
+                                    f"not found in {vtable_class} vtable entries"
+                                )
+                        elif debug:
+                            print(
+                                f"    Preprocess: failed to look up {vtable_class} "
+                                f"vtable for {func_name}"
+                            )
 
         await _rename_func_in_ida(session, func_data.get("func_va"), func_name, debug)
         write_func_yaml(target_output, func_data)
