@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetworkMessages_DeallocateUnserializedMessage skill."""
+"""Preprocess script for find-CNetworkMessages_DeallocateNetMessageAbstract skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CNetworkMessages_DeallocateUnserializedMessage",
+    "CNetworkMessages_DeallocateNetMessageAbstract",
 ]
 
 FUNC_XREF_STRINGS = [
     # (func_name, xref_strings_list)
-    ( "CNetworkMessages_DeallocateUnserializedMessage",
+    ( "CNetworkMessages_DeallocateNetMessageAbstract",
     [
     "CNetworkMessages::DeallocateUnserializedMessage unable to deallocate unknown message type!"
     ] ),
@@ -17,7 +17,7 @@ FUNC_XREF_STRINGS = [
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class, generate_vfunc_offset)
-    ("CNetworkMessages_DeallocateUnserializedMessage", "CNetworkMessages", True),
+    ("CNetworkMessages_DeallocateNetMessageAbstract", "CNetworkMessages", True),
 ]
 
 async def preprocess_skill(

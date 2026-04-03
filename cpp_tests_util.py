@@ -165,77 +165,86 @@ def load_reference_vtable_data(
     class_name: str,
     platform: str,
     reference_modules: Sequence[str],
+    alias_class_names: Sequence[str] = (),
 ) -> Optional[Dict[str, Any]]:
     """
     Load reference YAML info for a class from modules in priority order.
 
     The first module that contains vtable/vfunc metadata is selected.
+    When alias_class_names is provided, they are tried in order if the
+    primary class_name yields no results within a given module.
     """
     if yaml is None:
         raise RuntimeError("PyYAML is required to read reference YAML files")
+
+    class_names_to_try = [class_name] + [n for n in alias_class_names if n]
 
     for module in reference_modules:
         module_dir = bindir / gamever / module
         if not module_dir.is_dir():
             continue
 
-        pattern = f"{class_name}_*.{platform}.yaml"
-        files = sorted(module_dir.glob(pattern))
-        if not files:
-            continue
-
-        vtable_size: Optional[int] = None
-        vtable_size_raw: Optional[str] = None
-        vtable_numvfunc: Optional[int] = None
-        reference_functions: Dict[int, Dict[str, str]] = {}
-        matched_files: List[str] = []
-
-        for path in files:
-            try:
-                with path.open("r", encoding="utf-8") as f:
-                    payload = yaml.safe_load(f) or {}
-            except Exception:
+        for effective_class_name in class_names_to_try:
+            pattern = f"{effective_class_name}_*.{platform}.yaml"
+            files = sorted(module_dir.glob(pattern))
+            if not files:
                 continue
 
-            if not isinstance(payload, dict):
-                continue
+            vtable_size: Optional[int] = None
+            vtable_size_raw: Optional[str] = None
+            vtable_numvfunc: Optional[int] = None
+            reference_functions: Dict[int, Dict[str, str]] = {}
+            matched_files: List[str] = []
 
-            matched_files.append(str(path))
+            for path in files:
+                try:
+                    with path.open("r", encoding="utf-8") as f:
+                        payload = yaml.safe_load(f) or {}
+                except Exception:
+                    continue
 
-            if "vtable_size" in payload:
-                parsed_size = _parse_int_maybe(payload.get("vtable_size"))
-                if parsed_size is not None:
-                    vtable_size = parsed_size
-                    vtable_size_raw = str(payload.get("vtable_size"))
-                parsed_numvfunc = _parse_int_maybe(payload.get("vtable_numvfunc"))
-                if parsed_numvfunc is not None:
-                    vtable_numvfunc = parsed_numvfunc
+                if not isinstance(payload, dict):
+                    continue
 
-            parsed_index = _parse_int_maybe(payload.get("vfunc_index"))
-            if parsed_index is None:
-                continue
+                matched_files.append(str(path))
 
-            func_name = payload.get("func_name")
-            member_name = _normalize_reference_member_name(
-                class_name=class_name,
-                func_name=str(func_name) if func_name is not None else None,
-                file_stem=path.stem,
-            )
-            reference_functions[parsed_index] = {
-                "func_name": str(func_name) if func_name is not None else path.stem,
-                "member_name": member_name,
-                "path": str(path),
-            }
+                if "vtable_size" in payload:
+                    parsed_size = _parse_int_maybe(payload.get("vtable_size"))
+                    if parsed_size is not None:
+                        vtable_size = parsed_size
+                        vtable_size_raw = str(payload.get("vtable_size"))
+                    parsed_numvfunc = _parse_int_maybe(payload.get("vtable_numvfunc"))
+                    if parsed_numvfunc is not None:
+                        vtable_numvfunc = parsed_numvfunc
 
-        if vtable_size is not None or reference_functions:
-            return {
-                "module": module,
-                "files": matched_files,
-                "vtable_size": vtable_size,
-                "vtable_size_raw": vtable_size_raw,
-                "vtable_numvfunc": vtable_numvfunc,
-                "functions_by_index": reference_functions,
-            }
+                parsed_index = _parse_int_maybe(payload.get("vfunc_index"))
+                if parsed_index is None:
+                    continue
+
+                func_name = payload.get("func_name")
+                member_name = _normalize_reference_member_name(
+                    class_name=effective_class_name,
+                    func_name=str(func_name) if func_name is not None else None,
+                    file_stem=path.stem,
+                )
+                reference_functions[parsed_index] = {
+                    "func_name": str(func_name) if func_name is not None else path.stem,
+                    "member_name": member_name,
+                    "path": str(path),
+                }
+
+            if vtable_size is not None or reference_functions:
+                result = {
+                    "module": module,
+                    "files": matched_files,
+                    "vtable_size": vtable_size,
+                    "vtable_size_raw": vtable_size_raw,
+                    "vtable_numvfunc": vtable_numvfunc,
+                    "functions_by_index": reference_functions,
+                }
+                if effective_class_name != class_name:
+                    result["alias_class_name"] = effective_class_name
+                return result
 
     return None
 
@@ -249,6 +258,7 @@ def compare_compiler_vtable_with_yaml(
     platform: str,
     reference_modules: Sequence[str],
     pointer_size: int,
+    alias_class_names: Sequence[str] = (),
 ) -> Dict[str, Any]:
     """
     Compare compiler vtable layout dump against YAML references.
@@ -263,7 +273,10 @@ def compare_compiler_vtable_with_yaml(
         class_name=class_name,
         platform=platform,
         reference_modules=reference_modules,
+        alias_class_names=alias_class_names,
     )
+
+    alias_used = reference.get("alias_class_name") if reference else None
 
     report: Dict[str, Any] = {
         "class_name": class_name,
@@ -275,6 +288,13 @@ def compare_compiler_vtable_with_yaml(
         "differences": [],
         "notes": [],
     }
+
+    if alias_used:
+        report["alias_class_name"] = alias_used
+        report["notes"].append(
+            f"Reference YAML matched via alias symbol '{alias_used}' "
+            f"(primary symbol '{class_name}' not found)."
+        )
 
     if compiler_section is None:
         report["notes"].append(

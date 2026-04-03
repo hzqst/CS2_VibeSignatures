@@ -591,6 +591,7 @@ def run_one_test(
             ]
         else:
             reference_modules = _to_list(test_item.get("reference_modules"))
+            alias_symbols = _to_list(test_item.get("alias_symbols"))
             compare_reports = []
             if not reference_modules:
                 # Keep behavior stable even when reference_modules is omitted.
@@ -603,6 +604,7 @@ def run_one_test(
                         platform=platform,
                         reference_modules=reference_modules,
                         pointer_size=pointer_size_from_target_triple(target),
+                        alias_class_names=alias_symbols,
                     )
                 )
             else:
@@ -616,6 +618,7 @@ def run_one_test(
                             platform=platform,
                             reference_modules=[module_name],
                             pointer_size=pointer_size_from_target_triple(target),
+                            alias_class_names=alias_symbols,
                         )
                     )
 

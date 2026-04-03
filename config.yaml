@@ -59,9 +59,9 @@ modules:
         expected_output:
           - CNetworkMessages_AllocateAndCopyConstructNetMessageAbstract.{platform}.yaml
 
-      - name: find-CNetworkMessages_DeallocateUnserializedMessage
+      - name: find-CNetworkMessages_DeallocateNetMessageAbstract
         expected_output:
-          - CNetworkMessages_DeallocateUnserializedMessage.{platform}.yaml
+          - CNetworkMessages_DeallocateNetMessageAbstract.{platform}.yaml
 
       - name: find-CNetworkMessages_RegisterNetworkFieldSerializer
         expected_output:
@@ -151,10 +151,10 @@ modules:
           - CNetworkMessages::AllocateAndCopyConstructNetMessageAbstract
         shared: true
 
-      - name: CNetworkMessages_DeallocateUnserializedMessage
+      - name: CNetworkMessages_DeallocateNetMessageAbstract
         category: vfunc
         alias:
-          - CNetworkMessages::DeallocateUnserializedMessage
+          - CNetworkMessages::DeallocateNetMessageAbstract
         shared: true
 
       - name: CNetworkMessages_RegisterNetworkFieldSerializer
@@ -2222,6 +2222,8 @@ cpp_tests:
 
   - name: INetworkMessages_MSVC
     symbol: INetworkMessages
+    alias_symbols:
+      - CNetworkMessages
     cpp: cpp_tests/inetworkmessages.cpp
     headers:
     - hl2sdk_cs2/public/networksystem/inetworkmessages.h # This is for LLM agent
