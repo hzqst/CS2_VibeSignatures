@@ -83,6 +83,6 @@ VFTable indices for 'INetworkSystem' (55 entries).
 int main() {
 
     networksystem()->InitGameServer();
-
+    
     return 0;
 }
