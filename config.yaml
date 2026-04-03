@@ -46,6 +46,10 @@ modules:
         expected_output:
           - CNetworkMessages_SerializeMessageInternal.{platform}.yaml
 
+      - name: find-CNetworkMessages_UnserializeFromStream
+        expected_output:
+          - CNetworkMessages_UnserializeFromStream.{platform}.yaml
+
     symbols:
       - name: CNetworkMessages_vtable
         category: vtable
@@ -75,14 +79,21 @@ modules:
           - CNetworkMessages::SerializeInternal
 
       - name: CNetworkMessages_UnserializeMessageInternal
-        category: func
+        category: vfunc
         alias:
           - CNetworkMessages::UnserializeMessageInternal
+        shared: true
 
       - name: CNetworkMessages_SerializeMessageInternal
         category: vfunc
         alias:
           - CNetworkMessages::SerializeMessageInternal
+        shared: true
+
+      - name: CNetworkMessages_UnserializeFromStream
+        category: vfunc
+        alias:
+          - CNetworkMessages::UnserializeFromStream
         shared: true
 
   - name: matchmaking
