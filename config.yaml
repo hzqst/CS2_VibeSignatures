@@ -44,19 +44,22 @@ modules:
         shared: true
 
       - name: CNetworkMessages_RegisterNetworkCategory
-        category: func
+        category: vfunc
         alias:
           - CNetworkMessages::RegisterNetworkCategory
+        shared: true
 
       - name: CNetworkMessages_AssociateNetMessageWithChannelCategoryAbstract
-        category: func
+        category: vfunc
         alias:
           - CNetworkMessages::AssociateNetMessageWithChannelCategoryAbstract
+        shared: true
 
       - name: CNetworkMessages_FindOrCreateNetMessage
-        category: func
+        category: vfunc
         alias:
           - CNetworkMessages::FindOrCreateNetMessage
+        shared: true
 
       - name: CNetworkMessages_SerializeInternal
         category: func
@@ -197,6 +200,7 @@ modules:
         category: vfunc
         alias:
           - CNetworkMessages::Serialize
+        shared: true
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
