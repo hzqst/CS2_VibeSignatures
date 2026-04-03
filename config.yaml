@@ -71,6 +71,22 @@ modules:
         expected_output:
           - CNetworkMessages_RegisterNetworkArrayFieldSerializer.{platform}.yaml
 
+      - name: find-CNetworkMessages_AssociateNetMessageGroupIdWithChannelCategory
+        expected_output:
+          - CNetworkMessages_AssociateNetMessageGroupIdWithChannelCategory.{platform}.yaml
+
+      - name: find-CNetworkMessages_RegisterNetworkFieldChangeCallbackInternal
+        expected_output:
+          - CNetworkMessages_RegisterNetworkFieldChangeCallbackInternal.{platform}.yaml
+
+      - name: find-CNetworkMessages_RegisterFieldChangeCallbackPriority
+        expected_output:
+          - CNetworkMessages_RegisterFieldChangeCallbackPriority.{platform}.yaml
+
+      - name: find-CNetworkMessages_ComputeOrderForPriority
+        expected_output:
+          - CNetworkMessages_ComputeOrderForPriority.{platform}.yaml
+
       - name: find-CNetworkMessages_GetNetMessageInfo
         expected_output:
           - CNetworkMessages_GetNetMessageInfo.{platform}.yaml
@@ -151,6 +167,30 @@ modules:
         category: vfunc
         alias:
           - CNetworkMessages::RegisterNetworkArrayFieldSerializer
+        shared: true
+
+      - name: CNetworkMessages_AssociateNetMessageGroupIdWithChannelCategory
+        category: vfunc
+        alias:
+          - CNetworkMessages::AssociateNetMessageGroupIdWithChannelCategory
+        shared: true
+
+      - name: CNetworkMessages_RegisterNetworkFieldChangeCallbackInternal
+        category: vfunc
+        alias:
+          - CNetworkMessages::RegisterNetworkFieldChangeCallbackInternal
+        shared: true
+
+      - name: CNetworkMessages_RegisterFieldChangeCallbackPriority
+        category: vfunc
+        alias:
+          - CNetworkMessages::RegisterFieldChangeCallbackPriority
+        shared: true
+
+      - name: CNetworkMessages_ComputeOrderForPriority
+        category: vfunc
+        alias:
+          - CNetworkMessages::ComputeOrderForPriority
         shared: true
 
       - name: CNetChan_vtable
