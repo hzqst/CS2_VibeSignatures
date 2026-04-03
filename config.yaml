@@ -163,6 +163,16 @@ modules:
         expected_input:
           - CNetworkGameClient_SendMovePacket.{platform}.yaml
 
+      - name: find-CDemoRecorder_vtable
+        expected_output:
+          - CDemoRecorder_vtable.{platform}.yaml
+
+      - name: find-CDemoRecorder_ParseMessage
+        expected_output:
+          - CDemoRecorder_ParseMessage.{platform}.yaml
+        expected_input:
+          - CDemoRecorder_vtable.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -231,6 +241,14 @@ modules:
         alias:
           - CNetworkMessages::Serialize
         shared: true
+
+      - name: CDemoRecorder_vtable
+        category: vtable
+
+      - name: CDemoRecorder_ParseMessage
+        category: vfunc
+        alias:
+          - CDemoRecorder::ParseMessage
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
