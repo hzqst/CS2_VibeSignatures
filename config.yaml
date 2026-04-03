@@ -116,6 +116,14 @@ modules:
         expected_input:
           - CNetworkGameServer_vtable.{platform}.yaml
 
+      - name: find-CNetworkGameClient_SendMovePacket
+        expected_output:
+          - CNetworkGameClient_SendMovePacket.{platform}.yaml
+
+      - name: find-CNetworkGameClient_SendMove
+        expected_output:
+          - CNetworkGameClient_SendMove.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -166,6 +174,18 @@ modules:
         alias:
           - CNetworkGameServer::GetFreeClient
           - GetFreeClient
+
+      - name: CNetworkGameClient_SendMovePacket
+        category: func
+        alias:
+          - CNetworkGameClient::SendMovePacket
+          - SendMovePacket
+
+      - name: CNetworkGameClient_SendMove
+        category: func
+        alias:
+          - CNetworkGameClient::SendMove
+          - SendMove
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
