@@ -7,13 +7,16 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkGameClient_SendMovePacket",
 ]
 
-FUNC_XREF_STRINGS = [
-    # (func_name, xref_strings_list)
-    ( "CNetworkGameClient_SendMovePacket",
-    [
-    "Failed to serialize one usercommand?",
-    "SendMovePacket overflowed trying to send %d commands, will try using %d!",
-    ] ),
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_funcs_list)
+    (
+        "CNetworkGameClient_SendMovePacket",
+        [
+            "Failed to serialize one usercommand?",
+            "SendMovePacket overflowed trying to send %d commands, will try using %d!",
+        ],
+        [],
+    ),
 ]
 
 async def preprocess_skill(
@@ -29,6 +32,6 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xref_strings=FUNC_XREF_STRINGS,
+        func_xrefs=FUNC_XREFS,
         debug=debug,
     )
