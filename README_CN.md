@@ -41,12 +41,36 @@ uv run copy_depot_bin.py -gamever 14141 -platform all-platform
 #### 2. 为 `config.yaml` 的符号生成对应的 signatures
 
  ```bash
- uv run ida_analyze_bin.py -gamever=14141 [-oldgamever=14140] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-debug]
+ uv run ida_analyze_bin.py -gamever=14141 [-oldgamever=14140] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-vcall_finder=g_pNetworkMessages|*] [-vcall_finder_model=gpt-4o] [-vcall_finder_apikey=your-key] [-vcall_finder_baseurl=https://api.example.com/v1] [-debug]
  ```
 
 * 在真正运行 Agent SKILL(s) 前，会先通过 mcp call 直接使用 `bin/{previous_gamever}/{module}/{symbol}.{platform}.yaml` 中的旧 signature 查找当前版本游戏二进制中的符号。不会消耗 token。
 
 * `-agent="claude.cmd"` 用于Windows上使用npm安装的claude cli
+
+* `-vcall_finder=g_pNetworkMessages` 会在模块级 `vcall_finder` 配置中筛选同名对象；`-vcall_finder=*` 会处理 `config.yaml` 中已声明的全部对象。
+
+* 当启用 `-vcall_finder` 时，脚本会在每个模块/平台完成 IDA 任务后导出对象引用函数的完整反汇编与伪代码到 `vcall_finder/{gamever}/{object_name}/{module}/{platform}/`，并在全部模块/平台结束后调用 OpenAI SDK；若某个 detail YAML 已存在顶层 `found_vcall`，则会跳过该次 LLM 调用，直接复用缓存结果。
+
+* LLM 成功返回后，会立刻将 `found_vcall: [...]` 或 `found_vcall: []` 回写到对应的 detail YAML，后续重跑可直接跳过该函数的 LLM 调用。
+
+* `vcall_finder/{gamever}/{object_name}.txt` 现在是按 YAML document stream 追加的扁平记录；每条记录直接包含 `insn_va`、`insn_disasm`、`vfunc_offset`，不再嵌套 `found_vcall:`。
+
+* 专用 CLI 参数：
+  - `-vcall_finder_apikey`：启用 `vcall_finder` 聚合时必需
+  - `-vcall_finder_baseurl`：可选，自定义兼容 base URL
+  - `-vcall_finder_model`：可选，默认 `gpt-4o`
+  - `vcall_finder` 不读取 `OPENAI_API_KEY`、`OPENAI_API_BASE`、`OPENAI_API_MODEL`
+
+```bash
+uv run ida_analyze_bin.py -gamever=14141 -modules=networksystem -platform=windows -vcall_finder=g_pNetworkMessages -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key
+uv run ida_analyze_bin.py -gamever=14141 -platform=windows,linux -vcall_finder=* -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key -vcall_finder_baseurl=https://api.example.com/v1
+```
+
+输出示例：
+
+- `vcall_finder/14141/g_pNetworkMessages/networksystem/windows/sub_140123450.yaml`
+- `vcall_finder/14141/g_pNetworkMessages.txt`
 
 #### 3. 将 yaml(s) 转换为 gamedata json / txt
 
