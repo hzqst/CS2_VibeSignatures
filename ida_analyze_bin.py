@@ -60,7 +60,7 @@ DEFAULT_BIN_DIR = "bin"
 DEFAULT_PLATFORM = "windows,linux"
 DEFAULT_MODULES = "*"
 DEFAULT_AGENT = "claude"
-DEFAULT_OPENAI_MODEL = "gpt-4o"
+DEFAULT_VCALL_FINDER_MODEL = "gpt-4o"
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 1200  # seconds to wait for MCP server
@@ -379,9 +379,19 @@ def parse_args():
         help="vcall_finder object selector: '*' for all, or comma-separated object names"
     )
     parser.add_argument(
-        "-openai_model",
-        default=os.getenv("OPENAI_API_MODEL") or DEFAULT_OPENAI_MODEL,
-        help="OpenAI model for vcall_finder workflow (default: OPENAI_API_MODEL or gpt-4o)"
+        "-vcall_finder_model",
+        default=DEFAULT_VCALL_FINDER_MODEL,
+        help=f"OpenAI-compatible model for vcall_finder workflow (default: {DEFAULT_VCALL_FINDER_MODEL})"
+    )
+    parser.add_argument(
+        "-vcall_finder_apikey",
+        default=None,
+        help="OpenAI-compatible API key used only by vcall_finder aggregation"
+    )
+    parser.add_argument(
+        "-vcall_finder_baseurl",
+        default=None,
+        help="Optional OpenAI-compatible base URL used only by vcall_finder aggregation"
     )
     parser.add_argument(
         "-ida_args",
@@ -1193,7 +1203,9 @@ def main():
                     base_dir="vcall_finder",
                     gamever=gamever,
                     object_name=object_name,
-                    model=args.openai_model,
+                    model=args.vcall_finder_model,
+                    api_key=args.vcall_finder_apikey,
+                    base_url=args.vcall_finder_baseurl,
                     debug=debug,
                 )
                 aggregation_status = stats["status"]

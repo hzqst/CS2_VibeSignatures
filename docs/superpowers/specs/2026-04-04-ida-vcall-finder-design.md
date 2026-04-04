@@ -9,7 +9,7 @@
 1. 当命令行传入 `-vcall_finder=...` 时，读取 `config.yaml` 中模块级 `vcall_finder` 配置。
 2. 在每个模块/平台的既有 IDA 任务完成后，复用当前 IDA MCP 会话，定位指定对象并导出所有引用该对象的函数完整反汇编与伪代码。
 3. 在全部模块/平台的 IDA 任务结束后，统一调用 OpenAI SDK 读取这些函数 YAML，并从 LLM 输出中提取目标对象的虚函数调用信息。
-4. 将解析结果追加到对象级汇总 YAML 中，供后续人工检视或二次处理。
+4. 将解析结果一方面回写到单函数明细 YAML 的 `found_vcall` 字段作为缓存，另一方面追加到对象级汇总 TXT 中，供后续人工检视或二次处理。
 
 ## 目标
 
@@ -17,8 +17,9 @@
 - 支持 `-vcall_finder=*` 与 `-vcall_finder=g_pNetworkMessages` 两类筛选方式。
 - 仅处理 `config.yaml` 中模块已声明的 `vcall_finder` 对象。
 - 导出目录按 `gamever` 隔离，避免不同版本中间产物互相覆盖。
-- 在对象级汇总文件中以扁平列表形式保存 LLM 识别出的虚调用结果。
-- OpenAI 配置兼容环境变量方式，并支持模型覆盖。
+- 在对象级汇总 TXT 中以流式扁平记录形式保存虚调用结果。
+- 对已经完成过 LLM 聚合的单函数明细 YAML 复用 `found_vcall` 缓存，避免重复消耗 token。
+- OpenAI 聚合配置只使用 `vcall_finder` 专用 CLI 参数，不读取 `OPENAI_API_*` 环境变量，避免影响 `-agent=codex` 主 Agent 行为。
 
 ## 非目标
 
@@ -36,19 +37,19 @@
   - 未传入：禁用该功能。
   - `*`：处理模块中 `config.yaml` 已声明的全部对象。
   - `name1,name2`：仅处理同名对象，且对象必须存在于模块配置中。
-- `-openai_model`
-  - 可选，覆盖 OpenAI 使用的模型名。
+- `-vcall_finder_model`
+  - 可选，指定 `vcall_finder` 聚合使用的模型名，默认 `gpt-4o`。
+- `-vcall_finder_apikey`
+  - 启用 `-vcall_finder` 聚合时必需，专用于 `vcall_finder` 的 OpenAI 兼容 API Key。
+- `-vcall_finder_baseurl`
+  - 可选，专用于 `vcall_finder` 的 OpenAI 兼容 Base URL。
 
-### OpenAI 配置优先级
+### OpenAI 配置规则
 
-1. `-openai_model`
-2. `OPENAI_API_MODEL`
-3. 默认值 `gpt-4o`
-
-OpenAI 鉴权与兼容基址沿用环境变量：
-
-- `OPENAI_API_KEY`
-- `OPENAI_API_BASE`（可选）
+- `vcall_finder` 聚合只读取 `-vcall_finder_model`、`-vcall_finder_apikey`、`-vcall_finder_baseurl`。
+- 不从 `OPENAI_API_KEY`、`OPENAI_API_BASE`、`OPENAI_API_MODEL` 读取任何回退配置。
+- 未传入 `-vcall_finder_model` 时，使用默认值 `gpt-4o`。
+- 启用 `-vcall_finder` 且进入聚合阶段时，若未传入 `-vcall_finder_apikey`，直接报错并返回失败。
 
 ### `config.yaml` 配置
 
@@ -76,7 +77,7 @@ modules:
 
 职责：
 
-- 解析新参数 `-vcall_finder` 与 `-openai_model`
+- 解析新参数 `-vcall_finder`、`-vcall_finder_model`、`-vcall_finder_apikey`、`-vcall_finder_baseurl`
 - 解析 `config.yaml` 中的模块级 `vcall_finder`
 - 保持现有 `skills` 主流程不变
 - 在每个模块/平台的 `skills` 执行完毕后，若命中 `-vcall_finder`，则调用 helper 执行当前二进制的引用函数导出
@@ -92,9 +93,10 @@ modules:
    - 对每个唯一函数导出完整反汇编和完整伪代码 YAML
 2. LLM 聚合阶段
    - 扫描 `vcall_finder/{gamever}/{object_name}` 下的单函数 YAML
-   - 调用 OpenAI SDK
-   - 解析 LLM YAML
-   - 追加或更新对象级汇总 YAML
+   - 优先读取单函数 YAML 中已缓存的 `found_vcall`
+   - 仅在缓存缺失时调用 OpenAI SDK
+   - 解析 LLM YAML，并回写到单函数 YAML
+   - 将 `found_vcall` 中的条目追加到对象级汇总 TXT
 
 该拆分保证外部入口仍是 `ida_analyze_bin.py`，但将新功能的导出与聚合逻辑从主脚本中隔离。
 
@@ -141,8 +143,10 @@ modules:
 
 1. 若未启用 `-vcall_finder`，直接结束。
 2. 若启用了 `-vcall_finder`，按对象逐个扫描 `vcall_finder/{gamever}/{object_name}/*/*/*.yaml`。
-3. 对每个函数明细 YAML 调用 OpenAI。
-4. 解析结果并更新 `vcall_finder/{gamever}/{object_name}.yaml`。
+3. 对每个函数明细 YAML：
+   - 若顶层已存在 `found_vcall` 键，则跳过 OpenAI 调用，直接复用其值。
+   - 若顶层不存在 `found_vcall` 键，则调用 OpenAI，解析结果后立刻回写该键。
+4. 将每个函数的 `found_vcall` 条目追加到 `vcall_finder/{gamever}/{object_name}.txt`。
 
 这样可以满足“先跑完 IDA 上所有任务，再做额外 OpenAI 动作”的要求。
 
@@ -173,39 +177,63 @@ procedure: |-
 - `module` 字段显式保存，避免聚合阶段依赖路径反推。
 - `disasm_code` 与 `procedure` 使用 YAML literal block 存储。
 - 若伪代码不可用，仍写入该明细文件，`procedure` 为空字符串。
+- 初次 IDA 导出时不写入 `found_vcall`。
+- 当某次 LLM 聚合成功完成后，回写为：
 
-### 对象级汇总 YAML
+```yaml
+object_name: g_pNetworkMessages
+module: networksystem
+platform: windows
+func_name: sub_140123450
+func_va: 0x12345678
+disasm_code: |-
+  这里输出函数的完整反汇编
+procedure: |-
+  这里输出函数的完整伪代码
+found_vcall:
+  - insn_va: 0x12345678
+    insn_disasm: call    [rax+68h]
+    vfunc_offset: 0x68
+```
+
+- 若 LLM 未发现虚调用，也必须回写 `found_vcall: []`。
+- 下次聚合前，只要明细 YAML 顶层存在 `found_vcall` 键，就视为缓存命中并跳过 LLM 调用，即使其值为空列表。
+
+### 对象级汇总 TXT
 
 路径：
 
-`vcall_finder/{gamever}/{object_name}.yaml`
+`vcall_finder/{gamever}/{object_name}.txt`
 
 结构：
 
 ```yaml
+---
 object_name: g_pNetworkMessages
-results:
-  - module: networksystem
-    platform: windows
-    func_name: sub_140123450
-    func_va: 0x12345678
-    found_vcall:
-      - insn_va: 0x12345678
-        insn_disasm: call    [rax+68h]
-        vfunc_offset: 0x68
-  - module: engine
-    platform: linux
-    func_name: sub_140223450
-    func_va: 0x23456789
-    found_vcall: []
+module: networksystem
+platform: windows
+func_name: sub_140123450
+func_va: 0x12345678
+insn_va: 0x12345678
+insn_disasm: call    [rax+68h]
+vfunc_offset: 0x68
+---
+object_name: g_pNetworkMessages
+module: networksystem
+platform: windows
+func_name: sub_140123450
+func_va: 0x12345678
+insn_va: 0x12345680
+insn_disasm: call    rax
+vfunc_offset: 0x80
 ```
 
 说明：
 
-- `results` 为扁平列表。
-- 即使 LLM 未发现虚调用，也保留该函数项，并写入 `found_vcall: []`。
-- 去重键为 `(module, platform, func_name, func_va)`。
-- 若重复处理同一函数，更新已有记录的 `found_vcall`，而不是新增重复项。
+- 该文件是 YAML document stream，但文件后缀固定为 `.txt`，便于一边运行一边追加观察。
+- 每个虚调用条目单独写成一个 document，不包含外层 `found_vcall:` 包装。
+- 某个函数若 `found_vcall` 为空列表，则不会向该 TXT 追加任何 document。
+- 每次对象级聚合开始前先清空该 TXT，然后根据本次扫描到的全部明细 YAML 重新顺序构建，因此不依赖运行间增量去重。
 
 ## IDA 导出阶段设计
 
@@ -327,27 +355,43 @@ If there are no virtual function calls for "{yaml.object_name}" found, output an
 
 这些情况都归一化为 `found_vcall: []`。
 
+### 缓存命中与回写语义
+
+对每个明细 YAML 按以下顺序处理：
+
+1. 读取 YAML。
+2. 若顶层已存在 `found_vcall` 键：
+   - 将其值规范化为列表；
+   - 跳过 LLM 调用；
+   - 直接用该列表中的条目追加对象级 TXT。
+3. 若顶层不存在 `found_vcall` 键：
+   - 调用 LLM；
+   - 将解析结果规范化为 `found_vcall: [...]` 或 `found_vcall: []`；
+   - 立刻重写当前明细 YAML，补入 `found_vcall`；
+   - 再将该列表中的条目追加对象级 TXT。
+
+该语义保证：
+
+- 同一明细函数最多只需要成功消耗一次 LLM token；
+- 后续重跑时可以用明细缓存重建对象级 TXT；
+- 即使某函数没有虚调用，也会通过 `found_vcall: []` 记录“已分析完成”状态。
+
 ### 聚合阶段错误处理
 
 - 单个明细 YAML 读取失败：记录错误并继续
 - 单个 OpenAI 请求失败：记录错误并继续
-- 单个响应 YAML 解析失败：不写入该函数结果，并打印调试信息片段
-- 未配置 `OPENAI_API_KEY`：聚合阶段报错并返回失败
+- 单个响应无法规范化时：按 `found_vcall: []` 处理
+- 单个明细 YAML 回写 `found_vcall` 失败：记录错误；本次结果仍可继续尝试追加到对象级 TXT，但下次运行不能命中缓存
+- 未传入 `-vcall_finder_apikey`：聚合阶段报错并返回失败
 
 ### 汇总文件更新语义
 
-对每个明细函数，写入或更新以下记录：
+对象级 TXT 的更新语义如下：
 
-- `module`
-- `platform`
-- `func_name`
-- `func_va`
-- `found_vcall`
-
-更新策略：
-
-- 已存在相同去重键：覆盖 `found_vcall`
-- 不存在：追加新项
+- 聚合开始前清空 `summary_path`
+- 按扫描顺序处理每个明细 YAML
+- 直接从对应 `found_vcall` 列表生成扁平条目并追加到 TXT
+- 不再维护旧版 `results:` 聚合结构
 
 ## 返回码与统计语义
 
@@ -360,7 +404,9 @@ If there are no virtual function calls for "{yaml.object_name}" found, output an
 - 每个对象在每个模块/平台中找到的唯一函数数量
 - 生成的明细 YAML 数量
 - 聚合阶段扫描的文件数
-- 成功解析与更新的记录数
+- LLM 调用数、缓存命中数
+- 成功回写 `found_vcall` 的文件数
+- 追加到对象级 TXT 的记录数
 - 跳过数与失败数
 
 ## 依赖与文档更新
@@ -372,6 +418,7 @@ If there are no virtual function calls for "{yaml.object_name}" found, output an
 - `ida_analyze_bin.py`
 - `pyproject.toml`
 - `README_CN.md`
+- `README.md`
 
 预计新增：
 
@@ -392,14 +439,18 @@ If there are no virtual function calls for "{yaml.object_name}" found, output an
 - 参数解析：
   - `-vcall_finder=*`
   - `-vcall_finder=g_pNetworkMessages`
-  - `-openai_model`
+  - `-vcall_finder_model`
+  - `-vcall_finder_apikey`
+  - `-vcall_finder_baseurl`
 - 配置筛选：
   - 仅处理模块配置中声明过的对象
 - 路径组织：
   - 明细输出按 `vcall_finder/{gamever}/{object}/{module}/{platform}` 隔离
-  - 汇总输出为 `vcall_finder/{gamever}/{object}.yaml`
-- 汇总去重：
-  - 相同 `(module, platform, func_name, func_va)` 不重复追加
+  - 汇总输出为 `vcall_finder/{gamever}/{object}.txt`
+- 缓存判定：
+  - 明细 YAML 已存在 `found_vcall` 键时跳过 LLM
+- 汇总构建：
+  - 对同一函数直接复用其 `found_vcall` 列表回放到 TXT
 
 ### 运行验证
 
@@ -410,15 +461,18 @@ uv run ida_analyze_bin.py \
   -gamever=14141 \
   -modules=networksystem \
   -platform=windows \
-  -vcall_finder=g_pNetworkMessages
+  -vcall_finder=g_pNetworkMessages \
+  -vcall_finder_model=gpt-4o \
+  -vcall_finder_apikey=your-key
 ```
 
 预期验证点：
 
 - 明细 YAML 正常生成
-- 汇总 YAML 正常生成
+- 对象级 TXT 正常生成
 - LLM 返回可解析
-- 重跑时汇总项被更新而不是重复追加
+- LLM 成功后明细 YAML 被回写 `found_vcall`
+- 重跑时命中明细缓存并跳过 LLM，但仍可从 `found_vcall` 回放到 TXT
 
 ## 实施边界
 

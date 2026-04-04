@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-import os
 import re
+import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -120,17 +120,15 @@ def build_vcall_detail_path(
         / f"{func_component}.yaml"
     )
 
-
+# `vcall_finder/14141b/g_pNetworkMessages.txt` for example
 def build_vcall_summary_path(base_dir: str | Path, gamever: str, object_name: str) -> Path:
     gamever_component = _normalize_safe_path_component(gamever, "gamever")
     object_component = _normalize_safe_path_component(object_name, "object_name")
-    return Path(base_dir) / gamever_component / f"{object_component}.yaml"
+    return Path(base_dir) / gamever_component / f"{object_component}.txt"
 
 
 def write_vcall_detail_yaml(path: str | Path, detail: Mapping[str, Any]) -> None:
     detail_data = _require_mapping(detail, "detail")
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "object_name": _read_required_text(detail_data, "object_name", "detail"),
         "module": _read_required_text(detail_data, "module", "detail"),
@@ -140,14 +138,26 @@ def write_vcall_detail_yaml(path: str | Path, detail: Mapping[str, Any]) -> None
         "disasm_code": _read_optional_text(detail_data, "disasm_code"),
         "procedure": _read_optional_text(detail_data, "procedure"),
     }
-    with path.open("w", encoding="utf-8") as file_obj:
-        yaml.dump(
-            payload,
-            file_obj,
-            Dumper=LiteralDumper,
-            sort_keys=False,
-            allow_unicode=True,
-        )
+    _write_yaml_mapping(path, payload)
+
+
+def write_vcall_detail_found_vcalls(
+    path: str | Path,
+    detail: Mapping[str, Any],
+    found_vcall: Sequence[Any] | None,
+) -> None:
+    detail_data = _require_mapping(detail, "detail")
+    payload = {
+        "object_name": _read_required_text(detail_data, "object_name", "detail"),
+        "module": _read_required_text(detail_data, "module", "detail"),
+        "platform": _read_required_text(detail_data, "platform", "detail"),
+        "func_name": _read_required_text(detail_data, "func_name", "detail"),
+        "func_va": _read_required_text(detail_data, "func_va", "detail"),
+        "disasm_code": _read_optional_text(detail_data, "disasm_code"),
+        "procedure": _read_optional_text(detail_data, "procedure"),
+        "found_vcall": normalize_found_vcalls(found_vcall),
+    }
+    _write_yaml_mapping(path, payload)
 
 
 def load_yaml_file(path: str | Path) -> dict[str, Any]:
@@ -230,21 +240,28 @@ def parse_llm_vcall_response(response_text: str | None) -> dict[str, list[dict[s
     return {"found_vcall": normalize_found_vcalls(parsed.get("found_vcall", []))}
 
 
-def create_openai_client(api_key=None, api_base=None):
-    resolved_api_key = api_key or os.environ.get("OPENAI_API_KEY")
-    if not resolved_api_key:
-        raise RuntimeError("OPENAI_API_KEY is required when -vcall_finder is enabled")
+def create_openai_client(api_key, base_url=None):
+    if api_key is None or not str(api_key).strip():
+        raise RuntimeError("-vcall_finder_apikey is required when -vcall_finder is enabled")
+
+    resolved_api_key = _require_nonempty_text(api_key, "api_key")
 
     client_kwargs = {"api_key": resolved_api_key}
-    resolved_api_base = api_base or os.environ.get("OPENAI_API_BASE")
-    if resolved_api_base:
-        client_kwargs["base_url"] = resolved_api_base
+    if base_url is not None:
+        client_kwargs["base_url"] = _require_nonempty_text(base_url, "base_url")
 
     return OpenAI(**client_kwargs)
 
 
-def call_openai_for_vcalls(client, detail, model):
+def call_openai_for_vcalls(client, detail, model, *, debug=False, request_label=""):
     model = _require_nonempty_text(model, "model")
+    if debug:
+        _print_vcall_debug(
+            f"LLM request start {request_label} model='{model}'".rstrip(),
+            debug,
+        )
+
+    started_at = time.monotonic()
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -261,70 +278,132 @@ def call_openai_for_vcalls(client, detail, model):
     content = getattr(message, "content", "") if message is not None else ""
     if not isinstance(content, str):
         content = str(content)
-    return parse_llm_vcall_response(content)["found_vcall"]
 
-
-def merge_summary_record(
-    summary_data: Mapping[str, Any] | None,
-    detail: Mapping[str, Any],
-    found_vcall: Sequence[Any] | None,
-) -> dict[str, Any]:
-    summary = dict(_require_mapping(summary_data or {}, "summary_data"))
-    detail_data = _require_mapping(detail, "detail")
-
-    detail_object_name = _read_required_text(detail_data, "object_name", "detail")
-    existing_object_name = summary.get("object_name")
-    if existing_object_name is not None:
-        existing_object_name = str(existing_object_name)
-        if existing_object_name != detail_object_name:
-            raise ValueError(
-                "summary object_name mismatch: "
-                f"'{existing_object_name}' != '{detail_object_name}'"
-            )
-        summary["object_name"] = existing_object_name
-    else:
-        summary["object_name"] = detail_object_name
-
-    raw_results = summary.get("results", [])
-    if not isinstance(raw_results, list):
-        raise TypeError(f"summary_data['results'] must be a list, got {type(raw_results).__name__}")
-    results = list(raw_results)
-
-    record = {
-        "module": _read_required_text(detail_data, "module", "detail"),
-        "platform": _read_required_text(detail_data, "platform", "detail"),
-        "func_name": _read_required_text(detail_data, "func_name", "detail"),
-        "func_va": _read_required_text(detail_data, "func_va", "detail"),
-        "found_vcall": normalize_found_vcalls(found_vcall),
-    }
-
-    record_key = (
-        record["module"],
-        record["platform"],
-        record["func_name"],
-        record["func_va"],
-    )
-
-    replaced = False
-    for index, existing in enumerate(results):
-        if not isinstance(existing, Mapping):
-            continue
-        existing_key = (
-            existing.get("module"),
-            existing.get("platform"),
-            existing.get("func_name"),
-            existing.get("func_va"),
+    found_vcall = parse_llm_vcall_response(content)["found_vcall"]
+    if debug:
+        elapsed_seconds = time.monotonic() - started_at
+        _print_vcall_debug(
+            "LLM request done "
+            f"{request_label} elapsed={elapsed_seconds:.2f}s "
+            f"response_chars={len(content)} found_vcall={len(found_vcall)}",
+            debug,
         )
-        if existing_key == record_key:
-            results[index] = record
-            replaced = True
-            break
 
-    if not replaced:
-        results.append(record)
+    return found_vcall
 
-    summary["results"] = results
-    return summary
+
+def _aggregate_vcall_detail_file(
+    *,
+    client_ref,
+    api_key,
+    base_url,
+    detail_path,
+    summary_path,
+    request_label,
+    model,
+    debug,
+):
+    _print_vcall_debug(f"loading detail YAML {request_label}", debug)
+    try:
+        detail = load_yaml_file(detail_path)
+    except Exception as exc:
+        _print_vcall_debug(
+            f"failed to load detail YAML {request_label}: {exc!r}",
+            debug,
+        )
+        return False
+
+    if not detail:
+        _print_vcall_debug(f"empty detail YAML skipped {request_label}", debug)
+        return False
+
+    try:
+        has_cached_found_vcall, found_vcall = _read_cached_found_vcalls(detail)
+        source_name = "cache" if has_cached_found_vcall else "llm"
+        if has_cached_found_vcall:
+            _print_vcall_debug(
+                f"found cached found_vcall {request_label} entries={len(found_vcall)}, skip llm",
+                debug,
+            )
+        else:
+            llm_client = _get_or_create_llm_client(
+                client_ref,
+                api_key=api_key,
+                base_url=base_url,
+            )
+            found_vcall = call_openai_for_vcalls(
+                llm_client,
+                detail,
+                model,
+                debug=debug,
+                request_label=request_label,
+            )
+            try:
+                write_vcall_detail_found_vcalls(detail_path, detail, found_vcall)
+                _print_vcall_debug(
+                    f"detail YAML updated with found_vcall {request_label} entries={len(found_vcall)}",
+                    debug,
+                )
+            except Exception as exc:
+                _print_vcall_debug(
+                    f"failed to update detail YAML {request_label}: {exc!r}",
+                    debug,
+                )
+
+        appended = append_vcall_summary_entries(summary_path, detail, found_vcall)
+        if appended:
+            _print_vcall_debug(
+                "appended "
+                f"{appended} summary entr{'y' if appended == 1 else 'ies'} "
+                f"{request_label} source='{source_name}'",
+                debug,
+            )
+        else:
+            _print_vcall_debug(
+                f"no vcall entries to append {request_label} source='{source_name}'",
+                debug,
+            )
+        return True
+    except Exception as exc:
+        _print_vcall_debug(
+            f"OpenAI aggregation failed for {request_label}: {exc!r}",
+            debug,
+        )
+        return False
+
+
+def _aggregate_vcall_detail_paths(
+    *,
+    client_ref,
+    api_key,
+    base_url,
+    detail_paths,
+    summary_path,
+    model,
+    debug,
+):
+    processed = 0
+    failed = 0
+    total_paths = len(detail_paths)
+
+    for detail_index, detail_path in enumerate(detail_paths, start=1):
+        request_label = f"[{detail_index}/{total_paths}] '{detail_path}'"
+        success = _aggregate_vcall_detail_file(
+            client_ref=client_ref,
+            api_key=api_key,
+            base_url=base_url,
+            detail_path=detail_path,
+            summary_path=summary_path,
+            request_label=request_label,
+            model=model,
+            debug=debug,
+        )
+        if success:
+            processed += 1
+        else:
+            failed += 1
+
+    return processed, failed
 
 
 def aggregate_vcall_results_for_object(
@@ -333,6 +412,8 @@ def aggregate_vcall_results_for_object(
     gamever,
     object_name,
     model,
+    api_key=None,
+    base_url=None,
     client=None,
     debug=False,
 ):
@@ -342,66 +423,98 @@ def aggregate_vcall_results_for_object(
     if not detail_paths:
         return {"status": "skipped", "processed": 0, "failed": 0}
 
-    summary = load_yaml_file(summary_path)
-    llm_client = client or create_openai_client()
-    processed = 0
-    failed = 0
+    initialize_vcall_summary_stream(summary_path)
+    client_ref = {"client": client}
+    _print_vcall_debug(f"summary stream reset '{summary_path}'", debug)
+    _print_vcall_debug(
+        "OpenAI aggregation "
+        f"object='{object_name}', detail_files={len(detail_paths)}, "
+        f"model='{model}', base_url='{base_url or '<default>'}'",
+        debug,
+    )
 
-    if debug:
-        print(
-            "    vcall_finder: OpenAI aggregation "
-            f"object='{object_name}', detail_files={len(detail_paths)}"
-        )
+    processed, failed = _aggregate_vcall_detail_paths(
+        client_ref=client_ref,
+        api_key=api_key,
+        base_url=base_url,
+        detail_paths=detail_paths,
+        summary_path=summary_path,
+        model=model,
+        debug=debug,
+    )
 
-    for detail_path in detail_paths:
-        try:
-            detail = load_yaml_file(detail_path)
-        except Exception as exc:
-            failed += 1
-            if debug:
-                print(f"    vcall_finder: failed to load detail YAML '{detail_path}': {exc!r}")
-            continue
+    _print_vcall_debug(
+        "OpenAI aggregation summary "
+        f"object='{object_name}', processed={processed}, failed={failed}",
+        debug,
+    )
 
-        if not detail:
-            failed += 1
-            if debug:
-                print(f"    vcall_finder: empty detail YAML skipped: '{detail_path}'")
-            continue
-
-        try:
-            found_vcall = call_openai_for_vcalls(llm_client, detail, model)
-            summary = merge_summary_record(summary, detail, found_vcall)
-            processed += 1
-        except Exception as exc:
-            failed += 1
-            if debug:
-                print(f"    vcall_finder: OpenAI aggregation failed for '{detail_path}': {exc!r}")
-
-    write_vcall_summary_yaml(summary_path, summary)
-
-    if debug:
-        print(
-            "    vcall_finder: OpenAI aggregation summary "
-            f"object='{object_name}', processed={processed}, failed={failed}"
-        )
-
-    if failed:
-        status = "failed"
-    elif processed:
-        status = "success"
-    else:
-        status = "skipped"
-
-    return {"status": status, "processed": processed, "failed": failed}
+    return {
+        "status": _resolve_vcall_aggregation_status(processed, failed),
+        "processed": processed,
+        "failed": failed,
+    }
 
 
-def write_vcall_summary_yaml(path: str | Path, summary: Mapping[str, Any]) -> None:
-    summary_data = _require_mapping(summary, "summary")
+def initialize_vcall_summary_stream(path: str | Path) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("", encoding="utf-8")
+
+
+def build_vcall_summary_entries(
+    detail: Mapping[str, Any],
+    found_vcall: Sequence[Any] | None,
+) -> list[dict[str, Any]]:
+    detail_data = _require_mapping(detail, "detail")
+    base_entry = {
+        "object_name": _read_required_text(detail_data, "object_name", "detail"),
+        "module": _read_required_text(detail_data, "module", "detail"),
+        "platform": _read_required_text(detail_data, "platform", "detail"),
+        "func_name": _read_required_text(detail_data, "func_name", "detail"),
+        "func_va": _read_required_text(detail_data, "func_va", "detail"),
+    }
+
+    entries = []
+    for vcall in normalize_found_vcalls(found_vcall):
+        entry = dict(base_entry)
+        entry.update(_require_mapping(vcall, "found_vcall[]"))
+        entries.append(entry)
+
+    return entries
+
+
+def append_vcall_summary_entries(
+    path: str | Path,
+    detail: Mapping[str, Any],
+    found_vcall: Sequence[Any] | None,
+) -> int:
+    entries = build_vcall_summary_entries(detail, found_vcall)
+    if not entries:
+        return 0
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as file_obj:
+        for entry in entries:
+            yaml.dump(
+                entry,
+                file_obj,
+                Dumper=LiteralDumper,
+                sort_keys=False,
+                allow_unicode=True,
+                explicit_start=True,
+            )
+
+    return len(entries)
+
+
+def _write_yaml_mapping(path: str | Path, payload: Mapping[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as file_obj:
         yaml.dump(
-            summary_data,
+            dict(payload),
             file_obj,
             Dumper=LiteralDumper,
             sort_keys=False,
@@ -410,10 +523,49 @@ def write_vcall_summary_yaml(path: str | Path, summary: Mapping[str, Any]) -> No
 
 
 def _require_nonempty_text(value: Any, name: str) -> str:
+    if value is None:
+        raise ValueError(f"{name} cannot be empty")
     text = str(value).strip()
     if not text:
         raise ValueError(f"{name} cannot be empty")
     return text
+
+
+def _print_vcall_debug(message: str, debug: bool) -> None:
+    if not debug:
+        return
+    print(f"    vcall_finder: {message}", flush=True)
+
+
+def _read_cached_found_vcalls(detail: Mapping[str, Any]) -> tuple[bool, list[dict[str, str]]]:
+    detail_data = _require_mapping(detail, "detail")
+    if "found_vcall" not in detail_data:
+        return False, []
+    return True, normalize_found_vcalls(detail_data.get("found_vcall"))
+
+
+def _get_or_create_llm_client(
+    client_ref: dict[str, Any],
+    *,
+    api_key: str | None,
+    base_url: str | None,
+):
+    llm_client = client_ref.get("client")
+    if llm_client is None:
+        llm_client = create_openai_client(
+            api_key=api_key,
+            base_url=base_url,
+        )
+        client_ref["client"] = llm_client
+    return llm_client
+
+
+def _resolve_vcall_aggregation_status(processed: int, failed: int) -> str:
+    if failed:
+        return "failed"
+    if processed:
+        return "success"
+    return "skipped"
 
 
 def _normalize_safe_path_component(value: Any, name: str) -> str:

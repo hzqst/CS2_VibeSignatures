@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为 `ida_analyze_bin.py` 增加 `-vcall_finder` 流程，使脚本能导出对象引用函数的完整反汇编与伪代码，并在所有 IDA 任务结束后调用 OpenAI 聚合虚调用结果。
+**Goal:** 为 `ida_analyze_bin.py` 增加 `-vcall_finder` 流程，使脚本能导出对象引用函数的完整反汇编与伪代码，并在所有 IDA 任务结束后调用 OpenAI 聚合虚调用结果、回写 `found_vcall` 缓存并流式生成对象级 `.txt` 汇总。
 
-**Architecture:** 保持 `ida_analyze_bin.py` 作为唯一入口，在其中补充参数解析、模块选择和主流程调度；新增 `ida_vcall_finder.py` 封装路径规划、明细 YAML 写入、IDA `py_eval` 导出和 OpenAI 聚合。模块是否启动 IDA 需要同时考虑待执行 `skills` 与命中的 `vcall_finder` 对象，不能再仅靠既有 `skills` 产物缓存来跳过。
+**Architecture:** 保持 `ida_analyze_bin.py` 作为唯一入口，在其中补充参数解析、模块选择和主流程调度；新增 `ida_vcall_finder.py` 封装路径规划、明细 YAML 写入、IDA `py_eval` 导出和 OpenAI 聚合。模块是否启动 IDA 需要同时考虑待执行 `skills` 与命中的 `vcall_finder` 对象，不能再仅靠既有 `skills` 产物缓存来跳过；聚合阶段则以 detail YAML 顶层 `found_vcall` 作为缓存命中标记，命中时跳过 LLM 并直接回放到对象级 `.txt`。
 
 **Tech Stack:** Python 3.10+、`argparse`、`PyYAML`、`mcp`、IDA `py_eval`、OpenAI Python SDK
 
@@ -13,7 +13,7 @@
 ## File Structure
 
 - Modify: `ida_analyze_bin.py`
-  - 增加 `-vcall_finder` / `-openai_model`
+  - 增加 `-vcall_finder` / `-vcall_finder_model` / `-vcall_finder_apikey` / `-vcall_finder_baseurl`
   - 解析模块级 `vcall_finder`
   - 修正 IDA 启动判定
   - 在模块/平台级别挂接明细导出
@@ -22,11 +22,12 @@
   - 维护 `vcall_finder/{gamever}` 路径
   - 写入单函数明细 YAML
   - 生成 IDA `py_eval` 脚本并导出完整函数文本
-  - 渲染 Prompt、解析 LLM YAML、更新对象级汇总 YAML
+  - 渲染 Prompt、解析 LLM YAML、回写 detail YAML 中的 `found_vcall`
+  - 将 `found_vcall` 条目流式追加到对象级汇总 `.txt`
 - Modify: `pyproject.toml`
   - 新增 `openai` 依赖
 - Modify: `README_CN.md`
-  - 补充 CLI 参数、环境变量、输出路径示例
+  - 补充 CLI 参数、专用鉴权参数、输出路径示例
 - Modify: `README.md`
   - 同步英文说明，避免双文档行为分叉
 
@@ -49,21 +50,23 @@ sys.argv = [
     "ida_analyze_bin.py",
     "-gamever=14141",
     "-vcall_finder=g_pNetworkMessages",
-    "-openai_model=gpt-4.1",
+    "-vcall_finder_model=gpt-4.1",
+    "-vcall_finder_apikey=test-key",
+    "-vcall_finder_baseurl=https://api.example.com/v1",
 ]
 from ida_analyze_bin import parse_args
 parse_args()
 PY
 ```
 
-Expected: FAIL，错误中包含 `unrecognized arguments: -vcall_finder=g_pNetworkMessages -openai_model=gpt-4.1`
+Expected: FAIL，错误中包含 `unrecognized arguments: -vcall_finder=g_pNetworkMessages -vcall_finder_model=gpt-4.1 -vcall_finder_apikey=test-key -vcall_finder_baseurl=https://api.example.com/v1`
 
 - [ ] **Step 2: 在 `ida_analyze_bin.py` 增加参数解析和模块筛选辅助函数**
 
 在常量区和 `parse_args()` / `parse_config()` 附近加入以下代码：
 
 ```python
-DEFAULT_OPENAI_MODEL = "gpt-4o"
+DEFAULT_VCALL_FINDER_MODEL = "gpt-4o"
 
 
 def parse_vcall_finder_filter(raw_value):
@@ -104,9 +107,19 @@ def resolve_module_vcall_targets(module, selector):
         help="Object selector for vcall_finder. Use '*' for all configured objects or a comma-separated list."
     )
     parser.add_argument(
-        "-openai_model",
-        default=os.environ.get("OPENAI_API_MODEL", DEFAULT_OPENAI_MODEL),
-        help=f"OpenAI model used for vcall_finder aggregation (default: env OPENAI_API_MODEL or {DEFAULT_OPENAI_MODEL})"
+        "-vcall_finder_model",
+        default=DEFAULT_VCALL_FINDER_MODEL,
+        help=f"Model used for vcall_finder aggregation (default: {DEFAULT_VCALL_FINDER_MODEL})"
+    )
+    parser.add_argument(
+        "-vcall_finder_apikey",
+        default=None,
+        help="API key used only by vcall_finder OpenAI-compatible aggregation."
+    )
+    parser.add_argument(
+        "-vcall_finder_baseurl",
+        default=None,
+        help="Optional OpenAI-compatible base URL used only by vcall_finder aggregation."
     )
 ```
 
@@ -138,14 +151,18 @@ sys.argv = [
     "ida_analyze_bin.py",
     "-gamever=14141",
     "-vcall_finder=g_pNetworkMessages,foo",
-    "-openai_model=gpt-4.1",
+    "-vcall_finder_model=gpt-4.1",
+    "-vcall_finder_apikey=test-key",
+    "-vcall_finder_baseurl=https://api.example.com/v1",
 ]
 
 from ida_analyze_bin import parse_args, parse_config, resolve_module_vcall_targets
 
 args = parse_args()
 assert args.vcall_finder_filter == {"all": False, "names": {"g_pNetworkMessages", "foo"}}
-assert args.openai_model == "gpt-4.1"
+assert args.vcall_finder_model == "gpt-4.1"
+assert args.vcall_finder_apikey == "test-key"
+assert args.vcall_finder_baseurl == "https://api.example.com/v1"
 
 with tempfile.TemporaryDirectory() as tmpdir:
     config_path = Path(tmpdir) / "config.yaml"
@@ -200,14 +217,13 @@ PY
 
 Expected: FAIL，错误中包含 `ModuleNotFoundError: No module named 'ida_vcall_finder'`
 
-- [ ] **Step 2: 创建 `ida_vcall_finder.py` 并实现路径、Prompt、YAML 解析与汇总更新**
+- [ ] **Step 2: 创建 `ida_vcall_finder.py` 并实现路径、Prompt、YAML 解析、detail 回写与 TXT 汇总辅助函数**
 
 写入以下基础代码：
 
 ```python
 #!/usr/bin/env python3
 
-import os
 import re
 from pathlib import Path
 
@@ -269,7 +285,7 @@ def build_vcall_detail_path(base_dir, gamever, object_name, module_name, platfor
 
 
 def build_vcall_summary_path(base_dir, gamever, object_name):
-    return Path(base_dir) / gamever / f"{object_name}.yaml"
+    return Path(base_dir) / gamever / f"{object_name}.txt"
 
 
 def write_vcall_detail_yaml(path, detail):
@@ -330,48 +346,40 @@ def parse_llm_vcall_response(response_text):
     return {"found_vcall": normalize_found_vcalls(parsed.get("found_vcall", []))}
 
 
-def merge_summary_record(summary_data, detail, found_vcall):
-    summary = dict(summary_data or {})
-    summary["object_name"] = detail["object_name"]
-    results = list(summary.get("results", []))
+def update_vcall_detail_with_found_vcalls(path, detail, found_vcall):
+    payload = dict(detail)
+    payload["found_vcall"] = normalize_found_vcalls(found_vcall)
+    with Path(path).open("w", encoding="utf-8") as f:
+        yaml.dump(payload, f, Dumper=LiteralDumper, sort_keys=False, allow_unicode=True)
 
-    record = {
+
+def build_vcall_summary_entries(detail, found_vcall):
+    base_entry = {
+        "object_name": detail["object_name"],
         "module": detail["module"],
         "platform": detail["platform"],
         "func_name": detail["func_name"],
         "func_va": detail["func_va"],
-        "found_vcall": normalize_found_vcalls(found_vcall),
     }
-
-    key = (record["module"], record["platform"], record["func_name"], record["func_va"])
-    replaced = False
-    for index, existing in enumerate(results):
-        existing_key = (
-            existing.get("module"),
-            existing.get("platform"),
-            existing.get("func_name"),
-            existing.get("func_va"),
-        )
-        if existing_key == key:
-            results[index] = record
-            replaced = True
-            break
-
-    if not replaced:
-        results.append(record)
-
-    summary["results"] = results
-    return summary
+    entries = []
+    for item in normalize_found_vcalls(found_vcall):
+        entry = dict(base_entry)
+        entry.update(item)
+        entries.append(entry)
+    return entries
 
 
-def write_vcall_summary_yaml(path, summary):
+def append_vcall_summary_entries(path, detail, found_vcall):
+    entries = build_vcall_summary_entries(detail, found_vcall)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        yaml.dump(summary, f, Dumper=LiteralDumper, sort_keys=False, allow_unicode=True)
+    with path.open("a", encoding="utf-8") as f:
+        for entry in entries:
+            yaml.dump(entry, f, Dumper=LiteralDumper, sort_keys=False, allow_unicode=True, explicit_start=True)
+    return len(entries)
 ```
 
-- [ ] **Step 3: 运行 helper 自检，确认路径、Prompt、解析和去重更新正常**
+- [ ] **Step 3: 运行 helper 自检，确认路径、Prompt、解析、detail 回写和 TXT 追加正常**
 
 Run:
 
@@ -381,13 +389,14 @@ import tempfile
 from pathlib import Path
 
 from ida_vcall_finder import (
+    append_vcall_summary_entries,
     build_vcall_detail_path,
     build_vcall_summary_path,
-    merge_summary_record,
     parse_llm_vcall_response,
     render_vcall_prompt,
-    write_vcall_detail_yaml,
     load_yaml_file,
+    update_vcall_detail_with_found_vcalls,
+    write_vcall_detail_yaml,
 )
 
 detail = {
@@ -414,13 +423,14 @@ found_vcall:
     insn_disasm: call    qword ptr [rax+68h]
     vfunc_offset: 0x68
 ```""")
-    summary = merge_summary_record({}, loaded_detail, parsed["found_vcall"])
-    summary = merge_summary_record(summary, loaded_detail, parsed["found_vcall"])
-    assert summary["object_name"] == "g_pNetworkMessages"
-    assert len(summary["results"]) == 1
-    assert summary["results"][0]["found_vcall"][0]["vfunc_offset"] == "0x68"
+    update_vcall_detail_with_found_vcalls(detail_path, loaded_detail, parsed["found_vcall"])
+    cached_detail = load_yaml_file(detail_path)
+    assert cached_detail["found_vcall"][0]["vfunc_offset"] == "0x68"
     summary_path = build_vcall_summary_path(tmpdir, "14141", "g_pNetworkMessages")
-    assert summary_path.name == "g_pNetworkMessages.yaml"
+    append_vcall_summary_entries(summary_path, cached_detail, cached_detail["found_vcall"])
+    assert summary_path.name == "g_pNetworkMessages.txt"
+    summary_text = Path(summary_path).read_text(encoding="utf-8")
+    assert "vfunc_offset: 0x68" in summary_text
 
 print("ok")
 PY
@@ -817,7 +827,7 @@ git add ida_analyze_bin.py ida_vcall_finder.py
 git commit -m "fix(ida): 修正 vcall_finder 的 IDA 跳过逻辑"
 ```
 
-### Task 5: 实现 OpenAI 聚合、汇总 YAML 更新与依赖接线
+### Task 5: 实现 OpenAI 聚合、detail 缓存回写、TXT 汇总与依赖接线
 
 **Files:**
 - Modify: `ida_vcall_finder.py`
@@ -853,15 +863,13 @@ Expected: FAIL，错误中包含 `cannot import name 'aggregate_vcall_results_fo
 from openai import OpenAI
 
 
-def create_openai_client(api_key=None, api_base=None):
-    resolved_api_key = api_key or os.environ.get("OPENAI_API_KEY")
-    if not resolved_api_key:
-        raise RuntimeError("OPENAI_API_KEY is required when -vcall_finder is enabled")
+def create_openai_client(api_key, base_url=None):
+    if not api_key:
+        raise RuntimeError("-vcall_finder_apikey is required when -vcall_finder is enabled")
 
-    client_kwargs = {"api_key": resolved_api_key}
-    resolved_api_base = api_base or os.environ.get("OPENAI_API_BASE")
-    if resolved_api_base:
-        client_kwargs["base_url"] = resolved_api_base
+    client_kwargs = {"api_key": api_key}
+    if base_url:
+        client_kwargs["base_url"] = base_url
 
     return OpenAI(**client_kwargs)
 
@@ -879,19 +887,36 @@ def call_openai_for_vcalls(client, detail, model):
     return parse_llm_vcall_response(content)["found_vcall"]
 
 
+def update_vcall_detail_with_found_vcalls(path, detail, found_vcall):
+    payload = dict(detail)
+    payload["found_vcall"] = normalize_found_vcalls(found_vcall)
+    with Path(path).open("w", encoding="utf-8") as f:
+        yaml.dump(payload, f, Dumper=LiteralDumper, sort_keys=False, allow_unicode=True)
+
+
+def append_vcall_summary_entries(path, detail, found_vcall):
+    entries = build_vcall_summary_entries(detail, found_vcall)
+    with Path(path).open("a", encoding="utf-8") as f:
+        for entry in entries:
+            yaml.dump(entry, f, Dumper=LiteralDumper, sort_keys=False, allow_unicode=True, explicit_start=True)
+    return len(entries)
+
+
 def aggregate_vcall_results_for_object(
     *,
     base_dir,
     gamever,
     object_name,
     model,
+    api_key=None,
+    base_url=None,
     client=None,
     debug=False,
 ):
     detail_root = Path(base_dir) / gamever / object_name
     summary_path = build_vcall_summary_path(base_dir, gamever, object_name)
-    summary = load_yaml_file(summary_path)
-    llm_client = client or create_openai_client()
+    llm_client = client or create_openai_client(api_key=api_key, base_url=base_url)
+    summary_path.write_text("", encoding="utf-8")
 
     processed = 0
     failed = 0
@@ -902,14 +927,17 @@ def aggregate_vcall_results_for_object(
             failed += 1
             continue
         try:
-            found_vcall = call_openai_for_vcalls(llm_client, detail, model)
+            if "found_vcall" in detail:
+                found_vcall = normalize_found_vcalls(detail.get("found_vcall"))
+            else:
+                found_vcall = call_openai_for_vcalls(llm_client, detail, model)
+                update_vcall_detail_with_found_vcalls(detail_path, detail, found_vcall)
         except Exception:
             failed += 1
             continue
-        summary = merge_summary_record(summary, detail, found_vcall)
+        append_vcall_summary_entries(summary_path, detail, found_vcall)
         processed += 1
 
-    write_vcall_summary_yaml(summary_path, summary)
     return {"processed": processed, "failed": failed}
 ```
 
@@ -942,7 +970,9 @@ from ida_vcall_finder import aggregate_vcall_results_for_object
                     base_dir="vcall_finder",
                     gamever=gamever,
                     object_name=object_name,
-                    model=args.openai_model,
+                    model=args.vcall_finder_model,
+                    api_key=args.vcall_finder_apikey,
+                    base_url=args.vcall_finder_baseurl,
                     debug=debug,
                 )
                 total_success += stats["processed"]
@@ -1014,9 +1044,20 @@ with tempfile.TemporaryDirectory() as tmpdir:
     )
     assert stats == {"processed": 1, "failed": 0}
 
-    summary = load_yaml_file(f"{tmpdir}/14141/g_pNetworkMessages.yaml")
-    assert summary["results"][0]["func_name"] == "sub_140123450"
-    assert summary["results"][0]["found_vcall"][0]["vfunc_offset"] == "0x68"
+    detail = load_yaml_file(detail_path)
+    assert detail["found_vcall"][0]["vfunc_offset"] == "0x68"
+
+    summary_text = open(f"{tmpdir}/14141/g_pNetworkMessages.txt", "r", encoding="utf-8").read()
+    assert "vfunc_offset: 0x68" in summary_text
+
+    stats = aggregate_vcall_results_for_object(
+        base_dir=tmpdir,
+        gamever="14141",
+        object_name="g_pNetworkMessages",
+        model="gpt-4o",
+        client=FakeClient(),
+    )
+    assert stats == {"processed": 1, "failed": 0}
 
 print("ok")
 PY
@@ -1038,19 +1079,19 @@ git commit -m "feat(ida): 增加 vcall_finder 聚合流程"
 **Files:**
 - Modify: `README_CN.md`
 - Modify: `README.md`
-- Verify: `rg -n "vcall_finder|OPENAI_API_MODEL|OPENAI_API_KEY" README_CN.md README.md`
+- Verify: `rg -n "vcall_finder|vcall_finder_model|vcall_finder_apikey|vcall_finder_baseurl|OPENAI_API_MODEL|OPENAI_API_KEY|OPENAI_API_BASE" README_CN.md README.md`
 
 - [ ] **Step 1: 先写失败的文档探针**
 
 Run:
 
 ```bash
-rg -n "vcall_finder|OPENAI_API_MODEL|OPENAI_API_KEY" README_CN.md README.md
+rg -n "vcall_finder|vcall_finder_model|vcall_finder_apikey|vcall_finder_baseurl|OPENAI_API_MODEL|OPENAI_API_KEY|OPENAI_API_BASE" README_CN.md README.md
 ```
 
 Expected: FAIL，返回码非 0，因为当前 README 还没有这些说明
 
-- [ ] **Step 2: 在 `README_CN.md` 和 `README.md` 补 usage、环境变量和输出示例**
+- [ ] **Step 2: 在 `README_CN.md` 和 `README.md` 补 usage、专用 CLI 参数和输出示例**
 
 在 `README_CN.md` 的 `ida_analyze_bin.py` 示例后补充：
 
@@ -1058,23 +1099,21 @@ Expected: FAIL，返回码非 0，因为当前 README 还没有这些说明
 #### 2.1 可选：导出对象引用函数并聚合虚调用
 
 ```bash
-set OPENAI_API_KEY=your-key
-set OPENAI_API_MODEL=gpt-4o
-
-uv run ida_analyze_bin.py -gamever 14141 -modules=networksystem -platform=windows -vcall_finder=g_pNetworkMessages
-uv run ida_analyze_bin.py -gamever 14141 -platform=windows,linux -vcall_finder=*
+uv run ida_analyze_bin.py -gamever 14141 -modules=networksystem -platform=windows -vcall_finder=g_pNetworkMessages -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key
+uv run ida_analyze_bin.py -gamever 14141 -platform=windows,linux -vcall_finder=* -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key -vcall_finder_baseurl=https://api.example.com/v1
 ```
 
 输出目录：
 
 - `vcall_finder/14141/g_pNetworkMessages/networksystem/windows/sub_140123450.yaml`
-- `vcall_finder/14141/g_pNetworkMessages.yaml`
+- `vcall_finder/14141/g_pNetworkMessages.txt`
 
-环境变量：
+专用 CLI 参数：
 
-- `OPENAI_API_KEY`：启用 `vcall_finder` 聚合时必需
-- `OPENAI_API_BASE`：可选，自定义兼容 base URL
-- `OPENAI_API_MODEL`：可选，默认 `gpt-4o`
+- `-vcall_finder_apikey`：启用 `vcall_finder` 聚合时必需
+- `-vcall_finder_baseurl`：可选，自定义兼容 base URL
+- `-vcall_finder_model`：可选，默认 `gpt-4o`
+- 不读取 `OPENAI_API_KEY` / `OPENAI_API_BASE` / `OPENAI_API_MODEL`
 ````
 
 在 `README.md` 对应位置同步英文版本：
@@ -1083,23 +1122,21 @@ uv run ida_analyze_bin.py -gamever 14141 -platform=windows,linux -vcall_finder=*
 #### 2.1 Optional: export object xref functions and aggregate virtual calls
 
 ```bash
-export OPENAI_API_KEY=your-key
-export OPENAI_API_MODEL=gpt-4o
-
-uv run ida_analyze_bin.py -gamever 14141 -modules=networksystem -platform=windows -vcall_finder=g_pNetworkMessages
-uv run ida_analyze_bin.py -gamever 14141 -platform=windows,linux -vcall_finder=*
+uv run ida_analyze_bin.py -gamever 14141 -modules=networksystem -platform=windows -vcall_finder=g_pNetworkMessages -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key
+uv run ida_analyze_bin.py -gamever 14141 -platform=windows,linux -vcall_finder=* -vcall_finder_model=gpt-4o -vcall_finder_apikey=your-key -vcall_finder_baseurl=https://api.example.com/v1
 ```
 
 Output paths:
 
 - `vcall_finder/14141/g_pNetworkMessages/networksystem/windows/sub_140123450.yaml`
-- `vcall_finder/14141/g_pNetworkMessages.yaml`
+- `vcall_finder/14141/g_pNetworkMessages.txt`
 
-Environment variables:
+Dedicated CLI parameters:
 
-- `OPENAI_API_KEY`: required when `vcall_finder` aggregation is enabled
-- `OPENAI_API_BASE`: optional custom compatible base URL
-- `OPENAI_API_MODEL`: optional, defaults to `gpt-4o`
+- `-vcall_finder_apikey`: required when `vcall_finder` aggregation is enabled
+- `-vcall_finder_baseurl`: optional custom compatible base URL
+- `-vcall_finder_model`: optional, defaults to `gpt-4o`
+- `OPENAI_API_KEY` / `OPENAI_API_BASE` / `OPENAI_API_MODEL` are not read by `vcall_finder`
 ````
 
 - [ ] **Step 3: 重跑文档探针**
@@ -1107,7 +1144,7 @@ Environment variables:
 Run:
 
 ```bash
-rg -n "vcall_finder|OPENAI_API_MODEL|OPENAI_API_KEY" README_CN.md README.md
+rg -n "vcall_finder|vcall_finder_model|vcall_finder_apikey|vcall_finder_baseurl|OPENAI_API_MODEL|OPENAI_API_KEY|OPENAI_API_BASE" README_CN.md README.md
 ```
 
 Expected: PASS，能同时匹配到中文和英文 README 中新增的说明

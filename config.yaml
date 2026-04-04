@@ -224,6 +224,7 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     vcall_finder:
+      - g_pNetworkMessages
 
     skills:
       - name: find-CNetworkGameServer_vtable
@@ -384,6 +385,7 @@ modules:
     path_linux: game/csgo/bin/linuxsteamrt64/libclient.so
 
     vcall_finder:
+      - g_pNetworkMessages
 
     skills:
       - name: find-IGameSystem_vtable
@@ -703,6 +705,7 @@ modules:
     path_linux: game/csgo/bin/linuxsteamrt64/libserver.so
 
     vcall_finder:
+      - g_pNetworkMessages
 
     skills:
       - name: find-CSource2Server_vtable
