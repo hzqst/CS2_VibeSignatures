@@ -7,12 +7,15 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkMessages_RegisterFieldChangeCallbackPriority",
 ]
 
-FUNC_XREF_STRINGS = [
-    # (func_name, xref_strings_list)
-    ( "CNetworkMessages_RegisterFieldChangeCallbackPriority",
-    [
-    "Cannot use priority equal to NETWORK_FIELD_CHANGE_DEFAULT_PRIORITY!"
-    ] ),
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_funcs_list)
+    (
+        "CNetworkMessages_RegisterFieldChangeCallbackPriority",
+        [
+            "Cannot use priority equal to NETWORK_FIELD_CHANGE_DEFAULT_PRIORITY!",
+        ],
+        [],
+    ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
@@ -33,7 +36,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xref_strings=FUNC_XREF_STRINGS,
+        func_xrefs=FUNC_XREFS,
         func_vtable_relations=FUNC_VTABLE_RELATIONS,
         debug=debug,
     )

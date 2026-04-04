@@ -7,13 +7,16 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkMessages_UnserializeMessageInternal",
 ]
 
-FUNC_XREF_STRINGS = [
-    # (func_name, xref_strings_list)
-    ( "CNetworkMessages_UnserializeMessageInternal",
-    [
-    "size_exceeded_max",
-    "netmessage"
-    ] ),
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_funcs_list)
+    (
+        "CNetworkMessages_UnserializeMessageInternal",
+        [
+            "size_exceeded_max",
+            "netmessage",
+        ],
+        [],
+    ),
 ]
 
 async def preprocess_skill(
@@ -29,6 +32,6 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xref_strings=FUNC_XREF_STRINGS,
+        func_xrefs=FUNC_XREFS,
         debug=debug,
     )

@@ -7,12 +7,15 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkGameClient_ProcessPacketEntitiesInternal",
 ]
 
-FUNC_XREF_STRINGS = [
-    # (func_name, xref_strings_list)
-    ( "CNetworkGameClient_ProcessPacketEntitiesInternal",
-    [
-    "CL:  ProcessPacketEntities: frame window too big (>=%i)"
-    ] ),
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_funcs_list)
+    (
+        "CNetworkGameClient_ProcessPacketEntitiesInternal",
+        [
+            "CL:  ProcessPacketEntities: frame window too big (>=%i)",
+        ],
+        [],
+    ),
 ]
 
 async def preprocess_skill(
@@ -20,6 +23,10 @@ async def preprocess_skill(
     new_binary_dir, platform, image_base, debug=False,
 ):
     """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    # CNetworkGameClient_ProcessPacketEntitiesInternal does not exist in the linux
+    # binary due to inline optimization; skip and report success.
+    if platform == "linux":
+        return True
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -28,6 +35,6 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xref_strings=FUNC_XREF_STRINGS,
+        func_xrefs=FUNC_XREFS,
         debug=debug,
     )

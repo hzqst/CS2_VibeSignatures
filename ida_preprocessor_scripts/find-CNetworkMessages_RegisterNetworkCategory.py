@@ -7,13 +7,16 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkMessages_RegisterNetworkCategory",
 ]
 
-FUNC_XREF_STRINGS = [
-    # (func_name, xref_strings_list)
-    ( "CNetworkMessages_RegisterNetworkCategory",  
-    [ 
-    "INetworkSystem::RegisterNetworkCategory: Attempted to register category %u twice",
-    "INetworkSystem::RegisterNetworkCategory: all categories must have ids between 0-31!"         
-    ] ),
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_funcs_list)
+    (
+        "CNetworkMessages_RegisterNetworkCategory",
+        [
+            "INetworkSystem::RegisterNetworkCategory: Attempted to register category %u twice",
+            "INetworkSystem::RegisterNetworkCategory: all categories must have ids between 0-31!",
+        ],
+        [],
+    ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
@@ -34,7 +37,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xref_strings=FUNC_XREF_STRINGS,
+        func_xrefs=FUNC_XREFS,
         func_vtable_relations=FUNC_VTABLE_RELATIONS,
         debug=debug,
     )

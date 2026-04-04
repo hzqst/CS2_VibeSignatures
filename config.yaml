@@ -327,6 +327,12 @@ modules:
         expected_output:
           - CNetworkGameClient_ProcessPacketEntitiesInternal.{platform}.yaml
 
+      - name: find-CNetworkGameClient_ProcessPacketEntities
+        expected_output:
+          - CNetworkGameClient_ProcessPacketEntities.{platform}.yaml
+        expected_input:
+          - CNetworkGameClient_ProcessPacketEntitiesInternal.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -424,6 +430,11 @@ modules:
         category: func
         alias:
           - CNetworkGameClient::ProcessPacketEntitiesInternal
+
+      - name: CNetworkGameClient_ProcessPacketEntities
+        category: func
+        alias:
+          - CNetworkGameClient::ProcessPacketEntities
           - ProcessPacketEntities
 
   - name: client
