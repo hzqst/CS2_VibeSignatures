@@ -37,7 +37,10 @@ DepotDownloader -app 730 -depot 2347771 -os all-platform -dir cs2_depot [-branch
 DepotDownloader -app 730 -depot 2347773 -os all-platform -dir cs2_depot [-branch animgraph_2_beta]
 
 uv run copy_depot_bin.py -gamever 14141 -platform all-platform
+uv run copy_depot_bin.py -gamever 14141 -platform all-platform -checkonly
 ```
+
+当只需要确认 `bin/<gamever>/...` 下的目标二进制是否已经齐全时，可在 CI 或预检查脚本中使用 `-checkonly`。
 
 
 #### 2. 为 `config.yaml` 的符号生成对应的 signatures

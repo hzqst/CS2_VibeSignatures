@@ -41,7 +41,10 @@ DepotDownloader -app 730 -depot 2347771 -os all-platform -dir cs2_depot [-branch
 DepotDownloader -app 730 -depot 2347773 -os all-platform -dir cs2_depot [-branch animgraph_2_beta]
 
 uv run copy_depot_bin.py -gamever 14141 -platform all-platform
+uv run copy_depot_bin.py -gamever 14141 -platform all-platform -checkonly
 ```
+
+Use `-checkonly` in CI or preflight scripts when you only need to know whether all expected target binaries already exist under `bin/<gamever>/...`.
 
 #### 2. Find and generate signatures for all symbols declared in `config.yaml`
 

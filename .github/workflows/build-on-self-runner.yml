@@ -67,13 +67,37 @@ jobs:
             mklink /d "%WORKSPACE%\bin" "%PERSISTED_WORKSPACE%\bin"
           )
 
+      - name: Check cached binaries
+        id: check_cached_binaries
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          uv run copy_depot_bin.py -gamever "$env:GAMEVER" -platform all-platform -checkonly
+          $exitCode = $LASTEXITCODE
+
+          if ($exitCode -eq 0) {
+            "bin_ready=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "All expected binaries already exist; skipping depot download."
+            exit 0
+          }
+
+          if ($exitCode -eq 1) {
+            "bin_ready=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "At least one expected binary is missing; depot download is required."
+            exit 0
+          }
+
+          throw "copy_depot_bin.py -checkonly failed with exit code $exitCode"
+
       - name: Update CS2 depot
+        if: steps.check_cached_binaries.outputs.bin_ready != 'true'
         shell: pwsh
         run: |
           $depotDir = Join-Path $env:GITHUB_WORKSPACE "cs2_depot"
           uv run download_depot.py -tag "$env:TAG" -depotdir "$depotDir" -config download.yaml
 
       - name: Copy depot binaries
+        if: steps.check_cached_binaries.outputs.bin_ready != 'true'
         shell: pwsh
         run: |
           uv run copy_depot_bin.py -gamever "$env:GAMEVER" -platform all-platform
