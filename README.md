@@ -36,11 +36,27 @@ uv sync
 
 #### 1. Download latest CS2 depot and copy binaries to workspace
 
+For latest official version:
+
 ```bash
-DepotDownloader -app 730 -os all-platform [-dir "path/to/cs2_depot"]
+DepotDownloader -app 730 -os all-platform -dir cs2_depot
 
 uv run copy_depot_bin.py -gamever 14141 -platform all-platform
 ```
+
+For beta version: 
+
+* Get depot id from `https://steamdb.info/app/730/depots/?branch={branch_name}`
+
+* Let's say https://steamdb.info/app/730/depots/?branch=animgraph_2_beta, depotid is 2347771 (Windows), or 2347773 (Linux)
+
+```bash
+DepotDownloader -app 730 -depot 2347771 -os all-platform -dir cs2_depot
+DepotDownloader -app 730 -depot 2347773 -os all-platform -dir cs2_depot
+
+uv run copy_depot_bin.py -gamever 14150b -platform all-platform
+```
+
 
 #### 2. Find and generate signatures for all symbols declared in `config.yaml`
 
