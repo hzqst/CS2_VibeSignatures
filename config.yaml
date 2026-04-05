@@ -19,6 +19,7 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libnetworksystem.so
 
     vcall_finder:
+      - g_pNetworkMessages
 
     skills:
 
@@ -120,6 +121,14 @@ modules:
       - name: find-CNetworkMessages_GetLoggingChannel
         expected_output:
           - CNetworkMessages_GetLoggingChannel.{platform}.yaml
+
+      - name: find-CNetworkSystem_vtable
+        expected_output:
+          - CNetworkSystem_vtable.{platform}.yaml
+
+      - name: find-CNetworkSystem_SendNetworkStats
+        expected_output:
+          - CNetworkSystem_SendNetworkStats.{platform}.yaml
 
     symbols:
       - name: CNetworkMessages_vtable
@@ -240,6 +249,14 @@ modules:
         alias:
           - CNetworkMessages::FindNetworkMessagePartial
         shared: true
+
+      - name: CNetworkSystem_vtable
+        category: vtable
+
+      - name: CNetworkSystem_SendNetworkStats
+        category: func
+        alias:
+          - CNetworkSystem::SendNetworkStats
 
   - name: matchmaking
     path_windows: game/csgo/bin/win64/matchmaking.dll
