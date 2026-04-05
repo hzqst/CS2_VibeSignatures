@@ -10,9 +10,6 @@ This file provides guidance and important rules working with code in this reposi
 
 - Perfer use serena mcp tools to understand the architecture and code hierarchy quickly.
 - **ALWAYS** Call Serena's `activate_project` before reading memories.
-- Use `list_memories` first to browse existing memories in the current project (do not read all memories by default).
-- Only when needed, use `read_memory` to load a specific memory precisely (on-demand loading).
-- If memory content is insufficient or outdated, fall back to reading repository files or use Serena's symbol/search capabilities for targeted lookup, and maintain memory content with `write_memory` / `edit_memory` / `delete_memory`.
 
 #### When Memories Are Insufficient (On-Demand Querying and Reading)
 
