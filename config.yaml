@@ -356,6 +356,12 @@ modules:
         expected_input:
           - CNetworkServerService_Init.{platform}.yaml
 
+      - name: find-CNetworkMessages_FindNetworkGroup
+        expected_output:
+          - CNetworkMessages_FindNetworkGroup.{platform}.yaml
+        expected_input:
+          - CNetworkGameClient_RecordEntityBandwidth.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -465,6 +471,12 @@ modules:
         alias:
           - CNetworkGameClient::RecordEntityBandwidth
           - RecordEntityBandwidth
+
+      - name: CNetworkMessages_FindNetworkGroup
+        category: vfunc
+        alias:
+          - CNetworkMessages::FindNetworkGroup
+        shared: true
 
       - name: CNetworkServerService_vtable
         category: vtable
