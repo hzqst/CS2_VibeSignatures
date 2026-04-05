@@ -633,6 +633,19 @@ def should_start_binary_processing(skills_to_process, vcall_targets):
     return bool(skills_to_process or vcall_targets)
 
 
+def expand_expected_paths(binary_dir, paths, platform):
+    """Expand {platform} placeholders and resolve artifact paths under a binary directory."""
+    return [
+        os.path.join(binary_dir, path.replace("{platform}", platform))
+        for path in paths
+    ]
+
+
+def all_expected_outputs_exist(expected_outputs):
+    """Return True when every expected output already exists on disk."""
+    return bool(expected_outputs) and all(os.path.exists(path) for path in expected_outputs)
+
+
 def get_binary_path(bin_dir, gamever, module_name, module_path):
     """
     Build binary file path.
@@ -934,13 +947,9 @@ def process_binary(
             print(f"  Skipping skill: {skill_name} (platform '{skill_platform}' != '{platform}')")
             skip_count += 1
             continue
-        # Expand {platform} placeholder in expected_output paths
-        expected_outputs = [
-            os.path.join(binary_dir, f.replace("{platform}", platform))
-            for f in skill["expected_output"]
-        ]
+        expected_outputs = expand_expected_paths(binary_dir, skill["expected_output"], platform)
         # Check if all output files already exist
-        if expected_outputs and all(os.path.exists(p) for p in expected_outputs):
+        if all_expected_outputs_exist(expected_outputs):
             print(f"  Skipping skill: {skill_name} (all outputs exist)")
             skip_count += 1
         else:
@@ -962,6 +971,11 @@ def process_binary(
     try:
         # Process each skill: try preprocess first, then run_skill if needed
         for skill_index, (skill_name, expected_outputs, skill_max_retries) in enumerate(skills_to_process):
+            if all_expected_outputs_exist(expected_outputs):
+                print(f"  Skipping skill: {skill_name} (all outputs exist)")
+                skip_count += 1
+                continue
+
             # Ensure MCP connection is alive before running the skill
             process, mcp_ok = ensure_mcp_available(
                 process, binary_path, host, port, ida_args, debug
@@ -1018,6 +1032,11 @@ def process_binary(
                         print(f"  Pre-processed: {skill_name} (signature reuse)")
                     else:
                         print(f"  Pre-processed: {skill_name}")
+                continue
+
+            if all_expected_outputs_exist(expected_outputs):
+                print(f"  Skipping skill: {skill_name} (all outputs exist)")
+                skip_count += 1
                 continue
 
             print(f"  Processing skill: {skill_name}")
