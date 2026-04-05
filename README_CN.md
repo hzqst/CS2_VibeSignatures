@@ -30,28 +30,15 @@
 
 ## 整体工作流
 
-#### 1. 下载最新的 CS2 二进制文件并复制dll/so到工作目录
-
-最新的正式版:
+#### 1. 下载 CS2 二进制文件并复制dll/so到工作目录
 
 ```bash
-DepotDownloader -app 730 -os all-platform -dir cs2_depot
+DepotDownloader -app 730 -depot 2347771 -os all-platform -dir cs2_depot [-branch animgraph_2_beta]
+DepotDownloader -app 730 -depot 2347773 -os all-platform -dir cs2_depot [-branch animgraph_2_beta]
 
 uv run copy_depot_bin.py -gamever 14141 -platform all-platform
 ```
 
-特定测试版: 
-
-* 从这里获取depotid： `https://steamdb.info/app/730/depots/?branch={branch_name}`
-
-* 比如 https://steamdb.info/app/730/depots/?branch=animgraph_2_beta, depotid 是 2347771 (Windows), 或者 2347773 (Linux)
-
-```bash
-DepotDownloader -app 730 -depot 2347771 -os all-platform -dir cs2_depot
-DepotDownloader -app 730 -depot 2347773 -os all-platform -dir cs2_depot
-
-uv run copy_depot_bin.py -gamever 14150b -platform all-platform
-```
 
 #### 2. 为 `config.yaml` 的符号生成对应的 signatures
 

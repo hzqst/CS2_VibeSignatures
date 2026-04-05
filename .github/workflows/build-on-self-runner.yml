@@ -77,9 +77,11 @@ jobs:
         run: |
           @echo off
           if not "%MANIFESTID%"=="" (
-            DepotDownloader -app 730 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot" -manifest %MANIFESTID%
+            DepotDownloader -app 730 -depot 2347771 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot" -manifest %MANIFESTID%
+            DepotDownloader -app 730 -depot 2347773 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot" -manifest %MANIFESTID%
           ) else (
-            DepotDownloader -app 730 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot"
+            DepotDownloader -app 730 -depot 2347771 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot"
+            DepotDownloader -app 730 -depot 2347773 -os all-platform -dir "%GITHUB_WORKSPACE%\cs2_depot"
           )
 
       - name: Copy depot binaries
