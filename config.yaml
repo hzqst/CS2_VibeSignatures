@@ -1542,6 +1542,10 @@ modules:
         expected_input:
           - CEntitySystem_Activate.{platform}.yaml
 
+      - name: find-CNetworkMessages_RegisterSchemaTypeOverride
+        expected_output:
+          - CNetworkMessages_RegisterSchemaTypeOverride.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2342,6 +2346,12 @@ modules:
         category: vfunc
         alias:
           - CNetworkMessages::GetLoggingChannel
+        shared: true
+
+      - name: CNetworkMessages_RegisterSchemaTypeOverride
+        category: vfunc
+        alias:
+          - CNetworkMessages::RegisterSchemaTypeOverride
         shared: true
 
 cpp_tests:
