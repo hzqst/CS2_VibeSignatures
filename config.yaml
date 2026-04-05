@@ -343,6 +343,12 @@ modules:
         expected_input:
           - CNetworkServerService_vtable.{platform}.yaml
 
+      - name: find-CNetworkGameClient_RecordEntityBandwidth
+        expected_output:
+          - CNetworkGameClient_RecordEntityBandwidth.{platform}.yaml
+        expected_input:
+          - CNetworkServerService_Init.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -446,6 +452,12 @@ modules:
         alias:
           - CNetworkGameClient::ProcessPacketEntities
           - ProcessPacketEntities
+
+      - name: CNetworkGameClient_RecordEntityBandwidth
+        category: func
+        alias:
+          - CNetworkGameClient::RecordEntityBandwidth
+          - RecordEntityBandwidth
 
       - name: CNetworkServerService_vtable
         category: vtable

@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetworkMessages_SerializeMessageInternal skill."""
+"""Preprocess script for find-CNetworkGameClient_RecordEntityBandwidth skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
+
 TARGET_FUNCTION_NAMES = [
-    "CNetworkMessages_SerializeMessageInternal",
+    "CNetworkGameClient_RecordEntityBandwidth",
 ]
 
 FUNC_XREFS = [
     # (func_name, xref_strings_list, xref_funcs_list, exclude_funcs_list)
     (
-        "CNetworkMessages_SerializeMessageInternal",
+        "CNetworkGameClient_RecordEntityBandwidth",
         [
-            "WriteToBuffer Message %s is not initialized! Probably missing required fields!",
+            "Local Player",
+            "Other Players",
         ],
         [],
-        [],
+        [
+            "CNetworkServerService_Init",
+        ],
     ),
 ]
 
-FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class, generate_vfunc_offset)
-    ("CNetworkMessages_SerializeMessageInternal", "CNetworkMessages", True),
-]
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
@@ -38,6 +38,5 @@ async def preprocess_skill(
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
         func_xrefs=FUNC_XREFS,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
         debug=debug,
     )

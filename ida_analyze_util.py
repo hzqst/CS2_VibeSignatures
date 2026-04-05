@@ -2364,6 +2364,7 @@ async def preprocess_func_xrefs_via_mcp(
     func_name,
     xref_strings,
     xref_funcs,
+    exclude_funcs,
     new_binary_dir,
     platform,
     image_base,
@@ -2373,14 +2374,20 @@ async def preprocess_func_xrefs_via_mcp(
     Resolve target function by intersecting candidate sets from:
     - string xrefs
     - xrefs to dependency function addresses from current-version YAML files.
+
+    Additionally, ``exclude_funcs`` can provide function names whose
+    ``func_va`` values are loaded from current-version YAML files in
+    ``new_binary_dir`` and removed from the intersection result before
+    enforcing the uniqueness check.
     """
     dep_func_names = xref_funcs or []
-    if dep_func_names:
+    excluded_func_names = exclude_funcs or []
+    if dep_func_names or excluded_func_names:
         if not new_binary_dir:
             if debug:
                 print(
                     f"    Preprocess: new_binary_dir is required for "
-                    f"xref_funcs of {func_name}"
+                    f"xref_funcs/exclude_funcs of {func_name}"
                 )
             return None
         try:
@@ -2389,7 +2396,7 @@ async def preprocess_func_xrefs_via_mcp(
             if debug:
                 print(
                     f"    Preprocess: invalid new_binary_dir for "
-                    f"xref_funcs of {func_name}"
+                    f"xref_funcs/exclude_funcs of {func_name}"
                 )
             return None
 
@@ -2441,6 +2448,31 @@ async def preprocess_func_xrefs_via_mcp(
             return None
         candidate_sets.append(addr_set)
 
+    excluded_func_addrs = set()
+    for excluded_func_name in excluded_func_names:
+        excluded_yaml_path = os.path.join(
+            new_binary_dir, f"{excluded_func_name}.{platform}.yaml"
+        )
+        excluded_data = _read_yaml_file(excluded_yaml_path)
+        if not isinstance(excluded_data, dict):
+            if debug:
+                print(
+                    f"    Preprocess: excluded func YAML missing or invalid: "
+                    f"{os.path.basename(excluded_yaml_path)}"
+                )
+            return None
+
+        try:
+            excluded_func_va = _parse_int_value(excluded_data.get("func_va"))
+        except Exception:
+            if debug:
+                print(
+                    f"    Preprocess: invalid func_va in excluded func YAML: "
+                    f"{os.path.basename(excluded_yaml_path)}"
+                )
+            return None
+        excluded_func_addrs.add(excluded_func_va)
+
     if not candidate_sets:
         if debug:
             print(f"    Preprocess: no xref candidates configured for {func_name}")
@@ -2449,6 +2481,9 @@ async def preprocess_func_xrefs_via_mcp(
     common_funcs = set(candidate_sets[0])
     for addr_set in candidate_sets[1:]:
         common_funcs = common_funcs & addr_set
+
+    if excluded_func_addrs:
+        common_funcs -= excluded_func_addrs
 
     if len(common_funcs) != 1:
         if debug:
@@ -2560,13 +2595,15 @@ async def preprocess_common_skill(
       fallback is used only when that fails.
     - ``func_xrefs``: locate functions via unified xref fallback through
       ``preprocess_func_xrefs_via_mcp``. Each element is a tuple of
-      ``(func_name, xref_strings_list, xref_funcs_list)``. ``xref_strings``
-      provides string cross-reference constraints, while ``xref_funcs``
-      provides dependency function names whose addresses are read only from
-      current-version YAML files in ``new_binary_dir``. Used as a fallback
-      when ``preprocess_func_sig_via_mcp`` fails for a func target that has a
-      matching func-xref entry, or as the sole resolution method for func
-      targets that only appear in this list.
+      ``(func_name, xref_strings_list, xref_funcs_list, exclude_funcs_list)``.
+      ``xref_strings`` provides string cross-reference constraints, while
+      ``xref_funcs`` provides dependency function names whose addresses are
+      read only from current-version YAML files in ``new_binary_dir``.
+      ``exclude_funcs`` provides function names whose YAML ``func_va`` values
+      are removed from the intersection set before uniqueness check. Used as a
+      fallback when ``preprocess_func_sig_via_mcp`` fails for a func target
+      that has a matching func-xref entry, or as the sole resolution method
+      for func targets that only appear in this list.
     - ``func_vtable_relations``: enrich located function YAML with vtable
       metadata.  Each element is a tuple of
       ``(func_name, vtable_class, generate_vfunc_offset)``.  After a
@@ -2591,9 +2628,10 @@ async def preprocess_common_skill(
         vtable_class_names: List of class names for vtable lookup, or None.
         inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
         func_xrefs: List of
-            (func_name, xref_strings_list, xref_funcs_list) tuples for
-            unified xref-based function lookup (may be empty/None). Dependency
-            function addresses are read only from current-version YAML files.
+            (func_name, xref_strings_list, xref_funcs_list, exclude_funcs_list)
+            tuples for unified xref-based function lookup (may be empty/None).
+            Dependency and exclude function addresses are read only from
+            current-version YAML files.
         func_vtable_relations: List of (func_name, vtable_class,
             generate_vfunc_offset) tuples for enriching function YAML with
             vtable metadata (may be empty/None).
@@ -2613,12 +2651,12 @@ async def preprocess_common_skill(
 
     func_xrefs_map = {}
     for spec in func_xrefs:
-        if not isinstance(spec, (tuple, list)) or len(spec) != 3:
+        if not isinstance(spec, (tuple, list)) or len(spec) != 4:
             if debug:
                 print(f"    Preprocess: invalid func_xrefs spec: {spec}")
             return False
 
-        func_name, xref_strings, xref_funcs = spec
+        func_name, xref_strings, xref_funcs, exclude_funcs = spec
         if not isinstance(func_name, str) or not func_name:
             if debug:
                 print(f"    Preprocess: invalid func_xrefs target: {func_name}")
@@ -2645,8 +2683,17 @@ async def preprocess_common_skill(
                 )
             return False
 
+        if not isinstance(exclude_funcs, (tuple, list)):
+            if debug:
+                print(
+                    f"    Preprocess: invalid exclude_funcs type for "
+                    f"{func_name}: {type(exclude_funcs).__name__}"
+                )
+            return False
+
         xref_strings = list(xref_strings)
         xref_funcs = list(xref_funcs)
+        exclude_funcs = list(exclude_funcs)
         if any(not isinstance(item, str) or not item for item in xref_strings):
             if debug:
                 print(f"    Preprocess: invalid xref_strings values for {func_name}")
@@ -2657,6 +2704,11 @@ async def preprocess_common_skill(
                 print(f"    Preprocess: invalid xref_funcs values for {func_name}")
             return False
 
+        if any(not isinstance(item, str) or not item for item in exclude_funcs):
+            if debug:
+                print(f"    Preprocess: invalid exclude_funcs values for {func_name}")
+            return False
+
         if not xref_strings and not xref_funcs:
             if debug:
                 print(f"    Preprocess: empty func_xrefs spec for {func_name}")
@@ -2665,6 +2717,7 @@ async def preprocess_common_skill(
         func_xrefs_map[func_name] = {
             "xref_strings": xref_strings,
             "xref_funcs": xref_funcs,
+            "exclude_funcs": exclude_funcs,
         }
 
     # Build vtable-relation lookup: func_name -> (vtable_class, generate_vfunc_offset)
@@ -2856,6 +2909,7 @@ async def preprocess_common_skill(
                 func_name=func_name,
                 xref_strings=xref_spec["xref_strings"],
                 xref_funcs=xref_spec["xref_funcs"],
+                exclude_funcs=xref_spec["exclude_funcs"],
                 new_binary_dir=new_binary_dir,
                 platform=platform,
                 image_base=image_base,
