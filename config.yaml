@@ -1604,9 +1604,10 @@ modules:
         expected_output:
           - CEntitySystem_Activate.{platform}.yaml
 
-      - name: find-CNetworkMessages_SetNetworkSerializationContextData
+      - name: find-CNetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue
         expected_output:
           - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
+          - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
         expected_input:
           - CEntitySystem_Activate.{platform}.yaml
 
@@ -2409,6 +2410,11 @@ modules:
         alias:
           - CNetworkMessages::SetNetworkSerializationContextData
         shared: true
+
+      - name: CFlattenedSerializers_CreateFieldChangedEventQueue
+        category: vfunc
+        alias:
+          - CFlattenedSerializers::CreateFieldChangedEventQueue
 
       - name: CNetworkMessages_GetLoggingChannel
         category: vfunc
