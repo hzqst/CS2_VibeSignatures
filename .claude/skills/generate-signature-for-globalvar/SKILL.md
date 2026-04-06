@@ -42,7 +42,7 @@ Use a single `py_eval` call that:
 - Verifies each candidate resolves to the target GV via RIP-relative displacement
 - Collects instruction stream with auto-wildcarding for each candidate
 - Tracks instruction boundaries so prefixes always cover complete instructions
-- Progressively tests at each instruction boundary via `bin_search3`
+- Progressively tests at each instruction boundary via binary search
 - Outputs the shortest unique signature with full metadata
 
 **Note**: If you already know the GV-accessing instruction address, set `target_inst = <inst_addr>`. If you know the containing function, set `target_func = <func_addr>`.
@@ -59,6 +59,12 @@ def main():
     max_sig_bytes = 96
     max_instructions = 64
     max_candidates = 32
+
+    # --- Binary search wrapper (IDA 9.0+ find_bytes -> older bin_search fallback) ---
+    def raw_bin_search(ea, max_ea, data, mask, flags=0):
+        if hasattr(ida_bytes, 'find_bytes'):
+            return ida_bytes.find_bytes(data, ea, range_end=max_ea, mask=mask, flags=flags)
+        return ida_bytes.bin_search(ea, max_ea, data, mask, len(data), flags)
 
     # --- Search bounds ---
     seg = ida_segment.get_segm_by_name(".text")
@@ -147,17 +153,14 @@ def main():
             prefix_tokens = sig_tokens[:boundary]
             if all(t == "??" for t in prefix_tokens):
                 continue
-            pattern_str = " ".join("?" if t == "??" else t for t in prefix_tokens)
-            pat = ida_bytes.compiled_binpat_vec_t()
-            ida_bytes.parse_binpat_str(pat, search_start, pattern_str, 16)
+            data = bytes(0 if t == "??" else int(t, 16) for t in prefix_tokens)
+            mask = bytes(0x00 if t == "??" else 0xFF for t in prefix_tokens)
             flags = ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOBREAK
             matches = []
-            res = ida_bytes.bin_search3(search_start, search_end, pat, flags)
-            ea = res[0] if isinstance(res, tuple) else res
+            ea = raw_bin_search(search_start, search_end, data, mask, flags)
             while ea != idaapi.BADADDR and len(matches) < 2:
                 matches.append(ea)
-                res = ida_bytes.bin_search3(ea + 1, search_end, pat, flags)
-                ea = res[0] if isinstance(res, tuple) else res
+                ea = raw_bin_search(ea + 1, search_end, data, mask, flags)
             if len(matches) == 1 and matches[0] == inst_ea:
                 return {
                     "gv_sig": " ".join(prefix_tokens),
