@@ -144,7 +144,7 @@ modules:
         expected_output:
           - CFlattenedSerializers_vtable.{platform}.yaml
 
-      - name: find-CFlattenedSerializers_CreateFieldChangedEventQueue
+      - name: find-CFlattenedSerializers_CreateFieldChangedEventQueue-impl
         expected_output:
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
         expected_input:
