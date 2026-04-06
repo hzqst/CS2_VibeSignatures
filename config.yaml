@@ -1609,7 +1609,8 @@ modules:
           - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
         expected_input:
-          - CEntitySystem_Activate.{platform}.yaml
+          - CNetworkMessages_vtable.{platform}.yaml
+          - CFlattenedSerializers_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_RegisterSchemaTypeOverride
         expected_output:
