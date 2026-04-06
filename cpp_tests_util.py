@@ -567,6 +567,7 @@ def compare_compiler_vtable_with_yaml(
     report["reference_vtable_size"] = expected_size
     report["reference_vtable_numvfunc"] = expected_numvfunc
     report["reference_functions_count"] = len(reference_functions)
+    report["reference_functions_by_index"] = reference_functions
 
     if compiler_missing:
         return report
@@ -710,4 +711,17 @@ def format_vtable_differences_for_agent(report: Dict[str, Any]) -> List[str]:
     lines: List[str] = [f"Differences found: {len(diffs)}"]
     for item in diffs:
         lines.append(f"- {item['message']}")
+    return lines
+
+
+def format_reference_vtable_entries(report: Dict[str, Any]) -> List[str]:
+    """Format YAML reference vtable entries for debug output, one per line."""
+    functions_by_index = report.get("reference_functions_by_index", {})
+    if not functions_by_index:
+        return ["(no reference vtable entries)"]
+    lines: List[str] = []
+    for index in sorted(functions_by_index.keys()):
+        entry = functions_by_index[index]
+        member_name = entry.get("member_name", entry.get("func_name", "???"))
+        lines.append(f"[{index}] {member_name}")
     return lines

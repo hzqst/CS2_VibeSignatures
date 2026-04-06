@@ -22,6 +22,7 @@ except ImportError as e:
 
 from cpp_tests_util import (
     compare_compiler_vtable_with_yaml,
+    format_reference_vtable_entries,
     format_vtable_compare_report,
     format_vtable_differences_for_agent,
     map_target_triple_to_platform,
@@ -775,6 +776,11 @@ def main():
                 if compare_report.get("differences"):
                     compare_diff_count += 1
                     reports_with_diff.append(compare_report)
+                if args.debug:
+                    debug_lines = format_reference_vtable_entries(compare_report)
+                    print("  [DEBUG] YAML reference vtable entries:")
+                    for debug_line in debug_lines:
+                        print(f"    {debug_line}")
 
             if args.fixheader and reports_with_diff:
                 header_paths = _resolve_header_paths(test_item, config_dir)
