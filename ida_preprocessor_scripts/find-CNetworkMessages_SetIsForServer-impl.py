@@ -7,7 +7,7 @@ INHERIT_VFUNCS = [
     (
         "CNetworkMessages_SetIsForServer",
         "CNetworkMessages",
-        "../server/CNetworkMessages_SetIsForServer",
+        "../engine/CNetworkMessages_SetIsForServer",
         True,
     ),
 ]
