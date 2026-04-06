@@ -20,6 +20,9 @@ modules:
 
     vcall_finder:
       - g_pNetworkMessages
+      - g_NetworkMessages
+      - g_pFlattenedSerializers
+      - g_FlattenedSerializers
 
     skills:
 
@@ -137,6 +140,10 @@ modules:
           - CNetworkMessages_GetNetworkGroupColor.{platform}.yaml
         expected_input:
           - CNetworkSystem_SendNetworkStats.{platform}.yaml
+
+      - name: find-CFlattenedSerializers_vtable
+        expected_output:
+          - CFlattenedSerializers_vtable.{platform}.yaml
 
     symbols:
       - name: CNetworkMessages_vtable
@@ -284,6 +291,9 @@ modules:
           - CNetworkMessages::GetNetworkGroupColor
         shared: true
 
+      - name: CFlattenedSerializers_vtable
+        category: vtable
+
   - name: matchmaking
     path_windows: game/csgo/bin/win64/matchmaking.dll
     path_linux: game/csgo/bin/linuxsteamrt64/libmatchmaking.so
@@ -303,6 +313,7 @@ modules:
 
     vcall_finder:
       - g_pNetworkMessages
+      - g_pFlattenedSerializers
 
     skills:
       - name: find-CNetworkGameServer_vtable
@@ -572,6 +583,7 @@ modules:
 
     vcall_finder:
       - g_pNetworkMessages
+      - g_pFlattenedSerializers
 
     skills:
       - name: find-IGameSystem_vtable
@@ -892,6 +904,7 @@ modules:
 
     vcall_finder:
       - g_pNetworkMessages
+      - g_pFlattenedSerializers
 
     skills:
       - name: find-CSource2Server_vtable
