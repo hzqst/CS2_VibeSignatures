@@ -813,11 +813,11 @@ modules:
         expected_output:
           - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
 
-      - name: find-IGameSystem_GetName
-        expected_output:
-          - IGameSystem_GetName.{platform}.yaml
-        expected_input:
-          - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
+      #- name: find-IGameSystem_GetName
+        #expected_output:
+        #  - IGameSystem_GetName.{platform}.yaml
+        #expected_input:
+        #  - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
 
     symbols:
       - name: CLoopModeGame_RegisterEventMapInternal
@@ -1037,6 +1037,10 @@ modules:
       - name: find-CSpawnGroupMgrGameSystem_vtable
         expected_output:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
+        expected_output:
+          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
       - name: find-IGameSystem_vtable
         expected_output:
@@ -1740,6 +1744,9 @@ modules:
         category: vtable
 
       - name: CSpawnGroupMgrGameSystem_vtable
+        category: vtable
+
+      - name: CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
         category: vtable
 
       - name: CGameRules_vtable

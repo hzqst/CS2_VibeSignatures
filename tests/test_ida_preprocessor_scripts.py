@@ -12,6 +12,10 @@ SET_IS_FOR_SERVER_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
     "find-CNetworkMessages_SetIsForServer-impl.py"
 )
+REALLOCATING_FACTORY_SCRIPT_PATH = Path(
+    "ida_preprocessor_scripts/"
+    "find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.py"
+)
 
 
 def _load_module(script_path: Path, module_name: str):
@@ -83,7 +87,7 @@ class TestFindCNetworkMessagesSetIsForServerImpl(unittest.IsolatedAsyncioTestCas
             (
                 "CNetworkMessages_SetIsForServer",
                 "CNetworkMessages",
-                "../server/CNetworkMessages_SetIsForServer",
+                "../engine/CNetworkMessages_SetIsForServer",
                 True,
             )
         ]
@@ -113,6 +117,53 @@ class TestFindCNetworkMessagesSetIsForServerImpl(unittest.IsolatedAsyncioTestCas
             platform="windows",
             image_base=0x180000000,
             inherit_vfuncs=expected_inherit_vfuncs,
+            debug=True,
+        )
+
+
+class TestFindCGameSystemReallocatingFactoryCSpawnGroupMgrGameSystemVtable(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_preprocess_skill_forwards_expected_vtable_and_aliases(self) -> None:
+        module = _load_module(
+            REALLOCATING_FACTORY_SCRIPT_PATH,
+            "find_CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable",
+        )
+        mock_preprocess_common_skill = AsyncMock(return_value=True)
+        expected_vtable_class_names = [
+            "CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem"
+        ]
+        expected_mangled_class_names = {
+            "CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem": [
+                "??_7?$CGameSystemReallocatingFactory@VCSpawnGroupMgrGameSystem@@V1@@@6B@",
+                "_ZTV30CGameSystemReallocatingFactoryI24CSpawnGroupMgrGameSystemS0_E",
+            ]
+        }
+
+        with patch.object(
+            module,
+            "preprocess_common_skill",
+            mock_preprocess_common_skill,
+        ):
+            result = await module.preprocess_skill(
+                session="session",
+                skill_name="skill",
+                expected_outputs=["out.yaml"],
+                old_yaml_map={"k": "v"},
+                new_binary_dir="bin_dir",
+                platform="windows",
+                image_base=0x180000000,
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_common_skill.assert_awaited_once_with(
+            session="session",
+            expected_outputs=["out.yaml"],
+            vtable_class_names=expected_vtable_class_names,
+            mangled_class_names=expected_mangled_class_names,
+            platform="windows",
+            image_base=0x180000000,
             debug=True,
         )
 

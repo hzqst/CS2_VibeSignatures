@@ -19,29 +19,44 @@ except ImportError:
 _VTABLE_PY_EVAL_TEMPLATE = r'''
 import ida_bytes, ida_name, idaapi, idautils, ida_segment, json
 
-class_name = "CLASS_NAME_PLACEHOLDER"
+class_name = CLASS_NAME_PLACEHOLDER
+candidate_symbols = CANDIDATE_SYMBOLS_PLACEHOLDER
 ptr_size = 8 if idaapi.inf_is_64bit() else 4
 
 vtable_start = None
 vtable_symbol = ""
 is_linux = False
 
+def _try_direct_symbol(symbol_name):
+    global vtable_start, vtable_symbol, is_linux
+    if not symbol_name:
+        return False
+    addr = ida_name.get_name_ea(idaapi.BADADDR, symbol_name)
+    if addr == idaapi.BADADDR:
+        return False
+    if symbol_name.startswith("_ZTV"):
+        vtable_start = addr + 0x10
+        vtable_symbol = symbol_name + " + 0x10"
+        is_linux = True
+    else:
+        vtable_start = addr
+        vtable_symbol = symbol_name
+        is_linux = False
+    return True
+
+for symbol_name in candidate_symbols:
+    if _try_direct_symbol(symbol_name):
+        break
+
 # Direct symbol: Windows ??_7ClassName@@6B@
-win_name = "??_7" + class_name + "@@6B@"
-addr = ida_name.get_name_ea(idaapi.BADADDR, win_name)
-if addr != idaapi.BADADDR:
-    vtable_start = addr
-    vtable_symbol = win_name
-    is_linux = False
+if vtable_start is None:
+    win_name = "??_7" + class_name + "@@6B@"
+    _try_direct_symbol(win_name)
 
 # Direct symbol: Linux _ZTV<len>ClassName
 if vtable_start is None:
     linux_name = "_ZTV" + str(len(class_name)) + class_name
-    addr = ida_name.get_name_ea(idaapi.BADADDR, linux_name)
-    if addr != idaapi.BADADDR:
-        vtable_start = addr + 0x10
-        vtable_symbol = linux_name + " + 0x10"
-        is_linux = True
+    _try_direct_symbol(linux_name)
 
 # RTTI fallback: Windows ??_R4ClassName@@6B@
 if vtable_start is None:
@@ -139,6 +154,55 @@ def parse_mcp_result(result):
     return None
 
 
+def _normalize_mangled_class_names(mangled_class_names, debug=False):
+    if mangled_class_names is None:
+        return {}
+    if not isinstance(mangled_class_names, dict):
+        if debug:
+            print(
+                "    Preprocess: mangled_class_names must be a dict, got "
+                f"{type(mangled_class_names).__name__}"
+            )
+        return None
+
+    normalized = {}
+    for class_name, aliases in mangled_class_names.items():
+        if not isinstance(class_name, str) or not class_name:
+            if debug:
+                print(
+                    "    Preprocess: invalid mangled_class_names key: "
+                    f"{class_name!r}"
+                )
+            return None
+        if not isinstance(aliases, (list, tuple)):
+            if debug:
+                print(
+                    "    Preprocess: aliases for "
+                    f"{class_name} must be a list/tuple"
+                )
+            return None
+
+        normalized_aliases = []
+        for alias in aliases:
+            if not isinstance(alias, str) or not alias:
+                if debug:
+                    print(
+                        "    Preprocess: invalid alias for "
+                        f"{class_name}: {alias!r}"
+                    )
+                return None
+            normalized_aliases.append(alias)
+
+        normalized[class_name] = normalized_aliases
+
+    return normalized
+
+
+def _get_mangled_class_aliases(mangled_class_names, class_name):
+    aliases = (mangled_class_names or {}).get(class_name, [])
+    return list(aliases)
+
+
 def build_remote_text_export_py_eval(
     *,
     output_path,
@@ -196,9 +260,16 @@ def build_remote_text_export_py_eval(
     )
 
 
-def _build_vtable_py_eval(class_name):
+def _build_vtable_py_eval(class_name, symbol_aliases=None):
     """Build the vtable py_eval script for the given class name."""
-    return _VTABLE_PY_EVAL_TEMPLATE.replace("CLASS_NAME_PLACEHOLDER", class_name)
+    return (
+        _VTABLE_PY_EVAL_TEMPLATE
+        .replace("CLASS_NAME_PLACEHOLDER", json.dumps(class_name))
+        .replace(
+            "CANDIDATE_SYMBOLS_PLACEHOLDER",
+            json.dumps(list(symbol_aliases or [])),
+        )
+    )
 
 
 def write_vtable_yaml(path, data):
@@ -316,7 +387,14 @@ def write_struct_offset_yaml(path, data):
             allow_unicode=False,
         )
 
-async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, debug=False):
+async def preprocess_vtable_via_mcp(
+    session,
+    class_name,
+    image_base,
+    platform,
+    debug=False,
+    symbol_aliases=None,
+):
     """
     Preprocess a vtable output by looking up the class vtable via py_eval.
 
@@ -333,7 +411,7 @@ async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, d
         Dict with vtable YAML data, or None on failure
     """
     _ = platform  # Reserved for future platform-specific behavior.
-    py_code = _build_vtable_py_eval(class_name)
+    py_code = _build_vtable_py_eval(class_name, symbol_aliases=symbol_aliases)
 
     try:
         result = await session.call_tool(
@@ -381,7 +459,15 @@ async def preprocess_vtable_via_mcp(session, class_name, image_base, platform, d
 
 
 async def preprocess_func_sig_via_mcp(
-    session, new_path, old_path, image_base, new_binary_dir, platform, func_name=None, debug=False
+    session,
+    new_path,
+    old_path,
+    image_base,
+    new_binary_dir,
+    platform,
+    func_name=None,
+    debug=False,
+    mangled_class_names=None,
 ):
     """
     Preprocess a function output by reusing old-version signature metadata.
@@ -428,6 +514,13 @@ async def preprocess_func_sig_via_mcp(
         return None
 
     if not old_data or not isinstance(old_data, dict):
+        return None
+
+    normalized_mangled_class_names = _normalize_mangled_class_names(
+        mangled_class_names,
+        debug=debug,
+    )
+    if normalized_mangled_class_names is None:
         return None
 
     def _parse_int_field(value, field_name):
@@ -517,7 +610,15 @@ async def preprocess_func_sig_via_mcp(
         if not os.path.exists(vtable_yaml_path):
             # Generate vtable YAML on-the-fly via py_eval
             vtable_gen_data = await preprocess_vtable_via_mcp(
-                session, vtable_name, image_base, platform, debug
+                session,
+                vtable_name,
+                image_base,
+                platform,
+                debug,
+                _get_mangled_class_aliases(
+                    normalized_mangled_class_names,
+                    vtable_name,
+                ),
             )
             if vtable_gen_data is None:
                 if debug:
@@ -2691,6 +2792,7 @@ async def preprocess_common_skill(
     inherit_vfuncs=None,
     func_xrefs=None,
     func_vtable_relations=None,
+    mangled_class_names=None,
     debug=False,
 ):
     """Reusable preprocess_skill implementation for func/vfunc, gv, patch, struct-member, vtable, inherit-vfunc, func-xref, and vtable-relation targets.
@@ -2703,6 +2805,9 @@ async def preprocess_common_skill(
     - ``struct_member_names``: struct-member offset targets via
       ``preprocess_struct_offset_sig_via_mcp``.
     - ``vtable_class_names``: vtable targets via ``preprocess_vtable_via_mcp``.
+    - ``mangled_class_names``: optional mapping from canonical vtable class
+      names to explicit mangled symbol aliases. These aliases are tried before
+      auto-derived vtable symbols and RTTI fallback.
     - ``inherit_vfuncs``: inherited virtual function targets resolved by
       base-class vfunc_index + vtable lookup via
       ``preprocess_index_based_vfunc_via_mcp``.  Each element is a tuple of
@@ -2745,6 +2850,8 @@ async def preprocess_common_skill(
         patch_names: List of patch target names (may be empty/None).
         struct_member_names: List of struct-member target names (may be empty/None).
         vtable_class_names: List of class names for vtable lookup, or None.
+        mangled_class_names: Mapping from canonical vtable class name to
+            explicit mangled aliases for vtable lookup (may be empty/None).
         inherit_vfuncs: List of inherited vfunc specs (may be empty/None).
         func_xrefs: List of
             (func_name, xref_strings_list, xref_funcs_list, exclude_funcs_list)
@@ -2767,6 +2874,12 @@ async def preprocess_common_skill(
     inherit_vfuncs = inherit_vfuncs or []
     func_xrefs = func_xrefs or []
     func_vtable_relations = func_vtable_relations or []
+    normalized_mangled_class_names = _normalize_mangled_class_names(
+        mangled_class_names,
+        debug=debug,
+    )
+    if normalized_mangled_class_names is None:
+        return False
 
     func_xrefs_map = {}
     for spec in func_xrefs:
@@ -2866,6 +2979,10 @@ async def preprocess_common_skill(
             image_base=image_base,
             platform=platform,
             debug=debug,
+            symbol_aliases=_get_mangled_class_aliases(
+                normalized_mangled_class_names,
+                vtable_class,
+            ),
         )
         if vtable_data is None:
             return False
@@ -2918,6 +3035,7 @@ async def preprocess_common_skill(
                     platform=platform,
                     func_name=func_name,
                     debug=debug,
+                    mangled_class_names=normalized_mangled_class_names,
                 )
 
             # Fallback: resolve via base-class vfunc_index + vtable lookup.
@@ -3017,6 +3135,7 @@ async def preprocess_common_skill(
             platform=platform,
             func_name=func_name,
             debug=debug,
+            mangled_class_names=normalized_mangled_class_names,
         )
 
         if func_data is None and func_name in func_xrefs_map:
@@ -3060,6 +3179,10 @@ async def preprocess_common_skill(
                             image_base=image_base,
                             platform=platform,
                             debug=debug,
+                            symbol_aliases=_get_mangled_class_aliases(
+                                normalized_mangled_class_names,
+                                vtable_class,
+                            ),
                         )
                         if vtable_data is not None:
                             vtable_entries = vtable_data.get("vtable_entries", {})
