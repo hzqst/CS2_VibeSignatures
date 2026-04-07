@@ -49,7 +49,6 @@ Otherwise, extract:
 Compute the candidate slot for `CSpawnGroupMgrGameSystem_HasName`:
 
 - `target_vfunc_index = IGameSystem_SetName.vfunc_index + 1`
-- `target_vfunc_offset = (IGameSystem_SetName.vfunc_index + 1) * 8`
 
 Validate that `target_vfunc_index < vtable_numvfunc`, then read:
 
