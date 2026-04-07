@@ -807,6 +807,12 @@ modules:
         expected_output:
           - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
 
+      - name: find-IGameSystem_GetName
+        expected_output:
+          - IGameSystem_GetName.{platform}.yaml
+        expected_input:
+          - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
+
     symbols:
       - name: CLoopModeGame_RegisterEventMapInternal
         category: func
@@ -994,6 +1000,11 @@ modules:
         category: func
         alias:
           - CSteamworksGameStats::OnReceivedSessionID
+
+      - name: IGameSystem_GetName
+        category: vfunc
+        alias:
+          - IGameSystem::GetName
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
