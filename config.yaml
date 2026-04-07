@@ -847,6 +847,12 @@ modules:
           - IGameSystemFactory_HasName.{platform}.yaml
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
+      - name: find-IGameSystem_HasName
+        expected_output:
+          - IGameSystem_HasName.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_HasName.{platform}.yaml
+
       - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
         expected_output:
           - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml

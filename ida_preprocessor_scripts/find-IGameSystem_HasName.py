@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CCSPlayerPawn_OnTakeDamage skill."""
+"""Preprocess script for find-IGameSystem_HasName skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
-INHERIT_VFUNCS=[
+INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("CCSPlayerPawn_OnTakeDamage", "CCSPlayerPawn", "CBasePlayerPawn_OnTakeDamage", False),
-    ("CCSPlayerPawn_OnTakeDamage_Alive", "CCSPlayerPawn", "CBasePlayerPawn_OnTakeDamage_Alive", False),
-    ("CCSPlayerPawn_OnTakeDamage_Dying", "CCSPlayerPawn", "CBasePlayerPawn_OnTakeDamage_Dying", False),
-    ("CCSPlayerPawn_OnTakeDamage_Dead", "CCSPlayerPawn", "CBasePlayerPawn_OnTakeDamage_Dead", False),
+    (
+        "IGameSystem_HasName",
+        "IGameSystem",
+        "../client/CSpawnGroupMgrGameSystem_HasName",
+        False,
+    ),
 ]
+
 
 async def preprocess_skill(
     session,
@@ -21,7 +24,6 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Reuse old func_sig first; fallback to vtable index + generated signature when needed."""
     _ = skill_name
 
     return await preprocess_common_skill(

@@ -102,24 +102,18 @@ The key verification is:
 
 If the offset does not match, **STOP** and report to user.
 
-### 6. Generate Function Signature
-
-**ALWAYS** Use SKILL `/generate-signature-for-function` with `addr=<candidate_func_addr>` to generate a robust and unique `func_sig` for `CSpawnGroupMgrGameSystem_HasName`.
-
-Use the returned validated `func_sig` in the next step.
-
-### 7. Write IDA Analysis Output as YAML
+### 6. Write IDA Analysis Output as YAML
 
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
 - `func_name`: `CSpawnGroupMgrGameSystem_HasName`
 - `func_addr`: `<candidate_func_addr>`
-- `func_sig`: The validated signature from step 6
-- `vfunc_sig`: `None`
+- `func_sig`: `None`
+- `vfunc_sig`: Use exact the same `vfunc_sig` from `IGameSystemFactory_HasName`
 
 VTable parameters:
-- `vtable_name`: `IGameSystem`
+- `vtable_name`: `CSpawnGroupMgrGameSystem`
 - `vfunc_offset`: `<target_vfunc_offset>` in hex
 - `vfunc_index`: `<target_vfunc_index>`
 
@@ -137,7 +131,6 @@ VTable parameters:
 3. Load the existing `CSpawnGroupMgrGameSystem_vtable` YAML to resolve the adjacent vtable entry
 4. The slot at `IGameSystem_SetName.vfunc_index + 1` in the CSpawnGroupMgrGameSystem vtable is `CSpawnGroupMgrGameSystem_HasName`
 5. Verify the wrapper calls through the factory vtable at `IGameSystemFactory_HasName.vfunc_offset`
-6. Generate a stable `func_sig` from the resolved function body
 
 This is robust because:
 - The vtable adjacency (`SetName` followed by `HasName`) is a stable layout property
