@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-IGameSystem_GetName skill."""
+"""Preprocess script for find-IGameSystem_GetName-AND-IGameSystemFactory_DeallocateGameSystem skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "IGameSystem_GetName",
+    "IGameSystemFactory_DeallocateGameSystem",
 ]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class, generate_vfunc_offset)
     ("IGameSystem_GetName", "IGameSystem", True),
+    ("IGameSystemFactory_DeallocateGameSystem", "IGameSystemFactory", True),
 ]
 
 

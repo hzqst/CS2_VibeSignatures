@@ -813,11 +813,12 @@ modules:
         expected_output:
           - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
 
-      #- name: find-IGameSystem_GetName
-        #expected_output:
-        #  - IGameSystem_GetName.{platform}.yaml
-        #expected_input:
-        #  - CSteamworksGameStats_OnReceivedSessionID.{platform}.yaml
+      - name: find-IGameSystem_GetName-AND-IGameSystemFactory_DeallocateGameSystem
+        expected_output:
+          - IGameSystem_GetName.{platform}.yaml
+          - IGameSystemFactory_DeallocateGameSystem.{platform}.yaml
+        expected_input:
+          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
 
     symbols:
       - name: CLoopModeGame_RegisterEventMapInternal
@@ -1016,6 +1017,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::GetName
+
+      - name: IGameSystemFactory_DeallocateGameSystem
+        category: vfunc
+        alias:
+          - IGameSystemFactory::DeallocateGameSystem
 
   - name: server
     path_windows: game/csgo/bin/win64/server.dll
