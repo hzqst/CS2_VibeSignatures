@@ -135,6 +135,9 @@ jobs:
           "-x!.git" `
           "-x!.git-blame-ignore-revs" `
           "-x!.gitmodules"
+          "-x!__pycache__"
+          "-x!gamedata.py"
+          "-x!config.yaml"
 
       - name: Create release
         if: startsWith(github.ref, 'refs/tags/')
