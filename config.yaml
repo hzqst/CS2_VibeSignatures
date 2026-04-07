@@ -820,6 +820,28 @@ modules:
         expected_input:
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_vtable
+        expected_output:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
+        expected_output:
+          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate-impl
+        expected_output:
+          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate.{platform}.yaml
+        expected_input:
+          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+          - ../client/IGameSystemFactory_Deallocate.{platform}.yaml
+
+      - name: find-IGameSystem_SetGameSystemGlobalPtrs-AND-IGameSystem_dtor
+        expected_output:
+          - IGameSystem_SetGameSystemGlobalPtrs.{platform}.yaml
+          - IGameSystem_dtor.{platform}.yaml
+        expected_input:
+          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate.{platform}.yaml
+
     symbols:
       - name: CLoopModeGame_RegisterEventMapInternal
         category: func
@@ -1039,21 +1061,6 @@ modules:
       - name: find-CSource2GameEntities_vtable
         expected_output:
           - CSource2GameEntities_vtable.{platform}.yaml
-
-      - name: find-CSpawnGroupMgrGameSystem_vtable
-        expected_output:
-          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
-
-      - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
-        expected_output:
-          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
-
-      - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate-impl
-        expected_output:
-          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate.{platform}.yaml
-        expected_input:
-          - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
-          - ../client/IGameSystemFactory_Deallocate.{platform}.yaml
 
       - name: find-IGameSystem_vtable
         expected_output:
@@ -1766,6 +1773,16 @@ modules:
         category: vfunc
         alias:
           - CGameSystemReallocatingFactory<CSpawnGroupMgrGameSystem>::Deallocate
+
+      - name: IGameSystem_SetGameSystemGlobalPtrs
+        category: vfunc
+        alias:
+          - IGameSystem::SetGameSystemGlobalPtrs
+
+      - name: IGameSystem_dtor
+        category: vfunc
+        alias:
+          - IGameSystem::~IGameSystem
 
       - name: CGameRules_vtable
         category: vtable
