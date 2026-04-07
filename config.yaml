@@ -839,6 +839,14 @@ modules:
         expected_output:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_HasName
+        expected_output:
+          - IGameSystem_HasName.{platform}.yaml
+        expected_input:
+          - IGameSystem_SetName.{platform}.yaml
+          - IGameSystemFactory_HasName.{platform}.yaml
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
       - name: find-CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable
         expected_output:
           - CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
@@ -973,6 +981,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::SetName
+
+      - name: IGameSystem_HasName
+        category: vfunc
+        alias:
+          - IGameSystem::HasName
 
       - name: IGameSystem_DestroyAllGameSystems
         category: func
