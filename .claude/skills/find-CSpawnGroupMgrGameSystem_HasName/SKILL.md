@@ -1,17 +1,17 @@
 ---
 name: find-CSpawnGroupMgrGameSystem_HasName
 description: |
-  Find and identify the IGameSystem_HasName virtual function in CS2 binary using IDA Pro MCP.
-  Use this skill when reverse engineering CS2 client.dll or libclient.so to locate IGameSystem_HasName
+  Find and identify the CSpawnGroupMgrGameSystem_HasName virtual function in CS2 binary using IDA Pro MCP.
+  Use this skill when reverse engineering CS2 client.dll or libclient.so to locate CSpawnGroupMgrGameSystem_HasName
   by looking up the CSpawnGroupMgrGameSystem vtable at the slot adjacent to IGameSystem_SetName,
   and verifying that the wrapper delegates to IGameSystemFactory_HasName at the expected vfunc offset.
-  Trigger: IGameSystem_HasName, CSpawnGroupMgrGameSystem_HasName
+  Trigger: CSpawnGroupMgrGameSystem_HasName
 disable-model-invocation: true
 ---
 
-# Find IGameSystem_HasName (via CSpawnGroupMgrGameSystem vtable)
+# Find CSpawnGroupMgrGameSystem_HasName (via CSpawnGroupMgrGameSystem vtable)
 
-Locate `IGameSystem_HasName` vfunc in CS2 `client.dll` or `libclient.so` using IDA Pro MCP tools.
+Locate `CSpawnGroupMgrGameSystem_HasName` vfunc in CS2 `client.dll` or `libclient.so` using IDA Pro MCP tools.
 
 ## Method
 
@@ -46,7 +46,7 @@ Otherwise, extract:
 
 ### 4. Resolve the Adjacent Slot
 
-Compute the candidate slot for `IGameSystem_HasName`:
+Compute the candidate slot for `CSpawnGroupMgrGameSystem_HasName`:
 
 - `target_vfunc_index = IGameSystem_SetName.vfunc_index + 1`
 - `target_vfunc_offset = (IGameSystem_SetName.vfunc_index + 1) * 8`
@@ -104,7 +104,7 @@ If the offset does not match, **STOP** and report to user.
 
 ### 6. Generate Function Signature
 
-**ALWAYS** Use SKILL `/generate-signature-for-function` with `addr=<candidate_func_addr>` to generate a robust and unique `func_sig` for `IGameSystem_HasName`.
+**ALWAYS** Use SKILL `/generate-signature-for-function` with `addr=<candidate_func_addr>` to generate a robust and unique `func_sig` for `CSpawnGroupMgrGameSystem_HasName`.
 
 Use the returned validated `func_sig` in the next step.
 
@@ -113,7 +113,7 @@ Use the returned validated `func_sig` in the next step.
 **ALWAYS** Use SKILL `/write-vfunc-as-yaml` to write the analysis results.
 
 Required parameters:
-- `func_name`: `IGameSystem_HasName`
+- `func_name`: `CSpawnGroupMgrGameSystem_HasName`
 - `func_addr`: `<candidate_func_addr>`
 - `func_sig`: The validated signature from step 6
 - `vfunc_sig`: `None`
@@ -135,7 +135,7 @@ VTable parameters:
 1. Load the existing `IGameSystem_SetName` YAML to obtain its vtable index
 2. Load the existing `IGameSystemFactory_HasName` YAML to obtain the expected factory vfunc offset
 3. Load the existing `CSpawnGroupMgrGameSystem_vtable` YAML to resolve the adjacent vtable entry
-4. The slot at `IGameSystem_SetName.vfunc_index + 1` in the CSpawnGroupMgrGameSystem vtable is `IGameSystem_HasName`
+4. The slot at `IGameSystem_SetName.vfunc_index + 1` in the CSpawnGroupMgrGameSystem vtable is `CSpawnGroupMgrGameSystem_HasName`
 5. Verify the wrapper calls through the factory vtable at `IGameSystemFactory_HasName.vfunc_offset`
 6. Generate a stable `func_sig` from the resolved function body
 
@@ -147,5 +147,5 @@ This is robust because:
 ## Output YAML Format
 
 The output YAML filename depends on the platform:
-- `client.dll` -> `IGameSystem_HasName.windows.yaml`
-- `libclient.so` -> `IGameSystem_HasName.linux.yaml`
+- `client.dll` -> `CSpawnGroupMgrGameSystem_HasName.windows.yaml`
+- `libclient.so` -> `CSpawnGroupMgrGameSystem_HasName.linux.yaml`

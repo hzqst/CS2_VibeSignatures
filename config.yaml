@@ -841,7 +841,7 @@ modules:
 
       - name: find-CSpawnGroupMgrGameSystem_HasName
         expected_output:
-          - IGameSystem_HasName.{platform}.yaml
+          - CSpawnGroupMgrGameSystem_HasName.{platform}.yaml
         expected_input:
           - IGameSystem_SetName.{platform}.yaml
           - IGameSystemFactory_HasName.{platform}.yaml
@@ -982,7 +982,7 @@ modules:
         alias:
           - IGameSystem::SetName
 
-      - name: IGameSystem_HasName
+      - name: CSpawnGroupMgrGameSystem_HasName
         category: vfunc
         alias:
           - IGameSystem::HasName

@@ -4,12 +4,12 @@
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "IGameSystem_HasName",
+    "CSpawnGroupMgrGameSystem_HasName",
 ]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class, generate_vfunc_offset)
-    ("IGameSystem_HasName", "IGameSystem", True),
+    ("CSpawnGroupMgrGameSystem_HasName", "IGameSystem", True),
 ]
 
 
