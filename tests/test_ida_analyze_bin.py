@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from subprocess import CompletedProcess
 from unittest.mock import call, patch
 
 import ida_analyze_bin
@@ -135,6 +136,43 @@ class TestResolveArtifactPathIntegration(unittest.TestCase):
             )
 
         self.assertEqual((0, 2, 0), (success, fail, skip))
+
+
+class TestRunSkillCodexPromptTransport(unittest.TestCase):
+    @patch.object(Path, 'read_text', return_value='sig finder prompt')
+    @patch('ida_analyze_bin.os.path.exists', return_value=True)
+    @patch('ida_analyze_bin.subprocess.run')
+    def test_run_skill_passes_codex_prompt_via_stdin_on_retry(
+        self,
+        mock_run,
+        _mock_exists,
+        _mock_read_text,
+    ) -> None:
+        mock_run.side_effect = [
+            CompletedProcess(args=['codex'], returncode=1, stdout='', stderr='first failure'),
+            CompletedProcess(args=['codex'], returncode=0, stdout='', stderr=''),
+        ]
+
+        result = ida_analyze_bin.run_skill(
+            skill_name='find-IGameSystem_vtable',
+            agent='codex',
+            debug=False,
+            max_retries=2,
+        )
+
+        self.assertTrue(result)
+        self.assertEqual(2, mock_run.call_count)
+
+        first_call = mock_run.call_args_list[0]
+        second_call = mock_run.call_args_list[1]
+
+        self.assertEqual(['exec', '-'], first_call.args[0][-2:])
+        self.assertEqual(['exec', 'resume', '--last', '-'], second_call.args[0][-4:])
+        expected_prompt = 'Run SKILL: .claude/skills/find-IGameSystem_vtable/SKILL.md'
+        self.assertEqual(expected_prompt, first_call.kwargs['input'])
+        self.assertEqual(expected_prompt, second_call.kwargs['input'])
+        self.assertTrue(first_call.kwargs['text'])
+        self.assertTrue(second_call.kwargs['text'])
 
 
 if __name__ == '__main__':

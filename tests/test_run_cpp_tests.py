@@ -1,0 +1,50 @@
+import unittest
+from subprocess import CompletedProcess
+from unittest.mock import patch
+
+import run_cpp_tests
+
+
+class TestRunFixHeaderAgent(unittest.TestCase):
+    @patch.object(
+        run_cpp_tests,
+        "_load_codex_developer_instructions",
+        return_value='developer_instructions="test prompt"',
+    )
+    @patch("run_cpp_tests.subprocess.run")
+    def test_run_fix_header_agent_passes_codex_prompt_via_stdin_on_retry(
+        self,
+        mock_run,
+        _mock_load_prompt,
+    ) -> None:
+        mock_run.side_effect = [
+            CompletedProcess(args=["codex"], returncode=1, stdout="", stderr="first failure"),
+            CompletedProcess(args=["codex"], returncode=0, stdout="", stderr=""),
+        ]
+
+        result = run_cpp_tests.run_fix_header_agent(
+            fix_prompt="fix the vtable diff",
+            agent="codex",
+            debug=False,
+            max_retries=2,
+        )
+
+        self.assertTrue(result)
+        self.assertEqual(2, mock_run.call_count)
+
+        first_call = mock_run.call_args_list[0]
+        second_call = mock_run.call_args_list[1]
+
+        self.assertEqual(["exec", "-"], first_call.args[0][-2:])
+        self.assertEqual(
+            ["exec", "resume", "--last", "-"],
+            second_call.args[0][-4:],
+        )
+        self.assertEqual("fix the vtable diff", first_call.kwargs["input"])
+        self.assertEqual("fix the vtable diff", second_call.kwargs["input"])
+        self.assertTrue(first_call.kwargs["text"])
+        self.assertTrue(second_call.kwargs["text"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(hl2sdk_cs2)",
+      "Edit(hl2sdk_cs2)",
+      "MultiEdit(hl2sdk_cs2)",
+      "Write(hl2sdk_cs2)"
+    ]
+  }
+}

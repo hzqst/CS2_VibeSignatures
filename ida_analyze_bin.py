@@ -809,6 +809,7 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
 
     for attempt in range(max_retries):
         is_retry = attempt > 0
+        agent_input = None
 
         # Determine agent type based on executable name
         is_claude_agent = "claude" in agent.lower()
@@ -830,10 +831,11 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
         elif is_codex_agent:
             skill_path = f".claude/skills/{skill_name}/SKILL.md"
             skill_prompt = f"Run SKILL: {skill_path}"
+            agent_input = skill_prompt
             if is_retry:
-                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", "resume", "--last", skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", "resume", "--last", "-"]
             else:
-                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", skill_prompt]
+                cmd = [agent, "-c", codex_developer_instructions, "-c", "model_reasoning_effort=high", "-c", "model_reasoning_summary=none", "-c", "model_verbosity=low", "exec", "-"]
             retry_target_desc = "the latest codex session (--last)"
         else:
             print(f"    Error: Unknown agent type '{agent}'. Agent name must contain 'claude' or 'codex'.")
@@ -855,18 +857,21 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
                     display_cmd = cmd.copy()
                 display_cmd[idx + 1] = "developer_instructions=<sig-finder-system-prompt>"
 
-        print(f"    {retry_str}Running {attempt_str}: {' '.join(display_cmd)}")
+        prompt_transport = " <prompt via stdin>" if agent_input is not None else ""
+        print(f"    {retry_str}Running {attempt_str}: {' '.join(display_cmd)}{prompt_transport}")
 
         try:
+            run_kwargs = {"timeout": SKILL_TIMEOUT}
+            if agent_input is not None:
+                run_kwargs["input"] = agent_input
+                run_kwargs["text"] = True
+
             if debug:
-                result = subprocess.run(cmd, timeout=SKILL_TIMEOUT)
+                result = subprocess.run(cmd, **run_kwargs)
             else:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=SKILL_TIMEOUT
-                )
+                run_kwargs["capture_output"] = True
+                run_kwargs.setdefault("text", True)
+                result = subprocess.run(cmd, **run_kwargs)
 
             if result.returncode != 0:
                 print(f"    Skill failed with return code: {result.returncode}")

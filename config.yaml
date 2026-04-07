@@ -2590,6 +2590,7 @@ cpp_tests:
     headers: 
     - hl2sdk_cs2/game/shared/igamesystem.h # This is for LLM agent
     claude_permission_mode: acceptEdits
+    claude_allowed_tools: Read,Edit,MultiEdit,Write
     target: x86_64-pc-windows-msvc
     include_directories:
       - hl2sdk_cs2/game/shared
@@ -2615,6 +2616,7 @@ cpp_tests:
   #   headers:
   #   - hl2sdk_cs2/public/networksystem/inetworksystem.h # This is for LLM agent
   #  claude_permission_mode: acceptEdits
+  #  claude_allowed_tools: Read,Edit,MultiEdit,Write
   #   target: x86_64-pc-windows-msvc
   #   include_directories:
   #     - hl2sdk_cs2/game/shared
@@ -2641,6 +2643,7 @@ cpp_tests:
     headers:
     - hl2sdk_cs2/public/networksystem/inetworkmessages.h # This is for LLM agent
     claude_permission_mode: acceptEdits
+    claude_allowed_tools: Read,Edit,MultiEdit,Write
     target: x86_64-pc-windows-msvc
     include_directories:
       - hl2sdk_cs2/game/shared

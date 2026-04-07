@@ -324,6 +324,7 @@ def run_fix_header_agent(
         is_retry = attempt > 0
         is_claude_agent = "claude" in agent.lower()
         is_codex_agent = "codex" in agent.lower()
+        agent_input = None
 
         if is_claude_agent:
             cmd = [
@@ -348,6 +349,7 @@ def run_fix_header_agent(
                 cmd.extend(["--session-id", claude_session_id])
             retry_target_desc = f"session {claude_session_id}"
         elif is_codex_agent:
+            agent_input = fix_prompt
             if is_retry:
                 cmd = [
                     agent,
@@ -362,7 +364,7 @@ def run_fix_header_agent(
                     "exec",
                     "resume",
                     "--last",
-                    fix_prompt,
+                    "-",
                 ]
             else:
                 cmd = [
@@ -376,7 +378,7 @@ def run_fix_header_agent(
                     "-c",
                     "model_verbosity=low",
                     "exec",
-                    fix_prompt,
+                    "-",
                 ]
             retry_target_desc = "the latest codex session (--last)"
         else:
@@ -387,19 +389,26 @@ def run_fix_header_agent(
 
         retry_tag = "[RETRY] " if is_retry else ""
         attempt_str = f"(attempt {attempt + 1}/{max_retries})" if max_retries > 1 else ""
-        print(f"    {retry_tag}Running {attempt_str}: {agent} <vtable-fixer-prompt>")
+        prompt_transport = " via stdin" if agent_input is not None else ""
+        print(
+            f"    {retry_tag}Running {attempt_str}: {agent} <vtable-fixer-prompt{prompt_transport}>"
+        )
 
         try:
+            run_kwargs = {
+                "timeout": SKILL_TIMEOUT,
+                "check": False,
+            }
+            if agent_input is not None:
+                run_kwargs["input"] = agent_input
+                run_kwargs["text"] = True
+
             if debug:
-                result = subprocess.run(cmd, timeout=SKILL_TIMEOUT, check=False)
+                result = subprocess.run(cmd, **run_kwargs)
             else:
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=SKILL_TIMEOUT,
-                    check=False,
-                )
+                run_kwargs["capture_output"] = True
+                run_kwargs.setdefault("text", True)
+                result = subprocess.run(cmd, **run_kwargs)
 
             if result.returncode == 0:
                 return True
