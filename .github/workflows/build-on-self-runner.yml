@@ -40,6 +40,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Create persisted workspace links
         shell: cmd
