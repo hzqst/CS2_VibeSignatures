@@ -616,6 +616,9 @@ def compare_compiler_vtable_with_yaml(
         expected_member = ref_item.get("member_name", "")
         actual_member = compiled.get("member_name", "")
         if expected_member and actual_member and expected_member != actual_member:
+            # "dtor" in YAML matches any destructor "~ClassName" from compiler
+            if expected_member == "dtor" and actual_member.startswith("~"):
+                continue
             report["differences"].append(
                 {
                     "type": "vfunc_name_mismatch",
