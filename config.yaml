@@ -691,6 +691,13 @@ modules:
         expected_input:
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-IGameSystem_AddByName-AND-IGameSystem_Add
+        expected_output:
+          - IGameSystem_AddByName.{platform}.yaml
+          - IGameSystem_Add.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+
       - name: find-IGameSystem_DestroyAllGameSystems
         expected_output:
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
@@ -933,6 +940,16 @@ modules:
         category: vfunc
         alias:
           - CLoopModeGame::ReceivedServerInfo
+
+      - name: IGameSystem_AddByName
+        category: func
+        alias:
+          - IGameSystem::AddByName
+
+      - name: IGameSystem_Add
+        category: func
+        alias:
+          - IGameSystem::Add
 
       - name: IGameSystem_DestroyAllGameSystems
         category: func
