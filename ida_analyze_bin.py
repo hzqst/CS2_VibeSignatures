@@ -31,9 +31,11 @@ Output:
 import argparse
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -65,6 +67,15 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 13337
 MCP_STARTUP_TIMEOUT = 1200  # seconds to wait for MCP server
 SKILL_TIMEOUT = 1200  # 10 minutes per skill
+ERROR_MARKER_RE = re.compile(
+    r"(?<![A-Za-z0-9])error(?![A-Za-z0-9])",
+    re.IGNORECASE,
+)
+
+
+def _output_contains_error_marker(*texts: str) -> bool:
+    merged_output = "\n".join(text for text in texts if text)
+    return bool(ERROR_MARKER_RE.search(merged_output))
 
 async def check_mcp_health(host=DEFAULT_HOST, port=DEFAULT_PORT):
     """
@@ -753,6 +764,69 @@ def start_idalib_mcp(binary_path, host=DEFAULT_HOST, port=DEFAULT_PORT, ida_args
         print(f"  Error starting idalib-mcp: {e}")
         return None
 
+
+def _drain_text_stream(stream, chunks, forward_stream=None):
+    try:
+        for chunk in iter(stream.readline, ""):
+            chunks.append(chunk)
+            if forward_stream is not None:
+                forward_stream.write(chunk)
+                forward_stream.flush()
+    finally:
+        try:
+            stream.close()
+        except Exception:
+            pass
+
+def _run_process_with_stream_capture(cmd, *, agent_input=None, debug=False, timeout=SKILL_TIMEOUT):
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE if agent_input is not None else None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    if agent_input is not None and process.stdin is not None:
+        process.stdin.write(agent_input)
+        process.stdin.flush()
+        process.stdin.close()
+
+    stdout_chunks = []
+    stderr_chunks = []
+    stdout_thread = threading.Thread(
+        target=_drain_text_stream,
+        args=(process.stdout, stdout_chunks, sys.stdout if debug else None),
+    )
+    stderr_thread = threading.Thread(
+        target=_drain_text_stream,
+        args=(process.stderr, stderr_chunks, sys.stderr if debug else None),
+    )
+    stdout_thread.start()
+    stderr_thread.start()
+
+    try:
+        process.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        try:
+            process.wait(timeout=1)
+        except Exception:
+            pass
+        stdout_thread.join(timeout=1)
+        stderr_thread.join(timeout=1)
+        raise
+
+    stdout_thread.join()
+    stderr_thread.join()
+    return subprocess.CompletedProcess(
+        args=cmd,
+        returncode=process.returncode,
+        stdout="".join(stdout_chunks),
+        stderr="".join(stderr_chunks),
+    )
+
+
 def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None, max_retries=3):
     """
     Execute a skill using the specified agent with retry support.
@@ -861,22 +935,23 @@ def run_skill(skill_name, agent="claude", debug=False, expected_yaml_paths=None,
         print(f"    {retry_str}Running {attempt_str}: {' '.join(display_cmd)}{prompt_transport}")
 
         try:
-            run_kwargs = {"timeout": SKILL_TIMEOUT}
-            if agent_input is not None:
-                run_kwargs["input"] = agent_input
-                run_kwargs["text"] = True
-
-            if debug:
-                result = subprocess.run(cmd, **run_kwargs)
-            else:
-                run_kwargs["capture_output"] = True
-                run_kwargs.setdefault("text", True)
-                result = subprocess.run(cmd, **run_kwargs)
+            result = _run_process_with_stream_capture(
+                cmd,
+                agent_input=agent_input,
+                debug=debug,
+                timeout=SKILL_TIMEOUT,
+            )
 
             if result.returncode != 0:
                 print(f"    Skill failed with return code: {result.returncode}")
                 if not debug and result.stderr:
                     print(f"    stderr: {result.stderr[:500]}")
+                if attempt < max_retries - 1:
+                    print(f"    Retrying with {retry_target_desc}...")
+                continue
+
+            if _output_contains_error_marker(result.stdout, result.stderr):
+                print("    Error: Skill output contains error marker")
                 if attempt < max_retries - 1:
                     print(f"    Retrying with {retry_target_desc}...")
                 continue
