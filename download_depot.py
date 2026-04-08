@@ -96,7 +96,13 @@ def find_download_entry(downloads: list[dict], tag: str) -> dict:
     return entry
 
 
-def download_manifests(manifests: dict, app: str, os_name: str, depot_dir: str) -> None:
+def download_manifests(
+    manifests: dict,
+    app: str,
+    os_name: str,
+    depot_dir: str,
+    branch: str | None = None,
+) -> None:
     """Invoke DepotDownloader once per declared depot manifest."""
     if not isinstance(manifests, dict):
         raise ConfigError("Field 'manifests' must be a mapping of depot to manifest")
@@ -112,9 +118,10 @@ def download_manifests(manifests: dict, app: str, os_name: str, depot_dir: str) 
             str(os_name),
             "-dir",
             str(depot_dir),
-            "-manifest",
-            str(manifest),
         ]
+        if branch:
+            command.extend(["-branch", branch])
+        command.extend(["-manifest", str(manifest)])
         print(f"Running: {' '.join(command)}")
         subprocess.run(command, check=True)
 
@@ -127,6 +134,9 @@ def main() -> int:
         downloads = load_downloads(args.config)
         entry = find_download_entry(downloads, args.tag)
         manifests = entry["manifests"]
+        branch = entry.get("branch")
+        if branch is not None and not isinstance(branch, str):
+            raise ConfigError(f"Download entry for tag '{args.tag}' field 'branch' must be a string")
 
         name = entry.get("name")
         if name:
@@ -140,6 +150,7 @@ def main() -> int:
             app=args.app,
             os_name=args.os,
             depot_dir=args.depotdir,
+            branch=branch,
         )
     except ConfigError as exc:
         print(f"Error: {exc}")

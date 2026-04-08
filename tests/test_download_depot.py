@@ -136,6 +136,44 @@ downloads:
             mock_run.call_args_list,
         )
 
+    def test_download_manifests_adds_branch_when_configured(self) -> None:
+        manifests = {
+            "2347771": "111",
+        }
+
+        with patch("download_depot.subprocess.run") as mock_run:
+            download_depot.download_manifests(
+                manifests=manifests,
+                app="730",
+                os_name="all-platform",
+                depot_dir="cs2_depot",
+                branch="animgraph_2_beta",
+            )
+
+        self.assertEqual(
+            [
+                call(
+                    [
+                        "DepotDownloader",
+                        "-app",
+                        "730",
+                        "-depot",
+                        "2347771",
+                        "-os",
+                        "all-platform",
+                        "-dir",
+                        "cs2_depot",
+                        "-branch",
+                        "animgraph_2_beta",
+                        "-manifest",
+                        "111",
+                    ],
+                    check=True,
+                ),
+            ],
+            mock_run.call_args_list,
+        )
+
     def test_main_returns_nonzero_when_depotdownloader_missing(self) -> None:
         fake_args = argparse.Namespace(
             tag="alpha",
