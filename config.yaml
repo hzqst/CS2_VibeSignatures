@@ -1816,6 +1816,10 @@ modules:
         expected_output:
           - CNetworkMessages_RegisterSchemaTypeOverride.{platform}.yaml
 
+      - name: find-GetCSceneEntityScriptDesc
+        expected_output:
+          - GetCSceneEntityScriptDesc.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2647,6 +2651,9 @@ modules:
         alias:
           - CNetworkMessages::RegisterSchemaTypeOverride
         shared: true
+
+      - name: GetCSceneEntityScriptDesc
+        category: func
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
