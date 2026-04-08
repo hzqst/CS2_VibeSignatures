@@ -740,7 +740,9 @@ modules:
         expected_output:
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
 
-      - name: find-CLoopModeGame_LoopShutdown
+      # CLoopModeGame_Shutdown has been inlined in client.dll
+      - name: find-CLoopModeGame_LoopShutdown-windows
+        platform: windows
         expected_output:
           - CLoopModeGame_LoopShutdown.{platform}.yaml
         expected_input:
@@ -748,6 +750,24 @@ modules:
           - CLoopModeGame_SetWorldSession.{platform}.yaml
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
+          - CLoopModeGame_vtable.{platform}.yaml
+
+      - name: find-CLoopModeGame_Shutdown-linux
+        platform: linux
+        expected_output:
+          - CLoopModeGame_Shutdown.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
+          - CLoopModeGame_vtable.{platform}.yaml
+  
+      - name: find-CLoopModeGame_LoopShutdown-linux
+        platform: linux
+        expected_output:
+          - CLoopModeGame_LoopShutdown.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_Shutdown.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
 
       - name: find-IGameSystem_AddByName-AND-IGameSystem_Add
