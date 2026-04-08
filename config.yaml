@@ -1831,6 +1831,20 @@ modules:
           - GetCSceneEntityScriptDesc.{platform}.yaml
           - CSceneEntity_vtable.{platform}.yaml
 
+      - name: find-CEntityInstance_GetScriptDesc
+        expected_output:
+          - CEntityInstance_GetScriptDesc.{platform}.yaml
+        expected_input:
+          - CEntityInstance_vtable.{platform}.yaml
+          - CSceneEntity_GetScriptDesc.{platform}.yaml
+
+      - name: find-CEntityInstance_Precache
+        expected_output:
+          - CEntityInstance_Precache.{platform}.yaml
+        expected_input:
+          - CEntityInstance_vtable.{platform}.yaml
+          - CBaseEntity_Precache.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2673,6 +2687,16 @@ modules:
         category: vfunc
         alias:
           - CSceneEntity::GetScriptDesc
+
+      - name: CEntityInstance_GetScriptDesc
+        category: vfunc
+        alias:
+          - CEntityInstance::GetScriptDesc
+
+      - name: CEntityInstance_Precache
+        category: vfunc
+        alias:
+          - CEntityInstance::Precache
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
