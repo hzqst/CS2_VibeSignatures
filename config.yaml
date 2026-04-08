@@ -506,6 +506,14 @@ modules:
         expected_input:
           - CNetworkGameClient_RecordEntityBandwidth.{platform}.yaml
 
+      - name: find-CEngineClient_vtable
+        expected_output:
+          - CEngineClient_vtable.{platform}.yaml
+
+      - name: find-CLoopTypeClientServerService_vtable
+        expected_output:
+          - CLoopTypeClientServerService_vtable.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -646,6 +654,12 @@ modules:
         alias:
           - CNetworkMessages::SetIsForServer
         shared: true
+
+      - name: CEngineClient_vtable
+        category: vtable
+
+      - name: CLoopTypeClientServerService_vtable
+        category: vtable
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
