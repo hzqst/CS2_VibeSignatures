@@ -13,7 +13,7 @@ FUNC_XREFS = [
         "CLoopModeGame_LoopShutdown",
         [],
         ["CLoopModeGame_Shutdown"],
-        ["CLoopModeGame_SetWorldSession"],
+        ["CLoopModeGame_SetWorldSession", "CLoopModeGame_ReceivedServerInfo"],
     ),
 ]
 
