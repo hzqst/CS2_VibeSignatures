@@ -1820,6 +1820,17 @@ modules:
         expected_output:
           - GetCSceneEntityScriptDesc.{platform}.yaml
 
+      - name: find-CSceneEntity_vtable
+        expected_output:
+          - CSceneEntity_vtable.{platform}.yaml
+
+      - name: find-CSceneEntity_GetScriptDesc
+        expected_output:
+          - CSceneEntity_GetScriptDesc.{platform}.yaml
+        expected_input:
+          - GetCSceneEntityScriptDesc.{platform}.yaml
+          - CSceneEntity_vtable.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2654,6 +2665,14 @@ modules:
 
       - name: GetCSceneEntityScriptDesc
         category: func
+
+      - name: CSceneEntity_vtable
+        category: vtable
+
+      - name: CSceneEntity_GetScriptDesc
+        category: vfunc
+        alias:
+          - CSceneEntity::GetScriptDesc
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll

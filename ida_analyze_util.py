@@ -2588,21 +2588,29 @@ async def preprocess_func_xrefs_via_mcp(
     new_binary_dir,
     platform,
     image_base,
+    vtable_class=None,
     debug=False,
 ):
     """
     Resolve target function by intersecting candidate sets from:
     - string xrefs
     - xrefs to dependency function addresses from current-version YAML files.
+    - vtable entries (when ``vtable_class`` is specified)
 
     Additionally, ``exclude_funcs`` can provide function names whose
     ``func_va`` values are loaded from current-version YAML files in
     ``new_binary_dir`` and removed from the intersection result before
     enforcing the uniqueness check.
+
+    When ``vtable_class`` is given, the vtable YAML file
+    ``{vtable_class}_vtable.{platform}.yaml`` is loaded from
+    ``new_binary_dir`` and all vtable entry addresses are added as an
+    additional candidate set, so only functions that are virtual
+    functions of that class survive the intersection.
     """
     dep_func_names = xref_funcs or []
     excluded_func_names = exclude_funcs or []
-    if dep_func_names or excluded_func_names:
+    if dep_func_names or excluded_func_names or vtable_class:
         if not new_binary_dir:
             if debug:
                 print(
@@ -2621,6 +2629,43 @@ async def preprocess_func_xrefs_via_mcp(
             return None
 
     candidate_sets = []
+
+    # Collect candidates from vtable entries
+    if vtable_class:
+        vtable_yaml_path = os.path.join(
+            new_binary_dir, f"{vtable_class}_vtable.{platform}.yaml"
+        )
+        vtable_data = _read_yaml_file(vtable_yaml_path)
+        if not isinstance(vtable_data, dict):
+            if debug:
+                print(
+                    f"    Preprocess: vtable YAML missing or invalid: "
+                    f"{os.path.basename(vtable_yaml_path)}"
+                )
+            return None
+
+        vtable_entries = vtable_data.get("vtable_entries", {})
+        vtable_addr_set = set()
+        for _idx, addr in vtable_entries.items():
+            try:
+                vtable_addr_set.add(int(str(addr), 16))
+            except (TypeError, ValueError):
+                continue
+
+        if not vtable_addr_set:
+            if debug:
+                print(
+                    f"    Preprocess: empty vtable entries for "
+                    f"{vtable_class}"
+                )
+            return None
+
+        if debug:
+            print(
+                f"    Preprocess: vtable {vtable_class} has "
+                f"{len(vtable_addr_set)} entries as candidate set"
+            )
+        candidate_sets.append(vtable_addr_set)
 
     for xref_string in (xref_strings or []):
         addr_set = await _collect_xref_func_starts_for_string(
@@ -3142,6 +3187,12 @@ async def preprocess_common_skill(
             xref_spec = func_xrefs_map[func_name]
             if debug:
                 print(f"    Preprocess: trying func_xrefs fallback for {func_name}")
+            # When a vtable relation is defined for this function, pass the
+            # vtable class so that only vtable entries are considered as
+            # candidates during xref intersection.
+            xref_vtable_class = None
+            if func_name in vtable_relations_map:
+                xref_vtable_class = vtable_relations_map[func_name][0]
             func_data = await preprocess_func_xrefs_via_mcp(
                 session=session,
                 func_name=func_name,
@@ -3151,6 +3202,7 @@ async def preprocess_common_skill(
                 new_binary_dir=new_binary_dir,
                 platform=platform,
                 image_base=image_base,
+                vtable_class=xref_vtable_class,
                 debug=debug,
             )
 
