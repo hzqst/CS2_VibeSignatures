@@ -723,6 +723,12 @@ found_struct_offset: []
     ) -> None:
         func_name = "CLoopModeGame_OnLoopActivate"
         output_path = f"/tmp/{func_name}.windows.yaml"
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "mov     rax, [rcx]\ncall    qword ptr [rax+68h]",
+            "procedure": "return this->vfptr[13](this);",
+        }
         normalized_payload = {
             "found_vcall": [
                 {
@@ -738,6 +744,7 @@ found_struct_offset: []
         }
         with tempfile.TemporaryDirectory() as temp_dir:
             preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            session = AsyncMock()
             prompt_text = (
                 "ref={disasm_for_reference}|{procedure_for_reference}|"
                 "target={disasm_code}|{procedure}|symbols={symbol_name_list}"
@@ -750,11 +757,30 @@ found_struct_offset: []
             _write_yaml(
                 preprocessor_dir / "references" / "reference.yaml",
                 {
+                    "func_name": target_detail_payload["func_name"],
                     "disasm_code": "mov rax, [rcx]",
                     "procedure": "return this->vfptr[13](this);",
                 },
             )
             fake_client = object()
+
+            async def _session_call_tool(*, name, arguments):
+                self.assertEqual("py_eval", name)
+                code = arguments["code"]
+                if "candidate_names =" in code:
+                    return _py_eval_payload(
+                        [
+                            {
+                                "name": target_detail_payload["func_name"],
+                                "func_va": target_detail_payload["func_va"],
+                            }
+                        ]
+                    )
+                if "'disasm_code': get_disasm(func_start)" in code:
+                    return _py_eval_payload(target_detail_payload)
+                raise AssertionError(f"unexpected py_eval code: {code}")
+
+            session.call_tool.side_effect = _session_call_tool
 
             with patch.object(
                 ida_analyze_util,
@@ -769,6 +795,20 @@ found_struct_offset: []
                 ida_analyze_util,
                 "preprocess_func_sig_via_mcp",
                 AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "_get_func_basic_info_via_mcp",
+                AsyncMock(
+                    return_value={
+                        "func_va": "0x180123450",
+                        "func_rva": "0x123450",
+                        "func_size": "0x40",
+                    }
+                ),
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_gen_func_sig_via_mcp",
+                AsyncMock(return_value={"func_sig": "40 53"}),
             ), patch.object(
                 ida_analyze_util,
                 "call_llm_decompile",
@@ -798,7 +838,7 @@ found_struct_offset: []
                 AsyncMock(return_value=None),
             ):
                 result = await ida_analyze_util.preprocess_common_skill(
-                    session="session",
+                    session=session,
                     expected_outputs=[output_path],
                     old_yaml_map={},
                     new_binary_dir="/tmp",
@@ -838,6 +878,14 @@ found_struct_offset: []
         self.assertEqual(
             "return this->vfptr[13](this);",
             mock_call_llm_decompile.call_args.kwargs["procedure_for_reference"],
+        )
+        self.assertEqual(
+            target_detail_payload["disasm_code"],
+            mock_call_llm_decompile.call_args.kwargs["disasm_code"],
+        )
+        self.assertEqual(
+            target_detail_payload["procedure"],
+            mock_call_llm_decompile.call_args.kwargs["procedure"],
         )
         mock_write_func_yaml.assert_called_once()
         written_payload = mock_write_func_yaml.call_args.args[1]

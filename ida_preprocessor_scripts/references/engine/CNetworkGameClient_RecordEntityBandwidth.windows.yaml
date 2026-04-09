@@ -76,7 +76,7 @@ disasm_code: |-
   .text:000000018004ABB6                 lea     rdx, aLocalPlayer; "Local Player"
   .text:000000018004ABBD                 mov     r8b, 1
   .text:000000018004ABC0                 mov     rax, [rcx]
-  .text:000000018004ABC3                 call    qword ptr [rax+78h]; // g_pNetworkMessages->FindNetworkGroup(...), 78h = CNetworkMessages_FindNetworkGroup
+  .text:000000018004ABC3                 call    qword ptr [rax+78h]; g_pNetworkMessages->FindNetworkGroup(...)
   .text:000000018004ABC6                 lea     rcx, dword_18090DAB8
   .text:000000018004ABCD                 mov     cs:dword_18090DABC, eax
   .text:000000018004ABD3                 call    sub_180422AAC
@@ -108,7 +108,7 @@ disasm_code: |-
   .text:000000018004AC61                 call    sub_180422AAC
   .text:000000018004AC66                 jmp     loc_18004AAE1
 procedure: |-
-  void __fastcall CNetworkGameClient_RecordEntityBandwidth(__int64 a1, __int64 a2, __int64 a3)
+  void __fastcall sub_18004AA70(__int64 a1, __int64 a2, __int64 a3)
   {
     __int64 v3; // rdi
     __int64 v6; // r9
@@ -130,7 +130,7 @@ procedure: |-
         {
           LOBYTE(a3) = 1;
           dword_18090DABC = (*(__int64 (__fastcall **)(__int64, const char *, __int64))(*(_QWORD *)g_pNetworkMessages
-                                                                                      + 120LL))(// g_pNetworkMessages->FindNetworkGroup(...), 120LL = CNetworkMessages_FindNetworkGroup
+                                                                                      + 120LL))(// g_pNetworkMessages->FindNetworkGroup(...)
                               g_pNetworkMessages,
                               "Local Player",
                               a3);

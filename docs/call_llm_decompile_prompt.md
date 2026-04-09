@@ -63,3 +63,5 @@ found_struct_offset:
 ```
 
 If nothing found, output an empty YAML.
+
+DO NOT output anything other than the desired YAML.

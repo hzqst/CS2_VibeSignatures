@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetworkMessages_FindNetworkGroup skill."""
+"""Preprocess script for find-INetworkMessages_FindNetworkGroup skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CNetworkMessages_FindNetworkGroup",
+    "INetworkMessages_FindNetworkGroup",
 ]
 
-INHERIT_VFUNCS = [
+LLM_DECOMPILE = [
     (
-        "CNetworkMessages_FindNetworkGroup",
-        "CNetworkMessages",
-        "../server/INetworkMessages_FindNetworkGroup",
-        True,
+        "INetworkMessages_FindNetworkGroup",
+        "prompt/call_llm_decompile.md",
+        "references/engine/CNetworkGameClient_RecordEntityBandwidth.{platform}.yaml",
     ),
-]
-
-FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class, generate_vfunc_offset)
-    ("CNetworkMessages_FindNetworkGroup", "CNetworkMessages", True),
 ]
 
 async def preprocess_skill(
@@ -35,8 +29,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
-        inherit_vfuncs=INHERIT_VFUNCS,
+        llm_decompile_specs=LLM_DECOMPILE,
         llm_config=llm_config,
         debug=debug,
     )

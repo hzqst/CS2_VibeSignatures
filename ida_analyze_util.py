@@ -408,6 +408,32 @@ def _get_preprocessor_scripts_dir():
     return Path(__file__).resolve().parent / "ida_preprocessor_scripts"
 
 
+def _resolve_llm_decompile_template_value(value, platform):
+    resolved = str(value or "")
+    platform_text = str(platform or "").strip()
+    if platform_text:
+        resolved = resolved.replace("{platform}", platform_text)
+    return resolved
+
+
+def _debug_print_multiline(label, text, debug=False):
+    if not debug:
+        return
+    print(f"    Preprocess: {label} BEGIN")
+    print(str(text or "<empty>"))
+    print(f"    Preprocess: {label} END")
+
+
+def _debug_print_json(label, value, debug=False):
+    if not debug:
+        return
+    try:
+        rendered = json.dumps(value, indent=2, ensure_ascii=False, sort_keys=False)
+    except Exception:
+        rendered = repr(value)
+    _debug_print_multiline(label, rendered, debug=True)
+
+
 def _build_llm_decompile_specs_map(llm_decompile_specs, debug=False):
     specs_map = {}
     for spec in llm_decompile_specs or []:
@@ -483,6 +509,310 @@ def _normalize_llm_entries(entries, required_keys):
     return normalized
 
 
+def _load_symbol_lookup_candidates(symbol_name, debug=False):
+    normalized_name = str(symbol_name or "").strip()
+    if not normalized_name:
+        return []
+
+    candidates = []
+    seen = set()
+
+    def _append_candidate(raw_value):
+        text = str(raw_value or "").strip()
+        if not text or text in seen:
+            return
+        seen.add(text)
+        candidates.append(text)
+
+    _append_candidate(normalized_name)
+
+    config_path = Path(__file__).resolve().parent / "config.yaml"
+    if yaml is None or not config_path.is_file():
+        return candidates
+
+    try:
+        config_data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:
+        if debug:
+            print(
+                f"    Preprocess: failed to read config aliases for "
+                f"{normalized_name}: {exc}"
+            )
+        return candidates
+
+    modules = config_data.get("modules")
+    if not isinstance(modules, list):
+        return candidates
+
+    for module_entry in modules:
+        if not isinstance(module_entry, dict):
+            continue
+        symbols = module_entry.get("symbols")
+        if not isinstance(symbols, list):
+            continue
+        for symbol_entry in symbols:
+            if not isinstance(symbol_entry, dict):
+                continue
+            if str(symbol_entry.get("name", "")).strip() != normalized_name:
+                continue
+            _append_candidate(symbol_entry.get("name"))
+            raw_aliases = symbol_entry.get("alias")
+            if isinstance(raw_aliases, (list, tuple)):
+                for alias in raw_aliases:
+                    _append_candidate(alias)
+            elif raw_aliases is not None:
+                _append_candidate(raw_aliases)
+
+    if debug:
+        print(
+            f"    Preprocess: symbol lookup candidates for {normalized_name}: "
+            f"{', '.join(candidates) if candidates else '<none>'}"
+        )
+
+    return candidates
+
+
+def _parse_py_eval_json_result(eval_result, debug=False, context="py_eval"):
+    try:
+        parsed = parse_mcp_result(eval_result)
+    except Exception as exc:
+        if debug:
+            print(f"    Preprocess: failed to parse {context} payload: {exc}")
+        return None
+
+    if not isinstance(parsed, dict):
+        return None
+
+    stderr_text = str(parsed.get("stderr", "")).strip()
+    if stderr_text and debug:
+        print(f"    Preprocess: {context} stderr:")
+        print(stderr_text)
+
+    result_text = parsed.get("result", "")
+    if not result_text:
+        return None
+
+    try:
+        return json.loads(result_text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        if debug:
+            print(f"    Preprocess: invalid {context} JSON payload: {exc}")
+        return None
+
+
+async def _find_function_addr_by_names_via_mcp(session, candidate_names, debug=False):
+    ordered_candidates = []
+    seen_candidates = set()
+    for raw_name in candidate_names or []:
+        text = str(raw_name or "").strip()
+        if not text or text in seen_candidates:
+            continue
+        seen_candidates.add(text)
+        ordered_candidates.append(text)
+
+    if not ordered_candidates:
+        return None
+
+    py_code = (
+        "import ida_funcs, ida_name, idaapi, json\n"
+        f"candidate_names = {json.dumps(ordered_candidates)}\n"
+        "matches = []\n"
+        "seen_addrs = set()\n"
+        "for candidate_name in candidate_names:\n"
+        "    ea = ida_name.get_name_ea(idaapi.BADADDR, candidate_name)\n"
+        "    if ea == idaapi.BADADDR:\n"
+        "        continue\n"
+        "    func = ida_funcs.get_func(ea)\n"
+        "    if func is None:\n"
+        "        continue\n"
+        "    func_start = int(func.start_ea)\n"
+        "    func_va = hex(func_start)\n"
+        "    if func_va in seen_addrs:\n"
+        "        continue\n"
+        "    seen_addrs.add(func_va)\n"
+        "    matches.append({'name': candidate_name, 'func_va': func_va})\n"
+        "result = json.dumps(matches)\n"
+    )
+
+    try:
+        eval_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code},
+        )
+    except Exception as exc:
+        if debug:
+            print(f"    Preprocess: py_eval error while resolving function addr: {exc}")
+        return None
+
+    match_payload = _parse_py_eval_json_result(
+        eval_result,
+        debug=debug,
+        context="llm_decompile function lookup",
+    )
+    if not isinstance(match_payload, list):
+        return None
+
+    resolved_matches = []
+    seen_func_vas = set()
+    for item in match_payload:
+        if not isinstance(item, dict):
+            continue
+        func_va = str(item.get("func_va", "")).strip()
+        if not func_va:
+            continue
+        try:
+            int(func_va, 0)
+        except (TypeError, ValueError):
+            continue
+        if func_va in seen_func_vas:
+            continue
+        seen_func_vas.add(func_va)
+        resolved_matches.append(func_va)
+
+    if len(resolved_matches) != 1:
+        if debug:
+            print(
+                "    Preprocess: llm_decompile function lookup returned "
+                f"{len(resolved_matches)} matches: {resolved_matches}"
+            )
+        return None
+
+    return resolved_matches[0]
+
+
+async def _export_function_detail_via_mcp(session, func_name, func_va, debug=False):
+    try:
+        func_va_int = _parse_int_value(func_va)
+    except Exception:
+        return None
+
+    py_code = (
+        "import ida_funcs, ida_lines, ida_segment, idautils, idc, json\n"
+        "try:\n"
+        "    import ida_hexrays\n"
+        "except Exception:\n"
+        "    ida_hexrays = None\n"
+        f"func_ea = {func_va_int}\n"
+        "def get_disasm(start_ea):\n"
+        "    func = ida_funcs.get_func(start_ea)\n"
+        "    if func is None:\n"
+        "        return ''\n"
+        "    lines = []\n"
+        "    for ea in idautils.FuncItems(func.start_ea):\n"
+        "        if ea < func.start_ea or ea >= func.end_ea:\n"
+        "            continue\n"
+        "        seg = ida_segment.getseg(ea)\n"
+        "        seg_name = ida_segment.get_segm_name(seg) if seg else ''\n"
+        "        address_text = f'{seg_name}:{ea:016X}' if seg_name else f'{ea:016X}'\n"
+        "        disasm_line = idc.generate_disasm_line(ea, 0) or ''\n"
+        "        lines.append(f\"{address_text}                 {ida_lines.tag_remove(disasm_line)}\")\n"
+        "    return '\\n'.join(lines)\n"
+        "def get_pseudocode(start_ea):\n"
+        "    if ida_hexrays is None:\n"
+        "        return ''\n"
+        "    try:\n"
+        "        if not ida_hexrays.init_hexrays_plugin():\n"
+        "            return ''\n"
+        "        cfunc = ida_hexrays.decompile(start_ea)\n"
+        "    except Exception:\n"
+        "        return ''\n"
+        "    if not cfunc:\n"
+        "        return ''\n"
+        "    return '\\n'.join(ida_lines.tag_remove(line.line) for line in cfunc.get_pseudocode())\n"
+        "func = ida_funcs.get_func(func_ea)\n"
+        "if func is None:\n"
+        "    raise ValueError(f'Function not found: {hex(func_ea)}')\n"
+        "func_start = int(func.start_ea)\n"
+        "result = json.dumps({\n"
+        "    'func_name': ida_funcs.get_func_name(func_start) or f'sub_{func_start:X}',\n"
+        "    'func_va': hex(func_start),\n"
+        "    'disasm_code': get_disasm(func_start),\n"
+        "    'procedure': get_pseudocode(func_start),\n"
+        "})\n"
+    )
+
+    try:
+        eval_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code},
+        )
+    except Exception as exc:
+        if debug:
+            print(
+                f"    Preprocess: py_eval error while exporting function detail "
+                f"for {func_name}: {exc}"
+            )
+        return None
+
+    detail_payload = _parse_py_eval_json_result(
+        eval_result,
+        debug=debug,
+        context=f"llm_decompile function export for {func_name}",
+    )
+    if not isinstance(detail_payload, dict):
+        return None
+
+    resolved_func_va = str(detail_payload.get("func_va", "")).strip()
+    disasm_code = str(detail_payload.get("disasm_code", "") or "").strip()
+    procedure = detail_payload.get("procedure", "")
+    if not resolved_func_va or not disasm_code:
+        return None
+    try:
+        int(resolved_func_va, 0)
+    except (TypeError, ValueError):
+        return None
+
+    if procedure is None:
+        procedure = ""
+    elif not isinstance(procedure, str):
+        return None
+
+    return {
+        "func_name": str(func_name or "").strip() or str(detail_payload.get("func_name", "")).strip(),
+        "func_va": resolved_func_va,
+        "disasm_code": disasm_code,
+        "procedure": procedure,
+    }
+
+
+async def _load_llm_decompile_target_detail_via_mcp(session, target_func_name, debug=False):
+    normalized_target_name = str(target_func_name or "").strip()
+    if not normalized_target_name:
+        if debug:
+            print("    Preprocess: llm_decompile target func_name missing in reference YAML")
+        return None
+
+    candidate_names = _load_symbol_lookup_candidates(
+        normalized_target_name,
+        debug=debug,
+    )
+    func_va = await _find_function_addr_by_names_via_mcp(
+        session,
+        candidate_names,
+        debug=debug,
+    )
+    if func_va is None:
+        if debug:
+            print(
+                f"    Preprocess: failed to resolve llm_decompile target "
+                f"function address for {normalized_target_name}"
+            )
+        return None
+
+    detail_payload = await _export_function_detail_via_mcp(
+        session,
+        normalized_target_name,
+        func_va,
+        debug=debug,
+    )
+    if detail_payload is None and debug:
+        print(
+            f"    Preprocess: failed to export llm_decompile target detail "
+            f"for {normalized_target_name}"
+        )
+    return detail_payload
+
+
 def parse_llm_decompile_response(response_text):
     response_text = str(response_text or "").strip()
     if not response_text:
@@ -536,6 +866,7 @@ def _prepare_llm_decompile_request(
     func_name,
     llm_decompile_specs_map,
     llm_config,
+    platform=None,
     debug=False,
 ):
     llm_spec = (llm_decompile_specs_map or {}).get(func_name)
@@ -564,8 +895,18 @@ def _prepare_llm_decompile_request(
         return None
 
     scripts_dir = _get_preprocessor_scripts_dir()
-    prompt_path = Path(llm_spec["prompt_path"])
-    reference_yaml_path = Path(llm_spec["reference_yaml_path"])
+    prompt_path = Path(
+        _resolve_llm_decompile_template_value(
+            llm_spec["prompt_path"],
+            platform,
+        )
+    )
+    reference_yaml_path = Path(
+        _resolve_llm_decompile_template_value(
+            llm_spec["reference_yaml_path"],
+            platform,
+        )
+    )
     if not prompt_path.is_absolute():
         prompt_path = scripts_dir / prompt_path
     if not reference_yaml_path.is_absolute():
@@ -616,6 +957,15 @@ def _prepare_llm_decompile_request(
             )
         return None
 
+    target_func_name = str(reference_data.get("func_name", "") or "").strip()
+    if not target_func_name:
+        if debug:
+            print(
+                f"    Preprocess: llm_decompile reference func_name missing for "
+                f"{func_name}"
+            )
+        return None
+
     try:
         client = create_openai_client(
             llm_config.get("api_key"),
@@ -632,10 +982,24 @@ def _prepare_llm_decompile_request(
             )
         return None
 
+    if debug:
+        print(
+            f"    Preprocess: llm_decompile request ready for {func_name}: "
+            f"platform={str(platform or '').strip() or '<empty>'}, "
+            f"model={model}, prompt_path={prompt_path}, "
+            f"reference_yaml_path={reference_yaml_path}"
+        )
+        _debug_print_json(
+            f"llm_decompile reference payload for {func_name}",
+            reference_data,
+            debug=True,
+        )
+
     return {
         "client": client,
         "model": model,
         "prompt_template": prompt_template,
+        "target_func_name": target_func_name,
         "disasm_for_reference": str(reference_data.get("disasm_code", "") or ""),
         "procedure_for_reference": str(reference_data.get("procedure", "") or ""),
     }
@@ -650,8 +1014,12 @@ async def call_llm_decompile(
     disasm_for_reference="",
     procedure_for_reference="",
     prompt_template=None,
+    platform=None,
+    debug=False,
 ):
     if not callable(call_llm_text):
+        if debug:
+            print("    Preprocess: call_llm_text unavailable for llm_decompile")
         return _empty_llm_decompile_result()
 
     if isinstance(symbol_name_list, (list, tuple, set)):
@@ -663,14 +1031,23 @@ async def call_llm_decompile(
 
     if prompt_template is not None:
         try:
-            prompt = str(prompt_template).format(
+            prompt = _resolve_llm_decompile_template_value(
+                prompt_template,
+                platform,
+            ).format(
                 symbol_name_list=symbol_name_text,
                 disasm_for_reference=str(disasm_for_reference or ""),
                 procedure_for_reference=str(procedure_for_reference or ""),
                 disasm_code=str(disasm_code or ""),
                 procedure=str(procedure or ""),
+                platform=str(platform or "").strip(),
             )
-        except Exception:
+        except Exception as exc:
+            if debug:
+                print(
+                    f"    Preprocess: failed to format llm_decompile prompt for "
+                    f"{symbol_name_text}: {exc}"
+                )
             return _empty_llm_decompile_result()
     else:
         prompt = (
@@ -681,19 +1058,53 @@ async def call_llm_decompile(
             f"Target procedure:\n{procedure}\n\n"
             f"Please collect all references for \"{symbol_name_text}\" and output YAML."
         )
+    system_prompt = "You are a reverse engineering expert."
+    if debug:
+        print(
+            f"    Preprocess: calling llm_decompile for {symbol_name_text} "
+            f"with model={str(model).strip()} platform={str(platform or '').strip() or '<empty>'}"
+        )
+        _debug_print_multiline(
+            f"llm_decompile system prompt for {symbol_name_text}",
+            system_prompt,
+            debug=True,
+        )
+        _debug_print_multiline(
+            f"llm_decompile user prompt for {symbol_name_text}",
+            prompt,
+            debug=True,
+        )
     try:
         content = call_llm_text(
             client=client,
             model=str(model).strip(),
             messages=[
-                {"role": "system", "content": "You are a reverse engineering expert."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.1,
         )
-    except Exception:
+    except Exception as exc:
+        if debug:
+            print(
+                f"    Preprocess: llm_decompile call failed for "
+                f"{symbol_name_text}: {exc}"
+            )
         return _empty_llm_decompile_result()
-    return parse_llm_decompile_response(content)
+    if debug:
+        _debug_print_multiline(
+            f"llm_decompile raw response for {symbol_name_text}",
+            content,
+            debug=True,
+        )
+    parsed_result = parse_llm_decompile_response(content)
+    if debug:
+        _debug_print_json(
+            f"llm_decompile parsed response for {symbol_name_text}",
+            parsed_result,
+            debug=True,
+        )
+    return parsed_result
 
 async def preprocess_vtable_via_mcp(
     session,
@@ -3852,22 +4263,33 @@ async def preprocess_common_skill(
                 func_name,
                 llm_decompile_specs_map,
                 llm_config,
+                platform=platform,
                 debug=debug,
             )
             if llm_request is None:
                 llm_result = _empty_llm_decompile_result()
             else:
                 try:
-                    llm_result = await call_llm_decompile(
-                        client=llm_request["client"],
-                        model=llm_request["model"],
-                        symbol_name_list=[func_name],
-                        disasm_code="",
-                        procedure="",
-                        disasm_for_reference=llm_request["disasm_for_reference"],
-                        procedure_for_reference=llm_request["procedure_for_reference"],
-                        prompt_template=llm_request["prompt_template"],
+                    llm_target_detail = await _load_llm_decompile_target_detail_via_mcp(
+                        session,
+                        llm_request["target_func_name"],
+                        debug=debug,
                     )
+                    if llm_target_detail is None:
+                        llm_result = _empty_llm_decompile_result()
+                    else:
+                        llm_result = await call_llm_decompile(
+                            client=llm_request["client"],
+                            model=llm_request["model"],
+                            symbol_name_list=[func_name],
+                            disasm_code=llm_target_detail["disasm_code"],
+                            procedure=llm_target_detail["procedure"],
+                            disasm_for_reference=llm_request["disasm_for_reference"],
+                            procedure_for_reference=llm_request["procedure_for_reference"],
+                            prompt_template=llm_request["prompt_template"],
+                            platform=platform,
+                            debug=debug,
+                        )
                 except Exception:
                     llm_result = _empty_llm_decompile_result()
             for entry in llm_result.get("found_vcall", []):

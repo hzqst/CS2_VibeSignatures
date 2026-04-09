@@ -323,6 +323,12 @@ modules:
           - CNetworkMessages::FindNetworkMessage
         shared: true
 
+      - name: CNetworkMessages_FindNetworkGroup
+        category: vfunc
+        alias:
+          - CNetworkMessages::FindNetworkGroup
+        shared: true
+
       - name: CNetworkSystem_vtable
         category: vtable
 
@@ -500,9 +506,9 @@ modules:
         expected_input:
           - CNetworkServerService_Init.{platform}.yaml
 
-      - name: find-CNetworkMessages_FindNetworkGroup
+      - name: find-INetworkMessages_FindNetworkGroup
         expected_output:
-          - CNetworkMessages_FindNetworkGroup.{platform}.yaml
+          - INetworkMessages_FindNetworkGroup.{platform}.yaml
         expected_input:
           - CNetworkGameClient_RecordEntityBandwidth.{platform}.yaml
 
@@ -645,10 +651,10 @@ modules:
           - CNetworkGameClient::RecordEntityBandwidth
           - RecordEntityBandwidth
 
-      - name: CNetworkMessages_FindNetworkGroup
+      - name: INetworkMessages_FindNetworkGroup
         category: vfunc
         alias:
-          - CNetworkMessages::FindNetworkGroup
+          - INetworkMessages::FindNetworkGroup
         shared: true
 
       - name: CNetworkServerService_vtable
@@ -2844,6 +2850,13 @@ modules:
         expected_input:
           - CNetworkMessages_vtable.{platform}.yaml
           - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
+
+      - name: find-CNetworkMessages_FindNetworkGroup
+        expected_output:
+          - CNetworkMessages_FindNetworkGroup.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          - ../engine/INetworkMessages_FindNetworkGroup.{platform}.yaml
 
 cpp_tests:
   - name: IGameSystem_MSVC
