@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetChan_ParseNetMessageShowFilter skill."""
+"""Preprocess script for find-CNetChan_ParseNetMessageShowFilter-AND-g_pLoggingChannel skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
@@ -7,10 +7,19 @@ TARGET_FUNCTION_NAMES = [
     "CNetChan_ParseNetMessageShowFilter",
 ]
 
+TARGET_GLOBALVAR_NAMES = [
+    "g_pLoggingChannel",
+]
+
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
         "CNetChan_ParseNetMessageShowFilter",
+        "prompt/call_llm_decompile.md",
+        "references/networksystem/CNetChan_ParseMessagesDemoInternal.{platform}.yaml",
+    ),
+    (
+        "g_pLoggingChannel",
         "prompt/call_llm_decompile.md",
         "references/networksystem/CNetChan_ParseMessagesDemoInternal.{platform}.yaml",
     ),
@@ -28,6 +37,19 @@ GENERATE_YAML_DESIRED_FIELDS = [
             "func_sig",
         ],
     ),
+    (
+        "g_pLoggingChannel",
+        [
+            "gv_name",
+            "gv_va",
+            "gv_rva",
+            "gv_sig",
+            "gv_sig_va",
+            "gv_inst_offset",
+            "gv_inst_length",
+            "gv_inst_disp",
+        ],
+    ),
 ]
 
 async def preprocess_skill(
@@ -43,6 +65,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
+        gv_names=TARGET_GLOBALVAR_NAMES,
         llm_decompile_specs=LLM_DECOMPILE,
         llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,

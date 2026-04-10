@@ -143,9 +143,10 @@ modules:
         expected_output:
           - CNetChan_ParseMessagesDemoInternal.{platform}.yaml
 
-      - name: find-CNetChan_ParseNetMessageShowFilter
+      - name: find-CNetChan_ParseNetMessageShowFilter-AND-g_pLoggingChannel
         expected_output:
           - CNetChan_ParseNetMessageShowFilter.{platform}.yaml
+          - g_pLoggingChannel.{platform}.yaml
         expected_input:
           - CNetChan_ParseMessagesDemoInternal.{platform}.yaml
 
