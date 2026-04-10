@@ -157,12 +157,6 @@ modules:
           - CNetworkMessages_vtable.{platform}.yaml
           - CNetChan_ParseNetMessageShowFilter.{platform}.yaml
 
-      - name: find-CNetworkMessages_GetLoggingChannel
-        expected_output:
-          - CNetworkMessages_GetLoggingChannel.{platform}.yaml
-        expected_input:
-          - CNetworkMessages_vtable.{platform}.yaml
-
       - name: find-CNetworkMessages_dtor
         expected_output:
           - CNetworkMessages_dtor.{platform}.yaml
@@ -2817,12 +2811,6 @@ modules:
         category: vfunc
         alias:
           - CFlattenedSerializers::CreateFieldChangedEventQueue
-        shared: true
-
-      - name: CNetworkMessages_GetLoggingChannel
-        category: vfunc
-        alias:
-          - CNetworkMessages::GetLoggingChannel
         shared: true
 
       - name: INetworkMessages_RegisterSchemaTypeOverride
