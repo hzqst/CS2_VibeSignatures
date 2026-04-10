@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-INetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue skill."""
+"""Preprocess script for find-INetworkMessages_SetNetworkSerializationContextData-AND-IFlattenedSerializers_CreateFieldChangedEventQueue skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "INetworkMessages_SetNetworkSerializationContextData",
-    "CFlattenedSerializers_CreateFieldChangedEventQueue",
+    "IFlattenedSerializers_CreateFieldChangedEventQueue",
 ]
 
 LLM_DECOMPILE = [
@@ -16,7 +16,7 @@ LLM_DECOMPILE = [
         "references/server/CEntitySystem_Activate.{platform}.yaml",
     ),
     (
-        "CFlattenedSerializers_CreateFieldChangedEventQueue",
+        "IFlattenedSerializers_CreateFieldChangedEventQueue",
         "prompt/call_llm_decompile.md",
         "references/server/CEntitySystem_Activate.{platform}.yaml",
     ),
@@ -25,7 +25,7 @@ LLM_DECOMPILE = [
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
     ("INetworkMessages_SetNetworkSerializationContextData", "INetworkMessages"),
-    ("CFlattenedSerializers_CreateFieldChangedEventQueue", "CFlattenedSerializers"),
+    ("IFlattenedSerializers_CreateFieldChangedEventQueue", "IFlattenedSerializers"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
@@ -41,7 +41,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
         ],
     ),
     (
-        "CFlattenedSerializers_CreateFieldChangedEventQueue",
+        "IFlattenedSerializers_CreateFieldChangedEventQueue",
         [
             "func_name",
             "vfunc_sig",

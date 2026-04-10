@@ -358,18 +358,6 @@ modules:
       - name: CFlattenedSerializers_vtable
         category: vtable
 
-      - name: CNetworkMessages_GetFieldChangeCallbackOrderCount
-        category: vfunc
-        alias:
-          - CNetworkMessages::GetFieldChangeCallbackOrderCount
-        shared: true
-
-      - name: CNetworkMessages_GetFieldChangeCallbackPriorities
-        category: vfunc
-        alias:
-          - CNetworkMessages::GetFieldChangeCallbackPriorities
-        shared: true
-
   - name: matchmaking
     path_windows: game/csgo/bin/win64/matchmaking.dll
     path_linux: game/csgo/bin/linuxsteamrt64/libmatchmaking.so
@@ -1912,10 +1900,10 @@ modules:
         expected_output:
           - CEntitySystem_Activate.{platform}.yaml
 
-      - name: find-INetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue
+      - name: find-INetworkMessages_SetNetworkSerializationContextData-AND-IFlattenedSerializers_CreateFieldChangedEventQueue
         expected_output:
           - INetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
-          - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
+          - IFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
 
       - name: find-INetworkMessages_RegisterSchemaTypeOverride
         expected_output:
@@ -2818,17 +2806,17 @@ modules:
 
     skills:
 
-      - name: find-CFlattenedSerializers_CreateFieldChangedEventQueue-impl
+      - name: find-CFlattenedSerializers_CreateFieldChangedEventQueue
         expected_output:
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
         expected_input:
           - CFlattenedSerializers_vtable.{platform}.yaml
-          - ../server/CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
+          - ../server/IFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
 
-      - name: find-CNetworkMessages_GetFieldChangeCallbackOrderCount-AND-CNetworkMessages_GetFieldChangeCallbackPriorities
+      - name: find-INetworkMessages_GetFieldChangeCallbackOrderCount-AND-INetworkMessages_GetFieldChangeCallbackPriorities
         expected_output:
-          - CNetworkMessages_GetFieldChangeCallbackOrderCount.{platform}.yaml
-          - CNetworkMessages_GetFieldChangeCallbackPriorities.{platform}.yaml
+          - INetworkMessages_GetFieldChangeCallbackOrderCount.{platform}.yaml
+          - INetworkMessages_GetFieldChangeCallbackPriorities.{platform}.yaml
         expected_input:
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
 
@@ -2866,6 +2854,19 @@ modules:
         expected_input:
           - CNetworkMessages_vtable.{platform}.yaml
           - ../engine/INetworkMessages_FindNetworkGroup.{platform}.yaml
+
+    symbols:
+      - name: INetworkMessages_GetFieldChangeCallbackOrderCount
+        category: vfunc
+        alias:
+          - INetworkMessages::GetFieldChangeCallbackOrderCount
+        shared: true
+
+      - name: INetworkMessages_GetFieldChangeCallbackPriorities
+        category: vfunc
+        alias:
+          - INetworkMessages::GetFieldChangeCallbackPriorities
+        shared: true
 
 cpp_tests:
   - name: IGameSystem_MSVC

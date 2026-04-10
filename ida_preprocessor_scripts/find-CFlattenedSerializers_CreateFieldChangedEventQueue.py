@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CFlattenedSerializers_CreateFieldChangedEventQueue-impl skill."""
+"""Preprocess script for find-CFlattenedSerializers_CreateFieldChangedEventQueue skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
@@ -8,7 +8,7 @@ INHERIT_VFUNCS = [
     (
         "CFlattenedSerializers_CreateFieldChangedEventQueue",
         "CFlattenedSerializers",
-        "../server/CFlattenedSerializers_CreateFieldChangedEventQueue",
+        "../server/IFlattenedSerializers_CreateFieldChangedEventQueue",
         True,
     ),
 ]
