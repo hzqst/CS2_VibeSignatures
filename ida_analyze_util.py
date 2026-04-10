@@ -656,11 +656,9 @@ def _normalize_llm_entries(entries, required_keys):
     return normalized
 
 
-def _build_slot_only_vfunc_payload_from_llm_result(
+def _extract_slot_only_vfunc_candidates_from_llm_result(
     func_name,
     llm_result,
-    *,
-    vtable_name=None,
     debug=False,
 ):
     normalized_func_name = str(func_name or "").strip()
@@ -669,6 +667,8 @@ def _build_slot_only_vfunc_payload_from_llm_result(
 
     normalized_offsets = []
     seen_offsets = set()
+    candidate_inst_vas = []
+    seen_inst_vas = set()
     for entry in (llm_result or {}).get("found_vcall", []):
         if not isinstance(entry, dict):
             continue
@@ -690,9 +690,20 @@ def _build_slot_only_vfunc_payload_from_llm_result(
             return None
 
         if offset_value in seen_offsets:
+            pass
+        else:
+            seen_offsets.add(offset_value)
+            normalized_offsets.append(offset_value)
+
+        raw_insn_va = entry.get("insn_va")
+        try:
+            insn_va_value = _parse_int_value(raw_insn_va)
+        except Exception:
             continue
-        seen_offsets.add(offset_value)
-        normalized_offsets.append(offset_value)
+        if insn_va_value < 0 or insn_va_value in seen_inst_vas:
+            continue
+        seen_inst_vas.add(insn_va_value)
+        candidate_inst_vas.append(hex(insn_va_value))
 
     if not normalized_offsets:
         return None
@@ -707,10 +718,33 @@ def _build_slot_only_vfunc_payload_from_llm_result(
         return None
 
     resolved_offset = normalized_offsets[0]
-    payload = {
+    return {
         "func_name": normalized_func_name,
         "vfunc_offset": hex(resolved_offset),
         "vfunc_index": resolved_offset // 8,
+        "candidate_inst_vas": candidate_inst_vas,
+    }
+
+
+def _build_slot_only_vfunc_payload_from_llm_result(
+    func_name,
+    llm_result,
+    *,
+    vtable_name=None,
+    debug=False,
+):
+    slot_only_info = _extract_slot_only_vfunc_candidates_from_llm_result(
+        func_name,
+        llm_result,
+        debug=debug,
+    )
+    if slot_only_info is None:
+        return None
+
+    payload = {
+        "func_name": slot_only_info["func_name"],
+        "vfunc_offset": slot_only_info["vfunc_offset"],
+        "vfunc_index": slot_only_info["vfunc_index"],
     }
     if vtable_name:
         payload["vtable_name"] = str(vtable_name).strip()
@@ -718,10 +752,88 @@ def _build_slot_only_vfunc_payload_from_llm_result(
     if debug:
         print(
             f"    Preprocess: using slot-only fallback for "
-            f"{normalized_func_name} at offset {hex(resolved_offset)}"
+            f"{slot_only_info['func_name']} at offset {slot_only_info['vfunc_offset']}"
         )
 
     return payload
+
+
+async def _build_enriched_slot_only_vfunc_payload_via_mcp(
+    session,
+    func_name,
+    llm_result,
+    *,
+    vtable_name=None,
+    require_vfunc_sig=False,
+    require_vtable_name=False,
+    debug=False,
+):
+    slot_only_info = _extract_slot_only_vfunc_candidates_from_llm_result(
+        func_name,
+        llm_result,
+        debug=debug,
+    )
+    if slot_only_info is None:
+        return None
+
+    payload = {
+        "func_name": slot_only_info["func_name"],
+        "vfunc_offset": slot_only_info["vfunc_offset"],
+        "vfunc_index": slot_only_info["vfunc_index"],
+    }
+
+    normalized_vtable_name = str(vtable_name or "").strip()
+    if normalized_vtable_name:
+        payload["vtable_name"] = normalized_vtable_name
+    elif require_vtable_name or require_vfunc_sig:
+        if debug:
+            print(
+                f"    Preprocess: slot-only fallback missing vtable_name for "
+                f"{slot_only_info['func_name']}"
+            )
+        return None
+
+    if debug:
+        print(
+            f"    Preprocess: using slot-only fallback for "
+            f"{slot_only_info['func_name']} at offset {slot_only_info['vfunc_offset']}"
+        )
+
+    if not require_vfunc_sig:
+        return payload
+
+    candidate_inst_vas = slot_only_info.get("candidate_inst_vas", [])
+    if not candidate_inst_vas:
+        if debug:
+            print(
+                f"    Preprocess: no slot-only instruction candidates for "
+                f"{slot_only_info['func_name']}"
+            )
+        return None
+
+    for inst_va in candidate_inst_vas:
+        sig_data = await preprocess_gen_vfunc_sig_via_mcp(
+            session=session,
+            inst_va=inst_va,
+            vfunc_offset=slot_only_info["vfunc_offset"],
+            debug=debug,
+        )
+        if not isinstance(sig_data, dict):
+            continue
+        vfunc_sig = sig_data.get("vfunc_sig")
+        if not vfunc_sig:
+            continue
+        payload["vfunc_sig"] = str(vfunc_sig)
+        if sig_data.get("vfunc_sig_disp") not in (None, 0, "0", "0x0"):
+            payload["vfunc_sig_disp"] = sig_data["vfunc_sig_disp"]
+        return payload
+
+    if debug:
+        print(
+            f"    Preprocess: failed to generate slot-only vfunc_sig for "
+            f"{slot_only_info['func_name']}"
+        )
+    return None
 
 
 def _load_symbol_lookup_candidates(symbol_name, debug=False):
@@ -2169,6 +2281,372 @@ async def preprocess_gen_func_sig_via_mcp(
         "func_size": resolved_func_size,
         "func_sig": best_sig,
     }
+
+
+async def preprocess_gen_vfunc_sig_via_mcp(
+    session,
+    inst_va,
+    vfunc_offset,
+    min_sig_bytes=6,
+    max_sig_bytes=96,
+    max_instructions=64,
+    extra_wildcard_offsets=None,
+    debug=False,
+):
+    """
+    Generate a shortest unique signature for a known virtual-call instruction.
+
+    The generated signature starts at the virtual-call instruction itself
+    (`vfunc_sig_disp = 0`). The first instruction is fully fixed, including the
+    displacement bytes that encode `vfunc_offset`; subsequent instructions may
+    wildcard volatile operands and branch displacements.
+
+    Args:
+        session: Active MCP ClientSession.
+        inst_va: Virtual-call instruction address (int or hex string).
+        vfunc_offset: Expected vtable slot displacement encoded by the target
+            instruction (int or hex string).
+        min_sig_bytes: Minimum signature prefix length to try.
+        max_sig_bytes: Maximum bytes collected from signature start.
+        max_instructions: Max instructions collected from signature start.
+        extra_wildcard_offsets: Optional iterable of extra wildcard offsets
+            relative to signature start.
+        debug: Enable debug output.
+
+    Returns:
+        Dict with `vfunc_sig` metadata, or None on failure.
+    """
+
+    def _parse_addr(value):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            raw = value.strip()
+            if not raw:
+                raise ValueError("empty address string")
+            return int(raw, 0)
+        return int(value)
+
+    try:
+        inst_va_int = _parse_addr(inst_va)
+        vfunc_offset_int = _parse_addr(vfunc_offset)
+    except Exception:
+        if debug:
+            print(
+                "    Preprocess: invalid vfunc signature generation inputs: "
+                f"inst_va={inst_va!r}, vfunc_offset={vfunc_offset!r}"
+            )
+        return None
+
+    if inst_va_int < 0 or vfunc_offset_int < 0:
+        if debug:
+            print(
+                "    Preprocess: vfunc signature generation inputs must be >= 0: "
+                f"inst_va={hex(inst_va_int)}, vfunc_offset={hex(vfunc_offset_int)}"
+            )
+        return None
+
+    try:
+        min_sig_bytes = max(1, int(min_sig_bytes))
+        max_sig_bytes = max(1, int(max_sig_bytes))
+        max_instructions = max(1, int(max_instructions))
+    except Exception:
+        if debug:
+            print("    Preprocess: invalid vfunc signature generation limits")
+        return None
+
+    extra_wildcard_set = set()
+    if extra_wildcard_offsets:
+        try:
+            for offset in extra_wildcard_offsets:
+                parsed = _parse_addr(offset)
+                if parsed >= 0:
+                    extra_wildcard_set.add(parsed)
+        except Exception:
+            if debug:
+                print("    Preprocess: invalid extra_wildcard_offsets for vfunc_sig")
+            return None
+
+    py_code = (
+        "import idaapi, ida_bytes, idautils, ida_ua, json\n"
+        f"target_inst = {inst_va_int}\n"
+        f"target_vfunc_offset = {vfunc_offset_int}\n"
+        f"max_sig_bytes = {max_sig_bytes}\n"
+        f"max_instructions = {max_instructions}\n"
+        "\n"
+        "def _find_vfunc_disp(insn, raw, expected):\n"
+        "    hits = []\n"
+        "    for op in insn.ops:\n"
+        "        ot = int(op.type)\n"
+        "        if ot == int(idaapi.o_void):\n"
+        "            continue\n"
+        "        if ot not in (int(idaapi.o_displ), int(idaapi.o_mem), int(idaapi.o_imm)):\n"
+        "            continue\n"
+        "        for attr in ('offb', 'offo'):\n"
+        "            off = int(getattr(op, attr, 0))\n"
+        "            if off <= 0 or off >= insn.size:\n"
+        "                continue\n"
+        "            sizes = []\n"
+        "            dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))\n"
+        "            if dsz > 0:\n"
+        "                sizes.append(dsz)\n"
+        "            for s in (1, 2, 4, 8):\n"
+        "                if s not in sizes:\n"
+        "                    sizes.append(s)\n"
+        "            for sz in sizes:\n"
+        "                if off + sz > insn.size:\n"
+        "                    continue\n"
+        "                chunk = raw[off:off + sz]\n"
+        "                unsigned_val = int.from_bytes(chunk, 'little', signed=False)\n"
+        "                signed_val = int.from_bytes(chunk, 'little', signed=True)\n"
+        "                expected_mod = expected & ((1 << (8 * sz)) - 1)\n"
+        "                if unsigned_val == expected_mod or signed_val == expected:\n"
+        "                    hits.append((off, sz))\n"
+        "    uniq = []\n"
+        "    seen = set()\n"
+        "    for hit in hits:\n"
+        "        if hit in seen:\n"
+        "            continue\n"
+        "        seen.add(hit)\n"
+        "        uniq.append(hit)\n"
+        "    uniq.sort(key=lambda item: (item[1], -item[0]), reverse=True)\n"
+        "    return uniq\n"
+        "\n"
+        "def _wildcard_instruction(insn, raw):\n"
+        "    wild = set()\n"
+        "    for op in insn.ops:\n"
+        "        ot = int(op.type)\n"
+        "        if ot == int(idaapi.o_void):\n"
+        "            continue\n"
+        "        if ot in (int(idaapi.o_imm), int(idaapi.o_near), int(idaapi.o_far), int(idaapi.o_mem), int(idaapi.o_displ)):\n"
+        "            offb = int(getattr(op, 'offb', 0))\n"
+        "            if offb > 0 and offb < insn.size:\n"
+        "                dsz = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))\n"
+        "                if dsz <= 0:\n"
+        "                    dsz = insn.size - offb\n"
+        "                for i in range(offb, min(insn.size, offb + dsz)):\n"
+        "                    wild.add(i)\n"
+        "            offo = int(getattr(op, 'offo', 0))\n"
+        "            if offo > 0 and offo < insn.size:\n"
+        "                dsz2 = ida_ua.get_dtype_size(getattr(op, 'dtype', getattr(op, 'dtyp', 0)))\n"
+        "                if dsz2 <= 0:\n"
+        "                    dsz2 = insn.size - offo\n"
+        "                for i in range(offo, min(insn.size, offo + dsz2)):\n"
+        "                    wild.add(i)\n"
+        "    b0 = raw[0]\n"
+        "    if b0 in (0xE8, 0xE9, 0xEB):\n"
+        "        for i in range(1, insn.size):\n"
+        "            wild.add(i)\n"
+        "    elif b0 == 0x0F and insn.size >= 2 and (raw[1] & 0xF0) == 0x80:\n"
+        "        for i in range(2, insn.size):\n"
+        "            wild.add(i)\n"
+        "    elif 0x70 <= b0 <= 0x7F:\n"
+        "        for i in range(1, insn.size):\n"
+        "            wild.add(i)\n"
+        "    return sorted(wild)\n"
+        "\n"
+        "insn0 = idautils.DecodeInstruction(target_inst)\n"
+        "raw0 = ida_bytes.get_bytes(target_inst, insn0.size) if insn0 and insn0.size > 0 else None\n"
+        "if not insn0 or insn0.size <= 0 or not raw0:\n"
+        "    result = json.dumps(None)\n"
+        "else:\n"
+        "    disp_hits = _find_vfunc_disp(insn0, raw0, target_vfunc_offset)\n"
+        "    if not disp_hits:\n"
+        "        result = json.dumps(None)\n"
+        "    else:\n"
+        "        disp_off, disp_size = disp_hits[0]\n"
+        "        insts = []\n"
+        "        cursor = target_inst\n"
+        "        total = 0\n"
+        "        while cursor < target_inst + max_sig_bytes and len(insts) < max_instructions:\n"
+        "            insn = idautils.DecodeInstruction(cursor)\n"
+        "            if not insn or insn.size <= 0:\n"
+        "                break\n"
+        "            raw = ida_bytes.get_bytes(cursor, insn.size)\n"
+        "            if not raw:\n"
+        "                break\n"
+        "            wild = [] if cursor == target_inst else _wildcard_instruction(insn, raw)\n"
+        "            insts.append({\n"
+        "                'ea': hex(cursor),\n"
+        "                'size': insn.size,\n"
+        "                'bytes': raw.hex(),\n"
+        "                'wild': wild,\n"
+        "            })\n"
+        "            cursor += insn.size\n"
+        "            total += insn.size\n"
+        "            if total >= max_sig_bytes:\n"
+        "                break\n"
+        "        result = json.dumps({\n"
+        "            'vfunc_sig_va': hex(target_inst),\n"
+        "            'vfunc_inst_length': insn0.size,\n"
+        "            'vfunc_disp_offset': disp_off,\n"
+        "            'vfunc_disp_size': disp_size,\n"
+        "            'insts': insts,\n"
+        "        })\n"
+    )
+
+    try:
+        sig_result = await session.call_tool(
+            name="py_eval",
+            arguments={"code": py_code},
+        )
+        sig_data = parse_mcp_result(sig_result)
+    except Exception as e:
+        if debug:
+            print(f"    Preprocess: py_eval error while generating vfunc_sig: {e}")
+        return None
+
+    candidate_info = None
+    if isinstance(sig_data, dict):
+        stderr_text = sig_data.get("stderr", "")
+        if stderr_text and debug:
+            print("    Preprocess: py_eval stderr:")
+            print(stderr_text.strip())
+        result_str = sig_data.get("result", "")
+        if result_str:
+            try:
+                candidate_info = json.loads(result_str)
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    if not isinstance(candidate_info, dict):
+        if debug:
+            print(
+                "    Preprocess: target instruction does not expose the expected "
+                f"vfunc offset at {hex(inst_va_int)}"
+            )
+        return None
+
+    try:
+        first_len = int(candidate_info["vfunc_inst_length"])
+        disp_off = int(candidate_info["vfunc_disp_offset"])
+        disp_size = int(candidate_info["vfunc_disp_size"])
+        insts = candidate_info.get("insts", [])
+    except Exception:
+        if debug:
+            print("    Preprocess: malformed vfunc signature candidate metadata")
+        return None
+
+    if first_len <= 0 or disp_off < 0 or disp_size <= 0:
+        if debug:
+            print("    Preprocess: invalid vfunc signature candidate lengths")
+        return None
+
+    if not isinstance(insts, list) or len(insts) == 0:
+        if debug:
+            print(f"    Preprocess: no instruction bytes available at {hex(inst_va_int)}")
+        return None
+
+    sig_tokens = []
+    inst_boundaries = []
+    for inst in insts:
+        try:
+            inst_size = int(inst.get("size", 0))
+            inst_hex = str(inst.get("bytes", ""))
+            if inst_size <= 0 or len(inst_hex) != inst_size * 2:
+                if debug:
+                    print("    Preprocess: malformed instruction bytes from py_eval")
+                return None
+
+            inst_bytes = [
+                int(inst_hex[i:i + 2], 16)
+                for i in range(0, len(inst_hex), 2)
+            ]
+            inst_wild = set()
+            for item in inst.get("wild", []):
+                pos = int(item)
+                if 0 <= pos < inst_size:
+                    inst_wild.add(pos)
+        except Exception:
+            if debug:
+                print("    Preprocess: failed to decode instruction bytes for vfunc_sig")
+            return None
+
+        base_offset = len(sig_tokens)
+        for rel_idx, value in enumerate(inst_bytes):
+            abs_off = base_offset + rel_idx
+            use_wild = (rel_idx in inst_wild) or (abs_off in extra_wildcard_set)
+            sig_tokens.append("??" if use_wild else f"{value:02X}")
+
+        inst_boundaries.append(len(sig_tokens))
+
+    if len(sig_tokens) == 0 or len(inst_boundaries) == 0:
+        if debug:
+            print(f"    Preprocess: empty vfunc signature token stream at {hex(inst_va_int)}")
+        return None
+
+    search_start = max(min_sig_bytes, first_len)
+
+    best_sig = None
+    best_sig_len = None
+    for prefix_len in inst_boundaries:
+        if prefix_len < search_start:
+            continue
+        prefix_tokens = sig_tokens[:prefix_len]
+        if all(token == "??" for token in prefix_tokens):
+            continue
+
+        candidate_sig = " ".join(prefix_tokens)
+        try:
+            fb_result = await session.call_tool(
+                name="find_bytes",
+                arguments={"patterns": [candidate_sig], "limit": 2},
+            )
+            fb_data = parse_mcp_result(fb_result)
+        except Exception as e:
+            if debug:
+                print(
+                    f"    Preprocess: find_bytes error while testing generated "
+                    f"vfunc_sig: {e}"
+                )
+            return None
+
+        if not isinstance(fb_data, list) or len(fb_data) == 0:
+            continue
+
+        entry = fb_data[0]
+        matches = entry.get("matches", [])
+        match_count = entry.get("n", len(matches))
+
+        if match_count != 1 or not matches:
+            continue
+
+        try:
+            match_addr = _parse_addr(matches[0])
+        except Exception:
+            continue
+
+        if match_addr != inst_va_int:
+            continue
+
+        best_sig = candidate_sig
+        best_sig_len = prefix_len
+        break
+
+    if not best_sig:
+        if debug:
+            print(
+                "    Preprocess: failed to generate a unique vfunc signature "
+                f"for {hex(inst_va_int)}"
+            )
+        return None
+
+    if debug:
+        print(
+            "    Preprocess: generated shortest unique vfunc_sig "
+            f"({best_sig_len} bytes) for {hex(inst_va_int)}"
+        )
+
+    return {
+        "vfunc_sig": best_sig,
+        "vfunc_sig_va": hex(inst_va_int),
+        "vfunc_sig_disp": 0,
+        "vfunc_inst_length": first_len,
+        "vfunc_disp_offset": disp_off,
+        "vfunc_disp_size": disp_size,
+        "vfunc_offset": hex(vfunc_offset_int),
+    }
+
 
 async def preprocess_gen_gv_sig_via_mcp(
     session,
@@ -4586,6 +5064,12 @@ async def preprocess_common_skill(
     for func_name in all_func_names:
         target_output = matched_func_outputs[func_name]
         old_path = (old_yaml_map or {}).get(target_output)
+        desired_fields = desired_fields_map.get(func_name)
+        if desired_fields is None:
+            if debug:
+                print(f"    Preprocess: missing desired-fields entry for {func_name}")
+            return False
+        desired_fields_set = set(desired_fields)
 
         func_data = await preprocess_func_sig_via_mcp(
             session=session,
@@ -4703,10 +5187,13 @@ async def preprocess_common_skill(
                 fallback_vtable_name = None
                 if func_name in vtable_relations_map:
                     fallback_vtable_name = vtable_relations_map[func_name]
-                func_data = _build_slot_only_vfunc_payload_from_llm_result(
-                    func_name,
-                    llm_result,
+                func_data = await _build_enriched_slot_only_vfunc_payload_via_mcp(
+                    session=session,
+                    func_name=func_name,
+                    llm_result=llm_result,
                     vtable_name=fallback_vtable_name,
+                    require_vfunc_sig="vfunc_sig" in desired_fields_set,
+                    require_vtable_name="vtable_name" in desired_fields_set,
                     debug=debug,
                 )
 
@@ -4714,13 +5201,6 @@ async def preprocess_common_skill(
             if debug:
                 print(f"    Preprocess: failed to locate {func_name}")
             return False
-
-        desired_fields = desired_fields_map.get(func_name)
-        if desired_fields is None:
-            if debug:
-                print(f"    Preprocess: missing desired-fields entry for {func_name}")
-            return False
-        desired_fields_set = set(desired_fields)
 
         # Enrich with vtable metadata if a vtable relation is defined.
         if "vtable_name" in desired_fields_set and func_name in vtable_relations_map:

@@ -2,7 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, call, patch
 
 import yaml
 
@@ -1139,6 +1139,74 @@ found_struct_offset: []
             result,
         )
 
+    async def test_preprocess_gen_vfunc_sig_via_mcp_generates_current_version_sig(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                self.assertIn("target_vfunc_offset = 120", arguments["code"])
+                self.assertIn("target_inst = 6442757059", arguments["code"])
+                return _py_eval_payload(
+                    {
+                        "vfunc_sig_va": "0x18004abc3",
+                        "vfunc_inst_length": 6,
+                        "vfunc_disp_offset": 2,
+                        "vfunc_disp_size": 4,
+                        "insts": [
+                            {
+                                "ea": "0x18004abc3",
+                                "size": 6,
+                                "bytes": "ff9078000000",
+                                "wild": [],
+                            },
+                            {
+                                "ea": "0x18004abc9",
+                                "size": 3,
+                                "bytes": "4885c0",
+                                "wild": [],
+                            },
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["FF 90 78 00 00 00"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x18004abc3"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_vfunc_sig_via_mcp(
+            session=session,
+            inst_va="0x18004ABC3",
+            vfunc_offset="0x78",
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "vfunc_sig": "FF 90 78 00 00 00",
+                "vfunc_sig_va": "0x18004abc3",
+                "vfunc_sig_disp": 0,
+                "vfunc_inst_length": 6,
+                "vfunc_disp_offset": 2,
+                "vfunc_disp_size": 4,
+                "vfunc_offset": "0x78",
+            },
+            result,
+        )
+
     async def test_preprocess_common_skill_uses_llm_decompile_vcall_fallback_for_func_yaml(
         self,
     ) -> None:
@@ -1614,6 +1682,12 @@ found_struct_offset: []
                 AsyncMock(return_value=None),
             ), patch.object(
                 ida_analyze_util,
+                "preprocess_gen_vfunc_sig_via_mcp",
+                create=True,
+                new_callable=AsyncMock,
+                return_value={"vfunc_sig": "FF 90 78 00 00 00 48 8B C8"},
+            ) as mock_preprocess_gen_vfunc_sig, patch.object(
+                ida_analyze_util,
                 "call_llm_decompile",
                 create=True,
                 new_callable=AsyncMock,
@@ -1638,7 +1712,13 @@ found_struct_offset: []
                     generate_yaml_desired_fields=[
                         (
                             func_name,
-                            ["func_name", "vtable_name", "vfunc_offset", "vfunc_index"],
+                            [
+                                "func_name",
+                                "vfunc_sig",
+                                "vtable_name",
+                                "vfunc_offset",
+                                "vfunc_index",
+                            ],
                         )
                     ],
                     llm_decompile_specs=[
@@ -1656,13 +1736,178 @@ found_struct_offset: []
                 )
 
         self.assertTrue(result)
+        mock_preprocess_gen_vfunc_sig.assert_awaited_once_with(
+            session=session,
+            inst_va="0x18004abc3",
+            vfunc_offset="0x78",
+            debug=True,
+        )
         mock_write_func_yaml.assert_called_once()
         written_payload = mock_write_func_yaml.call_args.args[1]
         self.assertEqual(func_name, written_payload["func_name"])
+        self.assertEqual("FF 90 78 00 00 00 48 8B C8", written_payload["vfunc_sig"])
         self.assertEqual("CNetworkMessages", written_payload["vtable_name"])
         self.assertEqual("0x78", written_payload["vfunc_offset"])
         self.assertEqual(15, written_payload["vfunc_index"])
         self.assertNotIn("func_va", written_payload)
+
+    async def test_preprocess_common_skill_fails_when_slot_only_vfunc_sig_generation_fails(
+        self,
+    ) -> None:
+        func_name = "INetworkMessages_SetNetworkSerializationContextData"
+        output_path = f"/tmp/{func_name}.linux.yaml"
+        target_detail_payload = {
+            "func_name": "CEntitySystem_Activate",
+            "func_va": "0x1D85700",
+            "disasm_code": "call    qword ptr [rax+0A8h]",
+            "procedure": "return this->vfptr[21](this, ctx);",
+        }
+        normalized_payload = {
+            "found_vcall": [
+                {
+                    "insn_va": "0x1D859BF",
+                    "insn_disasm": "call    qword ptr [rax+0A8h]",
+                    "vfunc_offset": "0xA8",
+                    "func_name": func_name,
+                },
+                {
+                    "insn_va": "0x1D85A10",
+                    "insn_disasm": "call    qword ptr [rax+0A8h]",
+                    "vfunc_offset": "0xA8",
+                    "func_name": func_name,
+                },
+            ],
+            "found_call": [],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            session = AsyncMock()
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": "call    qword ptr [rax+0A8h]",
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+
+            async def _session_call_tool(*, name, arguments):
+                self.assertEqual("py_eval", name)
+                code = arguments["code"]
+                if "candidate_names =" in code:
+                    return _py_eval_payload(
+                        [
+                            {
+                                "name": target_detail_payload["func_name"],
+                                "func_va": target_detail_payload["func_va"],
+                            }
+                        ]
+                    )
+                if "'disasm_code': get_disasm(func_start)" in code:
+                    return _py_eval_payload(target_detail_payload)
+                raise AssertionError(f"unexpected py_eval code: {code}")
+
+            session.call_tool.side_effect = _session_call_tool
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=object(),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_vtable_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_gen_vfunc_sig_via_mcp",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=None,
+            ) as mock_preprocess_gen_vfunc_sig, patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=normalized_payload,
+            ), patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session=session,
+                    expected_outputs=[output_path],
+                    old_yaml_map={},
+                    new_binary_dir="/tmp",
+                    platform="linux",
+                    image_base=0,
+                    func_names=[func_name],
+                    func_vtable_relations=[(func_name, "INetworkMessages")],
+                    generate_yaml_desired_fields=[
+                        (
+                            func_name,
+                            [
+                                "func_name",
+                                "vfunc_sig",
+                                "vtable_name",
+                                "vfunc_offset",
+                                "vfunc_index",
+                            ],
+                        )
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        )
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertFalse(result)
+        self.assertEqual(2, mock_preprocess_gen_vfunc_sig.await_count)
+        mock_preprocess_gen_vfunc_sig.assert_has_awaits(
+            [
+                call(
+                    session=session,
+                    inst_va="0x1d859bf",
+                    vfunc_offset="0xa8",
+                    debug=True,
+                ),
+                call(
+                    session=session,
+                    inst_va="0x1d85a10",
+                    vfunc_offset="0xa8",
+                    debug=True,
+                ),
+            ]
+        )
+        mock_write_func_yaml.assert_not_called()
 
 
 if __name__ == "__main__":

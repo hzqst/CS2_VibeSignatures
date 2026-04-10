@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetworkMessages_SetIsForServer-impl skill."""
+"""Preprocess script for find-CNetworkMessages_SetIsForServer skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
@@ -7,7 +7,7 @@ INHERIT_VFUNCS = [
     (
         "CNetworkMessages_SetIsForServer",
         "CNetworkMessages",
-        "../engine/CNetworkMessages_SetIsForServer",
+        "../engine/INetworkMessages_SetIsForServer",
         True,
     ),
 ]

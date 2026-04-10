@@ -9,6 +9,25 @@ TARGET_FUNCTION_NAMES = [
     "CNetworkMessages_GetNetworkGroupColor",
 ]
 
+LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
+    (
+        "CNetworkMessages_GetNetworkGroupCount",
+        "prompt/call_llm_decompile.md",
+        "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+    ),
+    (
+        "CNetworkMessages_GetNetworkGroupName",
+        "prompt/call_llm_decompile.md",
+        "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+    ),
+    (
+        "CNetworkMessages_GetNetworkGroupColor",
+        "prompt/call_llm_decompile.md",
+        "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+    ),
+]
+
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
     ("CNetworkMessages_GetNetworkGroupCount", "CNetworkMessages"),
@@ -23,48 +42,39 @@ GENERATE_YAML_DESIRED_FIELDS = [
         "CNetworkMessages_GetNetworkGroupCount",
         [
             "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
-            "vtable_name",
+            "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
+            "vtable_name",
         ],
     ),
     (
         "CNetworkMessages_GetNetworkGroupName",
         [
             "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
-            "vtable_name",
+            "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
+            "vtable_name",
         ],
     ),
     (
         "CNetworkMessages_GetNetworkGroupColor",
         [
             "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
-            "vtable_name",
+            "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
+            "vtable_name",
         ],
     ),
 ]
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
-    new_binary_dir, platform, image_base, debug=False,
+    new_binary_dir, platform, image_base, llm_config=None, debug=False,
 ):
-    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    """Locate target vfunc(s) via preprocessing and LLM decompile fallback."""
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -74,6 +84,8 @@ async def preprocess_skill(
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
         func_vtable_relations=FUNC_VTABLE_RELATIONS,
+        llm_decompile_specs=LLM_DECOMPILE,
+        llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )

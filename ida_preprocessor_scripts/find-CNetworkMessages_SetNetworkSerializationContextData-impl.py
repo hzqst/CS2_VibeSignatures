@@ -7,7 +7,7 @@ INHERIT_VFUNCS = [
     (
         "CNetworkMessages_SetNetworkSerializationContextData",
         "CNetworkMessages",
-        "../server/CNetworkMessages_SetNetworkSerializationContextData",
+        "../server/INetworkMessages_SetNetworkSerializationContextData",
         True,
     ),
 ]

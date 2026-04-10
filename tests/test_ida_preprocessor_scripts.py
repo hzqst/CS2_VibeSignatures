@@ -12,7 +12,17 @@ FLATTENED_SERIALIZERS_SCRIPT_PATH = Path(
 )
 SET_IS_FOR_SERVER_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
-    "find-CNetworkMessages_SetIsForServer-impl.py"
+    "find-CNetworkMessages_SetIsForServer.py"
+)
+I_SET_IS_FOR_SERVER_SCRIPT_PATH = Path(
+    "ida_preprocessor_scripts/"
+    "find-INetworkMessages_SetIsForServer.py"
+)
+NETWORK_GROUP_STATS_SCRIPT_PATH = Path(
+    "ida_preprocessor_scripts/"
+    "find-CNetworkMessages_GetNetworkGroupCount-AND-"
+    "CNetworkMessages_GetNetworkGroupName-AND-"
+    "CNetworkMessages_GetNetworkGroupColor.py"
 )
 REALLOCATING_FACTORY_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
@@ -25,6 +35,10 @@ REALLOCATING_FACTORY_DEALLOCATE_SCRIPT_PATH = Path(
 FIND_NETWORK_GROUP_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
     "find-CNetworkMessages_FindNetworkGroup.py"
+)
+I_REGISTER_SCHEMA_TYPE_OVERRIDE_SCRIPT_PATH = Path(
+    "ida_preprocessor_scripts/"
+    "find-INetworkMessages_RegisterSchemaTypeOverride.py"
 )
 
 
@@ -150,7 +164,7 @@ class TestFindCNetworkMessagesSetIsForServerImpl(unittest.IsolatedAsyncioTestCas
             (
                 "CNetworkMessages_SetIsForServer",
                 "CNetworkMessages",
-                "../engine/CNetworkMessages_SetIsForServer",
+                "../engine/INetworkMessages_SetIsForServer",
                 True,
             )
         ]
@@ -195,6 +209,182 @@ class TestFindCNetworkMessagesSetIsForServerImpl(unittest.IsolatedAsyncioTestCas
             platform="windows",
             image_base=0x180000000,
             inherit_vfuncs=expected_inherit_vfuncs,
+            generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
+            debug=True,
+        )
+
+
+class TestFindINetworkMessagesSetIsForServer(unittest.IsolatedAsyncioTestCase):
+    async def test_preprocess_skill_forwards_llm_and_vtable_wiring(self) -> None:
+        module = _load_module(
+            I_SET_IS_FOR_SERVER_SCRIPT_PATH,
+            "find_INetworkMessages_SetIsForServer",
+        )
+        mock_preprocess_common_skill = AsyncMock(return_value=True)
+        expected_llm_decompile_specs = [
+            (
+                "INetworkMessages_SetIsForServer",
+                "prompt/call_llm_decompile.md",
+                "references/engine/CNetworkServerService_Init.{platform}.yaml",
+            )
+        ]
+        expected_func_vtable_relations = [
+            ("INetworkMessages_SetIsForServer", "INetworkMessages")
+        ]
+        expected_generate_yaml_desired_fields = [
+            (
+                "INetworkMessages_SetIsForServer",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            )
+        ]
+        llm_config = {
+            "model": "gpt-4.1-mini",
+            "api_key": "test-api-key",
+            "base_url": "https://example.invalid/v1",
+        }
+
+        with patch.object(
+            module,
+            "preprocess_common_skill",
+            mock_preprocess_common_skill,
+        ):
+            result = await module.preprocess_skill(
+                session="session",
+                skill_name="skill",
+                expected_outputs=["out.yaml"],
+                old_yaml_map={"k": "v"},
+                new_binary_dir="bin_dir",
+                platform="windows",
+                image_base=0x180000000,
+                llm_config=llm_config,
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_common_skill.assert_awaited_once_with(
+            session="session",
+            expected_outputs=["out.yaml"],
+            old_yaml_map={"k": "v"},
+            new_binary_dir="bin_dir",
+            platform="windows",
+            image_base=0x180000000,
+            func_names=["INetworkMessages_SetIsForServer"],
+            func_vtable_relations=expected_func_vtable_relations,
+            llm_decompile_specs=expected_llm_decompile_specs,
+            llm_config=llm_config,
+            generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
+            debug=True,
+        )
+
+
+class TestFindCNetworkMessagesGetNetworkGroupStats(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_preprocess_skill_forwards_llm_and_vtable_wiring(self) -> None:
+        module = _load_module(
+            NETWORK_GROUP_STATS_SCRIPT_PATH,
+            "find_CNetworkMessages_GetNetworkGroupStats",
+        )
+        mock_preprocess_common_skill = AsyncMock(return_value=True)
+        expected_llm_decompile_specs = [
+            (
+                "CNetworkMessages_GetNetworkGroupCount",
+                "prompt/call_llm_decompile.md",
+                "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+            ),
+            (
+                "CNetworkMessages_GetNetworkGroupName",
+                "prompt/call_llm_decompile.md",
+                "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+            ),
+            (
+                "CNetworkMessages_GetNetworkGroupColor",
+                "prompt/call_llm_decompile.md",
+                "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
+            ),
+        ]
+        expected_func_vtable_relations = [
+            ("CNetworkMessages_GetNetworkGroupCount", "CNetworkMessages"),
+            ("CNetworkMessages_GetNetworkGroupName", "CNetworkMessages"),
+            ("CNetworkMessages_GetNetworkGroupColor", "CNetworkMessages"),
+        ]
+        expected_generate_yaml_desired_fields = [
+            (
+                "CNetworkMessages_GetNetworkGroupCount",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            ),
+            (
+                "CNetworkMessages_GetNetworkGroupName",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            ),
+            (
+                "CNetworkMessages_GetNetworkGroupColor",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            ),
+        ]
+        llm_config = {
+            "model": "gpt-4.1-mini",
+            "api_key": "test-api-key",
+            "base_url": "https://example.invalid/v1",
+        }
+
+        with patch.object(
+            module,
+            "preprocess_common_skill",
+            mock_preprocess_common_skill,
+        ):
+            result = await module.preprocess_skill(
+                session="session",
+                skill_name="skill",
+                expected_outputs=["out.yaml"],
+                old_yaml_map={"k": "v"},
+                new_binary_dir="bin_dir",
+                platform="windows",
+                image_base=0x180000000,
+                llm_config=llm_config,
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_common_skill.assert_awaited_once_with(
+            session="session",
+            expected_outputs=["out.yaml"],
+            old_yaml_map={"k": "v"},
+            new_binary_dir="bin_dir",
+            platform="windows",
+            image_base=0x180000000,
+            func_names=[
+                "CNetworkMessages_GetNetworkGroupCount",
+                "CNetworkMessages_GetNetworkGroupName",
+                "CNetworkMessages_GetNetworkGroupColor",
+            ],
+            func_vtable_relations=expected_func_vtable_relations,
+            llm_decompile_specs=expected_llm_decompile_specs,
+            llm_config=llm_config,
             generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
             debug=True,
         )
@@ -591,6 +781,161 @@ class TestFindINetworkMessagesFindNetworkGroup(unittest.IsolatedAsyncioTestCase)
             generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
             llm_config=llm_config,
             debug=True,
+        )
+
+
+class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSerializersCreateFieldChangedEventQueue(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_preprocess_skill_forwards_split_field_contracts(self) -> None:
+        module = _load_module(
+            "ida_preprocessor_scripts/find-INetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue.py",
+            "find_INetworkMessages_SetNetworkSerializationContextData_AND_CFlattenedSerializers_CreateFieldChangedEventQueue",
+        )
+        mock_preprocess_common_skill = AsyncMock(return_value=True)
+        expected_llm_decompile_specs = [
+            (
+                "INetworkMessages_SetNetworkSerializationContextData",
+                "prompt/call_llm_decompile.md",
+                "references/server/CEntitySystem_Activate.{platform}.yaml",
+            ),
+            (
+                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+                "prompt/call_llm_decompile.md",
+                "references/server/CEntitySystem_Activate.{platform}.yaml",
+            ),
+        ]
+        expected_func_vtable_relations = [
+            ("INetworkMessages_SetNetworkSerializationContextData", "INetworkMessages"),
+            ("CFlattenedSerializers_CreateFieldChangedEventQueue", "CFlattenedSerializers"),
+        ]
+        expected_generate_yaml_desired_fields = [
+            (
+                "INetworkMessages_SetNetworkSerializationContextData",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            ),
+            (
+                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
+            ),
+        ]
+        llm_config = {
+            "model": "gpt-4.1-mini",
+            "api_key": "test-api-key",
+            "base_url": "https://example.invalid/v1",
+        }
+
+        with patch.object(
+            module,
+            "preprocess_common_skill",
+            mock_preprocess_common_skill,
+        ):
+            result = await module.preprocess_skill(
+                session="session",
+                skill_name="skill",
+                expected_outputs=["out-a.yaml", "out-b.yaml"],
+                old_yaml_map={"k": "v"},
+                new_binary_dir="bin_dir",
+                platform="linux",
+                image_base=0x180000000,
+                llm_config=llm_config,
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_common_skill.assert_awaited_once_with(
+            session="session",
+            expected_outputs=["out-a.yaml", "out-b.yaml"],
+            old_yaml_map={"k": "v"},
+            new_binary_dir="bin_dir",
+            platform="linux",
+            image_base=0x180000000,
+            func_names=[
+                "INetworkMessages_SetNetworkSerializationContextData",
+                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+            ],
+            func_vtable_relations=expected_func_vtable_relations,
+            llm_decompile_specs=expected_llm_decompile_specs,
+            llm_config=llm_config,
+            generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
+            debug=True,
+        )
+
+
+class TestFindINetworkMessagesRegisterSchemaTypeOverride(
+    unittest.IsolatedAsyncioTestCase
+):
+    async def test_preprocess_skill_reuses_old_impl_yaml_and_rewrites_interface_metadata(
+        self,
+    ) -> None:
+        module = _load_module(
+            I_REGISTER_SCHEMA_TYPE_OVERRIDE_SCRIPT_PATH,
+            "find_INetworkMessages_RegisterSchemaTypeOverride",
+        )
+        mock_preprocess_func_sig_via_mcp = AsyncMock(
+            return_value={
+                "func_name": "INetworkMessages_RegisterSchemaTypeOverride",
+                "vfunc_sig": "48 8B 80 10 01 00 00 FF E0",
+                "vtable_name": "CNetworkMessages",
+                "vfunc_offset": "0x110",
+                "vfunc_index": 34,
+            }
+        )
+
+        with patch.object(
+            module,
+            "preprocess_func_sig_via_mcp",
+            mock_preprocess_func_sig_via_mcp,
+        ), patch.object(
+            module,
+            "write_func_yaml",
+        ) as mock_write_func_yaml:
+            result = await module.preprocess_skill(
+                session="session",
+                skill_name="skill",
+                expected_outputs=["/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml"],
+                old_yaml_map={
+                    "/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml":
+                    "/old/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml"
+                },
+                new_binary_dir="bin_dir",
+                platform="linux",
+                image_base=0x180000000,
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_func_sig_via_mcp.assert_awaited_once_with(
+            session="session",
+            new_path="/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
+            old_path="/old/CNetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
+            image_base=0x180000000,
+            new_binary_dir="bin_dir",
+            platform="linux",
+            func_name="INetworkMessages_RegisterSchemaTypeOverride",
+            debug=True,
+        )
+        mock_write_func_yaml.assert_called_once_with(
+            "/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
+            {
+                "func_name": "INetworkMessages_RegisterSchemaTypeOverride",
+                "vfunc_sig": "48 8B 80 10 01 00 00 FF E0",
+                "vfunc_offset": "0x110",
+                "vfunc_index": 34,
+                "vtable_name": "INetworkMessages",
+            },
         )
 
 

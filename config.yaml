@@ -435,9 +435,9 @@ modules:
         expected_output:
           - CNetworkGameClient_SendMove.{platform}.yaml
 
-      - name: find-CNetworkMessages_Serialize
+      - name: find-INetworkMessages_Serialize
         expected_output:
-          - CNetworkMessages_Serialize.{platform}.yaml
+          - INetworkMessages_Serialize.{platform}.yaml
         expected_input:
           - CNetworkGameClient_SendMovePacket.{platform}.yaml
 
@@ -451,9 +451,9 @@ modules:
         expected_input:
           - CDemoRecorder_vtable.{platform}.yaml
 
-      - name: find-CNetworkMessages_SerializeAbstract
+      - name: find-INetworkMessages_SerializeAbstract
         expected_output:
-          - CNetworkMessages_SerializeAbstract.{platform}.yaml
+          - INetworkMessages_SerializeAbstract.{platform}.yaml
         expected_input:
           - CDemoRecorder_ParseMessage.{platform}.yaml
 
@@ -461,9 +461,9 @@ modules:
         expected_output:
           - CDemoRecorder_WriteSpawnGroups.{platform}.yaml
 
-      - name: find-CNetworkMessages_FindNetworkMessageById
+      - name: find-INetworkMessages_FindNetworkMessageById
         expected_output:
-          - CNetworkMessages_FindNetworkMessageById.{platform}.yaml
+          - INetworkMessages_FindNetworkMessageById.{platform}.yaml
         expected_input:
           - CDemoRecorder_WriteSpawnGroups.{platform}.yaml
 
@@ -494,9 +494,9 @@ modules:
         expected_input:
           - CNetworkServerService_vtable.{platform}.yaml
 
-      - name: find-CNetworkMessages_SetIsForServer
+      - name: find-INetworkMessages_SetIsForServer
         expected_output:
-          - CNetworkMessages_SetIsForServer.{platform}.yaml
+          - INetworkMessages_SetIsForServer.{platform}.yaml
         expected_input:
           - CNetworkServerService_Init.{platform}.yaml
 
@@ -593,10 +593,10 @@ modules:
           - CNetworkGameClient::SendMove
           - SendMove
 
-      - name: CNetworkMessages_Serialize
+      - name: INetworkMessages_Serialize
         category: vfunc
         alias:
-          - CNetworkMessages::Serialize
+          - INetworkMessages::Serialize
         shared: true
 
       - name: CDemoRecorder_vtable
@@ -612,16 +612,16 @@ modules:
         alias:
           - CDemoRecorder::WriteSpawnGroups
 
-      - name: CNetworkMessages_SerializeAbstract
+      - name: INetworkMessages_SerializeAbstract
         category: vfunc
         alias:
-          - CNetworkMessages::SerializeAbstract
+          - INetworkMessages::SerializeAbstract
         shared: true
 
-      - name: CNetworkMessages_FindNetworkMessageById
+      - name: INetworkMessages_FindNetworkMessageById
         category: vfunc
         alias:
-          - CNetworkMessages::FindNetworkMessageById
+          - INetworkMessages::FindNetworkMessageById
         shared: true
 
       - name: CNetChan_ProcessMessages
@@ -665,10 +665,10 @@ modules:
         alias:
           - CNetworkServerService::Init
 
-      - name: CNetworkMessages_SetIsForServer
+      - name: INetworkMessages_SetIsForServer
         category: vfunc
         alias:
-          - CNetworkMessages::SetIsForServer
+          - INetworkMessages::SetIsForServer
         shared: true
 
       - name: CEngineClient_vtable
@@ -1912,14 +1912,14 @@ modules:
         expected_output:
           - CEntitySystem_Activate.{platform}.yaml
 
-      - name: find-CNetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue
+      - name: find-INetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue
         expected_output:
-          - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
+          - INetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
 
-      - name: find-CNetworkMessages_RegisterSchemaTypeOverride
+      - name: find-INetworkMessages_RegisterSchemaTypeOverride
         expected_output:
-          - CNetworkMessages_RegisterSchemaTypeOverride.{platform}.yaml
+          - INetworkMessages_RegisterSchemaTypeOverride.{platform}.yaml
 
       - name: find-GetCSceneEntityScriptDesc
         expected_output:
@@ -2758,10 +2758,10 @@ modules:
         alias:
           - CEntitySystem::Activate
 
-      - name: CNetworkMessages_SetNetworkSerializationContextData
+      - name: INetworkMessages_SetNetworkSerializationContextData
         category: vfunc
         alias:
-          - CNetworkMessages::SetNetworkSerializationContextData
+          - INetworkMessages::SetNetworkSerializationContextData
         shared: true
 
       - name: CFlattenedSerializers_CreateFieldChangedEventQueue
@@ -2776,10 +2776,10 @@ modules:
           - CNetworkMessages::GetLoggingChannel
         shared: true
 
-      - name: CNetworkMessages_RegisterSchemaTypeOverride
+      - name: INetworkMessages_RegisterSchemaTypeOverride
         category: vfunc
         alias:
-          - CNetworkMessages::RegisterSchemaTypeOverride
+          - INetworkMessages::RegisterSchemaTypeOverride
         shared: true
 
       - name: GetCSceneEntityScriptDesc
@@ -2823,12 +2823,12 @@ modules:
         expected_input:
           - CFlattenedSerializers_CreateFieldChangedEventQueue.{platform}.yaml
 
-      - name: find-CNetworkMessages_SetIsForServer-impl
+      - name: find-CNetworkMessages_SetIsForServer
         expected_output:
           - CNetworkMessages_SetIsForServer.{platform}.yaml
         expected_input:
           - CNetworkMessages_vtable.{platform}.yaml
-          - ../engine/CNetworkMessages_SetIsForServer.{platform}.yaml
+          - ../engine/INetworkMessages_SetIsForServer.{platform}.yaml
 
       - name: find-CNetworkMessages_GetIsForServer
         expected_output:
@@ -2842,7 +2842,7 @@ modules:
           - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
         expected_input:
           - CNetworkMessages_vtable.{platform}.yaml
-          - ../server/CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
+          - ../server/INetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
 
       - name: find-CNetworkMessages_GetNetworkSerializationContextData
         expected_output:
