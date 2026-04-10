@@ -1974,6 +1974,10 @@ modules:
           - CEntityInstance_vtable.{platform}.yaml
           - CBaseEntity_Precache.{platform}.yaml
 
+      - name: find-CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes
+        expected_output:
+          - CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2829,6 +2833,11 @@ modules:
         category: vfunc
         alias:
           - CEntityInstance::Precache
+
+      - name: CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes
+        category: func
+        alias:
+          - CNetworkUtlVectorEmbedded<CRenderAttribute>::NetworkStateChanged_m_vecRenderAttributes
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
