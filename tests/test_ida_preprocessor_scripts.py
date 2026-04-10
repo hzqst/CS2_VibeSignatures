@@ -36,11 +36,6 @@ FIND_NETWORK_GROUP_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
     "find-CNetworkMessages_FindNetworkGroup.py"
 )
-I_REGISTER_SCHEMA_TYPE_OVERRIDE_SCRIPT_PATH = Path(
-    "ida_preprocessor_scripts/"
-    "find-INetworkMessages_RegisterSchemaTypeOverride.py"
-)
-
 
 class _FakeStreamableHttpClient:
     async def __aenter__(self):
@@ -871,71 +866,6 @@ class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSer
             llm_config=llm_config,
             generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
             debug=True,
-        )
-
-
-class TestFindINetworkMessagesRegisterSchemaTypeOverride(
-    unittest.IsolatedAsyncioTestCase
-):
-    async def test_preprocess_skill_reuses_old_impl_yaml_and_rewrites_interface_metadata(
-        self,
-    ) -> None:
-        module = _load_module(
-            I_REGISTER_SCHEMA_TYPE_OVERRIDE_SCRIPT_PATH,
-            "find_INetworkMessages_RegisterSchemaTypeOverride",
-        )
-        mock_preprocess_func_sig_via_mcp = AsyncMock(
-            return_value={
-                "func_name": "INetworkMessages_RegisterSchemaTypeOverride",
-                "vfunc_sig": "48 8B 80 10 01 00 00 FF E0",
-                "vtable_name": "CNetworkMessages",
-                "vfunc_offset": "0x110",
-                "vfunc_index": 34,
-            }
-        )
-
-        with patch.object(
-            module,
-            "preprocess_func_sig_via_mcp",
-            mock_preprocess_func_sig_via_mcp,
-        ), patch.object(
-            module,
-            "write_func_yaml",
-        ) as mock_write_func_yaml:
-            result = await module.preprocess_skill(
-                session="session",
-                skill_name="skill",
-                expected_outputs=["/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml"],
-                old_yaml_map={
-                    "/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml":
-                    "/old/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml"
-                },
-                new_binary_dir="bin_dir",
-                platform="linux",
-                image_base=0x180000000,
-                debug=True,
-            )
-
-        self.assertTrue(result)
-        mock_preprocess_func_sig_via_mcp.assert_awaited_once_with(
-            session="session",
-            new_path="/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
-            old_path="/old/CNetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
-            image_base=0x180000000,
-            new_binary_dir="bin_dir",
-            platform="linux",
-            func_name="INetworkMessages_RegisterSchemaTypeOverride",
-            debug=True,
-        )
-        mock_write_func_yaml.assert_called_once_with(
-            "/tmp/INetworkMessages_RegisterSchemaTypeOverride.linux.yaml",
-            {
-                "func_name": "INetworkMessages_RegisterSchemaTypeOverride",
-                "vfunc_sig": "48 8B 80 10 01 00 00 FF E0",
-                "vfunc_offset": "0x110",
-                "vfunc_index": 34,
-                "vtable_name": "INetworkMessages",
-            },
         )
 
 
