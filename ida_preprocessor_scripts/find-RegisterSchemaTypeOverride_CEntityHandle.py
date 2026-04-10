@@ -13,8 +13,9 @@ FUNC_XREFS = [
         "RegisterSchemaTypeOverride_CEntityHandle",
         [
             "CEntityHandle",
+            "ehandle",
         ],
-        [],
+        ["A8 99 30 96"],
         [],
         [],
     ),
