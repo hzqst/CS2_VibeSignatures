@@ -40,51 +40,75 @@ modules:
       - name: find-CNetworkMessages_AssociateNetMessageWithChannelCategoryAbstract
         expected_output:
           - CNetworkMessages_AssociateNetMessageWithChannelCategoryAbstract.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_FindOrCreateNetMessage
         expected_output:
           - CNetworkMessages_FindOrCreateNetMessage.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_SerializeInternal
         expected_output:
           - CNetworkMessages_SerializeInternal.{platform}.yaml
-
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          
       - name: find-CNetworkMessages_UnserializeMessageInternal
         expected_output:
           - CNetworkMessages_UnserializeMessageInternal.{platform}.yaml
-
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          
       - name: find-CNetworkMessages_SerializeMessageInternal
         expected_output:
           - CNetworkMessages_SerializeMessageInternal.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_UnserializeFromStream
         expected_output:
           - CNetworkMessages_UnserializeFromStream.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_AllocateAndCopyConstructNetMessageAbstract
         expected_output:
           - CNetworkMessages_AllocateAndCopyConstructNetMessageAbstract.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_DeallocateNetMessageAbstract
         expected_output:
           - CNetworkMessages_DeallocateNetMessageAbstract.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_RegisterNetworkFieldSerializer
         expected_output:
           - CNetworkMessages_RegisterNetworkFieldSerializer.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_RegisterNetworkArrayFieldSerializer
         expected_output:
           - CNetworkMessages_RegisterNetworkArrayFieldSerializer.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_AssociateNetMessageGroupIdWithChannelCategory
         expected_output:
           - CNetworkMessages_AssociateNetMessageGroupIdWithChannelCategory.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetworkMessages_RegisterNetworkFieldChangeCallbackInternal
         expected_output:
           - CNetworkMessages_RegisterNetworkFieldChangeCallbackInternal.{platform}.yaml
-
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          
       - name: find-CNetworkMessages_AllowAdditionalMessageRegistration-AND-CNetworkMessages_IsAdditionalMessageRegistrationAllowed
         expected_output:
           - CNetworkMessages_AllowAdditionalMessageRegistration.{platform}.yaml
@@ -100,12 +124,15 @@ modules:
       - name: find-CNetworkMessages_ComputeOrderForPriority
         expected_output:
           - CNetworkMessages_ComputeOrderForPriority.{platform}.yaml
-
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          
       - name: find-CNetworkMessages_GetNetMessageInfo
         expected_output:
           - CNetworkMessages_GetNetMessageInfo.{platform}.yaml
         expected_input:
           - CNetChan_ProcessMessages.{platform}.yaml
+          - CNetworkMessages_vtable.{platform}.yaml
 
       - name: find-CNetChan_ProcessMessages
         expected_output:
