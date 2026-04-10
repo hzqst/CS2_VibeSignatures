@@ -17,8 +17,8 @@ LLM_DECOMPILE = [
 ]
 
 FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class, generate_vfunc_offset)
-    ("CNetworkMessages_FindNetworkMessagePartial", "CNetworkMessages", True),
+    # (func_name, vtable_class)
+    ("CNetworkMessages_FindNetworkMessagePartial", "CNetworkMessages"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
