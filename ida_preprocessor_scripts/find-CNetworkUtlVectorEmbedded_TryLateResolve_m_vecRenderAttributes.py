@@ -12,7 +12,7 @@ LLM_DECOMPILE = [
     (
         "CNetworkUtlVectorEmbedded_TryLateResolve_m_vecRenderAttributes",
         "prompt/call_llm_decompile.md",
-        "references/networksystem/CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes.{platform}.yaml",
+        "references/server/CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes.{platform}.yaml",
     ),
 ]
 
