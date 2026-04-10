@@ -146,6 +146,23 @@ modules:
         expected_input:
           - CNetChan_vtable.{platform}.yaml
 
+      - name: find-CNetChan_ParseMessagesDemoInternal
+        expected_output:
+          - CNetChan_ParseMessagesDemoInternal.{platform}.yaml
+
+      - name: find-CNetChan_ParseNetMessageShowFilter
+        expected_output:
+          - CNetChan_ParseNetMessageShowFilter.{platform}.yaml
+        expected_input:
+          - CNetChan_ParseMessagesDemoInternal.{platform}.yaml
+
+      - name: find-CNetworkMessages_FindNetworkMessagePartial
+        expected_output:
+          - CNetworkMessages_FindNetworkMessagePartial.{platform}.yaml
+        expected_input:
+          - CNetworkMessages_vtable.{platform}.yaml
+          - CNetChan_ParseNetMessageShowFilter.{platform}.yaml
+
       - name: find-CNetworkMessages_GetLoggingChannel
         expected_output:
           - CNetworkMessages_GetLoggingChannel.{platform}.yaml
