@@ -1920,6 +1920,8 @@ modules:
       - name: find-INetworkMessages_RegisterSchemaTypeOverride
         expected_output:
           - INetworkMessages_RegisterSchemaTypeOverride.{platform}.yaml
+        expected_input:
+          - RegisterSchemaTypeOverride_CEntityHandle.{platform}.yaml
 
       - name: find-RegisterSchemaTypeOverride_CEntityHandle
         expected_output:
