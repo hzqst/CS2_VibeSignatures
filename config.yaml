@@ -1985,6 +1985,20 @@ modules:
         expected_input:
           - CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes.{platform}.yaml
 
+      - name: find-INetworkMessages_GetLoggingChannel-windows
+        platform: windows
+        expected_output:
+          - INetworkMessages_GetLoggingChannel.{platform}.yaml
+        expected_input:
+          - CNetworkUtlVectorEmbedded_TryLateResolve_m_vecRenderAttributes.{platform}.yaml
+
+      - name: find-INetworkMessages_GetLoggingChannel-linux
+        platform: linux
+        expected_output:
+          - INetworkMessages_GetLoggingChannel.{platform}.yaml
+        expected_input:
+          - CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2850,6 +2864,12 @@ modules:
         category: func
         alias:
           - CNetworkUtlVectorEmbedded<CRenderAttribute>::TryLateResolve
+
+      - name: INetworkMessages_GetLoggingChannel
+        category: vfunc
+        alias:
+          - INetworkMessages::GetLoggingChannel
+        shared: true
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
