@@ -1309,6 +1309,8 @@ def _prepare_llm_decompile_request(
         prompt_path = scripts_dir / prompt_path
     if not reference_yaml_path.is_absolute():
         reference_yaml_path = scripts_dir / reference_yaml_path
+    prompt_path = prompt_path.resolve()
+    reference_yaml_path = reference_yaml_path.resolve()
 
     if not prompt_path.is_file():
         if debug:
@@ -1396,11 +1398,24 @@ def _prepare_llm_decompile_request(
     return {
         "client": client,
         "model": model,
+        "prompt_path": os.fspath(prompt_path),
+        "reference_yaml_path": os.fspath(reference_yaml_path),
         "prompt_template": prompt_template,
         "target_func_name": target_func_name,
         "disasm_for_reference": str(reference_data.get("disasm_code", "") or ""),
         "procedure_for_reference": str(reference_data.get("procedure", "") or ""),
     }
+
+
+def _build_llm_decompile_request_cache_key(llm_request):
+    if not isinstance(llm_request, dict):
+        return None
+    model = str(llm_request.get("model", "")).strip()
+    prompt_path = str(llm_request.get("prompt_path", "")).strip()
+    reference_yaml_path = str(llm_request.get("reference_yaml_path", "")).strip()
+    if not model or not prompt_path or not reference_yaml_path:
+        return None
+    return model, prompt_path, reference_yaml_path
 
 
 async def call_llm_decompile(
@@ -4621,6 +4636,107 @@ async def _rename_gv_in_ida(session, gv_va_hex, gv_name, debug=False):
             print(f"    Preprocess: failed to rename gv {gv_va_hex} -> {gv_name}: {e}")
 
 
+async def _try_preprocess_func_without_llm(
+    *,
+    session,
+    target_output,
+    old_path,
+    image_base,
+    new_binary_dir,
+    platform,
+    func_name,
+    func_xrefs_map,
+    vtable_relations_map,
+    normalized_mangled_class_names,
+    debug=False,
+):
+    func_data = await preprocess_func_sig_via_mcp(
+        session=session,
+        new_path=target_output,
+        old_path=old_path,
+        image_base=image_base,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        func_name=func_name,
+        debug=debug,
+        mangled_class_names=normalized_mangled_class_names,
+    )
+
+    if func_data is None and func_name in func_xrefs_map:
+        xref_spec = func_xrefs_map[func_name]
+        if debug:
+            print(f"    Preprocess: trying func_xrefs fallback for {func_name}")
+        xref_vtable_class = None
+        if func_name in vtable_relations_map:
+            xref_vtable_class = vtable_relations_map[func_name]
+        func_data = await preprocess_func_xrefs_via_mcp(
+            session=session,
+            func_name=func_name,
+            xref_strings=xref_spec["xref_strings"],
+            xref_funcs=xref_spec["xref_funcs"],
+            exclude_funcs=xref_spec["exclude_funcs"],
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            image_base=image_base,
+            vtable_class=xref_vtable_class,
+            debug=debug,
+        )
+
+    return func_data
+
+
+def _can_probe_future_func_fast_path(
+    *,
+    func_name,
+    func_xrefs_map,
+    new_binary_dir,
+    platform,
+    debug=False,
+):
+    xref_spec = (func_xrefs_map or {}).get(func_name)
+    if not isinstance(xref_spec, dict):
+        return True
+
+    dependency_func_names = list(xref_spec.get("xref_funcs") or []) + list(
+        xref_spec.get("exclude_funcs") or []
+    )
+    if not dependency_func_names:
+        return True
+
+    if not new_binary_dir:
+        if debug:
+            print(
+                f"    Preprocess: skip fast-path probing for {func_name}, "
+                "new_binary_dir unavailable for xref dependency check"
+            )
+        return False
+
+    try:
+        new_binary_dir_path = os.fspath(new_binary_dir)
+    except Exception:
+        if debug:
+            print(
+                f"    Preprocess: skip fast-path probing for {func_name}, "
+                "invalid new_binary_dir for xref dependency check"
+            )
+        return False
+
+    for dependency_func_name in dependency_func_names:
+        dependency_yaml_path = os.path.join(
+            new_binary_dir_path,
+            f"{dependency_func_name}.{platform}.yaml",
+        )
+        if not os.path.isfile(dependency_yaml_path):
+            if debug:
+                print(
+                    f"    Preprocess: skip fast-path probing for {func_name}, "
+                    f"xref dependency YAML not ready: {dependency_yaml_path}"
+                )
+            return False
+
+    return True
+
+
 async def preprocess_common_skill(
     session,
     expected_outputs,
@@ -5060,6 +5176,11 @@ async def preprocess_common_skill(
             )
         return False
 
+    llm_request_cache = {}
+    llm_result_by_func_name = {}
+    fast_path_attempted = {}
+    fast_path_results = {}
+
     # Process func/vfunc targets
     for func_name in all_func_names:
         target_output = matched_func_outputs[func_name]
@@ -5071,52 +5192,92 @@ async def preprocess_common_skill(
             return False
         desired_fields_set = set(desired_fields)
 
-        func_data = await preprocess_func_sig_via_mcp(
-            session=session,
-            new_path=target_output,
-            old_path=old_path,
-            image_base=image_base,
-            new_binary_dir=new_binary_dir,
-            platform=platform,
-            func_name=func_name,
-            debug=debug,
-            mangled_class_names=normalized_mangled_class_names,
-        )
-
-        if func_data is None and func_name in func_xrefs_map:
-            xref_spec = func_xrefs_map[func_name]
-            if debug:
-                print(f"    Preprocess: trying func_xrefs fallback for {func_name}")
-            # When a vtable relation is defined for this function, pass the
-            # vtable class so that only vtable entries are considered as
-            # candidates during xref intersection.
-            xref_vtable_class = None
-            if func_name in vtable_relations_map:
-                xref_vtable_class = vtable_relations_map[func_name]
-            func_data = await preprocess_func_xrefs_via_mcp(
+        if func_name not in fast_path_attempted:
+            fast_path_results[func_name] = await _try_preprocess_func_without_llm(
                 session=session,
-                func_name=func_name,
-                xref_strings=xref_spec["xref_strings"],
-                xref_funcs=xref_spec["xref_funcs"],
-                exclude_funcs=xref_spec["exclude_funcs"],
+                target_output=target_output,
+                old_path=old_path,
+                image_base=image_base,
                 new_binary_dir=new_binary_dir,
                 platform=platform,
-                image_base=image_base,
-                vtable_class=xref_vtable_class,
+                func_name=func_name,
+                func_xrefs_map=func_xrefs_map,
+                vtable_relations_map=vtable_relations_map,
+                normalized_mangled_class_names=normalized_mangled_class_names,
                 debug=debug,
             )
+            fast_path_attempted[func_name] = True
+        func_data = fast_path_results.get(func_name)
 
         if func_data is None and func_name in llm_decompile_specs_map:
-            llm_request = _prepare_llm_decompile_request(
-                func_name,
-                llm_decompile_specs_map,
-                llm_config,
-                platform=platform,
-                debug=debug,
-            )
-            if llm_request is None:
+            if func_name not in llm_request_cache:
+                llm_request_cache[func_name] = _prepare_llm_decompile_request(
+                    func_name,
+                    llm_decompile_specs_map,
+                    llm_config,
+                    platform=platform,
+                    debug=debug,
+                )
+            llm_request = llm_request_cache.get(func_name)
+            llm_cache_key = _build_llm_decompile_request_cache_key(llm_request)
+
+            if func_name in llm_result_by_func_name:
+                llm_result = llm_result_by_func_name[func_name]
+            elif llm_request is None or llm_cache_key is None:
                 llm_result = _empty_llm_decompile_result()
             else:
+                llm_symbol_name_list = []
+                for candidate_func_name in all_func_names:
+                    if candidate_func_name not in llm_decompile_specs_map:
+                        continue
+                    if candidate_func_name in llm_result_by_func_name:
+                        continue
+                    candidate_target_output = matched_func_outputs.get(candidate_func_name)
+                    if candidate_target_output is None:
+                        continue
+                    if candidate_func_name not in fast_path_attempted:
+                        if not _can_probe_future_func_fast_path(
+                            func_name=candidate_func_name,
+                            func_xrefs_map=func_xrefs_map,
+                            new_binary_dir=new_binary_dir,
+                            platform=platform,
+                            debug=debug,
+                        ):
+                            continue
+                        candidate_old_path = (old_yaml_map or {}).get(candidate_target_output)
+                        fast_path_results[candidate_func_name] = await _try_preprocess_func_without_llm(
+                            session=session,
+                            target_output=candidate_target_output,
+                            old_path=candidate_old_path,
+                            image_base=image_base,
+                            new_binary_dir=new_binary_dir,
+                            platform=platform,
+                            func_name=candidate_func_name,
+                            func_xrefs_map=func_xrefs_map,
+                            vtable_relations_map=vtable_relations_map,
+                            normalized_mangled_class_names=normalized_mangled_class_names,
+                            debug=debug,
+                        )
+                        fast_path_attempted[candidate_func_name] = True
+                    if fast_path_results.get(candidate_func_name) is not None:
+                        continue
+                    if candidate_func_name not in llm_request_cache:
+                        llm_request_cache[candidate_func_name] = _prepare_llm_decompile_request(
+                            candidate_func_name,
+                            llm_decompile_specs_map,
+                            llm_config,
+                            platform=platform,
+                            debug=debug,
+                        )
+                    candidate_request = llm_request_cache.get(candidate_func_name)
+                    if (
+                        _build_llm_decompile_request_cache_key(candidate_request)
+                        == llm_cache_key
+                    ):
+                        llm_symbol_name_list.append(candidate_func_name)
+                if not llm_symbol_name_list:
+                    llm_symbol_name_list = [func_name]
+
                 try:
                     llm_target_detail = await _load_llm_decompile_target_detail_via_mcp(
                         session,
@@ -5129,7 +5290,7 @@ async def preprocess_common_skill(
                         llm_result = await call_llm_decompile(
                             client=llm_request["client"],
                             model=llm_request["model"],
-                            symbol_name_list=[func_name],
+                            symbol_name_list=llm_symbol_name_list,
                             disasm_code=llm_target_detail["disasm_code"],
                             procedure=llm_target_detail["procedure"],
                             disasm_for_reference=llm_request["disasm_for_reference"],
@@ -5140,6 +5301,8 @@ async def preprocess_common_skill(
                         )
                 except Exception:
                     llm_result = _empty_llm_decompile_result()
+                for symbol_name in llm_symbol_name_list:
+                    llm_result_by_func_name[symbol_name] = llm_result
             for entry in llm_result.get("found_call", []):
                 if entry.get("func_name") != func_name:
                     continue

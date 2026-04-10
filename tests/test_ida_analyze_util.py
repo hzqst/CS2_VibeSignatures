@@ -1382,11 +1382,609 @@ found_struct_offset: []
             target_detail_payload["procedure"],
             mock_call_llm_decompile.call_args.kwargs["procedure"],
         )
+        self.assertEqual(
+            [func_name],
+            mock_call_llm_decompile.call_args.kwargs["symbol_name_list"],
+        )
         mock_write_func_yaml.assert_called_once()
         written_payload = mock_write_func_yaml.call_args.args[1]
         self.assertEqual(func_name, written_payload["func_name"])
         self.assertEqual("0x68", written_payload["vfunc_offset"])
         self.assertEqual(13, written_payload["vfunc_index"])
+
+    async def test_preprocess_common_skill_batches_same_llm_request_for_multiple_unresolved_targets(
+        self,
+    ) -> None:
+        func_names = [
+            "CNetworkMessages_FindNetworkGroup",
+            "CNetworkMessages_FindMessage",
+        ]
+        output_paths = [f"/tmp/{func_name}.windows.yaml" for func_name in func_names]
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180222200",
+            "procedure": "return CNetworkMessages::FindNetworkGroup(this, group);",
+        }
+        normalized_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777700",
+                    "insn_disasm": "call    sub_180222200",
+                    "func_name": func_names[0],
+                },
+                {
+                    "insn_va": "0x180777710",
+                    "insn_disasm": "call    sub_180222210",
+                    "func_name": func_names[1],
+                },
+            ],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": target_detail_payload["disasm_code"],
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+            fake_client = object()
+
+            async def _fake_preprocess_direct_func_sig_via_mcp(**kwargs):
+                return {
+                    "func_name": kwargs["func_name"],
+                    "func_va": str(kwargs["direct_func_va"]).strip().lower(),
+                }
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=fake_client,
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "_load_llm_decompile_target_detail_via_mcp",
+                AsyncMock(return_value=target_detail_payload),
+            ), patch.object(
+                ida_analyze_util,
+                "_resolve_direct_call_target_via_mcp",
+                AsyncMock(side_effect=["0x180123450", "0x180223450"]),
+            ), patch.object(
+                ida_analyze_util,
+                "_preprocess_direct_func_sig_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_direct_func_sig_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=normalized_payload,
+            ) as mock_call_llm_decompile, patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session="session",
+                    expected_outputs=output_paths,
+                    old_yaml_map={},
+                    new_binary_dir="/tmp",
+                    platform="windows",
+                    image_base=0x180000000,
+                    func_names=func_names,
+                    generate_yaml_desired_fields=[
+                        (func_names[0], ["func_name", "func_va"]),
+                        (func_names[1], ["func_name", "func_va"]),
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            func_names[0],
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                        (
+                            func_names[1],
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertTrue(result)
+        mock_call_llm_decompile.assert_awaited_once()
+        self.assertEqual(
+            func_names,
+            mock_call_llm_decompile.call_args.kwargs["symbol_name_list"],
+        )
+        self.assertEqual(2, mock_write_func_yaml.call_count)
+
+    async def test_preprocess_common_skill_llm_batch_excludes_fast_path_targets(
+        self,
+    ) -> None:
+        unresolved_func_name = "CNetworkMessages_FindNetworkGroup"
+        fast_path_func_name = "CNetworkMessages_FindMessage"
+        func_names = [unresolved_func_name, fast_path_func_name]
+        output_paths = [f"/tmp/{func_name}.windows.yaml" for func_name in func_names]
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180222200",
+            "procedure": "return CNetworkMessages::FindNetworkGroup(this, group);",
+        }
+        normalized_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777700",
+                    "insn_disasm": "call    sub_180222200",
+                    "func_name": unresolved_func_name,
+                }
+            ],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": target_detail_payload["disasm_code"],
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+
+            async def _fake_preprocess_func_sig_via_mcp(*, func_name, **_kwargs):
+                if func_name == fast_path_func_name:
+                    return {
+                        "func_name": fast_path_func_name,
+                        "func_va": "0x180333333",
+                    }
+                return None
+
+            async def _fake_preprocess_direct_func_sig_via_mcp(**kwargs):
+                return {
+                    "func_name": kwargs["func_name"],
+                    "func_va": str(kwargs["direct_func_va"]).strip().lower(),
+                }
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=object(),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_func_sig_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "_load_llm_decompile_target_detail_via_mcp",
+                AsyncMock(return_value=target_detail_payload),
+            ), patch.object(
+                ida_analyze_util,
+                "_resolve_direct_call_target_via_mcp",
+                AsyncMock(return_value="0x180123450"),
+            ), patch.object(
+                ida_analyze_util,
+                "_preprocess_direct_func_sig_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_direct_func_sig_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=normalized_payload,
+            ) as mock_call_llm_decompile, patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session="session",
+                    expected_outputs=output_paths,
+                    old_yaml_map={},
+                    new_binary_dir="/tmp",
+                    platform="windows",
+                    image_base=0x180000000,
+                    func_names=func_names,
+                    generate_yaml_desired_fields=[
+                        (unresolved_func_name, ["func_name", "func_va"]),
+                        (fast_path_func_name, ["func_name", "func_va"]),
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            unresolved_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                        (
+                            fast_path_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertTrue(result)
+        mock_call_llm_decompile.assert_awaited_once()
+        self.assertEqual(
+            [unresolved_func_name],
+            mock_call_llm_decompile.call_args.kwargs["symbol_name_list"],
+        )
+        self.assertEqual(2, mock_write_func_yaml.call_count)
+
+    async def test_preprocess_common_skill_llm_batch_skips_future_targets_with_unready_xref_dependencies(
+        self,
+    ) -> None:
+        first_func_name = "CNetworkMessages_FindNetworkGroup"
+        second_func_name = "CNetworkMessages_FindMessage"
+        func_names = [first_func_name, second_func_name]
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180222200",
+            "procedure": "return CNetworkMessages::FindNetworkGroup(this, group);",
+        }
+        llm_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777700",
+                    "insn_disasm": "call    sub_180222200",
+                    "func_name": first_func_name,
+                }
+            ],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            new_binary_dir = Path(temp_dir) / "current"
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            first_output = new_binary_dir / f"{first_func_name}.windows.yaml"
+            second_output = new_binary_dir / f"{second_func_name}.windows.yaml"
+            output_paths = [str(first_output), str(second_output)]
+            dependent_yaml_path = new_binary_dir / f"{first_func_name}.windows.yaml"
+
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": target_detail_payload["disasm_code"],
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+
+            async def _fake_preprocess_func_xrefs_via_mcp(*, func_name, **_kwargs):
+                if func_name != second_func_name:
+                    return None
+                if dependent_yaml_path.is_file():
+                    return {
+                        "func_name": second_func_name,
+                        "func_va": "0x180333333",
+                    }
+                return None
+
+            async def _fake_preprocess_direct_func_sig_via_mcp(**kwargs):
+                return {
+                    "func_name": kwargs["func_name"],
+                    "func_va": str(kwargs["direct_func_va"]).strip().lower(),
+                }
+
+            def _fake_write_func_yaml(path, data):
+                output_path = Path(path)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(
+                    yaml.safe_dump(data, sort_keys=False),
+                    encoding="utf-8",
+                )
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=object(),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_xrefs_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_func_xrefs_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "_load_llm_decompile_target_detail_via_mcp",
+                AsyncMock(return_value=target_detail_payload),
+            ), patch.object(
+                ida_analyze_util,
+                "_resolve_direct_call_target_via_mcp",
+                AsyncMock(return_value="0x180123450"),
+            ), patch.object(
+                ida_analyze_util,
+                "_preprocess_direct_func_sig_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_direct_func_sig_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=llm_payload,
+            ) as mock_call_llm_decompile, patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+                side_effect=_fake_write_func_yaml,
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session="session",
+                    expected_outputs=output_paths,
+                    old_yaml_map={},
+                    new_binary_dir=str(new_binary_dir),
+                    platform="windows",
+                    image_base=0x180000000,
+                    func_names=func_names,
+                    func_xrefs=[
+                        (second_func_name, ["dummy-string"], [first_func_name], []),
+                    ],
+                    generate_yaml_desired_fields=[
+                        (first_func_name, ["func_name", "func_va"]),
+                        (second_func_name, ["func_name", "func_va"]),
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            first_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                        (
+                            second_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertTrue(result)
+        mock_call_llm_decompile.assert_awaited_once()
+        self.assertEqual(
+            [first_func_name],
+            mock_call_llm_decompile.call_args.kwargs["symbol_name_list"],
+        )
+        self.assertEqual(2, mock_write_func_yaml.call_count)
+
+    async def test_preprocess_common_skill_llm_batch_issues_second_request_for_symbol_not_covered_in_first_batch(
+        self,
+    ) -> None:
+        first_func_name = "CNetworkMessages_FindNetworkGroup"
+        second_func_name = "CNetworkMessages_FindMessage"
+        func_names = [first_func_name, second_func_name]
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180222200",
+            "procedure": "return CNetworkMessages::FindNetworkGroup(this, group);",
+        }
+        first_llm_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777700",
+                    "insn_disasm": "call    sub_180222200",
+                    "func_name": first_func_name,
+                }
+            ],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+        second_llm_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777710",
+                    "insn_disasm": "call    sub_180222210",
+                    "func_name": second_func_name,
+                }
+            ],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            new_binary_dir = Path(temp_dir) / "current"
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            first_output = new_binary_dir / f"{first_func_name}.windows.yaml"
+            second_output = new_binary_dir / f"{second_func_name}.windows.yaml"
+            output_paths = [str(first_output), str(second_output)]
+            dependent_yaml_path = new_binary_dir / f"{first_func_name}.windows.yaml"
+
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": target_detail_payload["disasm_code"],
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+
+            async def _fake_preprocess_func_xrefs_via_mcp(*, func_name, **_kwargs):
+                if func_name != second_func_name:
+                    return None
+                if dependent_yaml_path.is_file():
+                    return None
+                return None
+
+            async def _fake_preprocess_direct_func_sig_via_mcp(**kwargs):
+                return {
+                    "func_name": kwargs["func_name"],
+                    "func_va": str(kwargs["direct_func_va"]).strip().lower(),
+                }
+
+            def _fake_write_func_yaml(path, data):
+                output_path = Path(path)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(
+                    yaml.safe_dump(data, sort_keys=False),
+                    encoding="utf-8",
+                )
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=object(),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_xrefs_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_func_xrefs_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "_load_llm_decompile_target_detail_via_mcp",
+                AsyncMock(return_value=target_detail_payload),
+            ), patch.object(
+                ida_analyze_util,
+                "_resolve_direct_call_target_via_mcp",
+                AsyncMock(side_effect=["0x180123450", "0x180223450"]),
+            ), patch.object(
+                ida_analyze_util,
+                "_preprocess_direct_func_sig_via_mcp",
+                AsyncMock(side_effect=_fake_preprocess_direct_func_sig_via_mcp),
+            ), patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                side_effect=[first_llm_payload, second_llm_payload],
+            ) as mock_call_llm_decompile, patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+                side_effect=_fake_write_func_yaml,
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session="session",
+                    expected_outputs=output_paths,
+                    old_yaml_map={},
+                    new_binary_dir=str(new_binary_dir),
+                    platform="windows",
+                    image_base=0x180000000,
+                    func_names=func_names,
+                    func_xrefs=[
+                        (second_func_name, ["dummy-string"], [first_func_name], []),
+                    ],
+                    generate_yaml_desired_fields=[
+                        (first_func_name, ["func_name", "func_va"]),
+                        (second_func_name, ["func_name", "func_va"]),
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            first_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                        (
+                            second_func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        ),
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertTrue(result)
+        self.assertEqual(2, mock_call_llm_decompile.await_count)
+        self.assertEqual(
+            [first_func_name],
+            mock_call_llm_decompile.await_args_list[0].kwargs["symbol_name_list"],
+        )
+        self.assertEqual(
+            [second_func_name],
+            mock_call_llm_decompile.await_args_list[1].kwargs["symbol_name_list"],
+        )
+        self.assertEqual(2, mock_write_func_yaml.call_count)
 
     async def test_preprocess_common_skill_llm_fallback_skips_missing_reference_yaml(
         self,
