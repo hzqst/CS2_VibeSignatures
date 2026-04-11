@@ -554,11 +554,6 @@ items:
   classicy: by_decompile
   owner_func_name: PeerList_broadcast_function
   owner_module: engine
-- symbol_name: CSource2Client_OnDisconnect
-  skill_name: find-CSource2Client_OnDisconnect
-  classicy: with_xref_strings
-  owner_func_name: CSource2Client_OnDisconnect
-  owner_module: client
 - symbol_name: CCheckTransmitInfo_m_nPlayerSlot
   skill_name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
   classicy: by_decompile
