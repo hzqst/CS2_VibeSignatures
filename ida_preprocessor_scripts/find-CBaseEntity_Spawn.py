@@ -14,9 +14,11 @@ FUNC_XREFS = [
         [
             "hammerUniqueId",
         ],
+        [
+            "38 A0 63 A9"
+        ],
         [],
-        [],
-        ["CBaseEntity_Activate", "CBaseEntity_SpawnRadius"],
+        ["CGameSceneNode_PostSpawnKeyValues", "CBaseEntity_SpawnRadius"],
     ),
 ]
 

@@ -7,7 +7,7 @@ TARGET_FUNCTION_NAMES = [
     "CBaseEntity_SpawnRadius",
 ]
 
-FUNC_XREFS = [
+FUNC_XREFS_WINDOWS = [
     # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list)
     (
         "CBaseEntity_SpawnRadius",
@@ -15,7 +15,25 @@ FUNC_XREFS = [
             "radius",
             "hammerUniqueId",
         ],
-        ["DC CD AB 6D"],
+        [
+            "DC CD AB 6D"
+        ],
+        [],
+        [],
+    ),
+]
+
+FUNC_XREFS_LINUX = [
+    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list)
+    (
+        "CBaseEntity_SpawnRadius",
+        [
+            "radius",
+            "hammerUniqueId",
+        ],
+        [
+            "20 59 41 31"
+        ],
         [],
         [],
     ),
@@ -48,7 +66,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xrefs=FUNC_XREFS,
+        func_xrefs=FUNC_XREFS_WINDOWS if platform == "windows" else FUNC_XREFS_LINUX,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )

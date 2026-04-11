@@ -1313,6 +1313,10 @@ modules:
         expected_output:
           - CBaseEntity_vtable.{platform}.yaml
 
+      - name: find-CGameSceneNode_vtable
+        expected_output:
+          - CGameSceneNode_vtable.{platform}.yaml
+
       - name: find-CBasePlayerController_vtable
         expected_output:
           - CBasePlayerController_vtable.{platform}.yaml
@@ -1806,11 +1810,11 @@ modules:
         expected_input:
           - CBaseEntity_SetOwner.{platform}.yaml
 
-      - name: find-CBaseEntity_Activate
+      - name: find-CGameSceneNode_PostSpawnKeyValues
         expected_output:
-          - CBaseEntity_Activate.{platform}.yaml
+          - CGameSceneNode_PostSpawnKeyValues.{platform}.yaml
         expected_input:
-          - CBaseEntity_vtable.{platform}.yaml
+          - CGameSceneNode_vtable.{platform}.yaml
 
       - name: find-CBaseEntity_SpawnRadius
         expected_output:
@@ -1821,7 +1825,7 @@ modules:
           - CBaseEntity_Spawn.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-          - CBaseEntity_Activate.{platform}.yaml
+          - CGameSceneNode_PostSpawnKeyValues.{platform}.yaml
           - CBaseEntity_SpawnRadius.{platform}.yaml
 
       - name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
@@ -2113,6 +2117,9 @@ modules:
         category: vtable
 
       - name: CBaseEntity_vtable
+        category: vtable
+
+      - name: CGameSceneNode_vtable
         category: vtable
 
       - name: CBasePlayerController_vtable
@@ -2526,11 +2533,10 @@ modules:
         alias:
           - CBaseEntity::Use
 
-      - name: CBaseEntity_Activate
+      - name: CGameSceneNode_PostSpawnKeyValues
         category: vfunc
         alias:
-          - CBaseEntity::Activate
-          - Activate
+          - CGameSceneNode::PostSpawnKeyValues
 
       - name: CBaseEntity_Spawn
         category: vfunc
@@ -2542,7 +2548,6 @@ modules:
         category: func
         alias:
           - CBaseEntity::SpawnRadius
-          - SpawnRadius
 
       - name: CCSPlayer_ItemServices_DropActivePlayerWeapon
         category: vfunc

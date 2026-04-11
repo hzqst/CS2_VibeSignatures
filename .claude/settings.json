@@ -14,7 +14,9 @@
       "MultiEdit(ida_preprocessor_scripts)",
       "Write(ida_preprocessor_scripts)",
       "Bash(mkdir -p)",
-      "Bash(mv -p)"
+      "Bash(mv -p)",
+      "Bash(grep -n)",
+      "Bash(grep -rn)"
     ]
   }
 }
