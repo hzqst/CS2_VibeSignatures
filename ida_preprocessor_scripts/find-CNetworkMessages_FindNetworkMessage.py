@@ -58,7 +58,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CNetworkMessages_FindNetworkMessagePartial", "CNetworkMessages"),
+    ("CNetworkMessages_FindNetworkMessage", "CNetworkMessages"),
 ]
 
 async def preprocess_skill(
