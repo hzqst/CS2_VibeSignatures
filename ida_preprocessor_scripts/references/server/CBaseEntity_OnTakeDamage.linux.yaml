@@ -107,7 +107,7 @@ disasm_code: |-
   .text:0000000001434387                 mov     rax, [rax+8]
   .text:000000000143438B                 jmp     loc_14342BA
 procedure: |-
-  __int64 (__fastcall *__fastcall CBaseEntity_OnTakeDamage(__int64 a1, int *a2))()
+  __int64 (__fastcall *__fastcall CBasePlayerPawn_OnTakeDamage(__int64 a1, int *a2))()
   {
     int v2; // eax
     _QWORD *v3; // rdx
