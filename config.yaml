@@ -1766,7 +1766,7 @@ modules:
         expected_output:
           - CBaseEntity_GetHammerUniqueId.{platform}.yaml
         expected_input:
-          - CBaseEntity_vtable.{platform}.yaml
+          - CBaseEntity_Spawn.{platform}.yaml
 
       - name: find-CBaseTrigger_StartTouch-AND-CBaseTrigger_EndTouch
         expected_output:
