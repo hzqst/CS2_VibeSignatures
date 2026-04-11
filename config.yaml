@@ -1552,6 +1552,11 @@ modules:
           - CBaseEntity_SetStateChanged.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
+          - CNetworkTransmitComponent_StateChanged.{platform}.yaml
+
+      - name: find-CNetworkTransmitComponent_StateChanged
+        expected_output:
+          - CNetworkTransmitComponent_StateChanged.{platform}.yaml
 
       - name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_WeaponServices_DropWeapon
         expected_output:
@@ -2394,6 +2399,11 @@ modules:
         alias:
           - CBaseEntity::SetStateChanged
           - SetStateChanged
+
+      - name: CNetworkTransmitComponent_StateChanged
+        category: func
+        alias:
+          - CNetworkTransmitComponent::StateChanged
 
       - name: Host_Say
         category: func
