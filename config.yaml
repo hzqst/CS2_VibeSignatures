@@ -918,6 +918,8 @@ modules:
       - name: find-CSource2Client_OnDisconnect
         expected_output:
           - CSource2Client_OnDisconnect.{platform}.yaml
+        expected_input:
+          - CSource2Client_vtable.{platform}.yaml
 
       - name: find-IGameSystem_Disconnect
         expected_output:
@@ -1199,7 +1201,7 @@ modules:
         category: vtable
 
       - name: CSource2Client_OnDisconnect
-        category: func
+        category: vfunc
         alias:
           - CSource2Client::OnDisconnect
 
