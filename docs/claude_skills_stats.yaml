@@ -587,11 +587,6 @@ items:
   classicy: misc
   owner_func_name: null
   owner_module: client
-- symbol_name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
-  skill_name: find-CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
-  classicy: with_xref_strings
-  owner_func_name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
-  owner_module: server
 - symbol_name: CTakeDamageInfo_GetWeaponName
   skill_name: find-CTakeDamageInfo_GetWeaponName
   classicy: with_xref_strings
