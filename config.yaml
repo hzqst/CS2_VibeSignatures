@@ -1438,11 +1438,15 @@ modules:
         expected_input:
           - CCSGameRules_vtable.{platform}.yaml
 
-      - name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
+      - name: find-CCSGameRules_TerminateRound
         expected_output:
           - CCSGameRules_TerminateRound.{platform}.yaml
+
+      - name: find-CEntityInstance_AcceptInput
+        expected_output:
           - CEntityInstance_AcceptInput.{platform}.yaml
-        max_retries: 4
+        expected_input:
+          - CCSGameRules_TerminateRound.{platform}.yaml
 
       - name: find-CEntityIdentity_AcceptInput
         expected_output:

@@ -189,16 +189,6 @@ items:
   classicy: misc
   owner_func_name: CCSBotManager_AddBot
   owner_module: server
-- symbol_name: CCSGameRules_TerminateRound
-  skill_name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
-  classicy: with_xref_strings
-  owner_func_name: CCSGameRules_TerminateRound
-  owner_module: server
-- symbol_name: CEntityInstance_AcceptInput
-  skill_name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
-  classicy: by_decompile
-  owner_func_name: CCSGameRules_TerminateRound
-  owner_module: server
 - symbol_name: CCSGameRules__sm_mapGcBanInformation
   skill_name: find-CCSGameRules__sm_mapGcBanInformation
   classicy: by_decompile
