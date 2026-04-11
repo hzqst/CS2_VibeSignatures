@@ -8,6 +8,7 @@ dependencies = [
     "httpx",
     "mcp",
     "openai",
+    "python-dotenv",
     "pyyaml",
     "requests",
     "vdf",

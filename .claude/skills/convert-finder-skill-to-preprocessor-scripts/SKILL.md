@@ -395,6 +395,62 @@ If a combined SKILL.md was split into multiple preprocessor scripts, delete the 
 
 ---
 
+## Step 7: Delete Existing Output YAMLs
+
+After the preprocessor script is created and the old SKILL.md is deleted, remove all previously generated output YAMLs so the user can validate the new preprocessor script from scratch by running `uv run ida_analyze_bin.py`.
+
+For each target function, delete all matching YAMLs across all game versions:
+
+```
+bin/*/{module}/{FUNC_NAME}.windows.yaml
+bin/*/{module}/{FUNC_NAME}.linux.yaml
+```
+
+For example, if the skill targets `CBasePlayerController_HandleCommand_JoinTeam` in the `server` module:
+
+```bash
+find bin -name "CBasePlayerController_HandleCommand_JoinTeam.*.yaml" -delete
+```
+
+If the skill was split into multiple scripts with multiple target functions, delete YAMLs for ALL target functions.
+
+---
+
+## Step 8: Remove Entry from docs/claude_skills_stats.yaml
+
+After the conversion is complete and validated, delete the converted skill's entry from `docs/claude_skills_stats.yaml`. This file tracks skills that still use the old SKILL.md format — once converted to a preprocessor script, the entry is no longer relevant.
+
+Remove the entire YAML block for each converted symbol, e.g.:
+
+```yaml
+# Delete this entire block:
+- symbol_name: CBasePlayerController_HandleCommand_JoinTeam
+  skill_name: find-CBasePlayerController_HandleCommand_JoinTeam
+  classicy: with_xref_strings
+  owner_func_name: CBasePlayerController_HandleCommand_JoinTeam
+  owner_module: server
+```
+
+If the original SKILL.md covered multiple symbols, delete ALL corresponding entries from the stats file.
+
+---
+
+## Step 9: Run Tests
+
+After all conversion steps are complete, run the full preprocessor test to validate the new script works:
+
+```bash
+uv run ida_analyze_bin.py -debug
+```
+
+Check the **Summary** at the end of the output:
+- **Failed: 0** means the conversion is correct
+- If any failures, investigate the specific skill output for errors
+
+This step is mandatory — do not report completion without running and passing this validation.
+
+---
+
 ## Checklist
 
 Before finishing, verify:
@@ -412,6 +468,9 @@ Before finishing, verify:
 - [ ] config.yaml `symbols` section has entries for all target functions (no duplicates)
 - [ ] Reference YAMLs exist or user is informed they need creation (Pattern C)
 - [ ] Old SKILL.md and its directory are deleted
+- [ ] Existing output YAMLs under `bin/*/` are deleted for all target functions
+- [ ] Entry removed from `docs/claude_skills_stats.yaml` for all converted symbols
+- [ ] `uv run ida_analyze_bin.py -debug` passes with 0 failures
 
 ## Real-World Examples
 

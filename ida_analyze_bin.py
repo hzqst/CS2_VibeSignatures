@@ -33,6 +33,9 @@ import inspect
 import json
 import os
 import re
+
+from dotenv import load_dotenv
+load_dotenv()
 import socket
 import subprocess
 import sys
@@ -526,8 +529,9 @@ def parse_args():
     )
     parser.add_argument(
         "-gamever",
-        required=True,
-        help="Game version subdirectory name (required)"
+        default=os.environ.get("CS2VIBE_GAMEVER"),
+        required="CS2VIBE_GAMEVER" not in os.environ,
+        help="Game version subdirectory name (required, or set CS2VIBE_GAMEVER env var)"
     )
     parser.add_argument(
         "-platform",
@@ -536,8 +540,8 @@ def parse_args():
     )
     parser.add_argument(
         "-agent",
-        default=DEFAULT_AGENT,
-        help=f"Agent executable to use for analysis, e.g., claude, claude.cmd, codex, codex.cmd (default: {DEFAULT_AGENT})"
+        default=os.environ.get("CS2VIBE_AGENT", DEFAULT_AGENT),
+        help=f"Agent executable to use for analysis, e.g., claude, claude.cmd, codex, codex.cmd (default: {DEFAULT_AGENT}, or set CS2VIBE_AGENT env var)"
     )
     parser.add_argument(
         "-modules",
@@ -551,18 +555,18 @@ def parse_args():
     )
     parser.add_argument(
         "-llm_model",
-        default=DEFAULT_LLM_MODEL,
-        help=f"OpenAI-compatible model for preprocessing and vcall_finder workflow (default: {DEFAULT_LLM_MODEL})"
+        default=os.environ.get("CS2VIBE_LLM_MODEL", DEFAULT_LLM_MODEL),
+        help=f"OpenAI-compatible model for preprocessing and vcall_finder workflow (default: {DEFAULT_LLM_MODEL}, or set CS2VIBE_LLM_MODEL env var)"
     )
     parser.add_argument(
         "-llm_apikey",
-        default=None,
-        help="OpenAI-compatible API key used by preprocessing and vcall_finder aggregation"
+        default=os.environ.get("CS2VIBE_LLM_APIKEY"),
+        help="OpenAI-compatible API key used by preprocessing and vcall_finder aggregation (or set CS2VIBE_LLM_APIKEY env var)"
     )
     parser.add_argument(
         "-llm_baseurl",
-        default=None,
-        help="Optional OpenAI-compatible base URL used by preprocessing and vcall_finder aggregation"
+        default=os.environ.get("CS2VIBE_LLM_BASEURL"),
+        help="Optional OpenAI-compatible base URL used by preprocessing and vcall_finder aggregation (or set CS2VIBE_LLM_BASEURL env var)"
     )
     parser.add_argument(
         "-ida_args",

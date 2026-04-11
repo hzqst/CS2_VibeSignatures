@@ -20,7 +20,8 @@
       "Bash(grep -l)",
       "Bash(sed -n)",
       "Bash(git status)",
-      "Bash(git diff)"
+      "Bash(git diff)",
+      "Bash(uv run ida_analyze_bin.py)"
     ]
   }
 }

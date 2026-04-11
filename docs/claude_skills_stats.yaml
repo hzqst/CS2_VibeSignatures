@@ -94,31 +94,6 @@ items:
   classicy: by_decompile
   owner_func_name: touch_event_handler
   owner_module: server
-- symbol_name: CBaseEntity_TakeDamageOld
-  skill_name: find-CBaseEntity_TakeDamageOld
-  classicy: with_xref_strings
-  owner_func_name: CBaseEntity_TakeDamageOld
-  owner_module: server
-- symbol_name: CBasePlayerPawn_OnTakeDamage
-  skill_name: find-CBaseEntity_TakeDamageOld
-  classicy: by_decompile
-  owner_func_name: CBaseEntity_TakeDamageOld
-  owner_module: server
-- symbol_name: CBasePlayerPawn_OnTakeDamage_Alive
-  skill_name: find-CBaseEntity_TakeDamageOld
-  classicy: by_decompile
-  owner_func_name: CBasePlayerPawn_OnTakeDamage
-  owner_module: server
-- symbol_name: CBasePlayerPawn_OnTakeDamage_Dead
-  skill_name: find-CBaseEntity_TakeDamageOld
-  classicy: by_decompile
-  owner_func_name: CBasePlayerPawn_OnTakeDamage
-  owner_module: server
-- symbol_name: CBasePlayerPawn_OnTakeDamage_Dying
-  skill_name: find-CBaseEntity_TakeDamageOld
-  classicy: by_decompile
-  owner_func_name: CBasePlayerPawn_OnTakeDamage
-  owner_module: server
 - symbol_name: CBaseEntity_Use
   skill_name: find-CBaseEntity_Use
   classicy: by_decompile
@@ -138,16 +113,6 @@ items:
   skill_name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
   classicy: by_decompile
   owner_func_name: flashbang_grenade_initializer
-  owner_module: server
-- symbol_name: CBasePlayerController_HandleCommand_JoinTeam
-  skill_name: find-CBasePlayerController_HandleCommand_JoinTeam
-  classicy: with_xref_strings
-  owner_func_name: CBasePlayerController_HandleCommand_JoinTeam
-  owner_module: server
-- symbol_name: CBasePlayerController_ProcessUsercmds
-  skill_name: find-CBasePlayerController_ProcessUsercmds
-  classicy: with_xref_strings
-  owner_func_name: CBasePlayerController_ProcessUsercmds
   owner_module: server
 - symbol_name: CBasePlayerController_Respawn
   skill_name: find-CBasePlayerController_Respawn
@@ -223,11 +188,6 @@ items:
   skill_name: find-CCSBotManager_AddBot_BotNavIgnore
   classicy: misc
   owner_func_name: CCSBotManager_AddBot
-  owner_module: server
-- symbol_name: CCSGameRules_GoToIntermission
-  skill_name: find-CCSGameRules_GoToIntermission
-  classicy: with_xref_strings
-  owner_func_name: CCSGameRules_GoToIntermission
   owner_module: server
 - symbol_name: CCSGameRules_TerminateRound
   skill_name: find-CCSGameRules_TerminateRound-AND-CEntityInstance_AcceptInput
