@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CBasePlayerPawn_OnTakeDamage skill."""
+"""Preprocess script for find-CBaseEntity_OnTakeDamage skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CBasePlayerPawn_OnTakeDamage",
+    "CBaseEntity_OnTakeDamage",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CBasePlayerPawn_OnTakeDamage",
+        "CBaseEntity_OnTakeDamage",
         "prompt/call_llm_decompile.md",
         "references/server/CBaseEntity_TakeDamageOld.{platform}.yaml",
     ),
@@ -18,13 +18,13 @@ LLM_DECOMPILE = [
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CBasePlayerPawn_OnTakeDamage", "CBasePlayerPawn"),
+    ("CBaseEntity_OnTakeDamage", "CBasePlayerPawn"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CBasePlayerPawn_OnTakeDamage",
+        "CBaseEntity_OnTakeDamage",
         [
             "func_name",
             "vfunc_sig",

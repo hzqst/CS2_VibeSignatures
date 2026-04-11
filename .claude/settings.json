@@ -18,7 +18,9 @@
       "Bash(grep -n)",
       "Bash(grep -rn)",
       "Bash(grep -l)",
-      "Bash(sed -n)"
+      "Bash(sed -n)",
+      "Bash(git status)",
+      "Bash(git diff)"
     ]
   }
 }

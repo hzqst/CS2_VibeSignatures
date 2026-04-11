@@ -86,7 +86,7 @@ disasm_code: |-
   .text:0000000180A8A7B6                 pop     rdi
   .text:0000000180A8A7B7                 jmp     qword ptr [rax+7C8h]; 0x7C8 = CBaseEntity_OnTakeDamage_Alive
 procedure: |-
-  __int64 __fastcall CBaseEntity_OnTakeDamage(__int64 *a1, int *a2)
+  __int64 __fastcall CBasePlayerPawn_OnTakeDamage(__int64 *a1, int *a2)
   {
     _BYTE *v4; // rax
     float *v5; // r8

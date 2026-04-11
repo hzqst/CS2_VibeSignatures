@@ -374,7 +374,7 @@ disasm_code: |-
   .text:00000001803CEF4B                 mov     rax, [rsi]
   .text:00000001803CEF4E                 mov     rdx, r14
   .text:00000001803CEF51                 mov     rcx, rsi
-  .text:00000001803CEF54                 call    qword ptr [rax+3F0h]; 0x3F0 = CBaseEntity_TakeDamage
+  .text:00000001803CEF54                 call    qword ptr [rax+3F0h]; 0x3F0 = CBaseEntity_OnTakeDamage
   .text:00000001803CEF5A                 movsxd  rax, dword ptr cs:qword_181EED810
   .text:00000001803CEF61                 test    eax, eax
   .text:00000001803CEF63                 jle     short loc_1803CEF92
@@ -609,7 +609,7 @@ procedure: |-
               v39 = (int)v8;
               v6[4] = (int)v8;
               v6[7] = (int)v8;
-              v40 = (int)sub_1803B8E90(v6);
+              v40 = (int)sub_1803B8E90((__int64)v6);
               if ( (int)v8 >= v40 )
                 v39 = v40;
               v6[2] = v39;
@@ -622,7 +622,7 @@ procedure: |-
                 v42 = *(_QWORD *)(v41 + 8LL * (int)qword_181EED810 - 8);
                 (*(void (__fastcall **)(__int64, _QWORD *, __int64, _DWORD *))(*(_QWORD *)v42 + 32LL))(v42, a1, a2, v6);
               }
-              (*(void (__fastcall **)(_QWORD *, _DWORD *))(*a1 + 1008LL))(a1, v6);// 1008LL = CBaseEntity_TakeDamage
+              (*(void (__fastcall **)(_QWORD *, _DWORD *))(*a1 + 1008LL))(a1, v6);// 1008LL = CBaseEntity_OnTakeDamage
               if ( (int)qword_181EED810 <= 0 )
                 goto LABEL_89;
               v43 = qword_181EED818;

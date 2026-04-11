@@ -1,0 +1,442 @@
+---
+name: convert-finder-skill-to-preprocessor-scripts
+description: |
+  Convert an existing find-XXXX SKILL.md into a preprocessor Python script, updating config.yaml
+  and removing the old SKILL.md. Covers xref-string-based and LLM_DECOMPILE-based discovery patterns.
+  Trigger: convert skill, port skill, preprocessor script, migrate skill
+---
+
+# Convert Finder SKILL.md to Preprocessor Script
+
+Port an existing `.claude/skills/find-XXXX/SKILL.md` into an `ida_preprocessor_scripts/find-XXXX.py`
+preprocessor script, update `config.yaml` entries, and delete the old SKILL.md.
+
+## When to Use
+
+- A `find-XXXX` SKILL.md exists in `.claude/skills/` and needs to be converted to a preprocessor script
+- The SKILL.md uses either **xref-string search** (`find_regex` / `xrefs_to`) or **decompile-based vtable analysis** to discover functions
+
+## Overview
+
+Three preprocessor patterns exist. The SKILL.md's discovery method determines which to use:
+
+| Pattern | Discovery Method | Has FUNC_XREFS | Has LLM_DECOMPILE | Has FUNC_VTABLE_RELATIONS | preprocess_skill has llm_config |
+|---------|-----------------|-----------------|---------------------|---------------------------|-------------------------------|
+| **A** — Regular function via xref strings | `find_regex` + `xrefs_to` on debug strings | Yes | No | No | No |
+| **B** — Virtual function via xref strings | Same as A, but function is in a vtable | Yes | No | Yes | No |
+| **C** — Virtual function via LLM_DECOMPILE | Decompile a known predecessor function, identify vfunc call offsets | No | Yes | Yes | Yes |
+
+---
+
+## Step 1: Read and Analyze the SKILL.md
+
+Read the target `.claude/skills/find-XXXX/SKILL.md`.
+
+Extract:
+1. **Target function names** — all functions the skill identifies (may be 1 or many)
+2. **Discovery method** for each function:
+   - Does it use `find_regex` / `xrefs_to` with debug strings? → **xref-string based**
+   - Does it load a predecessor YAML, decompile that function, and extract vfunc offsets from code patterns? → **LLM_DECOMPILE based**
+3. **Function category** — `func` (regular) or `vfunc` (virtual, has vtable slot)
+4. **VTable class name** — if virtual, e.g. `CBaseEntity`, `CBasePlayerPawn`, `INetworkMessages`
+5. **Xref strings** — debug strings used in `find_regex` patterns (for xref-string patterns)
+6. **Predecessor function** — the function whose decompiled code reveals the target (for LLM_DECOMPILE patterns)
+7. **Dependencies** — which existing YAMLs are needed as inputs (vtable YAMLs, predecessor function YAMLs)
+
+## Step 2: Plan the Split
+
+If the SKILL.md discovers multiple functions using **different methods** or from **different starting points**, split them into separate preprocessor scripts. Each script handles one "discovery unit" — a group of functions findable from the same method and starting point.
+
+**Same script:** Functions found from the same xref string, or from the same decompiled reference.
+**Separate scripts:** Functions found by xref strings vs. functions found by decompiling one of those xref-found functions.
+
+Example split (what we did for CBaseEntity_TakeDamageOld):
+- Script 1: `find-CBaseEntity_TakeDamageOld.py` — finds TakeDamageOld via xref string (Pattern A)
+- Script 2: `find-CBaseEntity_OnTakeDamage.py` — finds OnTakeDamage by decompiling TakeDamageOld (Pattern C)
+- Script 3: `find-CBaseEntity_OnTakeDamage_Alive-AND-Dying-AND-Dead.py` — finds 3 vfuncs by decompiling OnTakeDamage (Pattern C)
+
+## Step 3: Generate the Preprocessor Script(s)
+
+Script location: `ida_preprocessor_scripts/find-{skill_name}.py`
+
+The filename MUST match the `name` field in `config.yaml` skill entry.
+
+### Pattern A — Regular function via xref strings
+
+Use when: function is non-virtual, discovered via debug string cross-references.
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{SKILL_NAME} skill."""
+
+from ida_analyze_util import preprocess_common_skill
+
+TARGET_FUNCTION_NAMES = [
+    "{FUNC_NAME}",
+]
+
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list, exclude_strings_list)
+    (
+        "{FUNC_NAME}",
+        [
+            "{XREF_STRING_1}",  # Debug string from SKILL.md's find_regex pattern
+        ],
+        [],   # xref_signatures_list — byte patterns if needed, usually empty
+        [],   # xref_funcs_list — known caller function names if needed
+        [],   # exclude_funcs_list — function names to exclude from results
+        [],   # exclude_strings_list — strings to exclude
+    ),
+]
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    # (symbol_name, generate_yaml_fields)
+    (
+        "{FUNC_NAME}",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
+        ],
+    ),
+]
+
+async def preprocess_skill(
+    session, skill_name, expected_outputs, old_yaml_map,
+    new_binary_dir, platform, image_base, debug=False,
+):
+    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    return await preprocess_common_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        old_yaml_map=old_yaml_map,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        image_base=image_base,
+        func_names=TARGET_FUNCTION_NAMES,
+        func_xrefs=FUNC_XREFS,
+        generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
+        debug=debug,
+    )
+```
+
+### Pattern B — Virtual function via xref strings
+
+Use when: function IS virtual (has vtable slot), but discovered via debug string cross-references.
+
+Same as Pattern A, but adds `FUNC_VTABLE_RELATIONS` and vtable fields to `GENERATE_YAML_DESIRED_FIELDS`:
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{SKILL_NAME} skill."""
+
+from ida_analyze_util import preprocess_common_skill
+
+TARGET_FUNCTION_NAMES = [
+    "{FUNC_NAME}",
+]
+
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list, exclude_strings_list)
+    (
+        "{FUNC_NAME}",
+        [
+            "{XREF_STRING_1}",
+        ],
+        [],
+        [],
+        [],
+        [],
+    ),
+]
+
+FUNC_VTABLE_RELATIONS = [
+    # (func_name, vtable_class)
+    ("{FUNC_NAME}", "{VTABLE_CLASS}"),
+]
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    # (symbol_name, generate_yaml_fields)
+    (
+        "{FUNC_NAME}",
+        [
+            "func_name",
+            "func_va",
+            "func_rva",
+            "func_size",
+            "func_sig",
+            "vtable_name",
+            "vfunc_offset",
+            "vfunc_index",
+        ],
+    ),
+]
+
+async def preprocess_skill(
+    session, skill_name, expected_outputs, old_yaml_map,
+    new_binary_dir, platform, image_base, debug=False,
+):
+    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    return await preprocess_common_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        old_yaml_map=old_yaml_map,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        image_base=image_base,
+        func_names=TARGET_FUNCTION_NAMES,
+        func_xrefs=FUNC_XREFS,
+        func_vtable_relations=FUNC_VTABLE_RELATIONS,
+        generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
+        debug=debug,
+    )
+```
+
+### Pattern C — Virtual function via LLM_DECOMPILE
+
+Use when: function is virtual, discovered by decompiling a known predecessor function and reading vfunc call offsets from the decompiled code.
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{SKILL_NAME} skill."""
+
+from ida_analyze_util import preprocess_common_skill
+
+TARGET_FUNCTION_NAMES = [
+    "{FUNC_NAME_1}",
+    # "{FUNC_NAME_2}",  # Add more if the skill finds multiple functions from the same reference
+]
+
+LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
+    # ONE entry per target function. All entries sharing the same reference
+    # YAML will be resolved from the same decompiled predecessor code.
+    (
+        "{FUNC_NAME_1}",
+        "prompt/call_llm_decompile.md",
+        "references/{MODULE}/{PREDECESSOR_FUNC}.{platform}.yaml",
+    ),
+    (
+        "{FUNC_NAME_2}",
+        "prompt/call_llm_decompile.md",
+        "references/{MODULE}/{PREDECESSOR_FUNC}.{platform}.yaml",
+    ),
+    # ... one entry per target function, all pointing to the same reference
+]
+
+FUNC_VTABLE_RELATIONS = [
+    # (func_name, vtable_class)
+    ("{FUNC_NAME_1}", "{VTABLE_CLASS}"),
+    ("{FUNC_NAME_2}", "{VTABLE_CLASS}"),
+    # ... one entry per target function
+]
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    # (symbol_name, generate_yaml_fields)
+    (
+        "{FUNC_NAME_1}",
+        [
+            "func_name",
+            "vfunc_sig",
+            "vfunc_offset",
+            "vfunc_index",
+            "vtable_name",
+        ],
+    ),
+    (
+        "{FUNC_NAME_2}",
+        [
+            "func_name",
+            "vfunc_sig",
+            "vfunc_offset",
+            "vfunc_index",
+            "vtable_name",
+        ],
+    ),
+    # ... one entry per target function
+]
+
+async def preprocess_skill(
+    session, skill_name, expected_outputs, old_yaml_map,
+    new_binary_dir, platform, image_base, llm_config=None, debug=False,
+):
+
+    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    return await preprocess_common_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        old_yaml_map=old_yaml_map,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        image_base=image_base,
+        func_names=TARGET_FUNCTION_NAMES,
+        func_vtable_relations=FUNC_VTABLE_RELATIONS,
+        llm_decompile_specs=LLM_DECOMPILE,
+        llm_config=llm_config,
+        generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
+        debug=debug,
+    )
+```
+
+### Key Differences Between Patterns
+
+| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) |
+|--------|------------------------|--------------------------|------------------------|
+| FUNC_XREFS | Yes | Yes | No |
+| FUNC_VTABLE_RELATIONS | No | Yes | Yes |
+| LLM_DECOMPILE | No | No | Yes |
+| `llm_config` param | No | No | Yes |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name |
+| config category | `func` | `vfunc` | `vfunc` |
+
+---
+
+## Step 4: Update config.yaml
+
+### 4a. Skills Section
+
+Each preprocessor script needs a corresponding skill entry under the appropriate module's `skills:` list.
+
+Find the module section (e.g. `server`, `engine`, `networksystem`) and add/update entries.
+
+**Template:**
+
+```yaml
+      - name: find-{SKILL_NAME}
+        expected_output:
+          - {FUNC_NAME_1}.{platform}.yaml
+          # - {FUNC_NAME_2}.{platform}.yaml  # One per target function
+        # expected_input only if the skill depends on other YAMLs:
+        expected_input:
+          - {PREDECESSOR_FUNC}.{platform}.yaml    # For Pattern C: the reference function
+          - {VTABLE_CLASS}_vtable.{platform}.yaml  # For Patterns B & C: the vtable
+```
+
+**Rules:**
+- `expected_output`: One `.{platform}.yaml` per target function in the script
+- `expected_input`: Include predecessor function YAML (Pattern C) and/or vtable YAML (Patterns B & C)
+- Pattern A with no vtable: typically NO `expected_input`
+- If splitting a combined skill, each new entry should have its own `expected_input` referencing the predecessor's output
+
+**Dependency chain example** (3-script split):
+
+```yaml
+      # Pattern A: found via xref string, no dependencies
+      - name: find-FuncA
+        expected_output:
+          - FuncA.{platform}.yaml
+
+      # Pattern C: found by decompiling FuncA, needs FuncA + vtable
+      - name: find-FuncB
+        expected_output:
+          - FuncB.{platform}.yaml
+        expected_input:
+          - FuncA.{platform}.yaml
+          - SomeClass_vtable.{platform}.yaml
+
+      # Pattern C: found by decompiling FuncB, needs FuncB + vtable
+      - name: find-FuncC1-AND-FuncC2-AND-FuncC3
+        expected_output:
+          - FuncC1.{platform}.yaml
+          - FuncC2.{platform}.yaml
+          - FuncC3.{platform}.yaml
+        expected_input:
+          - FuncB.{platform}.yaml
+          - SomeClass_vtable.{platform}.yaml
+```
+
+### 4b. Symbols Section
+
+For each NEW target function, add a symbol entry under the same module's `symbols:` list (if not already present).
+
+```yaml
+      # Regular function (Pattern A)
+      - name: {FUNC_NAME}
+        category: func
+        alias:
+          - {ClassName}::{MethodName}   # e.g. CBaseEntity::TakeDamageOld
+
+      # Virtual function (Patterns B & C)
+      - name: {FUNC_NAME}
+        category: vfunc
+        alias:
+          - {ClassName}::{MethodName}   # e.g. CBasePlayerPawn::OnTakeDamage
+```
+
+Check existing symbols before adding — do NOT create duplicates.
+
+---
+
+## Step 5: Handle Reference YAMLs (Pattern C only)
+
+Pattern C scripts reference a predecessor function's YAML at:
+`ida_preprocessor_scripts/references/{module}/{PREDECESSOR_FUNC}.{platform}.yaml`
+
+These reference files contain the decompiled code of the predecessor function (both `disasm_code` and `procedure` fields) so the LLM can identify vfunc call patterns.
+
+**Check** if the reference YAML already exists:
+- `ida_preprocessor_scripts/references/{module}/{PREDECESSOR_FUNC}.linux.yaml`
+- `ida_preprocessor_scripts/references/{module}/{PREDECESSOR_FUNC}.windows.yaml`
+
+If NOT present, inform the user that they need to create the reference YAMLs manually (or that the predecessor function's skill must run first to generate them).
+
+---
+
+## Step 6: Delete the SKILL.md
+
+After the preprocessor script is created and config.yaml is updated:
+
+1. Delete the SKILL.md file: `.claude/skills/find-{SKILL_NAME}/SKILL.md`
+2. Delete the now-empty directory: `.claude/skills/find-{SKILL_NAME}/`
+
+If a combined SKILL.md was split into multiple preprocessor scripts, delete the single original SKILL.md.
+
+---
+
+## Checklist
+
+Before finishing, verify:
+
+- [ ] Preprocessor script file name matches the `name` field in config.yaml skill entry
+- [ ] `TARGET_FUNCTION_NAMES` lists all functions the script should find
+- [ ] `FUNC_XREFS` xref strings match the debug strings from the original SKILL.md (Pattern A/B)
+- [ ] `LLM_DECOMPILE` reference path points to the correct predecessor function YAML (Pattern C)
+- [ ] `FUNC_VTABLE_RELATIONS` lists correct vtable class for each virtual function (Pattern B/C)
+- [ ] `GENERATE_YAML_DESIRED_FIELDS` uses correct field set for the pattern
+- [ ] `preprocess_skill` signature includes `llm_config=None` if and only if LLM_DECOMPILE is used
+- [ ] `preprocess_common_skill` call passes all relevant lists (`func_xrefs`, `func_vtable_relations`, `llm_decompile_specs`, `llm_config`)
+- [ ] config.yaml `expected_output` has one entry per target function
+- [ ] config.yaml `expected_input` correctly chains dependencies
+- [ ] config.yaml `symbols` section has entries for all target functions (no duplicates)
+- [ ] Reference YAMLs exist or user is informed they need creation (Pattern C)
+- [ ] Old SKILL.md and its directory are deleted
+
+## Real-World Examples
+
+### Example: xref-string regular function (Pattern A)
+
+**Before:** `.claude/skills/find-CBaseEntity_TakeDamageOld/SKILL.md` — used `find_regex pattern="TakeDamageOld.*GetDamageForce"` to locate the function.
+
+**After:** `ida_preprocessor_scripts/find-CBaseEntity_TakeDamageOld.py` with:
+- `FUNC_XREFS` containing `"CBaseEntity::TakeDamageOld: damagetype %d with info.GetDamageForce() == Vector::vZero"`
+- `GENERATE_YAML_DESIRED_FIELDS` with `func_name, func_sig, func_va, func_rva, func_size`
+- No `FUNC_VTABLE_RELATIONS`, no `LLM_DECOMPILE`
+
+### Example: LLM_DECOMPILE virtual function (Pattern C)
+
+**Derived from:** the same SKILL.md's "decompile TakeDamageOld and find vfunc call to OnTakeDamage" steps.
+
+**Result:** `ida_preprocessor_scripts/find-CBaseEntity_OnTakeDamage.py` with:
+- `LLM_DECOMPILE` referencing `references/server/CBaseEntity_TakeDamageOld.{platform}.yaml`
+- `FUNC_VTABLE_RELATIONS`: `("CBaseEntity_OnTakeDamage", "CBasePlayerPawn")`
+- `GENERATE_YAML_DESIRED_FIELDS` with `func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name`
+
+### Example: LLM_DECOMPILE multiple virtual functions (Pattern C)
+
+**Derived from:** the same SKILL.md's "decompile OnTakeDamage and find Alive/Dying/Dead vfunc offsets" steps.
+
+**Result:** `ida_preprocessor_scripts/find-CBaseEntity_OnTakeDamage_Alive-AND-Dying-AND-Dead.py` with:
+- 3 target functions, 3 `LLM_DECOMPILE` entries (all referencing the same YAML), 3 `FUNC_VTABLE_RELATIONS` entries, 3 `GENERATE_YAML_DESIRED_FIELDS` entries
+- Each `LLM_DECOMPILE` entry references `references/server/CBaseEntity_OnTakeDamage.{platform}.yaml`

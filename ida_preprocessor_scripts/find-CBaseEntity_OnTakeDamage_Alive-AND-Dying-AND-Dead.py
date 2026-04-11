@@ -1,34 +1,44 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CBasePlayerPawn_OnTakeDamage_Alive-AND-Dying-AND-Dead skill."""
+"""Preprocess script for find-CBaseEntity_OnTakeDamage_Alive-AND-Dying-AND-Dead skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CBasePlayerPawn_OnTakeDamage_Alive",
-    "CBasePlayerPawn_OnTakeDamage_Dying",
-    "CBasePlayerPawn_OnTakeDamage_Dead",
+    "CBaseEntity_OnTakeDamage_Alive",
+    "CBaseEntity_OnTakeDamage_Dying",
+    "CBaseEntity_OnTakeDamage_Dead",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CBasePlayerPawn_OnTakeDamage_Alive",
+        "CBaseEntity_OnTakeDamage_Alive",
         "prompt/call_llm_decompile.md",
-        "references/server/CBasePlayerPawn_OnTakeDamage.{platform}.yaml",
+        "references/server/CBaseEntity_OnTakeDamage.{platform}.yaml",
+    ),
+    (
+        "CBaseEntity_OnTakeDamage_Dying",
+        "prompt/call_llm_decompile.md",
+        "references/server/CBaseEntity_OnTakeDamage.{platform}.yaml",
+    ),
+    (
+        "CBaseEntity_OnTakeDamage_Dead",
+        "prompt/call_llm_decompile.md",
+        "references/server/CBaseEntity_OnTakeDamage.{platform}.yaml",
     ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CBasePlayerPawn_OnTakeDamage_Alive", "CBasePlayerPawn"),
-    ("CBasePlayerPawn_OnTakeDamage_Dying", "CBasePlayerPawn"),
-    ("CBasePlayerPawn_OnTakeDamage_Dead", "CBasePlayerPawn"),
+    ("CBaseEntity_OnTakeDamage_Alive", "CBasePlayerPawn"),
+    ("CBaseEntity_OnTakeDamage_Dying", "CBasePlayerPawn"),
+    ("CBaseEntity_OnTakeDamage_Dead", "CBasePlayerPawn"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CBasePlayerPawn_OnTakeDamage_Alive",
+        "CBaseEntity_OnTakeDamage_Alive",
         [
             "func_name",
             "vfunc_sig",
@@ -38,7 +48,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
         ],
     ),
     (
-        "CBasePlayerPawn_OnTakeDamage_Dying",
+        "CBaseEntity_OnTakeDamage_Dying",
         [
             "func_name",
             "vfunc_sig",
@@ -48,7 +58,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
         ],
     ),
     (
-        "CBasePlayerPawn_OnTakeDamage_Dead",
+        "CBaseEntity_OnTakeDamage_Dead",
         [
             "func_name",
             "vfunc_sig",

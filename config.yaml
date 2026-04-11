@@ -1361,21 +1361,21 @@ modules:
         expected_output:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
 
-      - name: find-CBasePlayerPawn_OnTakeDamage
+      - name: find-CBaseEntity_OnTakeDamage
         expected_output:
-          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
+          - CBaseEntity_OnTakeDamage.{platform}.yaml
         expected_input:
           - CBaseEntity_TakeDamageOld.{platform}.yaml
-          - CBasePlayerPawn_vtable.{platform}.yaml
+          - CBaseEntity_vtable.{platform}.yaml
 
-      - name: find-CBasePlayerPawn_OnTakeDamage_Alive-AND-Dying-AND-Dead
+      - name: find-CBaseEntity_OnTakeDamage_Alive-AND-Dying-AND-Dead
         expected_output:
-          - CBasePlayerPawn_OnTakeDamage_Alive.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage_Dying.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Alive.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Dying.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Dead.{platform}.yaml
         expected_input:
-          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
-          - CBasePlayerPawn_vtable.{platform}.yaml
+          - CBaseEntity_OnTakeDamage.{platform}.yaml
+          - CBaseEntity_vtable.{platform}.yaml
 
       - name: find-CCSPlayerPawn_OnTakeDamage
         expected_output:
@@ -1385,10 +1385,10 @@ modules:
           - CCSPlayerPawn_OnTakeDamage_Dead.{platform}.yaml
         expected_input:
           - CCSPlayerPawn_vtable.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage_Alive.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage_Dying.{platform}.yaml
-          - CBasePlayerPawn_OnTakeDamage_Dead.{platform}.yaml
+          - CBaseEntity_OnTakeDamage.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Alive.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Dying.{platform}.yaml
+          - CBaseEntity_OnTakeDamage_Dead.{platform}.yaml
 
       - name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
         expected_output:
@@ -2171,22 +2171,22 @@ modules:
         alias:
           - CBaseEntity::TakeDamageOld
 
-      - name: CBasePlayerPawn_OnTakeDamage
+      - name: CBaseEntity_OnTakeDamage
         category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage
 
-      - name: CBasePlayerPawn_OnTakeDamage_Alive
+      - name: CBaseEntity_OnTakeDamage_Alive
         category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Alive
 
-      - name: CBasePlayerPawn_OnTakeDamage_Dying
+      - name: CBaseEntity_OnTakeDamage_Dying
         category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Dying
 
-      - name: CBasePlayerPawn_OnTakeDamage_Dead
+      - name: CBaseEntity_OnTakeDamage_Dead
         category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Dead

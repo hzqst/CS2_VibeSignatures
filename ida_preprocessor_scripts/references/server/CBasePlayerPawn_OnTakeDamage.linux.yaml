@@ -1,4 +1,4 @@
-func_name: CBasePlayerPawn_OnTakeDamage
+func_name: CBaseEntity_OnTakeDamage
 func_va: '0x14341f0'
 disasm_code: |-
   .text:00000000014341F0                 push    rbp
@@ -26,7 +26,7 @@ disasm_code: |-
   .text:0000000001434236                 jz      short loc_1434290
   .text:0000000001434238                 cmp     eax, 1
   .text:000000000143423B                 jnz     short loc_1434260
-  .text:000000000143423D                 mov     rax, [rdx+7E0h]; CBasePlayerPawn_OnTakeDamage_Dying
+  .text:000000000143423D                 mov     rax, [rdx+7E0h]; CBaseEntity_OnTakeDamage_Dying
   .text:0000000001434244                 lea     rdx, nullsub_147
   .text:000000000143424B                 cmp     rax, rdx
   .text:000000000143424E                 jnz     short loc_1434273
@@ -38,7 +38,7 @@ disasm_code: |-
   .text:000000000143425B                 pop     r15
   .text:000000000143425D                 pop     rbp
   .text:000000000143425E                 retn
-  .text:0000000001434260                 mov     rax, [rdx+7F0h]; CBasePlayerPawn_OnTakeDamage_Dead
+  .text:0000000001434260                 mov     rax, [rdx+7F0h]; CBaseEntity_OnTakeDamage_Dead
   .text:0000000001434267                 lea     rdx, nullsub_148
   .text:000000000143426E                 cmp     rax, rdx
   .text:0000000001434271                 jz      short loc_1434250
@@ -52,7 +52,7 @@ disasm_code: |-
   .text:0000000001434284                 pop     r15
   .text:0000000001434286                 pop     rbp
   .text:0000000001434287                 jmp     rax
-  .text:0000000001434290                 mov     rax, [rdx+7D0h]; CBasePlayerPawn_OnTakeDamage_Alive
+  .text:0000000001434290                 mov     rax, [rdx+7D0h]; CBaseEntity_OnTakeDamage_Alive
   .text:0000000001434297                 mov     cs:byte_2590404, 0
   .text:000000000143429E                 jmp     short loc_1434273
   .text:00000000014342A0                 lea     rdi, unk_2590410
@@ -107,7 +107,7 @@ disasm_code: |-
   .text:0000000001434387                 mov     rax, [rax+8]
   .text:000000000143438B                 jmp     loc_14342BA
 procedure: |-
-  __int64 (__fastcall *__fastcall CBasePlayerPawn_OnTakeDamage(__int64 a1, int *a2))()
+  __int64 (__fastcall *__fastcall CBaseEntity_OnTakeDamage(__int64 a1, int *a2))()
   {
     int v2; // eax
     _QWORD *v3; // rdx
@@ -150,19 +150,19 @@ procedure: |-
     v3 = *(_QWORD **)a1;
     if ( !v2 )
     {
-      v5 = (__int64 (__fastcall *)(__int64, int *))v3[250];// CBasePlayerPawn_OnTakeDamage_Alive
+      v5 = (__int64 (__fastcall *)(__int64, int *))v3[250];// CBaseEntity_OnTakeDamage_Alive
       byte_2590404 = 0;
       return (__int64 (__fastcall *)())v5(a1, a2);
     }
     if ( v2 == 1 )
     {
-      result = (__int64 (__fastcall *)())v3[252]; // CBasePlayerPawn_OnTakeDamage_Dying
+      result = (__int64 (__fastcall *)())v3[252]; // CBaseEntity_OnTakeDamage_Dying
       if ( result == nullsub_147 )
         return result;
     }
     else
     {
-      result = (__int64 (__fastcall *)())v3[254]; // CBasePlayerPawn_OnTakeDamage_Dead
+      result = (__int64 (__fastcall *)())v3[254]; // CBaseEntity_OnTakeDamage_Dead
       if ( result == nullsub_148 )
         return result;
     }
