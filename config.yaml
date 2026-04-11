@@ -190,6 +190,10 @@ modules:
         expected_output:
           - CFlattenedSerializers_vtable.{platform}.yaml
 
+      - name: find-CNetworkMessages_ConfirmAllMessageHandlersInstalled
+        expected_output:
+          - CNetworkMessages_ConfirmAllMessageHandlersInstalled.{platform}.yaml
+
     symbols:
       - name: CNetworkMessages_vtable
         category: vtable
@@ -374,6 +378,11 @@ modules:
 
       - name: CFlattenedSerializers_vtable
         category: vtable
+
+      - name: CNetworkMessages_ConfirmAllMessageHandlersInstalled
+        category: func
+        alias:
+          - CNetworkMessages::ConfirmAllMessageHandlersInstalled
 
   - name: matchmaking
     path_windows: game/csgo/bin/win64/matchmaking.dll
