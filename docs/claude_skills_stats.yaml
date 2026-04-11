@@ -29,11 +29,6 @@ items:
   classicy: by_decompile
   owner_func_name: named_sound_stop_handler
   owner_module: server
-- symbol_name: CBaseEntity_GetHammerUniqueId
-  skill_name: find-CBaseEntity_GetHammerUniqueId
-  classicy: with_xref_strings
-  owner_func_name: CBaseEntity_GetHammerUniqueId
-  owner_module: server
 - symbol_name: CBaseEntity_GetEyePosition
   skill_name: find-CBaseEntity_IsAlive-AND-CBaseEntity_GetEyePosition-AND-CBasePlayerPawn_GetEyePosition
   classicy: by_decompile
@@ -78,11 +73,6 @@ items:
   skill_name: find-CBaseEntity_SetOwner
   classicy: by_decompile
   owner_func_name: CCSPlayer_WeaponServices_EquipWeapon
-  owner_module: server
-- symbol_name: CBaseEntity_SetStateChanged
-  skill_name: find-CBaseEntity_SetStateChanged
-  classicy: with_xref_strings
-  owner_func_name: CBaseEntity_SetStateChanged
   owner_module: server
 - symbol_name: CBaseEntity_EndTouch
   skill_name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch

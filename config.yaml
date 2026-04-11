@@ -1550,8 +1550,6 @@ modules:
       - name: find-CBaseEntity_SetStateChanged
         expected_output:
           - CBaseEntity_SetStateChanged.{platform}.yaml
-        expected_input:
-          - CBaseEntity_vtable.{platform}.yaml
 
       - name: find-CBasePlayerPawn_DropActivePlayerWeapon-AND-CCSPlayer_ItemServices_DropActivePlayerWeapon-AND-CCSPlayer_WeaponServices_DropWeapon
         expected_output:
@@ -2390,7 +2388,7 @@ modules:
           - DispatchSpawn
 
       - name: CBaseEntity_SetStateChanged
-        category: vfunc
+        category: func
         alias:
           - CBaseEntity::SetStateChanged
           - SetStateChanged
