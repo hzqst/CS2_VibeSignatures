@@ -6,13 +6,6 @@ owner_name_convention: Concrete parent function names are used when the SKILL na
   scanning instead of a concrete parent function.
 coverage_note: Patch-only find-* skills are kept under misc for completeness, even
   though the primary symbol set requested is func/vfunc/gv/struct_offset.
-stats:
-  skill_count: 108
-  item_count: 185
-  classicy_counts:
-    by_decompile: 134
-    misc: 17
-    with_xref_strings: 34
 items:
 - symbol_name: CBaseEntity_CollisionRulesChanged
   skill_name: find-CBaseEntity_CollisionRulesChanged
@@ -594,11 +587,6 @@ items:
   classicy: misc
   owner_func_name: null
   owner_module: client
-- symbol_name: CSpawnGroupMgrGameSystem_SpawnGroupPrecache
-  skill_name: find-CSpawnGroupMgrGameSystem_SpawnGroupPrecache
-  classicy: with_xref_strings
-  owner_func_name: CSpawnGroupMgrGameSystem_SpawnGroupPrecache
-  owner_module: server
 - symbol_name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
   skill_name: find-CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
   classicy: with_xref_strings
