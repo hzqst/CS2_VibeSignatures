@@ -68,7 +68,7 @@ disasm_code: |-
   .text:00000001805F0164                 call    sub_1811A5E90
   .text:00000001805F0169                 mov     rcx, cs:g_pNetworkMessages
   .text:00000001805F0170                 mov     rax, [rcx]
-  .text:00000001805F0173                 call    qword ptr [rax+120h]
+  .text:00000001805F0173                 call    qword ptr [rax+120h]; g_pNetworkMessages->GetLoggingChannel(), 0x120 = INetworkMessages_GetLoggingChannel
   .text:00000001805F0179                 mov     ecx, eax
   .text:00000001805F017B                 mov     edx, 1
   .text:00000001805F0180                 call    cs:LoggingSystem_IsChannelEnabled
@@ -81,7 +81,7 @@ disasm_code: |-
   .text:00000001805F01A3                 mov     ebx, [rbp+57h+arg_0]
   .text:00000001805F01A6                 cmovnz  r15, rax
   .text:00000001805F01AA                 mov     rax, [rcx]
-  .text:00000001805F01AD                 call    qword ptr [rax+120h]
+  .text:00000001805F01AD                 call    qword ptr [rax+120h]; g_pNetworkMessages->GetLoggingChannel(), 0x120 = INetworkMessages_GetLoggingChannel
   .text:00000001805F01B3                 mov     [rsp+0A0h+var_78], r15
   .text:00000001805F01B8                 lea     r8, aCnetworkutlvec_2; "CNetworkUtlVectorEmbedded: failed to re"...
   .text:00000001805F01BF                 mov     ecx, eax
@@ -184,147 +184,149 @@ procedure: |-
   char __fastcall CNetworkUtlVectorEmbedded_TryLateResolve_m_vecRenderAttributes(__int64 a1)
   {
     char v1; // bl
-    __int64 v4; // rax
-    __int16 v5; // cx
-    __int64 v6; // rcx
-    char v7; // al
-    __int64 v8; // rcx
-    unsigned int v9; // eax
-    const char *v10; // r15
-    int v11; // ebx
-    unsigned int v12; // eax
-    char v13; // al
-    __int64 v14; // rcx
-    unsigned int v15; // eax
-    const char *v16; // r15
-    const char *v17; // rsi
-    const char **v18; // rax
-    int v19; // ebx
-    const char *v20; // rdi
-    unsigned int v21; // eax
-    char v22; // [rsp+38h] [rbp-11h]
-    _BYTE v23[16]; // [rsp+40h] [rbp-9h] BYREF
-    _BYTE v24[40]; // [rsp+50h] [rbp+7h] BYREF
-    int v25; // [rsp+B0h] [rbp+67h] BYREF
-    const char *v26; // [rsp+B8h] [rbp+6Fh] BYREF
-    const char *v27; // [rsp+C0h] [rbp+77h] BYREF
-    __int64 v28; // [rsp+C8h] [rbp+7Fh] BYREF
+    __int64 v4; // rdx
+    __int64 v5; // rax
+    __int16 v6; // cx
+    __int64 v7; // rcx
+    char v8; // al
+    __int64 v9; // rcx
+    unsigned int v10; // eax
+    const char *v11; // r15
+    int v12; // ebx
+    unsigned int v13; // eax
+    char v14; // al
+    __int64 v15; // rcx
+    unsigned int v16; // eax
+    const char *v17; // r15
+    const char *v18; // rsi
+    const char **v19; // rax
+    int v20; // ebx
+    const char *v21; // rdi
+    unsigned int v22; // eax
+    char v23; // [rsp+38h] [rbp-11h]
+    _QWORD v24[2]; // [rsp+40h] [rbp-9h] BYREF
+    _BYTE v25[40]; // [rsp+50h] [rbp+7h] BYREF
+    int v26; // [rsp+B0h] [rbp+67h] BYREF
+    const char *v27; // [rsp+B8h] [rbp+6Fh] BYREF
+    const char *v28; // [rsp+C0h] [rbp+77h] BYREF
+    __int64 v29; // [rsp+C8h] [rbp+7Fh] BYREF
 
     v1 = 0;
-    v25 = 0;
+    v26 = 0;
     if ( (*(_BYTE *)(a1 + 97) & 1) != 0 )
       return 0;
-    if ( *(_QWORD *)(a1 + 24) )
+    v4 = *(_QWORD *)(a1 + 24);
+    if ( v4 )
     {
-      sub_1811A5F20(v23);
-      v4 = (*(__int64 (__fastcall **)(__int64, _BYTE *, _BYTE *, _QWORD, __int64, __int64))(*(_QWORD *)g_pFlattenedSerializers
-                                                                                          + 160LL))(
+      sub_1811A5F20(v24, v4);
+      v5 = (*(__int64 (__fastcall **)(__int64, _BYTE *, _QWORD *, _QWORD, __int64, __int64))(*(_QWORD *)g_pFlattenedSerializers
+                                                                                           + 160LL))(
              g_pFlattenedSerializers,
+             v25,
              v24,
-             v23,
              *(_QWORD *)(a1 + 24),
              a1,
              a1 + 96);
-      if ( v4 != a1 + 40 )
+      if ( v5 != a1 + 40 )
       {
         *(_BYTE *)(a1 + 66) = 0;
-        v5 = *(_WORD *)(v4 + 24);
-        if ( v5 > 10 )
+        v6 = *(_WORD *)(v5 + 24);
+        if ( v6 > 10 )
         {
           Plat_FatalError("Path_SetCount failed, depth already == DEFAULT_MAX_PATH_DEPTH(%d)", 10);
           __debugbreak();
         }
-        *(_WORD *)(a1 + 64) = v5;
-        v6 = *(__int16 *)(v4 + 24);
-        if ( (__int16)v6 > 0 )
+        *(_WORD *)(a1 + 64) = v6;
+        v7 = *(__int16 *)(v5 + 24);
+        if ( (__int16)v7 > 0 )
         {
-          if ( *(_BYTE *)(v4 + 26) )
-            v4 = *(_QWORD *)v4;
-          sub_1814DA740(a1 + 40, v4, 2 * v6);
+          if ( *(_BYTE *)(v5 + 26) )
+            v5 = *(_QWORD *)v5;
+          sub_1814DA740(a1 + 40, v5, 2 * v7);
         }
       }
-      v7 = *(_BYTE *)(a1 + 97);
+      v8 = *(_BYTE *)(a1 + 97);
       if ( *(_WORD *)(a1 + 64) )
       {
-        v13 = v7 | 1;
-        *(_BYTE *)(a1 + 97) = v13;
-        if ( (v13 & 2) != 0 )
+        v14 = v8 | 1;
+        *(_BYTE *)(a1 + 97) = v14;
+        if ( (v14 & 2) != 0 )
         {
-          v14 = *(_QWORD *)(a1 + 24);
-          v25 = -1;
-          *(_BYTE *)(a1 + 97) = v13 & 0xFD;
-          v26 = nullptr;
-          sub_1811A5E90(v14, &v25, &v26);
-          v22 = 0;
-          (*(void (__fastcall **)(__int64, const char **, _BYTE *, __int64, _QWORD, int, _DWORD, char))(*(_QWORD *)g_pFlattenedSerializers + 8LL))(
+          v15 = *(_QWORD *)(a1 + 24);
+          v26 = -1;
+          *(_BYTE *)(a1 + 97) = v14 & 0xFD;
+          v27 = nullptr;
+          sub_1811A5E90(v15, &v26, &v27);
+          v23 = 0;
+          (*(void (__fastcall **)(__int64, const char **, _QWORD *, __int64, _QWORD, int, _DWORD, char))(*(_QWORD *)g_pFlattenedSerializers + 8LL))(
             g_pFlattenedSerializers,
-            &v27,
-            v23,
+            &v28,
+            v24,
             a1 + 40,
             *(_QWORD *)(a1 + 24),
-            v25,
+            v26,
             0,
-            v22);
-          v15 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);
-          if ( (unsigned __int8)LoggingSystem_IsChannelEnabled(v15, 2) )
+            v23);
+          v16 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);
+          if ( (unsigned __int8)LoggingSystem_IsChannelEnabled(v16, 2) )
           {
-            v16 = (const char *)&byte_18152DF88;
-            v17 = (const char *)&byte_18152DF88;
+            v17 = byte_18152DF88;
+            v18 = byte_18152DF88;
+            if ( v28 )
+              v18 = v28;
+            v19 = (const char **)sub_18147F110(a1 + 40, &v29);
+            v20 = v26;
+            v21 = byte_18152DF88;
+            if ( *v19 )
+              v21 = *v19;
             if ( v27 )
               v17 = v27;
-            v18 = (const char **)sub_18147F110(a1 + 40, &v28);
-            v19 = v25;
-            v20 = (const char *)&byte_18152DF88;
-            if ( *v18 )
-              v20 = *v18;
-            if ( v26 )
-              v16 = v26;
-            v21 = (*(__int64 (**)(void))(*(_QWORD *)g_pNetworkMessages + 288LL))();
+            v22 = (*(__int64 (**)(void))(*(_QWORD *)g_pNetworkMessages + 288LL))();
             LoggingSystem_Log(
-              v21,
+              v22,
               2,
               "CNetworkUtlVectorEmbedded: successfully late-resolved 0x%p in entity %d:%s to %s:'%s'.\n",
               (const void *)a1,
-              v19,
-              v16,
               v20,
-              v17);
+              v17,
+              v21,
+              v18);
             v1 = 1;
           }
-          if ( (v1 & 1) != 0 && v28 )
+          if ( (v1 & 1) != 0 && v29 )
+            CUtlString::FreeMemoryBlock((CUtlString *)&v29);
+          if ( v28 )
             CUtlString::FreeMemoryBlock((CUtlString *)&v28);
-          if ( v27 )
-            CUtlString::FreeMemoryBlock((CUtlString *)&v27);
           goto LABEL_31;
         }
       }
-      else if ( (v7 & 2) == 0 )
+      else if ( (v8 & 2) == 0 )
       {
-        v8 = *(_QWORD *)(a1 + 24);
-        v25 = -1;
-        *(_BYTE *)(a1 + 97) = v7 | 2;
-        v26 = nullptr;
-        sub_1811A5E90(v8, &v25, &v26);
-        v9 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);
-        if ( (unsigned __int8)LoggingSystem_IsChannelEnabled(v9, 1) )
+        v9 = *(_QWORD *)(a1 + 24);
+        v26 = -1;
+        *(_BYTE *)(a1 + 97) = v8 | 2;
+        v27 = nullptr;
+        sub_1811A5E90(v9, &v26, &v27);
+        v10 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);// g_pNetworkMessages->GetLoggingChannel(), 288LL = INetworkMessages_GetLoggingChannel
+        if ( (unsigned __int8)LoggingSystem_IsChannelEnabled(v10, 1) )
         {
-          v10 = (const char *)&byte_18152DF88;
-          v11 = v25;
-          if ( v26 )
-            v10 = v26;
-          v12 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);
+          v11 = byte_18152DF88;
+          v12 = v26;
+          if ( v27 )
+            v11 = v27;
+          v13 = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pNetworkMessages + 288LL))(g_pNetworkMessages);// g_pNetworkMessages->GetLoggingChannel(), 288LL = INetworkMessages_GetLoggingChannel
           LoggingSystem_Log(
-            v12,
+            v13,
             1,
             "CNetworkUtlVectorEmbedded: failed to resolve 0x%p in entity %d:%s (possibly from adding to CUtlVector during c"
             "onstruction of class referenced via pointer).\n",
             (const void *)a1,
-            v11,
-            v10);
+            v12,
+            v11);
         }
   LABEL_31:
-        if ( v26 )
-          CUtlString::FreeMemoryBlock((CUtlString *)&v26);
+        if ( v27 )
+          CUtlString::FreeMemoryBlock((CUtlString *)&v27);
       }
     }
     return *(_BYTE *)(a1 + 97) & 1;
