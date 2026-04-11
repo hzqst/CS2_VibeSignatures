@@ -289,11 +289,6 @@ items:
   classicy: by_decompile
   owner_func_name: DisableUpdateTarget_setup_function
   owner_module: server
-- symbol_name: CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
-  skill_name: find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
-  classicy: with_xref_strings
-  owner_func_name: CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
-  owner_module: server
 - symbol_name: CGameEntitySystem_FindEntityByClassName
   skill_name: find-CGameEntitySystem_FindEntityByClassName
   classicy: by_decompile
