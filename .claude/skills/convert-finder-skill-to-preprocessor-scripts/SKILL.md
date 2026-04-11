@@ -451,6 +451,25 @@ This step is mandatory — do not report completion without running and passing 
 
 ---
 
+## Step 10: Commit Changes
+
+After validation passes, commit all conversion-related changes to git:
+
+```bash
+git add <preprocessor_script> <deleted_skill_md> <config.yaml if changed> docs/claude_skills_stats.yaml
+git commit -m "Convert find-{SKILL_NAME} SKILL.md to preprocessor script"
+```
+
+Include all files changed during the conversion:
+- The new/updated preprocessor script
+- The deleted SKILL.md
+- Any config.yaml changes
+- The updated `docs/claude_skills_stats.yaml`
+
+Do NOT include unrelated changes (e.g. `.claude/settings.json` permission changes).
+
+---
+
 ## Checklist
 
 Before finishing, verify:
@@ -471,6 +490,7 @@ Before finishing, verify:
 - [ ] Existing output YAMLs under `bin/*/` are deleted for all target functions
 - [ ] Entry removed from `docs/claude_skills_stats.yaml` for all converted symbols
 - [ ] `uv run ida_analyze_bin.py -debug` passes with 0 failures
+- [ ] All conversion changes committed to git
 
 ## Real-World Examples
 
