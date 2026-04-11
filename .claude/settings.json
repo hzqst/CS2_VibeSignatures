@@ -21,7 +21,12 @@
       "Bash(sed -n)",
       "Bash(git status)",
       "Bash(git diff)",
-      "Bash(uv run ida_analyze_bin.py)"
+      "Bash(git log)",
+      "Bash(cd * && git status)",
+      "Bash(cd * && git diff)",
+      "Bash(cd * && git log)",
+      "Bash(cd * && uv run ida_analyze_bin.py)",
+      "Bash(cd * && rm -rf \"*/.claude/skills/find-*\")"
     ]
   }
 }
