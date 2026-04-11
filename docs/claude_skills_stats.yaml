@@ -204,11 +204,6 @@ items:
   classicy: by_decompile
   owner_func_name: ResourceDataThink_penalty_notification_handler
   owner_module: server
-- symbol_name: CCSPlayerController_ChangeTeam
-  skill_name: find-CCSPlayerController_ChangeTeam
-  classicy: with_xref_strings
-  owner_func_name: CCSPlayerController_ChangeTeam
-  owner_module: server
 - symbol_name: CCSPlayerController_InventoryUpdateThink
   skill_name: find-CCSPlayerController_InventoryUpdateThink
   classicy: misc
