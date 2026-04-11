@@ -504,11 +504,6 @@ items:
   classicy: by_decompile
   owner_func_name: CLoopModeGame_RegisterEventMapInternal
   owner_module: client
-- symbol_name: CNavMesh_GetNearestNavArea
-  skill_name: find-CNavMesh_GetNearestNavArea
-  classicy: with_xref_strings
-  owner_func_name: CNavMesh_GetNearestNavArea
-  owner_module: server
 - symbol_name: CNetworkGameServer_ClientList
   skill_name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
   classicy: by_decompile
