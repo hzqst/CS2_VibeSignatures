@@ -549,11 +549,6 @@ items:
   classicy: misc
   owner_func_name: CPhysBox_Use
   owner_module: server
-- symbol_name: CPointTeleport_Teleport
-  skill_name: find-CPointTeleport_Teleport
-  classicy: with_xref_strings
-  owner_func_name: CPointTeleport_Teleport
-  owner_module: server
 - symbol_name: CServerSideClient_IsHearingClient
   skill_name: find-CServerSideClient_IsHearingClient
   classicy: by_decompile
