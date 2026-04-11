@@ -7,12 +7,12 @@ owner_name_convention: Concrete parent function names are used when the SKILL na
 coverage_note: Patch-only find-* skills are kept under misc for completeness, even
   though the primary symbol set requested is func/vfunc/gv/struct_offset.
 stats:
-  skill_count: 109
-  item_count: 189
+  skill_count: 108
+  item_count: 186
   classicy_counts:
-    by_decompile: 136
+    by_decompile: 134
     misc: 17
-    with_xref_strings: 36
+    with_xref_strings: 35
 items:
 - symbol_name: CBaseEntity_CollisionRulesChanged
   skill_name: find-CBaseEntity_CollisionRulesChanged
@@ -258,21 +258,6 @@ items:
   skill_name: find-CCSPlayer_MovementServices_ProcessMovement-AND-CCSPlayer_MovementServices_CheckMovingGround
   classicy: by_decompile
   owner_func_name: ForceButtonDown_like_function
-  owner_module: server
-- symbol_name: CCSPlayer_WeaponServices_CanUse
-  skill_name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon
-  classicy: by_decompile
-  owner_func_name: CCSPlayer_WeaponServices_PickupItem
-  owner_module: server
-- symbol_name: CCSPlayer_WeaponServices_EquipWeapon
-  skill_name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon
-  classicy: by_decompile
-  owner_func_name: CCSPlayer_WeaponServices_PickupItem
-  owner_module: server
-- symbol_name: CCSPlayer_WeaponServices_PickupItem
-  skill_name: find-CCSPlayer_WeaponServices_PickupItem-AND-CCSPlayer_WeaponServices_CanUse-AND-CCSPlayer_WeaponServices_EquipWeapon
-  classicy: with_xref_strings
-  owner_func_name: CCSPlayer_WeaponServices_PickupItem
   owner_module: server
 - symbol_name: CCSPlayer_WeaponServices_SelectItem
   skill_name: find-CCSPlayer_WeaponServices_SelectItem
