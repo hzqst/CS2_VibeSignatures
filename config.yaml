@@ -2902,7 +2902,7 @@ modules:
           - CNetworkMessages_vtable.{platform}.yaml
           - CNetworkMessages_SetIsForServer.{platform}.yaml
 
-      - name: find-CNetworkMessages_SetNetworkSerializationContextData-impl
+      - name: find-CNetworkMessages_SetNetworkSerializationContextData
         expected_output:
           - CNetworkMessages_SetNetworkSerializationContextData.{platform}.yaml
         expected_input:

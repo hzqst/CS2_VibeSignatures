@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CNetworkMessages_SetNetworkSerializationContextData-impl skill."""
+"""Preprocess script for find-CNetworkMessages_SetNetworkSerializationContextData skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
