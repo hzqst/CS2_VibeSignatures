@@ -28,6 +28,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
         [
             "func_name",
             "vfunc_sig",
+            "vfunc_sig_max_match:10", # Allow maximum up to 10 matches instead of 1 unique match. This also stops extending signature bytes when match count reduced down to <= 10. Because we are 100% sure 10 matches points to exact the same template function (but instanced).
             "vfunc_offset",
             "vfunc_index",
             "vtable_name",
