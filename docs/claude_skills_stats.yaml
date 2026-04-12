@@ -572,21 +572,6 @@ items:
   classicy: by_decompile
   owner_func_name: projectile_lookup_caller
   owner_module: server
-- symbol_name: CBaseEntity_DispatchSpawn
-  skill_name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
-  classicy: by_decompile
-  owner_func_name: GiveNamedItem
-  owner_module: server
-- symbol_name: GiveNamedItem
-  skill_name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
-  classicy: with_xref_strings
-  owner_func_name: GiveNamedItem
-  owner_module: server
-- symbol_name: UTIL_CreateEntityByName
-  skill_name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
-  classicy: by_decompile
-  owner_func_name: GiveNamedItem
-  owner_module: server
 - symbol_name: Host_Say
   skill_name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
   classicy: with_xref_strings

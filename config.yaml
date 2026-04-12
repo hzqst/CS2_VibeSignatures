@@ -1578,12 +1578,16 @@ modules:
         expected_output:
           - GetCSWeaponDataFromKey.{platform}.yaml
 
-      - name: find-GiveNamedItem-AND-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
+      - name: find-GiveNamedItem
         expected_output:
           - GiveNamedItem.{platform}.yaml
+
+      - name: find-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
+        expected_output:
           - UTIL_CreateEntityByName.{platform}.yaml
           - CBaseEntity_DispatchSpawn.{platform}.yaml
-        max_retries: 6
+        expected_input:
+          - GiveNamedItem.{platform}.yaml
 
       - name: find-CNetworkTransmitComponent_StateChanged
         expected_output:
