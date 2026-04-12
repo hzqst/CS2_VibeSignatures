@@ -13,6 +13,7 @@ FUNC_XREFS = [
         "NetworkStateChanged",
         [
             "light_capsule",
+            "light_omni",
         ],
         [],
         [],
