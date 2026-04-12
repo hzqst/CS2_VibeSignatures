@@ -1642,12 +1642,16 @@ modules:
         expected_output:
           - UTIL_Remove.{platform}.yaml
 
-      - name: find-Host_Say-AND-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
+      - name: find-Host_Say
         expected_output:
           - Host_Say.{platform}.yaml
+
+      - name: find-UTIL_SayTextFilter-AND-UTIL_SayTextFilter2
+        expected_output:
           - UTIL_SayTextFilter.{platform}.yaml
           - UTIL_SayTextFilter2.{platform}.yaml
-        max_retries: 6
+        expected_input:
+          - Host_Say.{platform}.yaml
 
       - name: find-WeaponBuy
         expected_output:
