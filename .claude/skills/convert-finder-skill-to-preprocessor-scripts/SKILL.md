@@ -456,7 +456,7 @@ uv run generate_reference_yaml.py -func_name CCSGameRules_TerminateRound -auto_s
 
 where `{gamever}` can be obtain from `.env` -> `CS2VIBE_GAMEVER`, or `14141c` if you can't read `.env`.
 
-YOU MUST: rename known symbols in the generated reference YAMLs the so LLM can find desired symbols by comparing reference ones with fresh procedure/disassembly read from new binaries.
+YOU MUST: rename known symbols / add necessary comments in the generated reference YAMLs the so LLM can find desired symbols by comparing reference ones with raw procedure/disassembly read from new binaries.
 
 For example, if we want the LLM to find `CEntityInstance_AcceptInput` in the owner function:
 
@@ -494,16 +494,40 @@ but also `disassembly`:
 
 For example, if we want the LLM to find `CBaseEntity_OnTakeDamage` as an indirect call to virtual function in the owner function:
 
-We **MUST** add comment to not only `procedure`:
+We **MUST** add comments not only in `procedure`:
 
 ```c
-(*(void (__fastcall **)(_QWORD *, _DWORD *))(*a1 + 1008LL))(a1, v6);// 1008LL = CBaseEntity_OnTakeDamage
+(*(void (__fastcall **)(_QWORD *, _DWORD *))(*a1 + 1008LL))(a1, v6); // 1008LL = CBaseEntity_OnTakeDamage
 ```
 
-but also `disassembly`:
+but also in `disassembly`:
 
 ```
 00000001803CEF54 FF 90 F0 03 00 00    call    qword ptr [rax+3F0h] ; 0x3F0 = CBaseEntity_OnTakeDamage
+```
+
+For example, if we want the LLM to find `g_pNavMesh` as a global variable in the owner function:
+
+```c
+if ( !qword_18200B918 || !*(_BYTE *)(qword_18200B918 + 264) )
+    return 0;
+```
+
+```
+.text:00000001802A6E3C 48 8B 05 D5 4A D6 01                                mov     rax, cs:qword_18200B918
+```
+
+We **MUST** rename it not only in `procedure`:
+
+```c
+if ( !g_pNavMesh || !*(_BYTE *)(g_pNavMesh + 264) )
+    return 0;
+```
+
+but also in `disassembly`:
+
+```
+.text:00000001802A6E3C 48 8B 05 D5 4A D6 01                                mov     rax, cs:g_pNavMesh
 ```
 
 **Prerequisites:** The predecessor function must already be named in the IDA database for the target binary. If it is not named yet, ask the user to either:
