@@ -18,7 +18,7 @@ preprocessor script, update `config.yaml` entries, and delete the old SKILL.md.
 
 ## Overview
 
-Four preprocessor patterns exist. The SKILL.md's discovery method determines which to use:
+Five preprocessor patterns exist. The SKILL.md's discovery method and target type determine which to use:
 
 | Pattern | Discovery Method | Has FUNC_XREFS | Has LLM_DECOMPILE | Has FUNC_VTABLE_RELATIONS | preprocess_skill has llm_config |
 |---------|-----------------|-----------------|---------------------|---------------------------|-------------------------------|
@@ -26,6 +26,9 @@ Four preprocessor patterns exist. The SKILL.md's discovery method determines whi
 | **B** — Virtual function via xref strings | Same as A, but function is in a vtable | Yes | No | Yes | No |
 | **C** — Virtual function via LLM_DECOMPILE | Decompile a known predecessor function, identify vfunc call offsets | No | Yes | Yes | Yes |
 | **D** — Regular function via LLM_DECOMPILE | Decompile a known predecessor function, identify direct call targets | No | Yes | No | Yes |
+| **E** — Struct member offset via LLM_DECOMPILE | Decompile a known predecessor function, identify struct field access offsets | No | Yes | No | Yes |
+
+Additionally, **struct member offsets** can be mixed into any pattern as a secondary target (see "Struct Member Mixin" section below).
 
 ---
 
@@ -35,14 +38,15 @@ Read the target `.claude/skills/find-XXXX/SKILL.md`.
 
 Extract:
 1. **Target function names** — all functions the skill identifies (may be 1 or many)
-2. **Discovery method** for each function:
+2. **Target struct member names** — all struct member offsets the skill identifies (e.g. `CCheckTransmitInfo_m_nPlayerSlot`)
+3. **Discovery method** for each target:
    - Does it use `find_regex` / `xrefs_to` with debug strings? → **xref-string based**
-   - Does it load a predecessor YAML, decompile that function, and extract vfunc offsets from code patterns? → **LLM_DECOMPILE based**
-3. **Function category** — `func` (regular) or `vfunc` (virtual, has vtable slot)
-4. **VTable class name** — if virtual, e.g. `CBaseEntity`, `CBasePlayerPawn`, `INetworkMessages`
-5. **Xref strings** — debug strings used in `find_regex` patterns (for xref-string patterns)
-6. **Predecessor function** — the function whose decompiled code reveals the target (for LLM_DECOMPILE patterns)
-7. **Dependencies** — which existing YAMLs are needed as inputs (vtable YAMLs, predecessor function YAMLs)
+   - Does it load a predecessor YAML, decompile that function, and extract vfunc offsets / struct offsets from code patterns? → **LLM_DECOMPILE based**
+4. **Function category** — `func` (regular), `vfunc` (virtual, has vtable slot), or `structmember`
+5. **VTable class name** — if virtual, e.g. `CBaseEntity`, `CBasePlayerPawn`, `INetworkMessages`
+6. **Xref strings** — debug strings used in `find_regex` patterns (for xref-string patterns). **Check if these differ between Windows and Linux** — if so, you need platform-specific `FUNC_XREFS_WINDOWS` / `FUNC_XREFS_LINUX`.
+7. **Predecessor function** — the function whose decompiled code reveals the target (for LLM_DECOMPILE patterns)
+8. **Dependencies** — which existing YAMLs are needed as inputs (vtable YAMLs, predecessor function YAMLs)
 
 ## Step 2: Plan the Split
 
@@ -195,6 +199,40 @@ async def preprocess_skill(
     )
 ```
 
+### Platform-Specific Xref Strings (Patterns A & B variant)
+
+When xref strings differ between Windows and Linux (e.g. Windows has full `ClassName::Method` assertion strings while Linux has only `./filename.cpp:linenum`), split into two variables:
+
+```python
+FUNC_XREFS_WINDOWS = [
+    (
+        "{FUNC_NAME}",
+        [
+            "CSource2GameEntities::CheckTransmit",  # Full assertion string on Windows
+        ],
+        [], [], [], [],
+    ),
+]
+
+FUNC_XREFS_LINUX = [
+    (
+        "{FUNC_NAME}",
+        [
+            "./gameinterface.cpp:30",  # Shorter path-based string on Linux
+        ],
+        [], [], [], [],
+    ),
+]
+```
+
+Then in `preprocess_skill`, use a ternary to select the right one:
+
+```python
+        func_xrefs=FUNC_XREFS_WINDOWS if platform == "windows" else FUNC_XREFS_LINUX,
+```
+
+This applies to both Pattern A and Pattern B — the only change is replacing the single `FUNC_XREFS` with the platform-specific pair.
+
 ### Pattern C — Virtual function via LLM_DECOMPILE
 
 Use when: function IS virtual (has vtable slot), discovered by decompiling a known predecessor function and reading vfunc call offsets from the decompiled code.
@@ -338,16 +376,110 @@ async def preprocess_skill(
     )
 ```
 
+### Pattern E — Struct member offset via LLM_DECOMPILE
+
+Use when: target is a **struct member offset** (not a function), discovered by decompiling a known predecessor function and identifying struct field access patterns (e.g. `*(int *)(ptr + 0x240)`).
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{SKILL_NAME} skill."""
+
+from ida_analyze_util import preprocess_common_skill
+
+TARGET_STRUCT_MEMBER_NAMES = [
+    "{STRUCT_MEMBER_NAME}",  # e.g. "CCheckTransmitInfo_m_nPlayerSlot"
+]
+
+LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
+    (
+        "{STRUCT_MEMBER_NAME}",
+        "prompt/call_llm_decompile.md",
+        "references/{MODULE}/{PREDECESSOR_FUNC}.{platform}.yaml",
+    ),
+]
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    # (symbol_name, generate_yaml_fields)
+    (
+        "{STRUCT_MEMBER_NAME}",
+        [
+            "struct_name",
+            "member_name",
+            "offset",
+            "size",
+            "offset_sig",
+            "offset_sig_disp",
+        ],
+    ),
+]
+
+async def preprocess_skill(
+    session, skill_name, expected_outputs, old_yaml_map,
+    new_binary_dir, platform, image_base, llm_config=None, debug=False,
+):
+    """Reuse previous gamever offset_sig to locate target struct offset and write YAML."""
+    return await preprocess_common_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        old_yaml_map=old_yaml_map,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        image_base=image_base,
+        struct_member_names=TARGET_STRUCT_MEMBER_NAMES,
+        llm_decompile_specs=LLM_DECOMPILE,
+        llm_config=llm_config,
+        generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
+        debug=debug,
+    )
+```
+
+**Key differences from Pattern D:**
+- Uses `TARGET_STRUCT_MEMBER_NAMES` instead of `TARGET_FUNCTION_NAMES`
+- Passes `struct_member_names=` instead of `func_names=` to `preprocess_common_skill`
+- YAML fields are struct-specific: `struct_name, member_name, offset, size, offset_sig, offset_sig_disp`
+- No `FUNC_VTABLE_RELATIONS`
+- config.yaml symbol category is `structmember` (not `func` or `vfunc`)
+
+### Struct Member Mixin (for any pattern)
+
+Struct member offsets can also be **mixed into** a function-finding script when they are discovered from the same function via signature matching (not LLM_DECOMPILE). Add `TARGET_STRUCT_MEMBER_NAMES` alongside `TARGET_FUNCTION_NAMES` and pass `struct_member_names=` to `preprocess_common_skill`:
+
+```python
+TARGET_FUNCTION_NAMES = [
+    "SomeFunction",
+]
+
+TARGET_STRUCT_MEMBER_NAMES = [
+    "SomeStruct_m_someField",
+]
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    ("SomeFunction", ["func_name", "func_sig", "func_va", "func_rva", "func_size"]),
+    ("SomeStruct_m_someField", ["struct_name", "member_name", "offset", "size", "offset_sig", "offset_sig_disp"]),
+]
+
+# In preprocess_skill:
+    return await preprocess_common_skill(
+        ...
+        func_names=TARGET_FUNCTION_NAMES,
+        struct_member_names=TARGET_STRUCT_MEMBER_NAMES,
+        ...
+    )
+```
+
 ### Key Differences Between Patterns
 
-| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) |
-|--------|------------------------|--------------------------|------------------------|------------------------|
-| FUNC_XREFS | Yes | Yes | No | No |
-| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No |
-| LLM_DECOMPILE | No | No | Yes | Yes |
-| `llm_config` param | No | No | Yes | Yes |
-| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size |
-| config category | `func` | `vfunc` | `vfunc` | `func` |
+| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) |
+|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|
+| FUNC_XREFS | Yes | Yes | No | No | No |
+| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No |
+| LLM_DECOMPILE | No | No | Yes | Yes | Yes |
+| `llm_config` param | No | No | Yes | Yes | Yes |
+| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` |
+| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp |
+| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` |
 
 ---
 
@@ -421,6 +553,14 @@ For each NEW target function, add a symbol entry under the same module's `symbol
         category: vfunc
         alias:
           - {ClassName}::{MethodName}   # e.g. CBasePlayerPawn::OnTakeDamage
+
+      # Struct member offset (Pattern E)
+      - name: {STRUCT_MEMBER_NAME}
+        category: structmember
+        struct: {STRUCT_NAME}
+        member: {MEMBER_NAME}
+        alias:
+          - {StructName}::{MemberName}   # e.g. CCheckTransmitInfo::m_nPlayerSlot
 ```
 
 Check existing symbols before adding — do NOT create duplicates.
@@ -528,6 +668,28 @@ but also in `disassembly`:
 
 ```
 .text:00000001802A6E3C 48 8B 05 D5 4A D6 01                                mov     rax, cs:g_pNavMesh
+```
+
+For example, if we want the LLM to find `CCheckTransmitInfo_m_nPlayerSlot` as a struct member offset (0x240) in the owner function:
+
+```c
+v18 = sub_180BCF9E0(*(unsigned int *)(*v6 + 576));
+```
+
+```
+  .text:0000000180C99633                 mov     ecx, [rdi+240h]
+```
+
+We **MUST** add comments not only in `procedure`:
+
+```c
+v18 = sub_180BCF9E0(*(unsigned int *)(*v6 + 576)); // 576 = 0x240 = CCheckTransmitInfo::m_nPlayerSlot
+```
+
+but also in `disassembly`:
+
+```
+  .text:0000000180C99633                 mov     ecx, [rdi+240h] ; 0x240 = CCheckTransmitInfo::m_nPlayerSlot
 ```
 
 **Prerequisites:** The predecessor function must already be named in the IDA database for the target binary. If it is not named yet, ask the user to either:
@@ -706,4 +868,38 @@ Before finishing, verify:
           - CEntityInstance_AcceptInput.{platform}.yaml
         expected_input:
           - CCSGameRules_TerminateRound.{platform}.yaml
+```
+
+### Example: Split xref-string vfunc + LLM_DECOMPILE struct offset (Patterns B + E with platform-specific xrefs)
+
+**Before:** `.claude/skills/find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo/SKILL.md` — found CheckTransmit via `find_regex pattern="CSource2GameEntities::CheckTransmit"`, then examined the decompiled code to find `CCheckTransmitInfo::m_nPlayerSlot` at offset 0x240.
+
+**Split into two scripts:**
+
+1. `ida_preprocessor_scripts/find-CSource2GameEntities_CheckTransmit.py` (Pattern B with platform-specific xrefs):
+   - `FUNC_XREFS_WINDOWS` containing `"CSource2GameEntities::CheckTransmit"` (full assertion string on Windows)
+   - `FUNC_XREFS_LINUX` containing `"./gameinterface.cpp:30"` (shorter path on Linux — Windows string not present in Linux binary)
+   - `FUNC_VTABLE_RELATIONS`: `("CSource2GameEntities_CheckTransmit", "CSource2GameEntities")`
+   - `GENERATE_YAML_DESIRED_FIELDS` with `func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index`
+   - Uses `func_xrefs=FUNC_XREFS_WINDOWS if platform == "windows" else FUNC_XREFS_LINUX` in the `preprocess_common_skill` call
+
+2. `ida_preprocessor_scripts/find-CCheckTransmitInfo_m_nPlayerSlot.py` (Pattern E):
+   - `TARGET_STRUCT_MEMBER_NAMES` containing `"CCheckTransmitInfo_m_nPlayerSlot"`
+   - `LLM_DECOMPILE` referencing `references/server/CSource2GameEntities_CheckTransmit.{platform}.yaml`
+   - `GENERATE_YAML_DESIRED_FIELDS` with `struct_name, member_name, offset, size, offset_sig, offset_sig_disp`
+   - Reference YAMLs annotated with `; 0x240 = CCheckTransmitInfo::m_nPlayerSlot` in disasm and `// 576 = 0x240 = CCheckTransmitInfo::m_nPlayerSlot` in procedure
+
+**config.yaml dependency chain:**
+```yaml
+      - name: find-CSource2GameEntities_CheckTransmit
+        expected_output:
+          - CSource2GameEntities_CheckTransmit.{platform}.yaml
+        expected_input:
+          - CSource2GameEntities_vtable.{platform}.yaml
+
+      - name: find-CCheckTransmitInfo_m_nPlayerSlot
+        expected_output:
+          - CCheckTransmitInfo_m_nPlayerSlot.{platform}.yaml
+        expected_input:
+          - CSource2GameEntities_CheckTransmit.{platform}.yaml
 ```
