@@ -1648,12 +1648,17 @@ modules:
           - IGameSystem_LoopDestroyAllSystems_s_GameSystems.{platform}.yaml
         max_retries: 4
 
-      - name: find-CSource2GameEntities_CheckTransmit-AND-CCheckTransmitInfo
+      - name: find-CSource2GameEntities_CheckTransmit
         expected_output:
           - CSource2GameEntities_CheckTransmit.{platform}.yaml
-          - CCheckTransmitInfo_m_nPlayerSlot.{platform}.yaml
         expected_input:
           - CSource2GameEntities_vtable.{platform}.yaml
+
+      - name: find-CCheckTransmitInfo_m_nPlayerSlot
+        expected_output:
+          - CCheckTransmitInfo_m_nPlayerSlot.{platform}.yaml
+        expected_input:
+          - CSource2GameEntities_CheckTransmit.{platform}.yaml
 
       - name: find-CBaseEntity_EmitSoundFilter
         expected_output:
