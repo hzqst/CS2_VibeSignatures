@@ -692,11 +692,6 @@ items:
   classicy: by_decompile
   owner_func_name: TraceFunc
   owner_module: server
-- symbol_name: TraceShape
-  skill_name: find-TraceShape
-  classicy: with_xref_strings
-  owner_func_name: TraceShape
-  owner_module: server
 - symbol_name: UTIL_ClientPrintAll
   skill_name: find-UTIL_ClientPrintAll
   classicy: by_decompile
