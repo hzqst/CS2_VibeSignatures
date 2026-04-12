@@ -1567,12 +1567,35 @@ modules:
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
 
-      - name: find-FireBullets-AND-TraceAttack-AND-CTakeDamageInfo
+      - name: find-FireBullets
         expected_output:
           - FireBullets.{platform}.yaml
+
+      - name: find-TraceAttack-windows
+        platform: windows
+        expected_output:
           - TraceAttack.{platform}.yaml
+        expected_input:
+          - CBaseEntity_TakeDamageOld.{platform}.yaml
+
+      - name: find-FireBulletImpactEvent
+        platform: linux
+        expected_output:
+          - FireBulletImpactEvent.{platform}.yaml
+
+      - name: find-TraceAttack-linux
+        platform: linux
+        expected_output:
+          - TraceAttack.{platform}.yaml
+        expected_input:
+          - CBaseEntity_TakeDamageOld.{platform}.yaml
+          - FireBulletImpactEvent.{platform}.yaml
+
+      - name: find-CTakeDamageInfo_HitGroupInfo
+        expected_output:
           - CTakeDamageInfo_HitGroupInfo.{platform}.yaml
-        max_retries: 6
+        expected_input:
+          - TraceAttack.{platform}.yaml
 
       - name: find-GetCSWeaponDataFromKey
         expected_output:
@@ -2443,6 +2466,15 @@ modules:
         category: struct
 
       - name: CTakeDamageInfo_GetWeaponName
+        category: func
+
+      - name: FireBullets
+        category: func
+
+      - name: FireBulletImpactEvent
+        category: func
+
+      - name: TraceAttack
         category: func
 
       - name: CTakeDamageInfo_HitGroupInfo
