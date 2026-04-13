@@ -1727,6 +1727,7 @@ modules:
           - CBaseEntity_Precache.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
+          - CEntityInstance_Precache.{platform}.yaml
 
       - name: find-CBaseEntity_EmitSoundParams
         expected_output:
@@ -2122,7 +2123,6 @@ modules:
           - CEntityInstance_Precache.{platform}.yaml
         expected_input:
           - CEntityInstance_vtable.{platform}.yaml
-          - CBaseEntity_Precache.{platform}.yaml
 
       - name: find-CNetworkUtlVectorEmbedded_NetworkStateChanged_m_vecRenderAttributes
         expected_output:

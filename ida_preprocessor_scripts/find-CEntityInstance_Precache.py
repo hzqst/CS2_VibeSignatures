@@ -3,16 +3,28 @@
 
 from ida_analyze_util import preprocess_common_skill
 
-INHERIT_VFUNCS = [
-    # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
+TARGET_FUNCTION_NAMES = [
+    "CEntityInstance_Precache",
+]
+
+FUNC_XREFS = [
+    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list, exclude_strings_list)
     (
         "CEntityInstance_Precache",
-        "CEntityInstance",
-        "CBaseEntity_Precache",
-        True,
+        [
+            "FULLMATCH:Precache",
+        ],
+        [],
+        [],
+        [],
+        [],
     ),
 ]
 
+FUNC_VTABLE_RELATIONS = [
+    # (func_name, vtable_class)
+    ("CEntityInstance_Precache", "CEntityInstance"),
+]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
@@ -32,17 +44,10 @@ GENERATE_YAML_DESIRED_FIELDS = [
 ]
 
 async def preprocess_skill(
-    session,
-    skill_name,
-    expected_outputs,
-    old_yaml_map,
-    new_binary_dir,
-    platform,
-    image_base,
-    debug=False,
+    session, skill_name, expected_outputs, old_yaml_map,
+    new_binary_dir, platform, image_base, debug=False,
 ):
-    _ = skill_name
-
+    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -50,7 +55,9 @@ async def preprocess_skill(
         new_binary_dir=new_binary_dir,
         platform=platform,
         image_base=image_base,
-        inherit_vfuncs=INHERIT_VFUNCS,
+        func_names=TARGET_FUNCTION_NAMES,
+        func_xrefs=FUNC_XREFS,
+        func_vtable_relations=FUNC_VTABLE_RELATIONS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )

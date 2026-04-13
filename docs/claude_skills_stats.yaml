@@ -12,11 +12,6 @@ items:
   classicy: by_decompile
   owner_func_name: named_sound_stop_handler
   owner_module: server
-- symbol_name: CBaseEntity_Precache
-  skill_name: find-CBaseEntity_Precache
-  classicy: by_decompile
-  owner_func_name: bloodspray_wrapper
-  owner_module: server
 - symbol_name: CBaseEntity_SetGroundEntity
   skill_name: find-CBaseEntity_SetGroundEntity
   classicy: by_decompile
