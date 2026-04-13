@@ -62,11 +62,6 @@ items:
   classicy: by_decompile
   owner_func_name: env_shake_activation_function
   owner_module: server
-- symbol_name: CBaseEntity_SetOwner
-  skill_name: find-CBaseEntity_SetOwner
-  classicy: by_decompile
-  owner_func_name: CCSPlayer_WeaponServices_EquipWeapon
-  owner_module: server
 - symbol_name: CBaseEntity_EndTouch
   skill_name: find-CBaseEntity_StartTouch-AND-CBaseEntity_Touch-AND-CBaseEntity_EndTouch
   classicy: by_decompile

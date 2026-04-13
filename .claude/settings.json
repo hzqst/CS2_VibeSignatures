@@ -9,6 +9,10 @@
       "Edit(.claude/skills)",
       "MultiEdit(.claude/skills)",
       "Write(.claude/skills)",
+      "Read(docs)",
+      "Edit(docs)",
+      "MultiEdit(docs)",
+      "Write(docs)",
       "Read(ida_preprocessor_scripts)",
       "Edit(ida_preprocessor_scripts)",
       "MultiEdit(ida_preprocessor_scripts)",
@@ -26,6 +30,7 @@
       "Bash(cd * && git diff)",
       "Bash(cd * && git log)",
       "Bash(cd * && uv run ida_analyze_bin.py)",
+      "Bash(cd * && uv run generate_reference_yaml.py *)",
       "Bash(cd * && rm -rf \"*/.claude/skills/find-*\")"
     ]
   }
