@@ -1719,6 +1719,8 @@ modules:
       - name: find-CBaseEntity_EmitSoundFilter
         expected_output:
           - CBaseEntity_EmitSoundFilter.{platform}.yaml
+        expected_input:
+          - CPlayer_MovementServices_PlayWaterStepSound.{platform}.yaml
 
       - name: find-CBaseEntity_Precache
         expected_output:
