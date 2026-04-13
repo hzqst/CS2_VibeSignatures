@@ -1316,6 +1316,10 @@ modules:
         expected_input:
           - CCSPlayer_MovementServices_CheckJumpButton.{platform}.yaml
 
+      - name: find-CPlayer_MovementServices_PlayWaterStepSound
+        expected_output:
+          - CPlayer_MovementServices_PlayWaterStepSound.{platform}.yaml
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -2237,6 +2241,11 @@ modules:
         alias:
           - CheckJumpButtonWater
           - FixWaterFloorJump
+
+      - name: CPlayer_MovementServices_PlayWaterStepSound
+        category: func
+        alias:
+          - CPlayer_MovementServices::PlayWaterStepSound
 
       - name: CEntityInstance_vtable
         category: vtable
