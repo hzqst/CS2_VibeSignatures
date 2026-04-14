@@ -367,11 +367,6 @@ items:
   classicy: by_decompile
   owner_func_name: CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate
   owner_module: client
-- symbol_name: LegacyGameEventListener
-  skill_name: find-LegacyGameEventListener
-  classicy: by_decompile
-  owner_func_name: CSource2GameClients_StartHLTVServer
-  owner_module: server
 - symbol_name: ShowHudHint
   skill_name: find-ShowHudHint
   classicy: misc
