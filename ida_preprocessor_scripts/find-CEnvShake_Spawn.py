@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CTriggerPush_Touch skill."""
+"""Preprocess script for find-CEnvShake_Spawn skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("CTriggerPush_Touch", "CTriggerPush", "CBaseEntity_Touch", True),
+    ("CEnvShake_Spawn", "CEnvShake", "CBaseEntity_Spawn", True),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CTriggerPush_Touch",
+        "CEnvShake_Spawn",
         [
             "func_name",
             "func_va",

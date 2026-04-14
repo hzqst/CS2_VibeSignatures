@@ -1259,6 +1259,10 @@ modules:
         expected_output:
           - CSource2GameEntities_vtable.{platform}.yaml
 
+      - name: find-CSource2GameClients_vtable
+        expected_output:
+          - CSource2GameClients_vtable.{platform}.yaml
+
       - name: find-IGameSystem_vtable
         expected_output:
           - IGameSystem_vtable.{platform}.yaml
@@ -1367,6 +1371,10 @@ modules:
       - name: find-CTakeDamageInfo_vtable
         expected_output:
           - CTakeDamageInfo_vtable.{platform}.yaml
+
+      - name: find-CEnvShake_vtable
+        expected_output:
+          - CEnvShake_vtable.{platform}.yaml
 
       - name: find-CCSPlayerStateDeathAnim_vtable
         expected_output:
@@ -1733,9 +1741,18 @@ modules:
         expected_output:
           - CBaseEntity_EmitSoundParams.{platform}.yaml
 
+      - name: find-CEnvShake_Spawn
+        expected_output:
+          - CEnvShake_Spawn.{platform}.yaml
+        expected_input:
+          - CEnvShake_vtable.{platform}.yaml
+          - CBaseEntity_Spawn.{platform}.yaml
+
       - name: find-CBaseEntity_SetMoveType
         expected_output:
           - CBaseEntity_SetMoveType.{platform}.yaml
+        expected_input:
+          - CEnvShake_Spawn.{platform}.yaml
 
       - name: find-CBasePlayerPawn_CommitSuicide
         expected_output:
@@ -1819,9 +1836,17 @@ modules:
           - find-IGameSystem_vtable
           - find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
 
+      - name: find-CSource2GameClients_StartHLTVServer
+        expected_output:
+          - CSource2GameClients_StartHLTVServer.{platform}.yaml
+        expected_input:
+          - CSource2GameClients_vtable.{platform}.yaml
+
       - name: find-LegacyGameEventListener
         expected_output:
           - LegacyGameEventListener.{platform}.yaml
+        expected_input:
+          - CSource2GameClients_StartHLTVServer.{platform}.yaml
 
       - name: find-CPhysicsGameSystem_ProcessContactEvents
         expected_output:
@@ -2193,6 +2218,9 @@ modules:
       - name: CSource2GameEntities_vtable
         category: vtable
 
+      - name: CSource2GameClients_vtable
+        category: vtable
+
       - name: CSpawnGroupMgrGameSystem_vtable
         category: vtable
 
@@ -2314,6 +2342,9 @@ modules:
         category: vtable
 
       - name: CTakeDamageInfo_vtable
+        category: vtable
+
+      - name: CEnvShake_vtable
         category: vtable
 
       - name: CCSPlayerStateDeathAnim_vtable
@@ -2660,6 +2691,11 @@ modules:
           - CBaseEntity::Precache
           - Precache
 
+      - name: CEnvShake_Spawn
+        category: vfunc
+        alias:
+          - CEnvShake::Spawn
+
       - name: CBaseEntity_SetMoveType
         category: func
         alias:
@@ -2798,6 +2834,11 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::BuildGameSessionManifest
+
+      - name: CSource2GameClients_StartHLTVServer
+        category: vfunc
+        alias:
+          - CSource2GameClients::StartHLTVServer
 
       - name: LegacyGameEventListener
         category: func
