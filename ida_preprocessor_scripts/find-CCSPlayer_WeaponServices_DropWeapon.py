@@ -1,32 +1,35 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CBasePlayerPawn_CommitSuicide skill."""
+"""Preprocess script for find-CCSPlayer_WeaponServices_DropWeapon skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CBasePlayerPawn_CommitSuicide",
+    "CCSPlayer_WeaponServices_DropWeapon",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CBasePlayerPawn_CommitSuicide",
+        "CCSPlayer_WeaponServices_DropWeapon",
         "prompt/call_llm_decompile.md",
-        "references/server/BotKill_CommandHandler.{platform}.yaml",
+        "references/server/CCSPlayer_ItemServices_DropActivePlayerWeapon.{platform}.yaml",
     ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CBasePlayerPawn_CommitSuicide", "CBasePlayerPawn"),
+    ("CCSPlayer_WeaponServices_DropWeapon", "CCSPlayer_WeaponServices"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CBasePlayerPawn_CommitSuicide",
+        "CCSPlayer_WeaponServices_DropWeapon",
         [
             "func_name",
+            "func_va",
+            "func_rva",
+            "func_size",
             "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
