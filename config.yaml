@@ -1505,9 +1505,15 @@ modules:
         expected_output:
           - CEntityIdentity_SetEntityName.{platform}.yaml
 
+      - name: find-CBtActionCoordinatedBuy_vtable
+        expected_output:
+          - CBtActionCoordinatedBuy_vtable.{platform}.yaml
+
       - name: find-CBtActionCoordinatedBuy_Update
         expected_output:
           - CBtActionCoordinatedBuy_Update.{platform}.yaml
+        expected_input:
+          - CBtActionCoordinatedBuy_vtable.{platform}.yaml
 
       - name: find-CCSPlayer_ItemServices_CanAcquire
         expected_output:
@@ -2573,7 +2579,7 @@ modules:
           - CEntityIdentity::SetEntityName
 
       - name: CBtActionCoordinatedBuy_Update
-        category: func
+        category: vfunc
         alias:
           - CBtActionCoordinatedBuy::Update
 
