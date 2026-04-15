@@ -1,0 +1,702 @@
+func_name: CBtActionCoordinatedBuy_Update
+func_va: '0x1802f6710'
+disasm_code: |-
+  .text:00000001802F6710                 mov     [rsp+arg_0], rcx
+  .text:00000001802F6715                 push    rbp
+  .text:00000001802F6716                 sub     rsp, 0F0h
+  .text:00000001802F671D                 mov     rbp, rcx
+  .text:00000001802F6720                 mov     [rsp+0F8h+var_D8], 0
+  .text:00000001802F6728                 mov     rcx, [rcx+18h]
+  .text:00000001802F672C                 lea     r9, ??_R0?AVCBtAgentBot@@@8; CBtAgentBot `RTTI Type Descriptor'
+  .text:00000001802F6733                 lea     r8, ??_R0?AVIBtAgent@@@8; IBtAgent `RTTI Type Descriptor'
+  .text:00000001802F673A                 xor     edx, edx
+  .text:00000001802F673C                 call    sub_1814890BC
+  .text:00000001802F6741                 test    rax, rax
+  .text:00000001802F6744                 jnz     short loc_1802F6761
+  .text:00000001802F6746                 lea     rcx, aAiBtCoordinate; "[ AI BT ]: 'CoordinatedBuy' is only sup"...
+  .text:00000001802F674D                 call    cs:Warning
+  .text:00000001802F6753                 mov     eax, 1
+  .text:00000001802F6758                 add     rsp, 0F0h
+  .text:00000001802F675F                 pop     rbp
+  .text:00000001802F6760                 retn
+  .text:00000001802F6761                 mov     rcx, [rax+8]
+  .text:00000001802F6765                 xorps   xmm0, xmm0
+  .text:00000001802F6768                 mov     [rsp+0F8h+var_10], rbx
+  .text:00000001802F6770                 mov     [rsp+0F8h+var_18], rsi
+  .text:00000001802F6778                 mov     [rsp+0F8h+var_20], rdi
+  .text:00000001802F6780                 mov     [rsp+0F8h+var_38], r14
+  .text:00000001802F6788                 lea     r14, [rbp+78h]
+  .text:00000001802F678C                 mov     rdx, r14
+  .text:00000001802F678F                 mov     [rsp+0F8h+var_40], r15
+  .text:00000001802F6797                 movups  [rsp+0F8h+var_88], xmm0
+  .text:00000001802F679C                 mov     [rsp+0F8h+var_90], r14
+  .text:00000001802F67A1                 movups  [rsp+0F8h+var_78], xmm0
+  .text:00000001802F67A9                 movups  [rsp+0F8h+var_68], xmm0
+  .text:00000001802F67B1                 movups  [rsp+0F8h+var_58], xmm0
+  .text:00000001802F67B9                 call    sub_1802E5590
+  .text:00000001802F67BE                 mov     rdi, cs:off_181BD05B8
+  .text:00000001802F67C5                 xor     ebx, ebx
+  .text:00000001802F67C7                 mov     r15d, eax
+  .text:00000001802F67CA                 mov     [rsp+0F8h+var_B0], eax
+  .text:00000001802F67CE                 mov     edi, [rdi+10h]
+  .text:00000001802F67D1                 test    edi, edi
+  .text:00000001802F67D3                 jz      loc_1802F68A6
+  .text:00000001802F67D9                 nop     dword ptr [rax+00000000h]
+  .text:00000001802F67E0                 mov     ecx, ebx
+  .text:00000001802F67E2                 call    sub_180BCFEA0
+  .text:00000001802F67E7                 mov     rsi, rax
+  .text:00000001802F67EA                 test    rax, rax
+  .text:00000001802F67ED                 jz      loc_1802F689C
+  .text:00000001802F67F3                 mov     rdx, [rax]
+  .text:00000001802F67F6                 mov     rcx, rax
+  .text:00000001802F67F9                 call    qword ptr [rdx+540h]
+  .text:00000001802F67FF                 test    al, al
+  .text:00000001802F6801                 jz      loc_1802F689C
+  .text:00000001802F6807                 mov     rdx, [rsi]
+  .text:00000001802F680A                 mov     rcx, rsi
+  .text:00000001802F680D                 call    qword ptr [rdx+0D10h]
+  .text:00000001802F6813                 test    al, al
+  .text:00000001802F6815                 jz      loc_1802F689C
+  .text:00000001802F681B                 mov     rax, [rsi]
+  .text:00000001802F681E                 mov     rcx, rsi
+  .text:00000001802F6821                 call    qword ptr [rax+538h]
+  .text:00000001802F6827                 test    al, al
+  .text:00000001802F6829                 jz      short loc_1802F689C
+  .text:00000001802F682B                 mov     rax, [rsi]
+  .text:00000001802F682E                 mov     rcx, rsi
+  .text:00000001802F6831                 call    qword ptr [rax+0C88h]
+  .text:00000001802F6837                 test    al, al
+  .text:00000001802F6839                 jz      short loc_1802F689C
+  .text:00000001802F683B                 cmp     byte ptr [rsi+1AB0h], 0
+  .text:00000001802F6842                 jz      short loc_1802F6852
+  .text:00000001802F6844                 mov     rsi, [rsi+1AA8h]
+  .text:00000001802F684B                 test    rsi, rsi
+  .text:00000001802F684E                 jnz     short loc_1802F6866
+  .text:00000001802F6850                 jmp     short loc_1802F6854
+  .text:00000001802F6852                 xor     esi, esi
+  .text:00000001802F6854                 lea     rcx, aAiBtFailedToOb; "[AI BT]: Failed to obtain bot pointer."
+  .text:00000001802F685B                 call    cs:Warning
+  .text:00000001802F6861                 test    rsi, rsi
+  .text:00000001802F6864                 jz      short loc_1802F689C
+  .text:00000001802F6866                 cmp     dword ptr [r14], 0
+  .text:00000001802F686A                 jz      short loc_1802F687C
+  .text:00000001802F686C                 mov     rax, [rsi+18h]
+  .text:00000001802F6870                 movzx   ecx, byte ptr [rax+344h]
+  .text:00000001802F6877                 cmp     ecx, r15d
+  .text:00000001802F687A                 jnz     short loc_1802F689C
+  .text:00000001802F687C                 mov     rax, [rsi+10h]
+  .text:00000001802F6880                 test    rax, rax
+  .text:00000001802F6883                 jz      short loc_1802F6891
+  .text:00000001802F6885                 mov     rax, [rax+7D8h]
+  .text:00000001802F688C                 mov     ecx, [rax+48h]
+  .text:00000001802F688F                 jmp     short loc_1802F6893
+  .text:00000001802F6891                 xor     ecx, ecx
+  .text:00000001802F6893                 cmp     ecx, [rbp+58h]
+  .text:00000001802F6896                 jl      loc_1802F698E
+  .text:00000001802F689C                 inc     ebx
+  .text:00000001802F689E                 cmp     ebx, edi
+  .text:00000001802F68A0                 jnz     loc_1802F67E0
+  .text:00000001802F68A6                 cmp     dword ptr [rbp+60h], 0
+  .text:00000001802F68AA                 mov     [rsp+0F8h+var_28], r12
+  .text:00000001802F68B2                 mov     [rsp+0F8h+var_30], r13
+  .text:00000001802F68BA                 mov     [rsp+0F8h+var_C0], 0
+  .text:00000001802F68C2                 jle     loc_1802F6D0B
+  .text:00000001802F68C8                 xor     r12d, r12d
+  .text:00000001802F68CB                 mov     [rsp+0F8h+var_B8], r12
+  .text:00000001802F68D0                 mov     rsi, cs:off_181BD05B8
+  .text:00000001802F68D7                 xor     ebx, ebx
+  .text:00000001802F68D9                 mov     r13, [rbp+68h]
+  .text:00000001802F68DD                 mov     r15d, 7FFFFFFFh
+  .text:00000001802F68E3                 mov     [rsp+0F8h+var_98], r13
+  .text:00000001802F68E8                 mov     edi, 0FFFFFFFFh
+  .text:00000001802F68ED                 mov     [rsp+0F8h+arg_8], r15d
+  .text:00000001802F68F5                 mov     esi, [rsi+10h]
+  .text:00000001802F68F8                 test    esi, esi
+  .text:00000001802F68FA                 jz      loc_1802F6D62
+  .text:00000001802F6900                 movsxd  rax, ebx
+  .text:00000001802F6903                 cmp     byte ptr [rsp+rax+0F8h+var_88], 0
+  .text:00000001802F6908                 jnz     loc_1802F6CC7
+  .text:00000001802F690E                 mov     ecx, ebx
+  .text:00000001802F6910                 call    sub_180BCFEA0
+  .text:00000001802F6915                 mov     r14, rax
+  .text:00000001802F6918                 test    rax, rax
+  .text:00000001802F691B                 jz      loc_1802F6CC7
+  .text:00000001802F6921                 mov     rdx, [rax]
+  .text:00000001802F6924                 mov     rcx, rax
+  .text:00000001802F6927                 call    qword ptr [rdx+540h]
+  .text:00000001802F692D                 test    al, al
+  .text:00000001802F692F                 jz      loc_1802F6CC7
+  .text:00000001802F6935                 mov     rdx, [r14]
+  .text:00000001802F6938                 mov     rcx, r14
+  .text:00000001802F693B                 call    qword ptr [rdx+0D10h]
+  .text:00000001802F6941                 test    al, al
+  .text:00000001802F6943                 jz      loc_1802F6CC7
+  .text:00000001802F6949                 mov     rax, [r14]
+  .text:00000001802F694C                 mov     rcx, r14
+  .text:00000001802F694F                 call    qword ptr [rax+538h]
+  .text:00000001802F6955                 test    al, al
+  .text:00000001802F6957                 jz      loc_1802F6CC7
+  .text:00000001802F695D                 mov     rax, [r14]
+  .text:00000001802F6960                 mov     rcx, r14
+  .text:00000001802F6963                 call    qword ptr [rax+0C88h]
+  .text:00000001802F6969                 test    al, al
+  .text:00000001802F696B                 jz      loc_1802F6CC7
+  .text:00000001802F6971                 cmp     byte ptr [r14+1AB0h], 0
+  .text:00000001802F6979                 jz      short loc_1802F69A9
+  .text:00000001802F697B                 mov     rax, [r14+1AA8h]
+  .text:00000001802F6982                 mov     [rsp+0F8h+var_C8], rax
+  .text:00000001802F6987                 test    rax, rax
+  .text:00000001802F698A                 jnz     short loc_1802F69CC
+  .text:00000001802F698C                 jmp     short loc_1802F69B1
+  .text:00000001802F698E                 mov     dword ptr [rbp+40h], 1
+  .text:00000001802F6995                 mov     rax, cs:off_181BD05B8
+  .text:00000001802F699C                 mov     ecx, [rax+30h]
+  .text:00000001802F699F                 mov     eax, 1
+  .text:00000001802F69A4                 jmp     loc_1802F6D2E
+  .text:00000001802F69A9                 xor     r14d, r14d
+  .text:00000001802F69AC                 mov     [rsp+0F8h+var_C8], r14
+  .text:00000001802F69B1                 lea     rcx, aAiBtFailedToOb; "[AI BT]: Failed to obtain bot pointer."
+  .text:00000001802F69B8                 call    cs:Warning
+  .text:00000001802F69BE                 mov     rax, [rsp+0F8h+var_C8]
+  .text:00000001802F69C3                 test    rax, rax
+  .text:00000001802F69C6                 jz      loc_1802F6CC7
+  .text:00000001802F69CC                 mov     r14, [rsp+0F8h+var_90]
+  .text:00000001802F69D1                 lea     r8, [rax+18h]
+  .text:00000001802F69D5                 mov     [rsp+0F8h+var_A8], r8
+  .text:00000001802F69DA                 cmp     dword ptr [r14], 0
+  .text:00000001802F69DE                 jz      short loc_1802F69F9
+  .text:00000001802F69E0                 mov     rax, [r8]
+  .text:00000001802F69E3                 movzx   ecx, byte ptr [rax+344h]
+  .text:00000001802F69EA                 cmp     ecx, [rsp+0F8h+var_B0]
+  .text:00000001802F69EE                 jnz     loc_1802F6CC7
+  .text:00000001802F69F4                 mov     rax, [rsp+0F8h+var_C8]
+  .text:00000001802F69F9                 xor     edx, edx
+  .text:00000001802F69FB                 xor     ebp, ebp
+  .text:00000001802F69FD                 mov     [rsp+0F8h+arg_10], edx
+  .text:00000001802F6A04                 mov     [rsp+0F8h+arg_18], ebp
+  .text:00000001802F6A0B                 cmp     [r12+r13], edx
+  .text:00000001802F6A0F                 jle     loc_1802F6CA9
+  .text:00000001802F6A15                 xor     r15d, r15d
+  .text:00000001802F6A18                 mov     [rsp+0F8h+var_C8], rax
+  .text:00000001802F6A1D                 nop     dword ptr [rax]
+  .text:00000001802F6A20                 mov     rax, [r8]
+  .text:00000001802F6A23                 lea     rdx, unk_18152DF88
+  .text:00000001802F6A2A                 mov     r14, [r12+r13+8]
+  .text:00000001802F6A2F                 mov     [rsp+0F8h+var_A0], r14
+  .text:00000001802F6A34                 mov     rcx, [rax+0B70h]
+  .text:00000001802F6A3B                 mov     rax, [r15+r14]
+  .text:00000001802F6A3F                 test    rax, rax
+  .text:00000001802F6A42                 cmovnz  rdx, rax
+  .text:00000001802F6A46                 call    sub_180A29EB0
+  .text:00000001802F6A4B                 test    rax, rax
+  .text:00000001802F6A4E                 jnz     loc_1802F6BE3
+  .text:00000001802F6A54                 mov     rax, [r15+r14]
+  .text:00000001802F6A58                 lea     r14, unk_18152DF88
+  .text:00000001802F6A5F                 test    rax, rax
+  .text:00000001802F6A62                 cmovnz  r14, rax
+  .text:00000001802F6A66                 call    sub_180E6D230
+  .text:00000001802F6A6B                 mov     rdx, r14
+  .text:00000001802F6A6E                 mov     rcx, [rax]
+  .text:00000001802F6A71                 mov     r8, [rcx+150h]
+  .text:00000001802F6A78                 mov     rcx, rax
+  .text:00000001802F6A7B                 call    r8
+  .text:00000001802F6A7E                 mov     rbp, rax
+  .text:00000001802F6A81                 call    sub_180E6D230
+  .text:00000001802F6A86                 mov     r12d, [rax+34h]
+  .text:00000001802F6A8A                 call    sub_180E6D230
+  .text:00000001802F6A8F                 mov     r13d, [rax+34h]
+  .text:00000001802F6A93                 cmp     r12d, r13d
+  .text:00000001802F6A96                 jz      short loc_1802F6AB6
+  .text:00000001802F6A98                 call    sub_180E6D230
+  .text:00000001802F6A9D                 mov     rdx, r14
+  .text:00000001802F6AA0                 mov     rcx, [rax]
+  .text:00000001802F6AA3                 mov     r8, [rcx+150h]
+  .text:00000001802F6AAA                 mov     rcx, rax
+  .text:00000001802F6AAD                 call    r8
+  .text:00000001802F6AB0                 mov     rbp, rax
+  .text:00000001802F6AB3                 mov     r12d, r13d
+  .text:00000001802F6AB6                 test    rbp, rbp
+  .text:00000001802F6AB9                 jz      loc_1802F6C5C
+  .text:00000001802F6ABF                 call    sub_18096B030
+  .text:00000001802F6AC4                 mov     r13, rax
+  .text:00000001802F6AC7                 call    sub_180E6D230
+  .text:00000001802F6ACC                 cmp     r12d, [rax+34h]
+  .text:00000001802F6AD0                 jz      short loc_1802F6AED
+  .text:00000001802F6AD2                 call    sub_180E6D230
+  .text:00000001802F6AD7                 mov     rdx, r14
+  .text:00000001802F6ADA                 mov     rcx, [rax]
+  .text:00000001802F6ADD                 mov     r8, [rcx+150h]
+  .text:00000001802F6AE4                 mov     rcx, rax
+  .text:00000001802F6AE7                 call    r8
+  .text:00000001802F6AEA                 mov     rbp, rax
+  .text:00000001802F6AED                 movzx   edx, word ptr [rbp+10h]
+  .text:00000001802F6AF1                 xor     r9d, r9d
+  .text:00000001802F6AF4                 xor     r8d, r8d
+  .text:00000001802F6AF7                 mov     rcx, r13
+  .text:00000001802F6AFA                 call    sub_180E73170
+  .text:00000001802F6AFF                 test    rax, rax
+  .text:00000001802F6B02                 jz      loc_1802F6C5C
+  .text:00000001802F6B08                 cmp     byte ptr [rax+68h], 0
+  .text:00000001802F6B0C                 jz      loc_1802F6C5C
+  .text:00000001802F6B12                 mov     r13, [rsp+0F8h+var_A8]
+  .text:00000001802F6B17                 mov     rcx, [r13+0]
+  .text:00000001802F6B1B                 test    rcx, rcx
+  .text:00000001802F6B1E                 jz      loc_1802F6C5C
+  .text:00000001802F6B24                 mov     rcx, [rcx+0B78h]
+  .text:00000001802F6B2B                 xor     r9d, r9d
+  .text:00000001802F6B2E                 mov     r8d, 1
+  .text:00000001802F6B34                 mov     rdx, rax
+  .text:00000001802F6B37                 call    CCSPlayer_ItemServices_CanAcquire
+  .text:00000001802F6B3C                 test    eax, eax
+  .text:00000001802F6B3E                 jnz     loc_1802F6C5C
+  .text:00000001802F6B44                 mov     rax, [rsp+0F8h+var_A0]
+  .text:00000001802F6B49                 lea     r12, unk_18152DF88
+  .text:00000001802F6B50                 mov     rax, [r15+rax]
+  .text:00000001802F6B54                 test    rax, rax
+  .text:00000001802F6B57                 cmovnz  r12, rax
+  .text:00000001802F6B5B                 call    sub_180E6D230
+  .text:00000001802F6B60                 mov     rdx, r12
+  .text:00000001802F6B63                 mov     rcx, [rax]
+  .text:00000001802F6B66                 mov     r8, [rcx+150h]
+  .text:00000001802F6B6D                 mov     rcx, rax
+  .text:00000001802F6B70                 call    r8
+  .text:00000001802F6B73                 mov     r14, rax
+  .text:00000001802F6B76                 call    sub_180E6D230
+  .text:00000001802F6B7B                 mov     rcx, [r13+0]
+  .text:00000001802F6B7F                 mov     ebp, [rax+34h]
+  .text:00000001802F6B82                 mov     r13, [rcx+0B70h]
+  .text:00000001802F6B89                 call    sub_180E6D230
+  .text:00000001802F6B8E                 cmp     ebp, [rax+34h]
+  .text:00000001802F6B91                 jz      short loc_1802F6BAB
+  .text:00000001802F6B93                 call    sub_180E6D230
+  .text:00000001802F6B98                 mov     rdx, r12
+  .text:00000001802F6B9B                 mov     rcx, rax
+  .text:00000001802F6B9E                 mov     r8, [rax]
+  .text:00000001802F6BA1                 call    qword ptr [r8+150h]
+  .text:00000001802F6BA8                 mov     r14, rax
+  .text:00000001802F6BAB                 movzx   edx, word ptr [r14+10h]
+  .text:00000001802F6BB0                 xor     r8d, r8d
+  .text:00000001802F6BB3                 mov     rcx, r13
+  .text:00000001802F6BB6                 call    sub_180A2DA50
+  .text:00000001802F6BBB                 cmp     eax, 0FFFFFFFFh
+  .text:00000001802F6BBE                 jz      short loc_1802F6C07
+  .text:00000001802F6BC0                 mov     edx, [rsp+0F8h+arg_10]
+  .text:00000001802F6BC7                 mov     ebp, [rsp+0F8h+arg_18]
+  .text:00000001802F6BCE                 add     edx, eax
+  .text:00000001802F6BD0                 mov     r12, [rsp+0F8h+var_B8]
+  .text:00000001802F6BD5                 mov     r13, [rsp+0F8h+var_98]
+  .text:00000001802F6BDA                 mov     [rsp+0F8h+arg_10], edx
+  .text:00000001802F6BE1                 jmp     short loc_1802F6BEA
+  .text:00000001802F6BE3                 mov     edx, [rsp+0F8h+arg_10]
+  .text:00000001802F6BEA                 inc     ebp
+  .text:00000001802F6BEC                 add     r15, 8
+  .text:00000001802F6BF0                 mov     [rsp+0F8h+arg_18], ebp
+  .text:00000001802F6BF7                 cmp     ebp, [r12+r13]
+  .text:00000001802F6BFB                 jge     short loc_1802F6C3A
+  .text:00000001802F6BFD                 mov     r8, [rsp+0F8h+var_A8]
+  .text:00000001802F6C02                 jmp     loc_1802F6A20
+  .text:00000001802F6C07                 mov     rax, [rsp+0F8h+var_A0]
+  .text:00000001802F6C0C                 lea     rdx, unk_18152DF88
+  .text:00000001802F6C13                 lea     rcx, aAiBtUnableToDe; "[AI BT]: Unable to determine the cost o"...
+  .text:00000001802F6C1A                 mov     rax, [r15+rax]
+  .text:00000001802F6C1E                 test    rax, rax
+  .text:00000001802F6C21                 cmovnz  rdx, rax
+  .text:00000001802F6C25                 call    cs:Warning
+  .text:00000001802F6C2B                 mov     r12, [rsp+0F8h+var_B8]
+  .text:00000001802F6C30                 mov     edx, 7FFFFFFFh
+  .text:00000001802F6C35                 mov     r13, [rsp+0F8h+var_98]
+  .text:00000001802F6C3A                 mov     r14, [rsp+0F8h+var_C8]
+  .text:00000001802F6C3F                 mov     r15d, [rsp+0F8h+arg_8]
+  .text:00000001802F6C47                 mov     rax, [r14+10h]
+  .text:00000001802F6C4B                 test    rax, rax
+  .text:00000001802F6C4E                 jz      short loc_1802F6CB0
+  .text:00000001802F6C50                 mov     rax, [rax+7D8h]
+  .text:00000001802F6C57                 mov     ecx, [rax+48h]
+  .text:00000001802F6C5A                 jmp     short loc_1802F6CB2
+  .text:00000001802F6C5C                 mov     r14, [rsp+0F8h+var_C8]
+  .text:00000001802F6C61                 lea     rbp, unk_18152DF88
+  .text:00000001802F6C68                 mov     rax, [rsp+0F8h+var_A0]
+  .text:00000001802F6C6D                 mov     rcx, [r14+18h]
+  .text:00000001802F6C71                 mov     rax, [r15+rax]
+  .text:00000001802F6C75                 test    rax, rax
+  .text:00000001802F6C78                 mov     rcx, [rcx+10h]
+  .text:00000001802F6C7C                 cmovnz  rbp, rax
+  .text:00000001802F6C80                 call    sub_1811A5280
+  .text:00000001802F6C85                 mov     r8, rbp
+  .text:00000001802F6C88                 lea     rcx, aAiBtSIsUnableT; "[AI BT]: '%s' is unable to purchase ite"...
+  .text:00000001802F6C8F                 mov     rdx, rax
+  .text:00000001802F6C92                 call    cs:Warning
+  .text:00000001802F6C98                 mov     r12, [rsp+0F8h+var_B8]
+  .text:00000001802F6C9D                 mov     edx, 7FFFFFFFh
+  .text:00000001802F6CA2                 mov     r13, [rsp+0F8h+var_98]
+  .text:00000001802F6CA7                 jmp     short loc_1802F6C3F
+  .text:00000001802F6CA9                 mov     r14, [rsp+0F8h+var_C8]
+  .text:00000001802F6CAE                 jmp     short loc_1802F6C47
+  .text:00000001802F6CB0                 xor     ecx, ecx
+  .text:00000001802F6CB2                 cmp     ecx, edx
+  .text:00000001802F6CB4                 jl      short loc_1802F6CC7
+  .text:00000001802F6CB6                 cmp     edx, r15d
+  .text:00000001802F6CB9                 jge     short loc_1802F6CC7
+  .text:00000001802F6CBB                 mov     edi, ebx
+  .text:00000001802F6CBD                 mov     [rsp+0F8h+arg_8], edx
+  .text:00000001802F6CC4                 mov     r15d, edx
+  .text:00000001802F6CC7                 inc     ebx
+  .text:00000001802F6CC9                 cmp     ebx, esi
+  .text:00000001802F6CCB                 jnz     loc_1802F6900
+  .text:00000001802F6CD1                 mov     rbp, [rsp+0F8h+arg_0]
+  .text:00000001802F6CD9                 cmp     edi, 0FFFFFFFFh
+  .text:00000001802F6CDC                 jz      loc_1802F6D62
+  .text:00000001802F6CE2                 movsxd  rax, edi
+  .text:00000001802F6CE5                 mov     [r12+r13+20h], edi
+  .text:00000001802F6CEA                 add     r12, 28h ; '('
+  .text:00000001802F6CEE                 mov     [rsp+0F8h+var_B8], r12
+  .text:00000001802F6CF3                 mov     byte ptr [rsp+rax+0F8h+var_88], 1
+  .text:00000001802F6CF8                 mov     eax, [rsp+0F8h+var_C0]
+  .text:00000001802F6CFC                 inc     eax
+  .text:00000001802F6CFE                 mov     [rsp+0F8h+var_C0], eax
+  .text:00000001802F6D02                 cmp     eax, [rbp+60h]
+  .text:00000001802F6D05                 jl      loc_1802F68D0
+  .text:00000001802F6D0B                 mov     dword ptr [rbp+40h], 0
+  .text:00000001802F6D12                 mov     rax, cs:off_181BD05B8
+  .text:00000001802F6D19                 mov     ecx, [rax+30h]
+  .text:00000001802F6D1C                 xor     eax, eax
+  .text:00000001802F6D1E                 mov     r13, [rsp+0F8h+var_30]
+  .text:00000001802F6D26                 mov     r12, [rsp+0F8h+var_28]
+  .text:00000001802F6D2E                 mov     r14, [rsp+0F8h+var_38]
+  .text:00000001802F6D36                 mov     rdi, [rsp+0F8h+var_20]
+  .text:00000001802F6D3E                 mov     rsi, [rsp+0F8h+var_18]
+  .text:00000001802F6D46                 mov     rbx, [rsp+0F8h+var_10]
+  .text:00000001802F6D4E                 mov     r15, [rsp+0F8h+var_40]
+  .text:00000001802F6D56                 mov     [rbp+44h], ecx
+  .text:00000001802F6D59                 add     rsp, 0F0h
+  .text:00000001802F6D60                 pop     rbp
+  .text:00000001802F6D61                 retn
+  .text:00000001802F6D62                 mov     rax, [r12+r13+18h]
+  .text:00000001802F6D67                 lea     rdx, unk_18152DF88
+  .text:00000001802F6D6E                 test    rax, rax
+  .text:00000001802F6D71                 lea     rcx, aAiBtPurchaseSC; "[AI BT]: Purchase '%s' could not be ful"...
+  .text:00000001802F6D78                 cmovnz  rdx, rax
+  .text:00000001802F6D7C                 call    cs:?DevMsg@@YAXPEBDZZ; DevMsg(char const *,...)
+  .text:00000001802F6D82                 mov     dword ptr [rbp+40h], 1
+  .text:00000001802F6D89                 mov     rax, cs:off_181BD05B8
+  .text:00000001802F6D90                 mov     ecx, [rax+30h]
+  .text:00000001802F6D93                 mov     eax, 1
+  .text:00000001802F6D98                 jmp     short loc_1802F6D1E
+procedure: |-
+  __int64 __fastcall CBtActionCoordinatedBuy_Update(__int64 a1)
+  {
+    __int64 v1; // rbp
+    __int64 v2; // rax
+    __int64 result; // rax
+    __int64 v4; // rcx
+    unsigned int v5; // ebx
+    int v6; // r15d
+    int v7; // edi
+    __int64 v8; // rax
+    __int64 v9; // rsi
+    __int64 v10; // rsi
+    __int64 v11; // rax
+    int v12; // ecx
+    __int64 v13; // r12
+    int v14; // ebx
+    __int64 v15; // r13
+    int v16; // r15d
+    int v17; // edi
+    int v18; // esi
+    __int64 v19; // rax
+    __int64 v20; // r14
+    __int64 v21; // rax
+    int v22; // ecx
+    __int64 v23; // r8
+    int v24; // edx
+    int v25; // ebp
+    __int64 v26; // r15
+    void *v27; // rdx
+    __int64 v28; // r14
+    void *v29; // rax
+    void *v30; // r14
+    __int64 v31; // rax
+    __int64 v32; // rbp
+    int v33; // r12d
+    int v34; // r13d
+    __int64 v35; // rax
+    __int64 v36; // r13
+    __int64 v37; // rax
+    __int64 v38; // rax
+    void *v39; // r12
+    __int64 v40; // rax
+    __int64 v41; // r14
+    int v42; // ebp
+    __int64 v43; // r13
+    __int64 v44; // rax
+    int v45; // eax
+    void *v46; // rdx
+    __int64 v47; // r14
+    __int64 v48; // rax
+    int v49; // ecx
+    const char *v50; // rbp
+    const char *v51; // rax
+    void *v52; // rdx
+    __int64 v53; // [rsp+30h] [rbp-C8h]
+    int v54; // [rsp+38h] [rbp-C0h]
+    __int64 v55; // [rsp+40h] [rbp-B8h]
+    int v56; // [rsp+48h] [rbp-B0h]
+    __int64 v57; // [rsp+50h] [rbp-A8h]
+    __int64 v58; // [rsp+58h] [rbp-A0h]
+    __int64 v59; // [rsp+60h] [rbp-98h]
+    _DWORD *v60; // [rsp+68h] [rbp-90h]
+    _OWORD v61[4]; // [rsp+70h] [rbp-88h] BYREF
+    int v63; // [rsp+108h] [rbp+10h]
+    int v64; // [rsp+110h] [rbp+18h]
+    int v65; // [rsp+118h] [rbp+20h]
+
+    v1 = a1;
+    v2 = sub_1814890BC(
+           *(_QWORD *)(a1 + 24),
+           0,
+           (unsigned int)&IBtAgent `RTTI Type Descriptor',
+           (unsigned int)&CBtAgentBot `RTTI Type Descriptor',
+           0);
+    if ( v2 )
+    {
+      v4 = *(_QWORD *)(v2 + 8);
+      memset(v61, 0, sizeof(v61));
+      v60 = (_DWORD *)(v1 + 120);
+      v5 = 0;
+      v6 = sub_1802E5590(v4, v1 + 120);
+      v56 = v6;
+      v7 = *((_DWORD *)off_181BD05B8 + 4);
+      if ( v7 )
+      {
+        do
+        {
+          v8 = sub_180BCFEA0(v5);
+          v9 = v8;
+          if ( v8
+            && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v8 + 1344LL))(v8)
+            && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v9 + 3344LL))(v9)
+            && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v9 + 1336LL))(v9)
+            && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v9 + 3208LL))(v9) )
+          {
+            if ( *(_BYTE *)(v9 + 6832) && (v10 = *(_QWORD *)(v9 + 6824)) != 0 )
+            {
+              if ( !*(_DWORD *)(v1 + 120) || *(unsigned __int8 *)(*(_QWORD *)(v10 + 24) + 836LL) == v6 )
+              {
+                v11 = *(_QWORD *)(v10 + 16);
+                v12 = v11 ? *(_DWORD *)(*(_QWORD *)(v11 + 2008) + 72LL) : 0;
+                if ( v12 < *(_DWORD *)(v1 + 88) )
+                {
+                  *(_DWORD *)(v1 + 64) = 1;
+                  v22 = *((_DWORD *)off_181BD05B8 + 12);
+                  result = 1;
+                  goto LABEL_79;
+                }
+              }
+            }
+            else
+            {
+              Warning("[AI BT]: Failed to obtain bot pointer.");
+            }
+          }
+          ++v5;
+        }
+        while ( v5 != v7 );
+      }
+      v54 = 0;
+      if ( *(int *)(v1 + 96) <= 0 )
+      {
+  LABEL_78:
+        *(_DWORD *)(v1 + 64) = 0;
+        v22 = *((_DWORD *)off_181BD05B8 + 12);
+        result = 0;
+      }
+      else
+      {
+        v13 = 0;
+        v55 = 0;
+        while ( 1 )
+        {
+          v14 = 0;
+          v15 = *(_QWORD *)(v1 + 104);
+          v16 = 0x7FFFFFFF;
+          v59 = v15;
+          v17 = -1;
+          v63 = 0x7FFFFFFF;
+          v18 = *((_DWORD *)off_181BD05B8 + 4);
+          if ( !v18 )
+            break;
+          do
+          {
+            if ( !*((_BYTE *)v61 + v14) )
+            {
+              v19 = sub_180BCFEA0((unsigned int)v14);
+              v20 = v19;
+              if ( v19 )
+              {
+                if ( (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v19 + 1344LL))(v19)
+                  && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v20 + 3344LL))(v20)
+                  && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v20 + 1336LL))(v20)
+                  && (*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)v20 + 3208LL))(v20) )
+                {
+                  if ( !*(_BYTE *)(v20 + 6832) || (v21 = *(_QWORD *)(v20 + 6824)) == 0 )
+                  {
+                    Warning("[AI BT]: Failed to obtain bot pointer.");
+                    goto LABEL_75;
+                  }
+                  v23 = v21 + 24;
+                  v57 = v21 + 24;
+                  if ( !*v60 || *(unsigned __int8 *)(*(_QWORD *)v23 + 836LL) == v56 )
+                  {
+                    v24 = 0;
+                    v25 = 0;
+                    v64 = 0;
+                    v65 = 0;
+                    if ( *(int *)(v13 + v15) <= 0 )
+                    {
+                      v47 = *(_QWORD *)(v20 + 6824);
+                      goto LABEL_65;
+                    }
+                    v26 = 0;
+                    v53 = *(_QWORD *)(v20 + 6824);
+                    while ( 1 )
+                    {
+                      v27 = &unk_18152DF88;
+                      v28 = *(_QWORD *)(v13 + v15 + 8);
+                      v58 = v28;
+                      if ( *(_QWORD *)(v26 + v28) )
+                        v27 = *(void **)(v26 + v28);
+                      if ( sub_180A29EB0(*(_QWORD *)(*(_QWORD *)v23 + 2928LL), v27) )
+                      {
+                        v24 = v64;
+                      }
+                      else
+                      {
+                        v29 = *(void **)(v26 + v28);
+                        v30 = &unk_18152DF88;
+                        if ( v29 )
+                          v30 = v29;
+                        v31 = sub_180E6D230();
+                        v32 = (*(__int64 (__fastcall **)(__int64, void *))(*(_QWORD *)v31 + 336LL))(v31, v30);
+                        v33 = *(_DWORD *)(sub_180E6D230() + 52);
+                        v34 = *(_DWORD *)(sub_180E6D230() + 52);
+                        if ( v33 != v34 )
+                        {
+                          v35 = sub_180E6D230();
+                          v32 = (*(__int64 (__fastcall **)(__int64, void *))(*(_QWORD *)v35 + 336LL))(v35, v30);
+                          v33 = v34;
+                        }
+                        if ( !v32 )
+                          goto LABEL_67;
+                        v36 = sub_18096B030();
+                        if ( v33 != *(_DWORD *)(sub_180E6D230() + 52) )
+                        {
+                          v37 = sub_180E6D230();
+                          v32 = (*(__int64 (__fastcall **)(__int64, void *))(*(_QWORD *)v37 + 336LL))(v37, v30);
+                        }
+                        v38 = sub_180E73170(v36, *(unsigned __int16 *)(v32 + 16), 0, 0);
+                        if ( !v38
+                          || !*(_BYTE *)(v38 + 104)
+                          || !*(_QWORD *)v57
+                          || (unsigned int)CCSPlayer_ItemServices_CanAcquire(*(_QWORD *)(*(_QWORD *)v57 + 2936LL), v38, 1, 0) )
+                        {
+  LABEL_67:
+                          v47 = v53;
+                          v50 = (const char *)&unk_18152DF88;
+                          if ( *(_QWORD *)(v26 + v58) )
+                            v50 = *(const char **)(v26 + v58);
+                          v51 = (const char *)sub_1811A5280(*(_QWORD *)(*(_QWORD *)(v53 + 24) + 16LL));
+                          Warning("[AI BT]: '%s' is unable to purchase item '%s'. Moving on to the next bot.", v51, v50);
+                          v13 = v55;
+                          v24 = 0x7FFFFFFF;
+                          v15 = v59;
+  LABEL_64:
+                          v16 = v63;
+  LABEL_65:
+                          v48 = *(_QWORD *)(v47 + 16);
+                          if ( v48 )
+                            v49 = *(_DWORD *)(*(_QWORD *)(v48 + 2008) + 72LL);
+                          else
+                            v49 = 0;
+                          if ( v49 >= v24 && v24 < v16 )
+                          {
+                            v17 = v14;
+                            v63 = v24;
+                            v16 = v24;
+                          }
+                          break;
+                        }
+                        v39 = &unk_18152DF88;
+                        if ( *(_QWORD *)(v26 + v58) )
+                          v39 = *(void **)(v26 + v58);
+                        v40 = sub_180E6D230();
+                        v41 = (*(__int64 (__fastcall **)(__int64, void *))(*(_QWORD *)v40 + 336LL))(v40, v39);
+                        v42 = *(_DWORD *)(sub_180E6D230() + 52);
+                        v43 = *(_QWORD *)(*(_QWORD *)v57 + 2928LL);
+                        if ( v42 != *(_DWORD *)(sub_180E6D230() + 52) )
+                        {
+                          v44 = sub_180E6D230();
+                          v41 = (*(__int64 (__fastcall **)(__int64, void *))(*(_QWORD *)v44 + 336LL))(v44, v39);
+                        }
+                        v45 = sub_180A2DA50(v43, *(unsigned __int16 *)(v41 + 16), 0);
+                        if ( v45 == -1 )
+                        {
+                          v46 = &unk_18152DF88;
+                          if ( *(_QWORD *)(v26 + v58) )
+                            v46 = *(void **)(v26 + v58);
+                          Warning("[AI BT]: Unable to determine the cost of '%s'. Moving on to the next bot.", v46);
+                          v13 = v55;
+                          v24 = 0x7FFFFFFF;
+                          v15 = v59;
+  LABEL_63:
+                          v47 = v53;
+                          goto LABEL_64;
+                        }
+                        v25 = v65;
+                        v24 = v45 + v64;
+                        v13 = v55;
+                        v15 = v59;
+                        v64 += v45;
+                      }
+                      ++v25;
+                      v26 += 8;
+                      v65 = v25;
+                      if ( v25 >= *(_DWORD *)(v13 + v15) )
+                        goto LABEL_63;
+                      v23 = v57;
+                    }
+                  }
+                }
+              }
+            }
+  LABEL_75:
+            ++v14;
+          }
+          while ( v14 != v18 );
+          v1 = a1;
+          if ( v17 == -1 )
+            break;
+          *(_DWORD *)(v13 + v15 + 32) = v17;
+          v13 += 40;
+          v55 = v13;
+          *((_BYTE *)v61 + v17) = 1;
+          if ( ++v54 >= *(_DWORD *)(a1 + 96) )
+            goto LABEL_78;
+        }
+        v52 = &unk_18152DF88;
+        if ( *(_QWORD *)(v13 + v15 + 24) )
+          v52 = *(void **)(v13 + v15 + 24);
+        DevMsg("[AI BT]: Purchase '%s' could not be fulfilled by any of the bots. Skipping coordinated buy.", v52);
+        *(_DWORD *)(v1 + 64) = 1;
+        v22 = *((_DWORD *)off_181BD05B8 + 12);
+        result = 1;
+      }
+  LABEL_79:
+      *(_DWORD *)(v1 + 68) = v22;
+    }
+    else
+    {
+      Warning("[ AI BT ]: 'CoordinatedBuy' is only supported on bots.\n");
+      return 1;
+    }
+    return result;
+  }
