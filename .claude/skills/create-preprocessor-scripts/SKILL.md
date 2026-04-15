@@ -45,6 +45,7 @@ Six preprocessor patterns exist. The discovery method and target type determine 
 | **D** -- Regular function via LLM_DECOMPILE | Decompile a known predecessor function, identify direct call targets | No | Yes | No | No | Yes |
 | **E** -- Struct member offset via LLM_DECOMPILE | Decompile a known predecessor function, identify struct field access offsets | No | Yes | No | No | Yes |
 | **F** -- Virtual function via INHERIT_VFUNCS | Inherit vtable slot index from a known base-class vfunc, look up same slot in derived-class vtable | No | No | Yes | No | No |
+| **G** -- ConCommand handler function | Find the handler callback registered via `RegisterConCommand` by matching command name and help string | No (uses COMMAND_NAME/HELP_STRING) | No | No | No | No |
 
 Additionally, **struct member offsets** can be mixed into any pattern as a secondary target (see "Struct Member Mixin" section below).
 
@@ -61,6 +62,7 @@ From the user's input, determine:
    - Has predecessor function + category `func` -> **Pattern D**
    - Has predecessor function + category `structmember` -> **Pattern E**
    - Has base vfunc name + category `vfunc` (derived-class override of known base vfunc) -> **Pattern F**
+   - Has `COMMAND_NAME` + `HELP_STRING` (ConCommand handler callback) -> **Pattern G**
 
 2. **Do xref strings differ between Windows and Linux?** If yes, use platform-specific `FUNC_XREFS_WINDOWS` / `FUNC_XREFS_LINUX` variant.
 
@@ -496,6 +498,82 @@ async def preprocess_skill(
 - config.yaml `expected_input` must include both the base vfunc YAML and the derived class vtable YAML
 - config.yaml symbol category is `vfunc`
 
+### Pattern G -- ConCommand handler function
+
+Use when: the target is a **ConCommand handler callback** identified by matching the command name string and/or help string in the binary. The `_registerconcommand.py` helper scans for exact string matches, finds xrefs to those strings, locates nearby `RegisterConCommand` calls, and recovers the handler function pointer from the call arguments.
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{SKILL_NAME} skill."""
+
+from ida_preprocessor_scripts._registerconcommand import (
+    preprocess_registerconcommand_skill,
+)
+
+
+TARGET_FUNCTION_NAMES = [
+    "{HANDLER_NAME}",
+]
+
+COMMAND_NAME = "{command_name}"
+HELP_STRING = (
+    "{help_string_part1}"
+    "{help_string_part2}"  # Split long strings across lines for readability
+)
+SEARCH_WINDOW_BEFORE_CALL = 96
+SEARCH_WINDOW_AFTER_XREF = 96
+
+GENERATE_YAML_DESIRED_FIELDS = [
+    (
+        "{HANDLER_NAME}",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
+        ],
+    ),
+]
+
+
+async def preprocess_skill(
+    session,
+    skill_name,
+    expected_outputs,
+    old_yaml_map,
+    new_binary_dir,
+    platform,
+    image_base,
+    debug=False,
+):
+    _ = skill_name, old_yaml_map
+    return await preprocess_registerconcommand_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        image_base=image_base,
+        target_name=TARGET_FUNCTION_NAMES[0],
+        generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
+        command_name=COMMAND_NAME,
+        help_string=HELP_STRING,
+        rename_to=TARGET_FUNCTION_NAMES[0],
+        search_window_before_call=SEARCH_WINDOW_BEFORE_CALL,
+        search_window_after_xref=SEARCH_WINDOW_AFTER_XREF,
+        debug=debug,
+    )
+```
+
+**Key differences from Pattern A:**
+- Imports `preprocess_registerconcommand_skill` from `ida_preprocessor_scripts._registerconcommand` instead of `preprocess_common_skill` from `ida_analyze_util`
+- Uses `COMMAND_NAME` and `HELP_STRING` variables instead of `FUNC_XREFS`
+- Uses `SEARCH_WINDOW_BEFORE_CALL` and `SEARCH_WINDOW_AFTER_XREF` (typically 96 bytes each) to control the scan window around xrefs
+- The `preprocess_skill` function ignores `old_yaml_map` (`_ = skill_name, old_yaml_map`)
+- Calls `preprocess_registerconcommand_skill()` with `command_name=`, `help_string=`, `rename_to=` instead of `func_xrefs=`
+- config.yaml category is `func`, no `expected_input` needed
+- The handler function is always a regular function (not virtual), so no `FUNC_VTABLE_RELATIONS`
+
 ### FULLMATCH: Prefix for Xref Strings (Patterns A & B)
 
 When the xref string is short or generic (e.g. `"Precache"`, `"userid"`, `"team"`), use the `FULLMATCH:` prefix to require **exact string matching** instead of substring matching. Without it, `"Precache"` would match `"PrecacheModel"`, `"PrecacheSound"`, etc.
@@ -541,17 +619,18 @@ GENERATE_YAML_DESIRED_FIELDS = [
 
 ### Key Differences Between Patterns
 
-| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) |
-|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|
-| FUNC_XREFS | Yes | Yes | No | No | No | No |
-| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No |
-| INHERIT_VFUNCS | No | No | No | No | No | Yes |
-| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No |
-| `llm_config` param | No | No | Yes | Yes | Yes | No |
-| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) |
-| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` |
-| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index |
-| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` |
+| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) | Pattern G (ConCommand handler) |
+|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|-------------------------------|
+| FUNC_XREFS | Yes | Yes | No | No | No | No | No (uses COMMAND_NAME/HELP_STRING) |
+| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No | No |
+| INHERIT_VFUNCS | No | No | No | No | No | Yes | No |
+| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No | No |
+| `llm_config` param | No | No | Yes | Yes | Yes | No | No |
+| Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` |
+| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` |
+| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size |
+| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` |
 
 ---
 
@@ -822,4 +901,53 @@ Before finishing, verify:
 2. Run `ida_analyze_bin.py -debug` → vtable + xref scripts succeed and create StartHLTVServer YAMLs
 3. Run `generate_reference_yaml.py` using the newly created output YAMLs
 4. Annotate reference YAMLs
+5. Run `ida_analyze_bin.py -debug` again → LLM_DECOMPILE path runs and succeeds
+
+### Example: ConCommand handler function (Pattern G)
+
+**User says:** Find `BotKill_CommandHandler` in server. It's the handler callback for the `bot_kill` console command. COMMAND_NAME=`"bot_kill"`, HELP_STRING=`"bot_kill <all> <t|ct> <type> <difficulty> <name> - Kills a specific bot, or all bots, matching the given criteria."`.
+
+**Result:** `ida_preprocessor_scripts/find-BotKill_CommandHandler.py` with:
+- `COMMAND_NAME = "bot_kill"`
+- `HELP_STRING = "bot_kill <all> <t|ct> <type> <difficulty> <name> - Kills a specific bot, or all bots, matching the given criteria."`
+- `SEARCH_WINDOW_BEFORE_CALL = 96`, `SEARCH_WINDOW_AFTER_XREF = 96`
+- Uses `preprocess_registerconcommand_skill()` from `_registerconcommand.py`
+- `GENERATE_YAML_DESIRED_FIELDS` with `func_name, func_sig, func_va, func_rva, func_size`
+- config.yaml skill entry with no `expected_input`
+- config.yaml symbol entry with `category: func`, alias `CCSBotManager::BotKillCommand`
+
+### Example: ConCommand handler + LLM_DECOMPILE virtual function (Patterns G + C, multi-phase)
+
+**User says:** Find `CBasePlayerPawn_CommitSuicide` in server. It's a vfunc on `CBasePlayerPawn` called from the `bot_kill` command handler via `call qword ptr [rax+0xC80]`. The handler iterates matched bots and calls `pPlayerPawn->CommitSuicide(false, false)`.
+
+**Result — two scripts:**
+
+1. `ida_preprocessor_scripts/find-BotKill_CommandHandler.py` (Pattern G):
+   - `COMMAND_NAME = "bot_kill"`, `HELP_STRING = "bot_kill <all> ..."`
+   - No dependencies
+
+2. `ida_preprocessor_scripts/find-CBasePlayerPawn_CommitSuicide.py` (Pattern C):
+   - `LLM_DECOMPILE` referencing `references/server/BotKill_CommandHandler.{platform}.yaml`
+   - `FUNC_VTABLE_RELATIONS`: `("CBasePlayerPawn_CommitSuicide", "CBasePlayerPawn")`
+   - Reference YAMLs annotated with `; 0xC80 = CBasePlayerPawn_CommitSuicide` in disasm and `// 3200LL = 0xC80 = CBasePlayerPawn_CommitSuicide` in procedure
+
+**config.yaml dependency chain:**
+```yaml
+      - name: find-BotKill_CommandHandler
+        expected_output:
+          - BotKill_CommandHandler.{platform}.yaml
+
+      - name: find-CBasePlayerPawn_CommitSuicide
+        expected_output:
+          - CBasePlayerPawn_CommitSuicide.{platform}.yaml
+        expected_input:
+          - BotKill_CommandHandler.{platform}.yaml
+          - CBasePlayerPawn_vtable.{platform}.yaml
+```
+
+**Multi-phase workflow:** BotKill_CommandHandler is a new function, so:
+1. Create both scripts + config entries
+2. Run `ida_analyze_bin.py -debug` → Pattern G script succeeds, creates BotKill_CommandHandler YAMLs
+3. Run `generate_reference_yaml.py` for both platforms
+4. Annotate reference YAMLs with CommitSuicide vfunc call comments
 5. Run `ida_analyze_bin.py -debug` again → LLM_DECOMPILE path runs and succeeds
