@@ -68,6 +68,8 @@ From the user's input, determine:
 
 3. **Are there multiple functions?** If they share the same discovery method and starting point, put them in the same script with `-AND-` in the name. Otherwise, split into separate scripts.
 
+**CRITICAL — LLM_DECOMPILE dependency chains:** When LLM_DECOMPILE targets form a chain (FuncA → FuncB → FuncC, where each is the predecessor of the next), they **MUST** be in separate scripts — one script per link in the chain. A single script CANNOT handle chained LLM_DECOMPILE predecessors because the LLM_DECOMPILE fallback resolves the predecessor's address from its output YAML (`func_va` field), and within a single script run the predecessor's output YAML doesn't exist yet. The IDA name-lookup fallback also fails because the predecessor wasn't renamed yet.
+
 ---
 
 ## Step 2: Create the Preprocessor Script
@@ -243,6 +245,8 @@ Then in `preprocess_skill`, use a ternary to select the right one:
 
 Use when: function IS virtual (has vtable slot), discovered by decompiling a known predecessor function.
 
+**IMPORTANT — `func_va` in output YAMLs:** If this function will be used as a **predecessor** by a downstream LLM_DECOMPILE script (i.e., another script decompiles this function to find further targets), you **MUST** include `func_va`, `func_rva`, and `func_size` in `GENERATE_YAML_DESIRED_FIELDS`. The downstream script resolves the predecessor's address by reading `func_va` from the output YAML. Without it, the LLM_DECOMPILE fallback fails with "failed to resolve llm_decompile target function address". When in doubt, always include `func_va` — it never hurts.
+
 ```python
 #!/usr/bin/env python3
 """Preprocess script for find-{SKILL_NAME} skill."""
@@ -269,10 +273,14 @@ FUNC_VTABLE_RELATIONS = [
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
+    # Include func_va/func_rva/func_size if this function is a predecessor for downstream LLM_DECOMPILE
     (
         "{FUNC_NAME_1}",
         [
             "func_name",
+            "func_va",
+            "func_rva",
+            "func_size",
             "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
@@ -629,7 +637,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
 | Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` |
 | Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` |
 | preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` |
-| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size |
 | config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` |
 
 ---
@@ -732,6 +740,8 @@ uv run generate_reference_yaml.py -func_name {PREDECESSOR_FUNC} -auto_start_mcp 
 ```
 
 where `{gamever}` can be obtained from `.env` -> `CS2VIBE_GAMEVER`.
+
+**IMPORTANT — Run `generate_reference_yaml.py` sequentially, NOT in parallel.** All invocations share the same IDA MCP connection. Running them in parallel will cause connection conflicts and failures. Run one command at a time, waiting for each to complete before starting the next.
 
 YOU MUST: rename known symbols / add necessary comments in the generated reference YAMLs so the LLM can find desired symbols by comparing reference ones with raw procedure/disassembly read from new binaries. See the `convert-finder-skill-to-preprocessor-scripts` SKILL.md Step 5 for detailed annotation examples.
 
