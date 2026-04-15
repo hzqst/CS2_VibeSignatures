@@ -58,7 +58,7 @@ Use `-checkonly` in CI or preflight scripts when you only need to know whether a
 
 * `-vcall_finder=g_pNetworkMessages` filters by an object declared in the module-level `vcall_finder` config; `-vcall_finder=*` processes every declared object from `config.yaml`.
 
-* When `-vcall_finder` is enabled, the script exports full disassembly and pseudocode for each referencing function into `vcall_finder/{gamever}/{object_name}/{module}/{platform}/`, then runs OpenAI SDK aggregation after all module/platform IDA work finishes; if a detail YAML already has a top-level `found_vcall`, that function skips the LLM call and reuses the cached result directly.
+* When `-vcall_finder` is enabled, the script exports full disassembly and pseudocode for each referencing function into `vcall_finder/{gamever}/{object_name}/{module}/{platform}/`, then runs LLM aggregation after all module/platform IDA work finishes; if a detail YAML already has a top-level `found_vcall`, that function skips the LLM call and reuses the cached result directly.
 
 * After a successful LLM response, the script immediately writes back `found_vcall: [...]` or `found_vcall: []` to the corresponding detail YAML so reruns can skip that function's LLM call.
 
@@ -66,7 +66,7 @@ Use `-checkonly` in CI or preflight scripts when you only need to know whether a
 
 * Shared LLM CLI parameters:
   - `-llm_apikey`: required when an LLM-backed workflow is enabled, including `vcall_finder` aggregation and `LLM_DECOMPILE`
-  - `-llm_baseurl`: optional custom compatible base URL
+  - `-llm_baseurl`: optional custom compatible base URL (required when `-llm_fake_as=codex`)
   - `-llm_model`: optional, defaults to `gpt-4o`
   - `-llm_temperature`: optional; sent only when explicitly set
   - `-llm_effort`: optional; defaults to `medium`; supports `none|minimal|low|medium|high|xhigh`

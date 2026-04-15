@@ -55,7 +55,7 @@ uv run copy_depot_bin.py -gamever 14141 -platform all-platform -checkonly
 
 * `-vcall_finder=g_pNetworkMessages` 会在模块级 `vcall_finder` 配置中筛选同名对象；`-vcall_finder=*` 会处理 `config.yaml` 中已声明的全部对象。
 
-* 当启用 `-vcall_finder` 时，脚本会在每个模块/平台完成 IDA 任务后导出对象引用函数的完整反汇编与伪代码到 `vcall_finder/{gamever}/{object_name}/{module}/{platform}/`，并在全部模块/平台结束后调用 OpenAI SDK；若某个 detail YAML 已存在顶层 `found_vcall`，则会跳过该次 LLM 调用，直接复用缓存结果。
+* 当启用 `-vcall_finder` 时，脚本会在每个模块/平台完成 IDA 任务后导出对象引用函数的完整反汇编与伪代码到 `vcall_finder/{gamever}/{object_name}/{module}/{platform}/`，并在全部模块/平台结束后执行 LLM 聚合；若某个 detail YAML 已存在顶层 `found_vcall`，则会跳过该次 LLM 调用，直接复用缓存结果。
 
 * LLM 成功返回后，会立刻将 `found_vcall: [...]` 或 `found_vcall: []` 回写到对应的 detail YAML，后续重跑可直接跳过该函数的 LLM 调用。
 
@@ -63,7 +63,7 @@ uv run copy_depot_bin.py -gamever 14141 -platform all-platform -checkonly
 
 * 共享 LLM CLI 参数：
   - `-llm_apikey`：启用基于 LLM 的流程时必需，包括 `vcall_finder` 聚合与 `LLM_DECOMPILE`
-  - `-llm_baseurl`：可选，自定义兼容 base URL
+  - `-llm_baseurl`：可选，自定义兼容 base URL；启用 `-llm_fake_as=codex` 时必填
   - `-llm_model`：可选，默认 `gpt-4o`
   - `-llm_temperature`：可选，仅在显式设置时发送
   - `-llm_effort`：可选，默认 `medium`，支持 `none|minimal|low|medium|high|xhigh`

@@ -873,7 +873,7 @@ def parse_args():
     parser.add_argument(
         "-llm_baseurl",
         default=os.environ.get("CS2VIBE_LLM_BASEURL"),
-        help="Optional OpenAI-compatible base URL used by preprocessing and vcall_finder aggregation (or set CS2VIBE_LLM_BASEURL env var)"
+        help="Optional custom compatible base URL used by preprocessing and vcall_finder aggregation (required when -llm_fake_as=codex; or set CS2VIBE_LLM_BASEURL env var)"
     )
     parser.add_argument(
         "-llm_temperature",
@@ -1921,7 +1921,7 @@ def main():
             total_skip += skip
 
     if args.vcall_finder_filter and all_vcall_objects:
-        print("\nRunning vcall_finder OpenAI aggregation")
+        print("\nRunning vcall_finder LLM aggregation")
         for object_name in sorted(all_vcall_objects):
             print(f"  Aggregating vcall_finder: {object_name}")
             try:
