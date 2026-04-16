@@ -93,17 +93,19 @@ TARGET_FUNCTION_NAMES = [
 ]
 
 FUNC_XREFS = [
-    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list, exclude_strings_list)
-    (
-        "{FUNC_NAME}",
-        [
+    {
+        "func_name": "{FUNC_NAME}",
+        "xref_strings": [
             "{XREF_STRING_1}",  # Debug string from SKILL.md's find_regex pattern
         ],
-        [],   # xref_signatures_list — byte patterns if needed, usually empty
-        [],   # xref_funcs_list — known caller function names if needed
-        [],   # exclude_funcs_list — function names to exclude from results
-        [],   # exclude_strings_list — strings to exclude
-    ),
+        "xref_gvs": [],          # global variable names if needed, usually empty
+        "xref_signatures": [],    # byte patterns if needed, usually empty
+        "xref_funcs": [],         # known caller function names if needed
+        "exclude_funcs": [],      # function names to exclude from results
+        "exclude_strings": [],    # strings to exclude
+        "exclude_gvs": [],        # global variable names to exclude
+        "exclude_signatures": [], # byte patterns to exclude
+    },
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
@@ -156,17 +158,19 @@ TARGET_FUNCTION_NAMES = [
 ]
 
 FUNC_XREFS = [
-    # (func_name, xref_strings_list, xref_signatures_list, xref_funcs_list, exclude_funcs_list, exclude_strings_list)
-    (
-        "{FUNC_NAME}",
-        [
+    {
+        "func_name": "{FUNC_NAME}",
+        "xref_strings": [
             "{XREF_STRING_1}",
         ],
-        [],
-        [],
-        [],
-        [],
-    ),
+        "xref_gvs": [],
+        "xref_signatures": [],
+        "xref_funcs": [],
+        "exclude_funcs": [],
+        "exclude_strings": [],
+        "exclude_gvs": [],
+        "exclude_signatures": [],
+    },
 ]
 
 FUNC_VTABLE_RELATIONS = [
@@ -217,23 +221,25 @@ When xref strings differ between Windows and Linux (e.g. Windows has full `Class
 
 ```python
 FUNC_XREFS_WINDOWS = [
-    (
-        "{FUNC_NAME}",
-        [
+    {
+        "func_name": "{FUNC_NAME}",
+        "xref_strings": [
             "CSource2GameEntities::CheckTransmit",  # Full assertion string on Windows
         ],
-        [], [], [], [],
-    ),
+        "xref_gvs": [], "xref_signatures": [], "xref_funcs": [],
+        "exclude_funcs": [], "exclude_strings": [], "exclude_gvs": [], "exclude_signatures": [],
+    },
 ]
 
 FUNC_XREFS_LINUX = [
-    (
-        "{FUNC_NAME}",
-        [
+    {
+        "func_name": "{FUNC_NAME}",
+        "xref_strings": [
             "./gameinterface.cpp:30",  # Shorter path-based string on Linux
         ],
-        [], [], [], [],
-    ),
+        "xref_gvs": [], "xref_signatures": [], "xref_funcs": [],
+        "exclude_funcs": [], "exclude_strings": [], "exclude_gvs": [], "exclude_signatures": [],
+    },
 ]
 ```
 
@@ -761,17 +767,17 @@ These reference files contain the decompiled code of the predecessor function (b
 If NOT present, generate them using `generate_reference_yaml.py`:
 
 ```bash
-# Windows (module is inferred from the binary path)
-uv run generate_reference_yaml.py -func_name {PREDECESSOR_FUNC} -auto_start_mcp -binary "bin/{gamever}/{module}/{binary_name}.dll" -debug
+# Windows — always pass -platform windows explicitly
+uv run generate_reference_yaml.py -func_name {PREDECESSOR_FUNC} -auto_start_mcp -binary "bin/{gamever}/{module}/{binary_name}.dll" -platform windows -debug
 
-# Linux
-uv run generate_reference_yaml.py -func_name {PREDECESSOR_FUNC} -auto_start_mcp -binary "bin/{gamever}/{module}/lib{module}.so" -debug
+# Linux — always pass -platform linux explicitly
+uv run generate_reference_yaml.py -func_name {PREDECESSOR_FUNC} -auto_start_mcp -binary "bin/{gamever}/{module}/lib{module}.so" -platform linux -debug
 ```
 
 For example, for the `server` module:
 ```bash
-uv run generate_reference_yaml.py -func_name CCSGameRules_TerminateRound -auto_start_mcp -binary "bin/{gamever}/server/server.dll" -debug
-uv run generate_reference_yaml.py -func_name CCSGameRules_TerminateRound -auto_start_mcp -binary "bin/{gamever}/server/libserver.so" -debug
+uv run generate_reference_yaml.py -func_name CCSGameRules_TerminateRound -auto_start_mcp -binary "bin/{gamever}/server/server.dll" -platform windows -debug
+uv run generate_reference_yaml.py -func_name CCSGameRules_TerminateRound -auto_start_mcp -binary "bin/{gamever}/server/libserver.so" -platform linux -debug
 ```
 
 where `{gamever}` can be obtain from `.env` -> `CS2VIBE_GAMEVER`, or `14141c` if you can't read `.env`.
@@ -888,7 +894,9 @@ but also in `disassembly`:
 
 **IMPORTANT — Run `generate_reference_yaml.py` sequentially, NOT in parallel.** All invocations share the same IDA MCP connection. Running them in parallel will cause connection conflicts and failures. Run one command at a time, waiting for each to complete before starting the next.
 
-Run the command once per platform (windows/linux) that needs a reference YAML. The `-module` and `-platform` are inferred from the `-binary` path automatically.
+Run the command once per platform (windows/linux) that needs a reference YAML. The `-module` is inferred from the `-binary` path automatically.
+
+**IMPORTANT — Always pass `-platform` explicitly.** While `-platform` can theoretically be inferred from the binary extension (`.dll` → windows, `.so` → linux), auto-inference is unreliable and may produce the wrong platform's reference YAML. Always pass `-platform windows` or `-platform linux` explicitly.
 
 ---
 
