@@ -218,6 +218,13 @@ def _normalize_generate_yaml_desired_fields(generate_yaml_desired_fields, debug=
             print("    Preprocess: missing generate_yaml_desired_fields")
         return None
 
+    true_directive_fields = (
+        "gv_sig_allow_across_function_boundary",
+        "func_sig_allow_across_function_boundary",
+        "vfunc_sig_allow_across_function_boundary",
+        "offset_sig_allow_across_function_boundary",
+    )
+
     normalized = {}
     for spec in generate_yaml_desired_fields:
         if not isinstance(spec, (tuple, list)) or len(spec) != 2:
@@ -241,6 +248,40 @@ def _normalize_generate_yaml_desired_fields(generate_yaml_desired_fields, debug=
 
         desired_output_fields = []
         generation_options = {}
+
+        def _handle_true_directive(field_name, directive_name):
+            if field_name == directive_name:
+                if debug:
+                    print(
+                        f"    Preprocess: bare {directive_name} field is "
+                        f"not allowed for {symbol_name}"
+                    )
+                return None
+
+            if not field_name.startswith(f"{directive_name}:"):
+                return False
+
+            if directive_name in generation_options:
+                if debug:
+                    print(
+                        f"    Preprocess: duplicated {directive_name} "
+                        f"directive for {symbol_name}"
+                    )
+                return None
+
+            value_text = field_name.split(":", 1)[1].strip().lower()
+            if value_text != "true":
+                if debug:
+                    print(
+                        f"    Preprocess: invalid {directive_name} value "
+                        f"for {symbol_name}: {value_text}"
+                    )
+                return None
+
+            desired_output_fields.append(directive_name)
+            generation_options[directive_name] = True
+            return True
+
         for field_name in desired_fields:
             if not isinstance(field_name, str) or not field_name:
                 if debug:
@@ -282,6 +323,20 @@ def _normalize_generate_yaml_desired_fields(generate_yaml_desired_fields, debug=
                     return None
                 desired_output_fields.append("vfunc_sig_max_match")
                 generation_options["vfunc_sig_max_match"] = max_match
+                continue
+
+            handled_true_directive = False
+            for directive_name in true_directive_fields:
+                directive_parse_result = _handle_true_directive(
+                    field_name,
+                    directive_name,
+                )
+                if directive_parse_result is None:
+                    return None
+                if directive_parse_result:
+                    handled_true_directive = True
+                    break
+            if handled_true_directive:
                 continue
 
             desired_output_fields.append(field_name)
@@ -429,11 +484,13 @@ FUNC_YAML_ORDER = [
     "func_rva",
     "func_size",
     "func_sig",
+    "func_sig_allow_across_function_boundary",
     "vtable_name",
     "vfunc_offset",
     "vfunc_index",
     "vfunc_sig",
     "vfunc_sig_max_match",
+    "vfunc_sig_allow_across_function_boundary",
 ]
 GV_YAML_ORDER = [
     "gv_name",
@@ -444,6 +501,7 @@ GV_YAML_ORDER = [
     "gv_inst_offset",
     "gv_inst_length",
     "gv_inst_disp",
+    "gv_sig_allow_across_function_boundary",
 ]
 VTABLE_YAML_ORDER = [
     "vtable_class",
@@ -462,6 +520,7 @@ STRUCT_MEMBER_YAML_ORDER = [
     "size",
     "offset_sig",
     "offset_sig_disp",
+    "offset_sig_allow_across_function_boundary",
 ]
 TARGET_KIND_TO_FIELD_ORDER = {
     "func": FUNC_YAML_ORDER,
@@ -898,6 +957,7 @@ async def _build_enriched_slot_only_vfunc_payload_via_mcp(
     vfunc_sig_max_match=1,
     require_vfunc_sig=False,
     require_vtable_name=False,
+    allow_vfunc_sig_across_function_boundary=False,
     debug=False,
 ):
     slot_only_info = _extract_slot_only_vfunc_candidates_from_llm_result(
@@ -944,13 +1004,16 @@ async def _build_enriched_slot_only_vfunc_payload_via_mcp(
         return None
 
     for inst_va in candidate_inst_vas:
-        sig_data = await preprocess_gen_vfunc_sig_via_mcp(
-            session=session,
-            inst_va=inst_va,
-            vfunc_offset=slot_only_info["vfunc_offset"],
-            max_match_count=vfunc_sig_max_match,
-            debug=debug,
-        )
+        gen_vfunc_kwargs = {
+            "session": session,
+            "inst_va": inst_va,
+            "vfunc_offset": slot_only_info["vfunc_offset"],
+            "max_match_count": vfunc_sig_max_match,
+            "debug": debug,
+        }
+        if allow_vfunc_sig_across_function_boundary:
+            gen_vfunc_kwargs["allow_across_function_boundary"] = True
+        sig_data = await preprocess_gen_vfunc_sig_via_mcp(**gen_vfunc_kwargs)
         if not isinstance(sig_data, dict):
             continue
         vfunc_sig = sig_data.get("vfunc_sig")
@@ -2020,6 +2083,7 @@ async def preprocess_func_sig_via_mcp(
     direct_func_va=None,
     direct_vtable_class=None,
     direct_vfunc_offset=None,
+    allow_func_sig_across_function_boundary=False,
 ):
     """
     Preprocess a function output by reusing old-version signature metadata.
@@ -2074,6 +2138,7 @@ async def preprocess_func_sig_via_mcp(
             direct_vtable_class=direct_vtable_class,
             direct_vfunc_offset=direct_vfunc_offset,
             require_func_sig=True,
+            allow_func_sig_across_function_boundary=allow_func_sig_across_function_boundary,
             normalized_mangled_class_names=normalized_mangled_class_names,
             debug=debug,
         )
@@ -2462,6 +2527,16 @@ async def preprocess_func_sig_via_mcp(
         new_data["vfunc_offset"] = hex(vfunc_offset)
         new_data["vfunc_index"] = vfunc_index
 
+        gen_data = await preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va=func_va_int,
+            image_base=image_base,
+            allow_across_function_boundary=allow_func_sig_across_function_boundary,
+            debug=debug,
+        )
+        if isinstance(gen_data, dict) and gen_data.get("func_sig"):
+            new_data["func_sig"] = gen_data["func_sig"]
+
         if debug:
             print(
                 "    Preprocess: reused vfunc_sig + vtable metadata at "
@@ -2499,6 +2574,45 @@ async def preprocess_func_sig_via_mcp(
     return new_data
 
 
+def _build_signature_boundary_py_eval_helpers() -> str:
+    return (
+        "PAD_BYTES = {0xCC, 0x90}\n"
+        "SEGPERM_EXEC = int(getattr(idaapi, 'SEGPERM_EXEC', 4))\n"
+        "\n"
+        "def _is_same_exec_segment(ea, seg_start_ea):\n"
+        "    seg = idaapi.getseg(ea)\n"
+        "    if not seg:\n"
+        "        return False\n"
+        "    return seg.start_ea == seg_start_ea and bool(getattr(seg, 'perm', 0) & SEGPERM_EXEC)\n"
+        "\n"
+        "def _consume_padding(cursor, limit_end, seg_start_ea):\n"
+        "    padding = []\n"
+        "    while cursor < limit_end:\n"
+        "        if not _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            return cursor, padding, False\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "            return cursor, padding, True\n"
+        "        b = ida_bytes.get_byte(cursor)\n"
+        "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "            return cursor, padding, False\n"
+        "        pad_start = cursor\n"
+        "        pad_buf = bytearray()\n"
+        "        while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "                break\n"
+        "            b = ida_bytes.get_byte(cursor)\n"
+        "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "                return cursor, padding, False\n"
+        "            pad_buf.append(b)\n"
+        "            cursor += 1\n"
+        "        if pad_buf:\n"
+        "            padding.append({'ea': hex(pad_start), 'size': len(pad_buf), 'bytes': bytes(pad_buf).hex(), 'wild': []})\n"
+        "    return cursor, padding, False\n"
+    )
+
+
 async def preprocess_gen_func_sig_via_mcp(
     session,
     func_va,
@@ -2507,6 +2621,7 @@ async def preprocess_gen_func_sig_via_mcp(
     max_sig_bytes=240,
     max_instructions=100,
     extra_wildcard_offsets=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     """
@@ -2530,6 +2645,9 @@ async def preprocess_gen_func_sig_via_mcp(
         max_sig_bytes: Maximum bytes collected from function head.
         max_instructions: Max instructions collected from function head.
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets.
+        allow_across_function_boundary: When True, allow the signature to extend
+            past the owning function's end by consuming CC/NOP padding and
+            continuing from the next code head in the same executable segment.
         debug: Enable debug output.
 
     Returns:
@@ -2587,15 +2705,40 @@ async def preprocess_gen_func_sig_via_mcp(
         f"target_ea = {func_va_int}\n"
         f"max_sig_bytes = {max_sig_bytes}\n"
         f"max_instructions = {max_instructions}\n"
+        f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
+        f"{_build_signature_boundary_py_eval_helpers()}"
         "f = idaapi.get_func(target_ea)\n"
         "if not f or f.start_ea != target_ea:\n"
         "    result = json.dumps(None)\n"
         "else:\n"
-        "    limit_end = min(f.end_ea, target_ea + max_sig_bytes)\n"
+        "    origin_seg = idaapi.getseg(target_ea)\n"
+        "    origin_seg_start = origin_seg.start_ea if origin_seg else idaapi.BADADDR\n"
+        "    if allow_across_boundary:\n"
+        "        limit_end = target_ea + max_sig_bytes\n"
+        "    else:\n"
+        "        limit_end = min(f.end_ea, target_ea + max_sig_bytes)\n"
         "    insts = []\n"
         "    cursor = target_ea\n"
         "    total = 0\n"
-        "    while cursor < f.end_ea and cursor < limit_end and len(insts) < max_instructions:\n"
+        "    while cursor < limit_end and len(insts) < max_instructions:\n"
+        "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
+        "            break\n"
+        "        if allow_across_boundary and cursor >= f.end_ea:\n"
+        "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
+        "            for pad_inst in padding_insts:\n"
+        "                if len(insts) >= max_instructions:\n"
+        "                    break\n"
+        "                insts.append(pad_inst)\n"
+        "                total += pad_inst['size']\n"
+        "                if total >= max_sig_bytes:\n"
+        "                    break\n"
+        "            if total >= max_sig_bytes or len(insts) >= max_instructions:\n"
+        "                break\n"
+        "            if not can_continue:\n"
+        "                break\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
+        "            break\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
         "        if not insn or insn.size <= 0:\n"
         "            break\n"
@@ -2933,6 +3076,7 @@ async def preprocess_gen_vfunc_sig_via_mcp(
     max_sig_bytes=96,
     max_instructions=64,
     extra_wildcard_offsets=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     """
@@ -2955,6 +3099,10 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         max_instructions: Max instructions collected from signature start.
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets
             relative to signature start.
+        allow_across_function_boundary: When True, allow the signature to
+            extend past the owning function's end by consuming CC/NOP padding
+            and continuing from the next code head in the same executable
+            segment.
         debug: Enable debug output.
 
     Returns:
@@ -3023,6 +3171,8 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         f"target_vfunc_offset = {vfunc_offset_int}\n"
         f"max_sig_bytes = {max_sig_bytes}\n"
         f"max_instructions = {max_instructions}\n"
+        f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
+        f"{_build_signature_boundary_py_eval_helpers()}"
         "\n"
         "def _find_vfunc_disp(insn, raw, expected):\n"
         "    hits = []\n"
@@ -3097,9 +3247,10 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "\n"
         "globals().update(locals())\n"
         "\n"
+        "f = idaapi.get_func(target_inst)\n"
         "insn0 = idautils.DecodeInstruction(target_inst)\n"
         "raw0 = ida_bytes.get_bytes(target_inst, insn0.size) if insn0 and insn0.size > 0 else None\n"
-        "if not insn0 or insn0.size <= 0 or not raw0:\n"
+        "if not f or not insn0 or insn0.size <= 0 or not raw0:\n"
         "    result = json.dumps(None)\n"
         "else:\n"
         "    disp_hits = _find_vfunc_disp(insn0, raw0, target_vfunc_offset)\n"
@@ -3107,10 +3258,34 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "        result = json.dumps(None)\n"
         "    else:\n"
         "        disp_off, disp_size = disp_hits[0]\n"
+        "        origin_seg = idaapi.getseg(target_inst)\n"
+        "        origin_seg_start = origin_seg.start_ea if origin_seg else idaapi.BADADDR\n"
         "        insts = []\n"
         "        cursor = target_inst\n"
         "        total = 0\n"
-        "        while cursor < target_inst + max_sig_bytes and len(insts) < max_instructions:\n"
+        "        if allow_across_boundary:\n"
+        "            limit_end = target_inst + max_sig_bytes\n"
+        "        else:\n"
+        "            limit_end = min(f.end_ea, target_inst + max_sig_bytes)\n"
+        "        while cursor < limit_end and len(insts) < max_instructions:\n"
+        "            if not _is_same_exec_segment(cursor, origin_seg_start):\n"
+        "                break\n"
+        "            if allow_across_boundary and cursor >= f.end_ea:\n"
+        "                cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
+        "                for pad_inst in padding_insts:\n"
+        "                    if len(insts) >= max_instructions:\n"
+        "                        break\n"
+        "                    insts.append(pad_inst)\n"
+        "                    total += pad_inst['size']\n"
+        "                    if total >= max_sig_bytes:\n"
+        "                        break\n"
+        "                if total >= max_sig_bytes or len(insts) >= max_instructions:\n"
+        "                    break\n"
+        "                if not can_continue:\n"
+        "                    break\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "            if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
+        "                break\n"
         "            insn = idautils.DecodeInstruction(cursor)\n"
         "            if not insn or insn.size <= 0:\n"
         "                break\n"
@@ -3317,6 +3492,7 @@ async def preprocess_gen_gv_sig_via_mcp(
     max_instructions=64,
     max_candidates=32,
     extra_wildcard_offsets=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     """
@@ -3338,6 +3514,9 @@ async def preprocess_gen_gv_sig_via_mcp(
         max_candidates: Maximum GV-access instruction candidates to evaluate.
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets relative
             to signature start.
+        allow_across_function_boundary: When True, allow the signature to extend
+            past the owning function's end (across CC padding and into the next
+            function) to collect enough bytes for uniqueness.
         debug: Enable debug output.
 
     Returns:
@@ -3416,6 +3595,41 @@ async def preprocess_gen_gv_sig_via_mcp(
         f"max_sig_bytes = {max_sig_bytes}\n"
         f"max_instructions = {max_instructions}\n"
         f"max_candidates = {max_candidates}\n"
+        f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
+        "PAD_BYTES = {0xCC, 0x90}\n"
+        "SEGPERM_EXEC = int(getattr(idaapi, 'SEGPERM_EXEC', 4))\n"
+        "\n"
+        "def _is_same_exec_segment(ea, seg_start_ea):\n"
+        "    seg = idaapi.getseg(ea)\n"
+        "    if not seg:\n"
+        "        return False\n"
+        "    return seg.start_ea == seg_start_ea and bool(getattr(seg, 'perm', 0) & SEGPERM_EXEC)\n"
+        "\n"
+        "def _consume_padding(cursor, limit_end, seg_start_ea):\n"
+        "    padding = []\n"
+        "    while cursor < limit_end:\n"
+        "        if not _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            return cursor, padding, False\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "            return cursor, padding, True\n"
+        "        b = ida_bytes.get_byte(cursor)\n"
+        "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "            return cursor, padding, False\n"
+        "        pad_start = cursor\n"
+        "        pad_buf = bytearray()\n"
+        "        while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "                break\n"
+        "            b = ida_bytes.get_byte(cursor)\n"
+        "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "                return cursor, padding, False\n"
+        "            pad_buf.append(b)\n"
+        "            cursor += 1\n"
+        "        if pad_buf:\n"
+        "            padding.append({'ea': hex(pad_start), 'size': len(pad_buf), 'bytes': bytes(pad_buf).hex(), 'wild': []})\n"
+        "    return cursor, padding, False\n"
         "\n"
         "def _resolve_disp_off(insn_ea, insn, raw):\n"
         "    cand_offsets = set()\n"
@@ -3443,13 +3657,42 @@ async def preprocess_gen_gv_sig_via_mcp(
         "    if not f:\n"
         "        return None\n"
         "\n"
-        "    limit_end = min(f.end_ea, inst_ea + max_sig_bytes)\n"
+        "    origin_seg = idaapi.getseg(inst_ea)\n"
+        "    if not origin_seg or not (getattr(origin_seg, 'perm', 0) & SEGPERM_EXEC):\n"
+        "        return None\n"
+        "    origin_seg_start = origin_seg.start_ea\n"
+        "\n"
+        "    if allow_across_boundary:\n"
+        "        limit_end = inst_ea + max_sig_bytes\n"
+        "    else:\n"
+        "        limit_end = min(f.end_ea, inst_ea + max_sig_bytes)\n"
         "    cursor = inst_ea\n"
         "    total = 0\n"
         "    insts = []\n"
         "    first_len = None\n"
         "\n"
-        "    while cursor < f.end_ea and cursor < limit_end and len(insts) < max_instructions:\n"
+        "    while cursor < limit_end and len(insts) < max_instructions:\n"
+        "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
+        "            break\n"
+        "\n"
+        "        if allow_across_boundary and cursor >= f.end_ea:\n"
+        "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
+        "            for pad_inst in padding_insts:\n"
+        "                if len(insts) >= max_instructions:\n"
+        "                    break\n"
+        "                insts.append(pad_inst)\n"
+        "                total += pad_inst['size']\n"
+        "                if total >= max_sig_bytes:\n"
+        "                    break\n"
+        "            if total >= max_sig_bytes or len(insts) >= max_instructions:\n"
+        "                break\n"
+        "            if not can_continue:\n"
+        "                break\n"
+        "\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
+        "            break\n"
+        "\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
         "        if not insn or insn.size <= 0:\n"
         "            break\n"
@@ -3884,7 +4127,7 @@ async def preprocess_gv_sig_via_mcp(
 
     gv_sig_va_hex = str(gv_info.get("gv_sig_va", match_addr))
 
-    return {
+    result = {
         "gv_name": old_data.get("gv_name") or os.path.basename(new_path).split(".")[0],
         "gv_va": gv_va_hex,
         "gv_rva": hex(gv_va_int - image_base),
@@ -3894,6 +4137,9 @@ async def preprocess_gv_sig_via_mcp(
         "gv_inst_length": gv_inst_length,
         "gv_inst_disp": gv_inst_disp,
     }
+    if old_data.get("gv_sig_allow_across_function_boundary"):
+        result["gv_sig_allow_across_function_boundary"] = True
+    return result
 
 
 
@@ -4257,6 +4503,7 @@ async def preprocess_index_based_vfunc_via_mcp(
     base_vfunc_name,
     inherit_vtable_class,
     generate_func_sig=True,
+    allow_func_sig_across_function_boundary=False,
     debug=False,
 ):
     """Resolve an inherited virtual function by base-class slot + vtable lookup.
@@ -4529,6 +4776,7 @@ async def preprocess_index_based_vfunc_via_mcp(
             session=session,
             func_va=func_va_int,
             image_base=image_base,
+            allow_across_function_boundary=allow_func_sig_across_function_boundary,
             debug=debug,
         )
         if gen_data and gen_data.get("func_sig"):
@@ -5036,6 +5284,8 @@ async def _preprocess_direct_func_sig_via_mcp(
     require_func_sig=False,
     require_vfunc_sig=False,
     vfunc_sig_max_match=1,
+    allow_func_sig_across_function_boundary=False,
+    allow_vfunc_sig_across_function_boundary=False,
     normalized_mangled_class_names=None,
     debug=False,
 ):
@@ -5119,13 +5369,16 @@ async def _preprocess_direct_func_sig_via_mcp(
                         f"generating vfunc_sig for {func_name}"
                     )
                 return None
-            sig_data = await preprocess_gen_vfunc_sig_via_mcp(
-                session=session,
-                inst_va=direct_vcall_inst_va,
-                vfunc_offset=direct_vfunc_offset,
-                max_match_count=vfunc_sig_max_match,
-                debug=debug,
-            )
+            gen_vfunc_kwargs = {
+                "session": session,
+                "inst_va": direct_vcall_inst_va,
+                "vfunc_offset": direct_vfunc_offset,
+                "max_match_count": vfunc_sig_max_match,
+                "debug": debug,
+            }
+            if allow_vfunc_sig_across_function_boundary:
+                gen_vfunc_kwargs["allow_across_function_boundary"] = True
+            sig_data = await preprocess_gen_vfunc_sig_via_mcp(**gen_vfunc_kwargs)
             if not isinstance(sig_data, dict) or not sig_data.get("vfunc_sig"):
                 if debug:
                     print(
@@ -5145,6 +5398,7 @@ async def _preprocess_direct_func_sig_via_mcp(
                 session=session,
                 func_va=resolved_func_va,
                 image_base=image_base,
+                allow_across_function_boundary=allow_func_sig_across_function_boundary,
                 debug=debug,
             )
             if not isinstance(gen_data, dict) or not gen_data.get("func_sig"):
@@ -5173,6 +5427,7 @@ async def _preprocess_direct_gv_sig_via_mcp(
     gv_name=None,
     direct_gv_va=None,
     gv_access_inst_va=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     try:
@@ -5185,6 +5440,7 @@ async def _preprocess_direct_gv_sig_via_mcp(
         gv_va=resolved_gv_va,
         image_base=image_base,
         gv_access_inst_va=gv_access_inst_va,
+        allow_across_function_boundary=allow_across_function_boundary,
         debug=debug,
     )
     if not isinstance(payload, dict):
@@ -5207,6 +5463,7 @@ async def _preprocess_direct_struct_offset_sig_via_mcp(
     offset_inst_va=None,
     size=None,
     old_path=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     metadata = _load_struct_member_metadata_from_yaml(old_path)
@@ -5247,6 +5504,7 @@ async def _preprocess_direct_struct_offset_sig_via_mcp(
         offset_inst_va=offset_inst_va,
         image_base=image_base,
         size=resolved_size,
+        allow_across_function_boundary=allow_across_function_boundary,
         debug=debug,
     )
     if not isinstance(payload, dict):
@@ -5270,6 +5528,7 @@ async def preprocess_gen_struct_offset_sig_via_mcp(
     max_sig_bytes=96,
     max_instructions=64,
     extra_wildcard_offsets=None,
+    allow_across_function_boundary=False,
     debug=False,
 ):
     _ = image_base
@@ -5306,14 +5565,40 @@ async def preprocess_gen_struct_offset_sig_via_mcp(
         f"target_inst = {offset_inst_va_int}\n"
         f"max_sig_bytes = {max_sig_bytes}\n"
         f"max_instructions = {max_instructions}\n"
+        f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
+        f"{_build_signature_boundary_py_eval_helpers()}"
         "func = idaapi.get_func(target_inst)\n"
         "if not func:\n"
         "    result = json.dumps([])\n"
         "else:\n"
+        "    origin_seg = idaapi.getseg(target_inst)\n"
+        "    origin_seg_start = origin_seg.start_ea if origin_seg else idaapi.BADADDR\n"
+        "    if allow_across_boundary:\n"
+        "        limit_end = target_inst + max_sig_bytes\n"
+        "    else:\n"
+        "        limit_end = min(func.end_ea, target_inst + max_sig_bytes)\n"
         "    cursor = target_inst\n"
         "    total = 0\n"
         "    insts = []\n"
-        "    while cursor < func.end_ea and len(insts) < max_instructions and total < max_sig_bytes:\n"
+        "    while cursor < limit_end and len(insts) < max_instructions and total < max_sig_bytes:\n"
+        "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
+        "            break\n"
+        "        if allow_across_boundary and cursor >= func.end_ea:\n"
+        "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
+        "            for pad_inst in padding_insts:\n"
+        "                if len(insts) >= max_instructions:\n"
+        "                    break\n"
+        "                insts.append(pad_inst)\n"
+        "                total += pad_inst['size']\n"
+        "                if total >= max_sig_bytes:\n"
+        "                    break\n"
+        "            if total >= max_sig_bytes or len(insts) >= max_instructions:\n"
+        "                break\n"
+        "            if not can_continue:\n"
+        "                break\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
+        "            break\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
         "        if not insn or insn.size <= 0:\n"
         "            break\n"
@@ -5476,6 +5761,7 @@ async def preprocess_func_xrefs_via_mcp(
     platform,
     image_base,
     vtable_class=None,
+    allow_func_sig_across_function_boundary=False,
     debug=False,
 ):
     """
@@ -5724,6 +6010,7 @@ async def preprocess_func_xrefs_via_mcp(
         session=session,
         func_va=target_va,
         image_base=image_base,
+        allow_across_function_boundary=allow_func_sig_across_function_boundary,
         debug=debug,
     )
 
@@ -5794,6 +6081,7 @@ async def _try_preprocess_func_without_llm(
     func_xrefs_map,
     vtable_relations_map,
     normalized_mangled_class_names,
+    allow_func_sig_across_function_boundary=False,
     debug=False,
 ):
     func_data = await preprocess_func_sig_via_mcp(
@@ -5804,6 +6092,7 @@ async def _try_preprocess_func_without_llm(
         new_binary_dir=new_binary_dir,
         platform=platform,
         func_name=func_name,
+        allow_func_sig_across_function_boundary=allow_func_sig_across_function_boundary,
         debug=debug,
         mangled_class_names=normalized_mangled_class_names,
     )
@@ -5827,6 +6116,7 @@ async def _try_preprocess_func_without_llm(
             platform=platform,
             image_base=image_base,
             vtable_class=xref_vtable_class,
+            allow_func_sig_across_function_boundary=allow_func_sig_across_function_boundary,
             debug=debug,
         )
 
@@ -6254,6 +6544,12 @@ async def preprocess_common_skill(
             vtable_class = spec[1]
             base_vfunc_name = spec[2]
             gen_func_sig = spec[3] if len(spec) > 3 else True
+            desired_field_spec = desired_fields_map.get(func_name)
+            if desired_field_spec is None:
+                if debug:
+                    print(f"    Preprocess: missing desired-fields entry for {func_name}")
+                return False
+            generation_options = desired_field_spec["generation_options"]
 
             target_output = iv_matched[func_name]
             old_path = (old_yaml_map or {}).get(target_output)
@@ -6269,6 +6565,10 @@ async def preprocess_common_skill(
                     new_binary_dir=new_binary_dir,
                     platform=platform,
                     func_name=func_name,
+                    allow_func_sig_across_function_boundary=generation_options.get(
+                        "func_sig_allow_across_function_boundary",
+                        False,
+                    ),
                     debug=debug,
                     mangled_class_names=normalized_mangled_class_names,
                 )
@@ -6286,12 +6586,19 @@ async def preprocess_common_skill(
                     base_vfunc_name=base_vfunc_name,
                     inherit_vtable_class=vtable_class,
                     generate_func_sig=gen_func_sig,
+                    allow_func_sig_across_function_boundary=generation_options.get(
+                        "func_sig_allow_across_function_boundary",
+                        False,
+                    ),
                     debug=debug,
                 )
             if func_data is None:
                 if debug:
                     print(f"    Preprocess: failed to locate {func_name}")
                 return False
+
+            if generation_options.get("func_sig_allow_across_function_boundary"):
+                func_data["func_sig_allow_across_function_boundary"] = True
 
             payload = _assemble_symbol_payload(
                 func_name,
@@ -6421,6 +6728,13 @@ async def preprocess_common_skill(
                 ):
                     continue
                 candidate_old_path = (old_yaml_map or {}).get(candidate_target_output)
+                candidate_desired_field_spec = desired_fields_map.get(candidate_func_name)
+                candidate_generation_options = {}
+                if isinstance(candidate_desired_field_spec, dict):
+                    candidate_generation_options = candidate_desired_field_spec.get(
+                        "generation_options",
+                        {},
+                    ) or {}
                 fast_path_results[candidate_func_name] = await _try_preprocess_func_without_llm(
                     session=session,
                     target_output=candidate_target_output,
@@ -6432,6 +6746,10 @@ async def preprocess_common_skill(
                     func_xrefs_map=func_xrefs_map,
                     vtable_relations_map=vtable_relations_map,
                     normalized_mangled_class_names=normalized_mangled_class_names,
+                    allow_func_sig_across_function_boundary=candidate_generation_options.get(
+                        "func_sig_allow_across_function_boundary",
+                        False,
+                    ),
                     debug=debug,
                 )
                 fast_path_attempted[candidate_func_name] = True
@@ -6546,6 +6864,10 @@ async def preprocess_common_skill(
                 func_xrefs_map=func_xrefs_map,
                 vtable_relations_map=vtable_relations_map,
                 normalized_mangled_class_names=normalized_mangled_class_names,
+                allow_func_sig_across_function_boundary=generation_options.get(
+                    "func_sig_allow_across_function_boundary",
+                    False,
+                ),
                 debug=debug,
             )
             fast_path_attempted[func_name] = True
@@ -6624,6 +6946,10 @@ async def preprocess_common_skill(
                         func_name=func_name,
                         direct_func_va=direct_func_va,
                         require_func_sig="func_sig" in desired_fields_set,
+                        allow_func_sig_across_function_boundary=generation_options.get(
+                            "func_sig_allow_across_function_boundary",
+                            False,
+                        ),
                         normalized_mangled_class_names=normalized_mangled_class_names,
                         debug=debug,
                     )
@@ -6648,6 +6974,10 @@ async def preprocess_common_skill(
                         func_name=func_name,
                         direct_func_va=direct_func_va,
                         require_func_sig="func_sig" in desired_fields_set,
+                        allow_func_sig_across_function_boundary=generation_options.get(
+                            "func_sig_allow_across_function_boundary",
+                            False,
+                        ),
                         normalized_mangled_class_names=normalized_mangled_class_names,
                         debug=debug,
                     )
@@ -6661,20 +6991,36 @@ async def preprocess_common_skill(
                     break
                 if entry.get("func_name") != func_name:
                     continue
+                direct_vcall_kwargs = {
+                    "session": session,
+                    "new_path": target_output,
+                    "image_base": image_base,
+                    "platform": platform,
+                    "func_name": func_name,
+                    "direct_vtable_class": vtable_class,
+                    "direct_vfunc_offset": entry.get("vfunc_offset"),
+                    "direct_vcall_inst_va": entry.get("insn_va"),
+                    "require_func_sig": "func_sig" in desired_fields_set,
+                    "require_vfunc_sig": "vfunc_sig" in desired_fields_set,
+                    "vfunc_sig_max_match": generation_options.get(
+                        "vfunc_sig_max_match", 1
+                    ),
+                    "allow_func_sig_across_function_boundary": generation_options.get(
+                        "func_sig_allow_across_function_boundary",
+                        False,
+                    ),
+                    "normalized_mangled_class_names": normalized_mangled_class_names,
+                    "debug": debug,
+                }
+                if generation_options.get(
+                    "vfunc_sig_allow_across_function_boundary",
+                    False,
+                ):
+                    direct_vcall_kwargs[
+                        "allow_vfunc_sig_across_function_boundary"
+                    ] = True
                 func_data = await _preprocess_direct_func_sig_via_mcp(
-                    session=session,
-                    new_path=target_output,
-                    image_base=image_base,
-                    platform=platform,
-                    func_name=func_name,
-                    direct_vtable_class=vtable_class,
-                    direct_vfunc_offset=entry.get("vfunc_offset"),
-                    direct_vcall_inst_va=entry.get("insn_va"),
-                    require_func_sig="func_sig" in desired_fields_set,
-                    require_vfunc_sig="vfunc_sig" in desired_fields_set,
-                    vfunc_sig_max_match=generation_options.get("vfunc_sig_max_match", 1),
-                    normalized_mangled_class_names=normalized_mangled_class_names,
-                    debug=debug,
+                    **direct_vcall_kwargs,
                 )
                 if func_data is not None:
                     break
@@ -6682,15 +7028,27 @@ async def preprocess_common_skill(
                 fallback_vtable_name = None
                 if func_name in vtable_relations_map:
                     fallback_vtable_name = vtable_relations_map[func_name]
+                slot_only_kwargs = {
+                    "session": session,
+                    "func_name": func_name,
+                    "llm_result": llm_result,
+                    "vtable_name": fallback_vtable_name,
+                    "vfunc_sig_max_match": generation_options.get(
+                        "vfunc_sig_max_match", 1
+                    ),
+                    "require_vfunc_sig": "vfunc_sig" in desired_fields_set,
+                    "require_vtable_name": "vtable_name" in desired_fields_set,
+                    "debug": debug,
+                }
+                if generation_options.get(
+                    "vfunc_sig_allow_across_function_boundary",
+                    False,
+                ):
+                    slot_only_kwargs[
+                        "allow_vfunc_sig_across_function_boundary"
+                    ] = True
                 func_data = await _build_enriched_slot_only_vfunc_payload_via_mcp(
-                    session=session,
-                    func_name=func_name,
-                    llm_result=llm_result,
-                    vtable_name=fallback_vtable_name,
-                    vfunc_sig_max_match=generation_options.get("vfunc_sig_max_match", 1),
-                    require_vfunc_sig="vfunc_sig" in desired_fields_set,
-                    require_vtable_name="vtable_name" in desired_fields_set,
-                    debug=debug,
+                    **slot_only_kwargs,
                 )
 
         if func_data is None:
@@ -6771,6 +7129,11 @@ async def preprocess_common_skill(
                     f"{vtable_class} vtable index {matched_index} "
                     f"(offset {hex(matched_index * 8)})"
                 )
+
+        if generation_options.get("func_sig_allow_across_function_boundary"):
+            func_data["func_sig_allow_across_function_boundary"] = True
+        if generation_options.get("vfunc_sig_allow_across_function_boundary"):
+            func_data["vfunc_sig_allow_across_function_boundary"] = True
 
         payload = _assemble_symbol_payload(
             func_name,
@@ -6857,6 +7220,9 @@ async def preprocess_common_skill(
                 )
                 if direct_gv_va is None:
                     continue
+                _gv_gen_opts = (desired_fields_map.get(gv_name) or {}).get(
+                    "generation_options", {}
+                )
                 gv_data = await _preprocess_direct_gv_sig_via_mcp(
                     session=session,
                     new_path=target_output,
@@ -6864,15 +7230,27 @@ async def preprocess_common_skill(
                     gv_name=gv_name,
                     direct_gv_va=direct_gv_va,
                     gv_access_inst_va=entry.get("insn_va"),
+                    allow_across_function_boundary=_gv_gen_opts.get(
+                        "gv_sig_allow_across_function_boundary", False
+                    ),
                     debug=debug,
                 )
                 if gv_data is not None:
+                    if _gv_gen_opts.get("gv_sig_allow_across_function_boundary"):
+                        gv_data["gv_sig_allow_across_function_boundary"] = True
                     break
 
         if gv_data is None:
             if debug:
                 print(f"    Preprocess: failed to locate {gv_name}")
             return False
+
+        # Inject generation option flags into gv_data for YAML output
+        _gv_gen_opts_final = (desired_fields_map.get(gv_name) or {}).get(
+            "generation_options", {}
+        )
+        if _gv_gen_opts_final.get("gv_sig_allow_across_function_boundary"):
+            gv_data["gv_sig_allow_across_function_boundary"] = True
 
         payload = _assemble_symbol_payload(
             gv_name,
@@ -6925,6 +7303,10 @@ async def preprocess_common_skill(
     for struct_member_name in struct_member_names:
         target_output = matched_struct_outputs[struct_member_name]
         struct_old_path = (old_yaml_map or {}).get(target_output)
+        _struct_gen_opts = (desired_fields_map.get(struct_member_name) or {}).get(
+            "generation_options",
+            {},
+        )
         if struct_member_name not in struct_fast_path_attempted:
             struct_fast_path_results[struct_member_name] = await preprocess_struct_offset_sig_via_mcp(
                 session=session,
@@ -7024,6 +7406,10 @@ async def preprocess_common_skill(
                     offset=entry.get("offset"),
                     offset_inst_va=entry.get("insn_va"),
                     old_path=struct_old_path,
+                    allow_across_function_boundary=_struct_gen_opts.get(
+                        "offset_sig_allow_across_function_boundary",
+                        False,
+                    ),
                     debug=debug,
                     size=entry.get("size"),
                 )
@@ -7034,6 +7420,9 @@ async def preprocess_common_skill(
             if debug:
                 print(f"    Preprocess: failed to locate {struct_member_name}")
             return False
+
+        if _struct_gen_opts.get("offset_sig_allow_across_function_boundary"):
+            struct_data["offset_sig_allow_across_function_boundary"] = True
 
         payload = _assemble_symbol_payload(
             struct_member_name,
