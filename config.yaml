@@ -1344,6 +1344,12 @@ modules:
         expected_output:
           - CPlayer_MovementServices_ForceButtonState.{platform}.yaml
 
+      - name: find-CPlayer_MovementServices_s_pRunCommandPawn
+        expected_output:
+          - CPlayer_MovementServices_s_pRunCommandPawn.{platform}.yaml
+        expected_input:
+          - CPlayer_MovementServices_ForceButtons.{platform}.yaml
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -2482,6 +2488,11 @@ modules:
         category: func
         alias:
           - CPlayer_MovementServices::ForceButtonState
+
+      - name: CPlayer_MovementServices_s_pRunCommandPawn
+        category: gv
+        alias:
+          - CPlayer_MovementServices::s_pRunCommandPawn
 
       - name: CEntityInstance_vtable
         category: vtable
