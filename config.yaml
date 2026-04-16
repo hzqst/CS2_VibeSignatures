@@ -1393,6 +1393,10 @@ modules:
         expected_output:
           - CCSPlayerPawn_vtable.{platform}.yaml
 
+      - name: find-CCSPlayerPawnBase_vtable
+        expected_output:
+          - CCSPlayerPawnBase_vtable.{platform}.yaml
+
       - name: find-CBaseTrigger_vtable
         expected_output:
           - CBaseTrigger_vtable.{platform}.yaml
@@ -1795,9 +1799,25 @@ modules:
         expected_output:
           - NetworkStateChanged.{platform}.yaml
 
+      - name: find-CCSPlayerPawnBase_CheckForIdle
+        platform: windows
+        expected_output:
+          - CCSPlayerPawnBase_CheckForIdle.{platform}.yaml
+        expected_input:
+          - CCSPlayerPawnBase_vtable.{platform}.yaml
+
+      - name: find-CCSPlayerPawnBase_CheckForIdleInternal
+        platform: linux
+        expected_output:
+          - CCSPlayerPawnBase_CheckForIdleInternal.{platform}.yaml
+
       - name: find-UTIL_ClientPrintAll
         expected_output:
           - UTIL_ClientPrintAll.{platform}.yaml
+        expected_input_windows:
+          - CCSPlayerPawnBase_CheckForIdle.{platform}.yaml
+        expected_input_linux:
+          - CCSPlayerPawnBase_CheckForIdleInternal.{platform}.yaml
 
       - name: find-UTIL_PlayerSlotToPlayerController
         expected_output:
@@ -2536,6 +2556,9 @@ modules:
       - name: CCSPlayerPawn_vtable
         category: vtable
 
+      - name: CCSPlayerPawnBase_vtable
+        category: vtable
+
       - name: CBaseTrigger_vtable
         category: vtable
 
@@ -2813,6 +2836,16 @@ modules:
         category: func
         alias:
           - CCSPlayerController::SwitchTeam
+
+      - name: CCSPlayerPawnBase_CheckForIdle
+        category: vfunc
+        alias:
+          - CCSPlayerPawnBase::CheckForIdle
+
+      - name: CCSPlayerPawnBase_CheckForIdleInternal
+        category: func
+        alias:
+          - CCSPlayerPawnBase::CheckForIdleInternal
 
       - name: CCSPlayerPawnBase_PostThink
         category: vfunc
