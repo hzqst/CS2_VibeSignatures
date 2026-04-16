@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CCSPlayer_MovementServices_ProcessMovement-AND-CCSPlayer_MovementServices_CheckMovingGround skill."""
+"""Preprocess script for find-CCSPlayer_MovementServices_ProcessMovement skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "CCSPlayer_MovementServices_ProcessMovement",
-    "CCSPlayer_MovementServices_CheckMovingGround",
 ]
 
 FUNC_XREFS = [
@@ -15,28 +14,20 @@ FUNC_XREFS = [
         "xref_gvs": ["CPlayer_MovementServices_s_pRunCommandPawn"],
         "xref_signatures": [],
         "xref_funcs": [],
-        "exclude_funcs": [],
+        "exclude_funcs": [
+            "CPlayer_MovementServices_ForceButtons",
+            "CPlayer_MovementServices_ForceButtonState",
+        ],
         "exclude_strings": [],
         "exclude_gvs": [],
         "exclude_signatures": [],
     },
 ]
 
-
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
         "CCSPlayer_MovementServices_ProcessMovement",
-        [
-            "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
-        ],
-    ),
-    (
-        "CCSPlayer_MovementServices_CheckMovingGround",
         [
             "func_name",
             "func_va",
