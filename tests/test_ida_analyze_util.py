@@ -189,6 +189,67 @@ class TestPreprocessIndexBasedVfuncViaMcp(unittest.IsolatedAsyncioTestCase):
             self.assertIsNone(result)
             session.call_tool.assert_not_awaited()
 
+    async def test_forwards_boundary_flag_when_generating_func_sig(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            module_dir = Path(temp_dir) / "bin" / "14141" / "server"
+            target_output = module_dir / "CDerived_Touch.windows.yaml"
+
+            _write_yaml(
+                module_dir / "CBaseEntity_Touch.windows.yaml",
+                {
+                    "vtable_name": "CBaseEntity",
+                    "vfunc_offset": "0x118",
+                },
+            )
+            _write_yaml(
+                module_dir / "CDerived_vtable.windows.yaml",
+                {
+                    "vtable_entries": {
+                        35: "0x180001180",
+                    }
+                },
+            )
+
+            session = AsyncMock()
+            session.call_tool.return_value = _py_eval_payload(
+                {
+                    "func_va": "0x180001180",
+                    "func_size": "0x40",
+                }
+            )
+
+            with patch.object(
+                ida_analyze_util,
+                "preprocess_gen_func_sig_via_mcp",
+                AsyncMock(
+                    return_value={
+                        "func_sig": "48 89 ??",
+                    }
+                ),
+            ) as mock_gen_sig:
+                result = await ida_analyze_util.preprocess_index_based_vfunc_via_mcp(
+                    session=session,
+                    target_func_name="CDerived_Touch",
+                    target_output=str(target_output),
+                    old_yaml_map={},
+                    new_binary_dir=str(module_dir),
+                    platform="windows",
+                    image_base=0x180000000,
+                    base_vfunc_name="CBaseEntity_Touch",
+                    inherit_vtable_class="CDerived",
+                    generate_func_sig=True,
+                    allow_func_sig_across_function_boundary=True,
+                    debug=False,
+                )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("48 89 ??", result["func_sig"])
+        mock_gen_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
 
 class TestVtableAliasSupport(unittest.IsolatedAsyncioTestCase):
     async def test_preprocess_common_skill_rejects_invalid_mangled_class_names(self) -> None:
@@ -707,6 +768,259 @@ class TestGenerateYamlDesiredFieldsContract(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertIsNone(result)
+
+    async def test_normalize_generate_yaml_desired_fields_parses_signature_boundary_flags(
+        self,
+    ) -> None:
+        result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+            [
+                (
+                    "Foo",
+                    [
+                        "func_name",
+                        "func_sig_allow_across_function_boundary: true",
+                        "vfunc_sig",
+                        "vfunc_sig_allow_across_function_boundary: true",
+                        "gv_sig",
+                        "gv_sig_allow_across_function_boundary: true",
+                        "offset_sig",
+                        "offset_sig_allow_across_function_boundary: true",
+                    ],
+                )
+            ],
+            debug=True,
+        )
+
+        self.assertEqual(
+            {
+                "Foo": {
+                    "desired_output_fields": [
+                        "func_name",
+                        "func_sig_allow_across_function_boundary",
+                        "vfunc_sig",
+                        "vfunc_sig_allow_across_function_boundary",
+                        "gv_sig",
+                        "gv_sig_allow_across_function_boundary",
+                        "offset_sig",
+                        "offset_sig_allow_across_function_boundary",
+                    ],
+                    "generation_options": {
+                        "func_sig_allow_across_function_boundary": True,
+                        "vfunc_sig_allow_across_function_boundary": True,
+                        "gv_sig_allow_across_function_boundary": True,
+                        "offset_sig_allow_across_function_boundary": True,
+                    },
+                }
+            },
+            result,
+        )
+
+    async def test_normalize_generate_yaml_desired_fields_rejects_bare_signature_boundary_flags(
+        self,
+    ) -> None:
+        bare_specs = [
+            ("func_name", "func_sig_allow_across_function_boundary"),
+            ("vfunc_sig", "vfunc_sig_allow_across_function_boundary"),
+            ("offset_sig", "offset_sig_allow_across_function_boundary"),
+        ]
+
+        for leading_field, bare_flag in bare_specs:
+            with self.subTest(bare_flag=bare_flag):
+                result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+                    [("Foo", [leading_field, bare_flag])],
+                    debug=True,
+                )
+                self.assertIsNone(result)
+
+    async def test_normalize_generate_yaml_desired_fields_rejects_invalid_signature_boundary_flag_values(
+        self,
+    ) -> None:
+        invalid_specs = [
+            ("func_name", "func_sig_allow_across_function_boundary: false"),
+            ("vfunc_sig", "vfunc_sig_allow_across_function_boundary: false"),
+            ("offset_sig", "offset_sig_allow_across_function_boundary: false"),
+        ]
+
+        for leading_field, invalid_flag in invalid_specs:
+            with self.subTest(invalid_flag=invalid_flag):
+                result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+                    [("Foo", [leading_field, invalid_flag])],
+                    debug=True,
+                )
+                self.assertIsNone(result)
+
+    async def test_normalize_generate_yaml_desired_fields_rejects_duplicate_signature_boundary_flags(
+        self,
+    ) -> None:
+        duplicate_specs = [
+            (
+                "func_name",
+                "func_sig_allow_across_function_boundary: true",
+            ),
+            (
+                "vfunc_sig",
+                "vfunc_sig_allow_across_function_boundary: true",
+            ),
+            (
+                "offset_sig",
+                "offset_sig_allow_across_function_boundary: true",
+            ),
+        ]
+
+        for leading_field, allow_flag in duplicate_specs:
+            with self.subTest(allow_flag=allow_flag):
+                result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+                    [("Foo", [leading_field, allow_flag, allow_flag])],
+                    debug=True,
+                )
+                self.assertIsNone(result)
+
+    async def test_preprocess_common_skill_writes_func_and_vfunc_boundary_flags(
+        self,
+    ) -> None:
+        with patch.object(
+            ida_analyze_util,
+            "preprocess_func_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "func_name": "Foo",
+                    "func_sig": "AA BB",
+                    "vfunc_sig": "48 89 5C 24 ? ? 57",
+                    "vfunc_sig_max_match": 10,
+                }
+            ),
+        ), patch.object(
+            ida_analyze_util,
+            "write_func_yaml",
+        ) as mock_write_func_yaml, patch.object(
+            ida_analyze_util,
+            "_rename_func_in_ida",
+            AsyncMock(return_value=None),
+        ):
+            result = await ida_analyze_util.preprocess_common_skill(
+                session="session",
+                expected_outputs=["/tmp/Foo.windows.yaml"],
+                old_yaml_map={},
+                new_binary_dir="/tmp",
+                platform="windows",
+                image_base=0x180000000,
+                func_names=["Foo"],
+                generate_yaml_desired_fields=[
+                    (
+                        "Foo",
+                        [
+                            "func_name",
+                            "func_sig",
+                            "func_sig_allow_across_function_boundary: true",
+                            "vfunc_sig",
+                            "vfunc_sig_max_match:10",
+                            "vfunc_sig_allow_across_function_boundary: true",
+                        ],
+                    )
+                ],
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_write_func_yaml.assert_called_once()
+        written_payload = mock_write_func_yaml.call_args.args[1]
+        self.assertEqual(
+            [
+                "func_name",
+                "func_sig",
+                "func_sig_allow_across_function_boundary",
+                "vfunc_sig",
+                "vfunc_sig_max_match",
+                "vfunc_sig_allow_across_function_boundary",
+            ],
+            list(written_payload.keys()),
+        )
+        self.assertEqual(
+            {
+                "func_name": "Foo",
+                "func_sig": "AA BB",
+                "func_sig_allow_across_function_boundary": True,
+                "vfunc_sig": "48 89 5C 24 ? ? 57",
+                "vfunc_sig_max_match": 10,
+                "vfunc_sig_allow_across_function_boundary": True,
+            },
+            written_payload,
+        )
+
+    async def test_preprocess_common_skill_writes_offset_sig_boundary_flag(
+        self,
+    ) -> None:
+        struct_member_name = "CActor_m_iHealth"
+
+        with patch.object(
+            ida_analyze_util,
+            "preprocess_struct_offset_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "struct_name": "CActor",
+                    "member_name": "m_iHealth",
+                    "offset": "0x10",
+                    "size": 4,
+                    "offset_sig": "49 8B 4E ??",
+                    "offset_sig_disp": 0,
+                }
+            ),
+        ), patch.object(
+            ida_analyze_util,
+            "write_struct_offset_yaml",
+        ) as mock_write_struct_offset_yaml:
+            result = await ida_analyze_util.preprocess_common_skill(
+                session="session",
+                expected_outputs=[f"/tmp/{struct_member_name}.windows.yaml"],
+                old_yaml_map={},
+                new_binary_dir="/tmp",
+                platform="windows",
+                image_base=0x180000000,
+                struct_member_names=[struct_member_name],
+                generate_yaml_desired_fields=[
+                    (
+                        struct_member_name,
+                        [
+                            "struct_name",
+                            "member_name",
+                            "offset",
+                            "size",
+                            "offset_sig",
+                            "offset_sig_disp",
+                            "offset_sig_allow_across_function_boundary: true",
+                        ],
+                    )
+                ],
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_write_struct_offset_yaml.assert_called_once()
+        written_payload = mock_write_struct_offset_yaml.call_args.args[1]
+        self.assertEqual(
+            [
+                "struct_name",
+                "member_name",
+                "offset",
+                "size",
+                "offset_sig",
+                "offset_sig_disp",
+                "offset_sig_allow_across_function_boundary",
+            ],
+            list(written_payload.keys()),
+        )
+        self.assertEqual(
+            {
+                "struct_name": "CActor",
+                "member_name": "m_iHealth",
+                "offset": "0x10",
+                "size": 4,
+                "offset_sig": "49 8B 4E ??",
+                "offset_sig_disp": 0,
+                "offset_sig_allow_across_function_boundary": True,
+            },
+            written_payload,
+        )
 
     async def test_preprocess_common_skill_rejects_missing_desired_fields_before_any_write(
         self,
@@ -1545,6 +1859,50 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
         )
         mock_gen_sig.assert_awaited_once()
 
+    async def test_preprocess_func_xrefs_forwards_boundary_flag_to_generator(
+        self,
+    ) -> None:
+        with patch.object(
+            ida_analyze_util,
+            "_collect_xref_func_starts_for_string",
+            AsyncMock(return_value={0x180200000}),
+        ), patch.object(
+            ida_analyze_util,
+            "_collect_xref_func_starts_for_signature",
+            AsyncMock(return_value={0x180200000}),
+        ), patch.object(
+            ida_analyze_util,
+            "preprocess_gen_func_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "func_va": "0x180200000",
+                    "func_rva": "0x200000",
+                    "func_size": "0x40",
+                    "func_sig": "48 89 5C 24 08",
+                }
+            ),
+        ) as mock_gen_sig:
+            result = await ida_analyze_util.preprocess_func_xrefs_via_mcp(
+                session="session",
+                func_name="LoggingChannel_Init",
+                xref_strings=["Networking"],
+                xref_signatures=["C7 44 24 40 64 FF FF FF"],
+                xref_funcs=[],
+                exclude_funcs=[],
+                exclude_strings=[],
+                new_binary_dir="bin_dir",
+                platform="windows",
+                image_base=0x180000000,
+                allow_func_sig_across_function_boundary=True,
+                debug=False,
+            )
+
+        self.assertEqual("48 89 5C 24 08", result["func_sig"])
+        mock_gen_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
     async def test_preprocess_func_xrefs_fails_when_signature_set_is_empty(
         self,
     ) -> None:
@@ -2193,8 +2551,14 @@ found_struct_offset: []
 
         def _fake_call_tool(*, name: str, arguments: dict[str, object]):
             if name == "py_eval":
-                self.assertIn("DecodeInstruction", arguments["code"])
-                self.assertIn("ida_bytes.get_bytes", arguments["code"])
+                code = arguments["code"]
+                self.assertIn("DecodeInstruction", code)
+                self.assertIn("ida_bytes.get_bytes", code)
+                self.assertIn("allow_across_boundary = False", code)
+                self.assertIn(
+                    "limit_end = min(func.end_ea, target_inst + max_sig_bytes)",
+                    code,
+                )
                 return _py_eval_payload(
                     [
                         {
@@ -2240,6 +2604,89 @@ found_struct_offset: []
             image_base=0x180000000,
             size=8,
             min_sig_bytes=4,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "struct_name": "CGameResourceService",
+                "member_name": "m_pEntitySystem",
+                "offset": "0x58",
+                "size": 8,
+                "offset_sig": "49 8B 4E ??",
+                "offset_sig_disp": 0,
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_struct_offset_sig_via_mcp_guards_cross_boundary_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("PAD_BYTES = {0xCC, 0x90}", code)
+                self.assertIn("SEGPERM_EXEC", code)
+                self.assertIn("def _is_same_exec_segment", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn(
+                    "if allow_across_boundary and cursor >= func.end_ea:",
+                    code,
+                )
+                self.assertIn(
+                    "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+                    "            return cursor, padding, True",
+                    code,
+                )
+                return _py_eval_payload(
+                    [
+                        {
+                            "offset_inst_va": "0x1801BA12A",
+                            "insts": [
+                                {
+                                    "size": 4,
+                                    "bytes": "498b4e58",
+                                    "wild": [3],
+                                },
+                                {
+                                    "size": 3,
+                                    "bytes": "4885c9",
+                                    "wild": [],
+                                },
+                            ],
+                        }
+                    ]
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["49 8B 4E ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x1801BA12A"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_struct_offset_sig_via_mcp(
+            session=session,
+            struct_name="CGameResourceService",
+            member_name="m_pEntitySystem",
+            offset="0x58",
+            offset_inst_va="0x1801BA12A",
+            image_base=0x180000000,
+            size=8,
+            min_sig_bytes=4,
+            allow_across_function_boundary=True,
             debug=False,
         )
 
@@ -2412,6 +2859,186 @@ found_struct_offset: []
             result,
         )
 
+    async def test_preprocess_gen_func_sig_via_mcp_defaults_to_function_boundary(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = False", code)
+                self.assertIn(
+                    "limit_end = min(f.end_ea, target_ea + max_sig_bytes)",
+                    code,
+                )
+                return _py_eval_payload(
+                    {
+                        "func_va": "0x180123450",
+                        "func_size": "0x40",
+                        "insts": [
+                            {
+                                "ea": "0x180123450",
+                                "size": 7,
+                                "bytes": "488b0d78563412",
+                                "wild": [3, 4, 5, 6],
+                            }
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["48 8B 0D ?? ?? ?? ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x180123450"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va="0x180123450",
+            image_base=0x180000000,
+            min_sig_bytes=6,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "func_va": "0x180123450",
+                "func_rva": "0x123450",
+                "func_size": "0x40",
+                "func_sig": "48 8B 0D ?? ?? ?? ??",
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_func_sig_via_mcp_guards_cross_boundary_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("PAD_BYTES = {0xCC, 0x90}", code)
+                self.assertIn("SEGPERM_EXEC", code)
+                self.assertIn("def _is_same_exec_segment", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn(
+                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    code,
+                )
+                self.assertIn(
+                    "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+                    "            return cursor, padding, True",
+                    code,
+                )
+                return _py_eval_payload(
+                    {
+                        "func_va": "0x180123450",
+                        "func_size": "0x40",
+                        "insts": [
+                            {
+                                "ea": "0x180123450",
+                                "size": 7,
+                                "bytes": "488b0d78563412",
+                                "wild": [3, 4, 5, 6],
+                            }
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["48 8B 0D ?? ?? ?? ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x180123450"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va="0x180123450",
+            image_base=0x180000000,
+            min_sig_bytes=6,
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "func_va": "0x180123450",
+                "func_rva": "0x123450",
+                "func_size": "0x40",
+                "func_sig": "48 8B 0D ?? ?? ?? ??",
+            },
+            result,
+        )
+
+    def test_build_signature_boundary_py_eval_helpers_allows_zero_padding_code_head(
+        self,
+    ) -> None:
+        helper_code = ida_analyze_util._build_signature_boundary_py_eval_helpers()
+
+        self.assertIn(
+            "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+            "            return cursor, padding, True",
+            helper_code,
+        )
+        self.assertNotIn(
+            "if pad_buf and ida_bytes.is_code(flags) and ida_bytes.is_head(flags):",
+            helper_code,
+        )
+        self.assertLess(
+            helper_code.index(
+                "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+                "            return cursor, padding, True"
+            ),
+            helper_code.index("b = ida_bytes.get_byte(cursor)"),
+        )
+
+    def test_build_signature_boundary_py_eval_helpers_stops_padding_at_code_head(
+        self,
+    ) -> None:
+        helper_code = ida_analyze_util._build_signature_boundary_py_eval_helpers()
+
+        self.assertIn(
+            "b = ida_bytes.get_byte(cursor)\n"
+            "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+            "            return cursor, padding, False",
+            helper_code,
+        )
+        self.assertIn(
+            "while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
+            "            flags = ida_bytes.get_full_flags(cursor)\n"
+            "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+            "                break\n"
+            "            b = ida_bytes.get_byte(cursor)\n"
+            "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+            "                return cursor, padding, False\n"
+            "            pad_buf.append(b)\n"
+            "            cursor += 1",
+            helper_code,
+        )
+
     async def test_preprocess_gen_vfunc_sig_via_mcp_generates_current_version_sig(
         self,
     ) -> None:
@@ -2419,9 +3046,15 @@ found_struct_offset: []
 
         def _fake_call_tool(*, name: str, arguments: dict[str, object]):
             if name == "py_eval":
-                self.assertIn("target_vfunc_offset = 120", arguments["code"])
-                self.assertIn("target_inst = 6442757059", arguments["code"])
-                self.assertIn("globals().update(locals())", arguments["code"])
+                code = arguments["code"]
+                self.assertIn("target_vfunc_offset = 120", code)
+                self.assertIn("target_inst = 6442757059", code)
+                self.assertIn("globals().update(locals())", code)
+                self.assertIn("allow_across_boundary = False", code)
+                self.assertIn(
+                    "limit_end = min(f.end_ea, target_inst + max_sig_bytes)",
+                    code,
+                )
                 return _py_eval_payload(
                     {
                         "vfunc_sig_va": "0x18004abc3",
@@ -2626,6 +3259,89 @@ found_struct_offset: []
         )
 
         self.assertIsNone(result)
+
+    async def test_preprocess_gen_vfunc_sig_via_mcp_guards_cross_boundary_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("PAD_BYTES = {0xCC, 0x90}", code)
+                self.assertIn("SEGPERM_EXEC", code)
+                self.assertIn("def _is_same_exec_segment", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn(
+                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    code,
+                )
+                self.assertIn(
+                    "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+                    "            return cursor, padding, True",
+                    code,
+                )
+                return _py_eval_payload(
+                    {
+                        "vfunc_sig_va": "0x18004abc3",
+                        "vfunc_inst_length": 6,
+                        "vfunc_disp_offset": 2,
+                        "vfunc_disp_size": 4,
+                        "insts": [
+                            {
+                                "ea": "0x18004abc3",
+                                "size": 6,
+                                "bytes": "ff9078000000",
+                                "wild": [],
+                            },
+                            {
+                                "ea": "0x18004abc9",
+                                "size": 3,
+                                "bytes": "4885c0",
+                                "wild": [],
+                            },
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["FF 90 78 00 00 00"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x18004abc3"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_vfunc_sig_via_mcp(
+            session=session,
+            inst_va="0x18004ABC3",
+            vfunc_offset="0x78",
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "vfunc_sig": "FF 90 78 00 00 00",
+                "vfunc_sig_va": "0x18004abc3",
+                "vfunc_sig_disp": 0,
+                "vfunc_inst_length": 6,
+                "vfunc_disp_offset": 2,
+                "vfunc_disp_size": 4,
+                "vfunc_offset": "0x78",
+                "vfunc_sig_max_match": 1,
+            },
+            result,
+        )
 
     async def test_preprocess_common_skill_uses_llm_decompile_vcall_fallback_for_func_yaml(
         self,
@@ -3444,6 +4160,7 @@ found_struct_offset: []
             offset_inst_va="0x180777710",
             size="8",
             old_path=str(old_struct_yaml_path),
+            allow_across_function_boundary=False,
             debug=True,
         )
         mock_write_func_yaml.assert_called_once()
@@ -3454,6 +4171,221 @@ found_struct_offset: []
         self.assertEqual("0x58", written_payload["offset"])
         self.assertEqual(8, written_payload["size"])
         self.assertEqual(0, written_payload["offset_sig_disp"])
+
+    async def test_preprocess_common_skill_forwards_struct_offset_boundary_flag_and_writes_it(
+        self,
+    ) -> None:
+        func_name = "CNetworkMessages_FindNetworkGroup"
+        struct_member_name = "CGameResourceService_m_pEntitySystem"
+        output_paths = [
+            f"/tmp/{func_name}.windows.yaml",
+            f"/tmp/{struct_member_name}.windows.yaml",
+        ]
+        old_struct_yaml_path = Path(tempfile.gettempdir()) / (
+            f"{struct_member_name}.{id(self)}.windows.yaml"
+        )
+        target_detail_payload = {
+            "func_name": "CNetworkGameClient_RecordEntityBandwidth",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180222200",
+            "procedure": "return CNetworkMessages::FindNetworkGroup(this, group);",
+        }
+        normalized_payload = {
+            "found_vcall": [],
+            "found_call": [
+                {
+                    "insn_va": "0x180777700",
+                    "insn_disasm": "call    sub_180222200",
+                    "func_name": func_name,
+                }
+            ],
+            "found_gv": [],
+            "found_struct_offset": [
+                {
+                    "insn_va": "0x180777710",
+                    "insn_disasm": "mov     rcx, [r14+58h]",
+                    "offset": "0x58",
+                    "size": "8",
+                    "struct_name": "CGameResourceService",
+                    "member_name": "m_pEntitySystem",
+                }
+            ],
+        }
+
+        async def _fake_preprocess_direct_func_sig_via_mcp(**kwargs):
+            return {
+                "func_name": kwargs["func_name"],
+                "func_va": str(kwargs["direct_func_va"]).strip().lower(),
+            }
+
+        try:
+            _write_yaml(
+                old_struct_yaml_path,
+                {
+                    "struct_name": "CGameResourceService",
+                    "member_name": "m_pEntitySystem",
+                    "offset": "0x50",
+                    "size": 8,
+                    "offset_sig": "49 8B 4E 50",
+                },
+            )
+
+            with tempfile.TemporaryDirectory() as temp_dir:
+                preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+                (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+                (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                    "{symbol_name_list}",
+                    encoding="utf-8",
+                )
+                _write_yaml(
+                    preprocessor_dir / "references" / "reference.yaml",
+                    {
+                        "func_name": target_detail_payload["func_name"],
+                        "disasm_code": target_detail_payload["disasm_code"],
+                        "procedure": target_detail_payload["procedure"],
+                    },
+                )
+
+                with patch.object(
+                    ida_analyze_util,
+                    "_get_preprocessor_scripts_dir",
+                    return_value=preprocessor_dir,
+                ), patch.object(
+                    ida_analyze_util,
+                    "create_openai_client",
+                    return_value=object(),
+                    create=True,
+                ), patch.object(
+                    ida_analyze_util,
+                    "preprocess_func_sig_via_mcp",
+                    AsyncMock(return_value=None),
+                ), patch.object(
+                    ida_analyze_util,
+                    "preprocess_struct_offset_sig_via_mcp",
+                    AsyncMock(return_value=None),
+                ), patch.object(
+                    ida_analyze_util,
+                    "_load_llm_decompile_target_detail_via_mcp",
+                    AsyncMock(return_value=target_detail_payload),
+                ), patch.object(
+                    ida_analyze_util,
+                    "_resolve_direct_call_target_via_mcp",
+                    AsyncMock(return_value="0x180123450"),
+                ), patch.object(
+                    ida_analyze_util,
+                    "_preprocess_direct_func_sig_via_mcp",
+                    AsyncMock(side_effect=_fake_preprocess_direct_func_sig_via_mcp),
+                ), patch.object(
+                    ida_analyze_util,
+                    "_preprocess_direct_struct_offset_sig_via_mcp",
+                    AsyncMock(
+                        return_value={
+                            "struct_name": "CGameResourceService",
+                            "member_name": "m_pEntitySystem",
+                            "offset": "0x58",
+                            "size": 8,
+                            "offset_sig": "49 8B 4E ??",
+                            "offset_sig_disp": 0,
+                        }
+                    ),
+                    create=True,
+                ) as mock_preprocess_direct_struct_offset_sig, patch.object(
+                    ida_analyze_util,
+                    "call_llm_decompile",
+                    create=True,
+                    new_callable=AsyncMock,
+                    return_value=normalized_payload,
+                ), patch.object(
+                    ida_analyze_util,
+                    "write_func_yaml",
+                ), patch.object(
+                    ida_analyze_util,
+                    "write_struct_offset_yaml",
+                ) as mock_write_struct_offset_yaml, patch.object(
+                    ida_analyze_util,
+                    "_rename_func_in_ida",
+                    AsyncMock(return_value=None),
+                ):
+                    result = await ida_analyze_util.preprocess_common_skill(
+                        session="session",
+                        expected_outputs=output_paths,
+                        old_yaml_map={
+                            output_paths[1]: str(old_struct_yaml_path),
+                        },
+                        new_binary_dir="/tmp",
+                        platform="windows",
+                        image_base=0x180000000,
+                        func_names=[func_name],
+                        struct_member_names=[struct_member_name],
+                        generate_yaml_desired_fields=[
+                            (func_name, ["func_name", "func_va"]),
+                            (
+                                struct_member_name,
+                                [
+                                    "struct_name",
+                                    "member_name",
+                                    "offset",
+                                    "size",
+                                    "offset_sig",
+                                    "offset_sig_disp",
+                                    "offset_sig_allow_across_function_boundary: true",
+                                ],
+                            ),
+                        ],
+                        llm_decompile_specs=[
+                            (
+                                func_name,
+                                "prompt/call_llm_decompile.md",
+                                "references/reference.yaml",
+                            ),
+                            (
+                                struct_member_name,
+                                "prompt/call_llm_decompile.md",
+                                "references/reference.yaml",
+                            ),
+                        ],
+                        llm_config={
+                            "model": "gpt-4.1-mini",
+                            "api_key": "test-api-key",
+                        },
+                        debug=True,
+                    )
+        finally:
+            if old_struct_yaml_path.exists():
+                old_struct_yaml_path.unlink()
+
+        self.assertTrue(result)
+        mock_preprocess_direct_struct_offset_sig.assert_awaited_once_with(
+            session="session",
+            new_path=output_paths[1],
+            image_base=0x180000000,
+            struct_member_name=struct_member_name,
+            struct_name="CGameResourceService",
+            member_name="m_pEntitySystem",
+            offset="0x58",
+            offset_inst_va="0x180777710",
+            size="8",
+            old_path=str(old_struct_yaml_path),
+            allow_across_function_boundary=True,
+            debug=True,
+        )
+        mock_write_struct_offset_yaml.assert_called_once()
+        written_payload = mock_write_struct_offset_yaml.call_args.args[1]
+        self.assertEqual(
+            [
+                "struct_name",
+                "member_name",
+                "offset",
+                "size",
+                "offset_sig",
+                "offset_sig_disp",
+                "offset_sig_allow_across_function_boundary",
+            ],
+            list(written_payload.keys()),
+        )
+        self.assertTrue(
+            written_payload["offset_sig_allow_across_function_boundary"]
+        )
 
     async def test_preprocess_common_skill_llm_batch_skips_future_targets_with_unready_xref_dependencies(
         self,
@@ -5167,6 +6099,572 @@ found_struct_offset: []
         )
         mock_write_func_yaml.assert_not_called()
 
+    async def test_preprocess_direct_func_sig_via_mcp_forwards_boundary_flag_to_generator(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        with patch.object(
+            ida_analyze_util,
+            "_get_func_basic_info_via_mcp",
+            AsyncMock(return_value={"func_size": "0x40"}),
+        ), patch.object(
+            ida_analyze_util,
+            "preprocess_gen_func_sig_via_mcp",
+            AsyncMock(return_value={"func_sig": "AA BB"}),
+        ) as mock_gen_sig:
+            result = await ida_analyze_util._preprocess_direct_func_sig_via_mcp(
+                session=session,
+                new_path="/tmp/Foo.windows.yaml",
+                image_base=0x180000000,
+                platform="windows",
+                func_name="Foo",
+                direct_func_va="0x180123450",
+                require_func_sig=True,
+                allow_func_sig_across_function_boundary=True,
+                debug=False,
+            )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("AA BB", result["func_sig"])
+        mock_gen_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
+    async def test_preprocess_direct_func_sig_forwards_vfunc_boundary_flag(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        with patch.object(
+            ida_analyze_util,
+            "_get_func_basic_info_via_mcp",
+            AsyncMock(return_value={"func_size": "0x40"}),
+        ), patch.object(
+            ida_analyze_util,
+            "preprocess_gen_vfunc_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "vfunc_sig": "FF 90 78 00 00 00",
+                    "vfunc_sig_max_match": 10,
+                }
+            ),
+        ) as mock_gen_vfunc_sig:
+            result = await ida_analyze_util._preprocess_direct_func_sig_via_mcp(
+                session=session,
+                new_path="/tmp/Foo.windows.yaml",
+                image_base=0x180000000,
+                platform="windows",
+                func_name="Foo",
+                direct_func_va="0x180123450",
+                direct_vcall_inst_va="0x18016742cf",
+                direct_vfunc_offset="0x78",
+                require_vfunc_sig=True,
+                allow_vfunc_sig_across_function_boundary=True,
+                vfunc_sig_max_match=10,
+                debug=False,
+            )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("FF 90 78 00 00 00", result["vfunc_sig"])
+        mock_gen_vfunc_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_vfunc_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
+    async def test_preprocess_direct_struct_offset_forwards_boundary_flag(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        with patch.object(
+            ida_analyze_util,
+            "preprocess_gen_struct_offset_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "struct_name": "CGameResourceService",
+                    "member_name": "m_pEntitySystem",
+                    "offset": "0x58",
+                    "size": 8,
+                    "offset_sig": "49 8B 4E ??",
+                    "offset_sig_disp": 0,
+                }
+            ),
+        ) as mock_gen_sig:
+            result = await ida_analyze_util._preprocess_direct_struct_offset_sig_via_mcp(
+                session=session,
+                new_path="/tmp/CGameResourceService_m_pEntitySystem.windows.yaml",
+                image_base=0x180000000,
+                struct_member_name="CGameResourceService_m_pEntitySystem",
+                struct_name="CGameResourceService",
+                member_name="m_pEntitySystem",
+                offset="0x58",
+                offset_inst_va="0x180123450",
+                size=8,
+                allow_across_function_boundary=True,
+                debug=False,
+            )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("49 8B 4E ??", result["offset_sig"])
+        mock_gen_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
+    async def test_slot_only_vfunc_payload_forwards_boundary_flag(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        llm_result = {
+            "found_vcall": [
+                {
+                    "insn_va": "0x18004ABC3",
+                    "insn_disasm": "call    qword ptr [rax+78h]",
+                    "vfunc_offset": "0x78",
+                    "func_name": "Foo",
+                },
+                {
+                    "insn_va": "0x18004AC0A",
+                    "insn_disasm": "call    qword ptr [rax+78h]",
+                    "vfunc_offset": "0x78",
+                    "func_name": "Foo",
+                },
+            ],
+            "found_call": [],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with patch.object(
+            ida_analyze_util,
+            "preprocess_gen_vfunc_sig_via_mcp",
+            AsyncMock(
+                return_value={
+                    "vfunc_sig": "FF 90 78 00 00 00 48 8B C8",
+                    "vfunc_sig_max_match": 10,
+                }
+            ),
+        ) as mock_gen_vfunc_sig:
+            result = await ida_analyze_util._build_enriched_slot_only_vfunc_payload_via_mcp(
+                session=session,
+                func_name="Foo",
+                llm_result=llm_result,
+                vtable_name="CNetworkMessages",
+                vfunc_sig_max_match=10,
+                require_vfunc_sig=True,
+                allow_vfunc_sig_across_function_boundary=True,
+                debug=False,
+            )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("FF 90 78 00 00 00 48 8B C8", result["vfunc_sig"])
+        mock_gen_vfunc_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_vfunc_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
+
+    async def test_preprocess_common_skill_forwards_func_sig_boundary_flag_to_direct_helper(
+        self,
+    ) -> None:
+        func_name = "Foo"
+        output_path = f"/tmp/{func_name}.windows.yaml"
+        target_detail_payload = {
+            "func_name": "Bar",
+            "func_va": "0x180555500",
+            "disasm_code": "call    sub_180123450",
+            "procedure": "return sub_180123450();",
+        }
+        normalized_payload = {
+            "found_call": [
+                {
+                    "insn_va": "0x18016742cf",
+                    "insn_disasm": "call    sub_180123450",
+                    "func_name": func_name,
+                }
+            ],
+            "found_vcall": [],
+            "found_funcptr": [],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+            (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+            (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                "{symbol_name_list}",
+                encoding="utf-8",
+            )
+            _write_yaml(
+                preprocessor_dir / "references" / "reference.yaml",
+                {
+                    "func_name": target_detail_payload["func_name"],
+                    "disasm_code": target_detail_payload["disasm_code"],
+                    "procedure": target_detail_payload["procedure"],
+                },
+            )
+
+            with patch.object(
+                ida_analyze_util,
+                "_get_preprocessor_scripts_dir",
+                return_value=preprocessor_dir,
+            ), patch.object(
+                ida_analyze_util,
+                "create_openai_client",
+                return_value=object(),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "preprocess_func_sig_via_mcp",
+                AsyncMock(return_value=None),
+            ), patch.object(
+                ida_analyze_util,
+                "_load_llm_decompile_target_detail_via_mcp",
+                AsyncMock(return_value=target_detail_payload),
+            ), patch.object(
+                ida_analyze_util,
+                "_resolve_direct_call_target_via_mcp",
+                AsyncMock(return_value="0x180123450"),
+                create=True,
+            ), patch.object(
+                ida_analyze_util,
+                "_preprocess_direct_func_sig_via_mcp",
+                AsyncMock(
+                    return_value={
+                        "func_name": func_name,
+                        "func_va": "0x180123450",
+                        "func_sig": "AA BB",
+                    }
+                ),
+            ) as mock_preprocess_direct_func_sig, patch.object(
+                ida_analyze_util,
+                "call_llm_decompile",
+                create=True,
+                new_callable=AsyncMock,
+                return_value=normalized_payload,
+            ), patch.object(
+                ida_analyze_util,
+                "write_func_yaml",
+            ) as mock_write_func_yaml, patch.object(
+                ida_analyze_util,
+                "_rename_func_in_ida",
+                AsyncMock(return_value=None),
+            ):
+                result = await ida_analyze_util.preprocess_common_skill(
+                    session="session",
+                    expected_outputs=[output_path],
+                    old_yaml_map={},
+                    new_binary_dir="/tmp",
+                    platform="windows",
+                    image_base=0x180000000,
+                    func_names=[func_name],
+                    generate_yaml_desired_fields=[
+                        (
+                            func_name,
+                            [
+                                "func_name",
+                                "func_sig",
+                                "func_sig_allow_across_function_boundary: true",
+                            ],
+                        )
+                    ],
+                    llm_decompile_specs=[
+                        (
+                            func_name,
+                            "prompt/call_llm_decompile.md",
+                            "references/reference.yaml",
+                        )
+                    ],
+                    llm_config={
+                        "model": "gpt-4.1-mini",
+                        "api_key": "test-api-key",
+                    },
+                    debug=True,
+                )
+
+        self.assertTrue(result)
+        mock_preprocess_direct_func_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_preprocess_direct_func_sig.await_args.kwargs[
+                "allow_func_sig_across_function_boundary"
+            ]
+        )
+        mock_write_func_yaml.assert_called_once()
+        written_payload = mock_write_func_yaml.call_args.args[1]
+        self.assertEqual(
+            {
+                "func_name": "Foo",
+                "func_sig": "AA BB",
+                "func_sig_allow_across_function_boundary": True,
+            },
+            written_payload,
+        )
+
+    async def test_preprocess_common_skill_forwards_vfunc_boundary_flag_and_writes_it(
+        self,
+    ) -> None:
+        func_name = "Foo"
+        output_path = f"/tmp/{func_name}.windows.yaml"
+        target_detail_payload = {
+            "func_name": "Bar",
+            "func_va": "0x180555500",
+            "disasm_code": "call    qword ptr [rax+78h]",
+            "procedure": "return this->vfptr[15](this);",
+        }
+        normalized_payload = {
+            "found_vcall": [
+                {
+                    "insn_va": "0x18004ABC3",
+                    "insn_disasm": "call    qword ptr [rax+78h]",
+                    "vfunc_offset": "0x78",
+                    "func_name": func_name,
+                }
+            ],
+            "found_call": [],
+            "found_funcptr": [],
+            "found_gv": [],
+            "found_struct_offset": [],
+        }
+
+        helper_cases = (
+            (
+                "direct_vcall",
+                "_preprocess_direct_func_sig_via_mcp",
+                {
+                    "func_name": func_name,
+                    "vfunc_sig": "FF 90 78 00 00 00",
+                    "vfunc_sig_max_match": 10,
+                    "vtable_name": "CNetworkMessages",
+                    "vfunc_offset": "0x78",
+                    "vfunc_index": 15,
+                },
+            ),
+            (
+                "slot_only",
+                "_build_enriched_slot_only_vfunc_payload_via_mcp",
+                {
+                    "func_name": func_name,
+                    "vfunc_sig": "FF 90 78 00 00 00",
+                    "vfunc_sig_max_match": 10,
+                    "vtable_name": "CNetworkMessages",
+                    "vfunc_offset": "0x78",
+                    "vfunc_index": 15,
+                },
+            ),
+        )
+
+        for case_name, expected_helper_name, helper_payload in helper_cases:
+            with self.subTest(case=case_name):
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    preprocessor_dir = Path(temp_dir) / "ida_preprocessor_scripts"
+                    (preprocessor_dir / "prompt").mkdir(parents=True, exist_ok=True)
+                    (preprocessor_dir / "prompt" / "call_llm_decompile.md").write_text(
+                        "{symbol_name_list}",
+                        encoding="utf-8",
+                    )
+                    _write_yaml(
+                        preprocessor_dir / "references" / "reference.yaml",
+                        {
+                            "func_name": target_detail_payload["func_name"],
+                            "disasm_code": target_detail_payload["disasm_code"],
+                            "procedure": target_detail_payload["procedure"],
+                        },
+                    )
+
+                    direct_helper_return = (
+                        helper_payload if expected_helper_name == "_preprocess_direct_func_sig_via_mcp" else None
+                    )
+                    slot_only_return = (
+                        helper_payload if expected_helper_name == "_build_enriched_slot_only_vfunc_payload_via_mcp" else None
+                    )
+
+                    with patch.object(
+                        ida_analyze_util,
+                        "_get_preprocessor_scripts_dir",
+                        return_value=preprocessor_dir,
+                    ), patch.object(
+                        ida_analyze_util,
+                        "create_openai_client",
+                        return_value=object(),
+                        create=True,
+                    ), patch.object(
+                        ida_analyze_util,
+                        "preprocess_func_sig_via_mcp",
+                        AsyncMock(return_value=None),
+                    ), patch.object(
+                        ida_analyze_util,
+                        "_load_llm_decompile_target_detail_via_mcp",
+                        AsyncMock(return_value=target_detail_payload),
+                    ), patch.object(
+                        ida_analyze_util,
+                        "_preprocess_direct_func_sig_via_mcp",
+                        AsyncMock(return_value=direct_helper_return),
+                    ) as mock_preprocess_direct_func_sig, patch.object(
+                        ida_analyze_util,
+                        "_build_enriched_slot_only_vfunc_payload_via_mcp",
+                        AsyncMock(return_value=slot_only_return),
+                    ) as mock_slot_only_helper, patch.object(
+                        ida_analyze_util,
+                        "call_llm_decompile",
+                        create=True,
+                        new_callable=AsyncMock,
+                        return_value=normalized_payload,
+                    ), patch.object(
+                        ida_analyze_util,
+                        "write_func_yaml",
+                    ) as mock_write_func_yaml, patch.object(
+                        ida_analyze_util,
+                        "_rename_func_in_ida",
+                        AsyncMock(return_value=None),
+                    ):
+                        result = await ida_analyze_util.preprocess_common_skill(
+                            session="session",
+                            expected_outputs=[output_path],
+                            old_yaml_map={},
+                            new_binary_dir="/tmp",
+                            platform="windows",
+                            image_base=0x180000000,
+                            func_names=[func_name],
+                            func_vtable_relations=[(func_name, "CNetworkMessages")],
+                            generate_yaml_desired_fields=[
+                                (
+                                    func_name,
+                                    [
+                                        "func_name",
+                                        "vfunc_sig",
+                                        "vfunc_sig_max_match:10",
+                                        "vfunc_sig_allow_across_function_boundary: true",
+                                        "vtable_name",
+                                        "vfunc_offset",
+                                        "vfunc_index",
+                                    ],
+                                )
+                            ],
+                            llm_decompile_specs=[
+                                (
+                                    func_name,
+                                    "prompt/call_llm_decompile.md",
+                                    "references/reference.yaml",
+                                )
+                            ],
+                            llm_config={
+                                "model": "gpt-4.1-mini",
+                                "api_key": "test-api-key",
+                            },
+                            debug=True,
+                        )
+
+                self.assertTrue(result)
+                if expected_helper_name == "_preprocess_direct_func_sig_via_mcp":
+                    mock_preprocess_direct_func_sig.assert_awaited_once()
+                    self.assertTrue(
+                        mock_preprocess_direct_func_sig.await_args.kwargs[
+                            "allow_vfunc_sig_across_function_boundary"
+                        ]
+                    )
+                    mock_slot_only_helper.assert_not_awaited()
+                else:
+                    mock_preprocess_direct_func_sig.assert_awaited_once()
+                    self.assertTrue(
+                        mock_preprocess_direct_func_sig.await_args.kwargs[
+                            "allow_vfunc_sig_across_function_boundary"
+                        ]
+                    )
+                    mock_slot_only_helper.assert_awaited_once()
+                    self.assertTrue(
+                        mock_slot_only_helper.await_args.kwargs[
+                            "allow_vfunc_sig_across_function_boundary"
+                        ]
+                    )
+                mock_write_func_yaml.assert_called_once()
+                written_payload = mock_write_func_yaml.call_args.args[1]
+                self.assertEqual(
+                    True,
+                    written_payload["vfunc_sig_allow_across_function_boundary"],
+                )
+
+    async def test_preprocess_common_skill_forwards_func_sig_boundary_flag_in_inherit_vfuncs(
+        self,
+    ) -> None:
+        func_name = "CDerived_Touch"
+        output_path = f"/tmp/{func_name}.windows.yaml"
+
+        with patch.object(
+            ida_analyze_util,
+            "preprocess_func_sig_via_mcp",
+            AsyncMock(return_value=None),
+        ) as mock_preprocess_func_sig, patch.object(
+            ida_analyze_util,
+            "preprocess_index_based_vfunc_via_mcp",
+            AsyncMock(
+                return_value={
+                    "func_name": func_name,
+                    "func_va": "0x180123450",
+                    "func_rva": "0x123450",
+                    "func_size": "0x40",
+                    "func_sig": "AA BB",
+                    "vtable_name": "CDerived",
+                    "vfunc_offset": "0x118",
+                    "vfunc_index": 35,
+                }
+            ),
+        ) as mock_preprocess_index_vfunc, patch.object(
+            ida_analyze_util,
+            "write_func_yaml",
+        ) as mock_write_func_yaml, patch.object(
+            ida_analyze_util,
+            "_rename_func_in_ida",
+            AsyncMock(return_value=None),
+        ):
+            result = await ida_analyze_util.preprocess_common_skill(
+                session="session",
+                expected_outputs=[output_path],
+                old_yaml_map={output_path: "/tmp/old.yaml"},
+                new_binary_dir="/tmp",
+                platform="windows",
+                image_base=0x180000000,
+                inherit_vfuncs=[
+                    (func_name, "CDerived", "CBaseEntity_Touch", True),
+                ],
+                generate_yaml_desired_fields=[
+                    (
+                        func_name,
+                        [
+                            "func_name",
+                            "func_sig",
+                            "func_sig_allow_across_function_boundary: true",
+                            "vtable_name",
+                            "vfunc_offset",
+                            "vfunc_index",
+                        ],
+                    )
+                ],
+                debug=True,
+            )
+
+        self.assertTrue(result)
+        mock_preprocess_func_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_preprocess_func_sig.await_args.kwargs[
+                "allow_func_sig_across_function_boundary"
+            ]
+        )
+        mock_preprocess_index_vfunc.assert_awaited_once()
+        self.assertTrue(
+            mock_preprocess_index_vfunc.await_args.kwargs[
+                "allow_func_sig_across_function_boundary"
+            ]
+        )
+        mock_write_func_yaml.assert_called_once()
+        written_payload = mock_write_func_yaml.call_args.args[1]
+        self.assertEqual(True, written_payload["func_sig_allow_across_function_boundary"])
+
 
 class TestPreprocessFuncSigViaMcpVfuncSigMaxMatch(unittest.IsolatedAsyncioTestCase):
     async def _preprocess_with_vfunc_sig_max_match(self, max_match_count):
@@ -5314,6 +6812,82 @@ class TestPreprocessFuncSigViaMcpVfuncSigMaxMatch(unittest.IsolatedAsyncioTestCa
 
                 self.assertIsNone(result)
                 session.call_tool.assert_not_awaited()
+
+    async def test_preprocess_func_sig_via_mcp_vfunc_fallback_generates_func_sig_with_boundary_flag(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            old_path = Path(temp_dir) / "INetworkMessages_GetLoggingChannel.windows.yaml"
+            new_path = Path(temp_dir) / "INetworkMessages_GetLoggingChannel.new.windows.yaml"
+
+            _write_yaml(
+                old_path,
+                {
+                    "func_name": "INetworkMessages_GetLoggingChannel",
+                    "vfunc_sig": "FF 90 20 01 00 00",
+                    "vfunc_sig_max_match": 10,
+                    "vtable_name": "INetworkMessages",
+                    "vfunc_offset": "0x120",
+                    "vfunc_index": 36,
+                    "func_va": "0x180111111",
+                },
+            )
+            _write_yaml(
+                Path(temp_dir) / "INetworkMessages_vtable.windows.yaml",
+                {
+                    "vtable_entries": {
+                        36: "0x180222222",
+                    }
+                },
+            )
+
+            session = AsyncMock()
+
+            async def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+                if name == "find_bytes":
+                    return _FakeCallToolResult(
+                        [
+                            {
+                                "matches": ["0x180012340", "0x180056780"],
+                                "n": 2,
+                            }
+                        ]
+                    )
+                if name == "py_eval":
+                    return _py_eval_payload(
+                        {
+                            "func_va": "0x180222222",
+                            "func_size": "0x40",
+                        }
+                    )
+                raise AssertionError(f"unexpected MCP tool: {name}")
+
+            session.call_tool.side_effect = _fake_call_tool
+
+            with patch.object(
+                ida_analyze_util,
+                "preprocess_gen_func_sig_via_mcp",
+                AsyncMock(return_value={"func_sig": "40 53"}),
+            ) as mock_gen_sig:
+                result = await ida_analyze_util.preprocess_func_sig_via_mcp(
+                    session=session,
+                    new_path=str(new_path),
+                    old_path=str(old_path),
+                    image_base=0x180000000,
+                    new_binary_dir=temp_dir,
+                    platform="windows",
+                    allow_func_sig_across_function_boundary=True,
+                    debug=True,
+                )
+
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertEqual("40 53", result["func_sig"])
+        self.assertEqual("FF 90 20 01 00 00", result["vfunc_sig"])
+        mock_gen_sig.assert_awaited_once()
+        self.assertTrue(
+            mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
+        )
 
 
 if __name__ == "__main__":
