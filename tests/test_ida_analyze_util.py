@@ -653,6 +653,61 @@ class TestGenerateYamlDesiredFieldsContract(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(result)
 
+    async def test_normalize_generate_yaml_desired_fields_rejects_bare_gv_boundary_flag(
+        self,
+    ) -> None:
+        result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+            [
+                (
+                    "Foo",
+                    [
+                        "gv_sig",
+                        "gv_sig_allow_across_function_boundary",
+                    ],
+                )
+            ],
+            debug=True,
+        )
+
+        self.assertIsNone(result)
+
+    async def test_normalize_generate_yaml_desired_fields_rejects_invalid_gv_boundary_flag_value(
+        self,
+    ) -> None:
+        result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+            [
+                (
+                    "Foo",
+                    [
+                        "gv_sig",
+                        "gv_sig_allow_across_function_boundary: false",
+                    ],
+                )
+            ],
+            debug=True,
+        )
+
+        self.assertIsNone(result)
+
+    async def test_normalize_generate_yaml_desired_fields_rejects_duplicate_gv_boundary_flag(
+        self,
+    ) -> None:
+        result = ida_analyze_util._normalize_generate_yaml_desired_fields(
+            [
+                (
+                    "Foo",
+                    [
+                        "gv_sig",
+                        "gv_sig_allow_across_function_boundary: true",
+                        "gv_sig_allow_across_function_boundary: true",
+                    ],
+                )
+            ],
+            debug=True,
+        )
+
+        self.assertIsNone(result)
+
     async def test_preprocess_common_skill_rejects_missing_desired_fields_before_any_write(
         self,
     ) -> None:
@@ -2257,6 +2312,90 @@ found_struct_offset: []
             image_base=0x180000000,
             gv_access_inst_va="0x1801BA12A",
             min_sig_bytes=6,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "gv_va": "0x180123456",
+                "gv_rva": "0x123456",
+                "gv_sig": "8B 0D ?? ?? ?? ??",
+                "gv_sig_va": "0x1801ba12a",
+                "gv_inst_offset": 0,
+                "gv_inst_length": 6,
+                "gv_inst_disp": 2,
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_gv_sig_via_mcp_guards_cross_boundary_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("PAD_BYTES = {0xCC, 0x90}", code)
+                self.assertIn("SEGPERM_EXEC", code)
+                self.assertIn("def _is_same_exec_segment", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn(
+                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    code,
+                )
+                self.assertIn(
+                    "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):",
+                    code,
+                )
+                return _py_eval_payload(
+                    [
+                        {
+                            "gv_inst_va": "0x1801BA12A",
+                            "gv_inst_length": 6,
+                            "gv_inst_disp": 2,
+                            "insts": [
+                                {
+                                    "ea": "0x1801BA12A",
+                                    "size": 6,
+                                    "bytes": "8b0d78563412",
+                                    "wild": [2, 3, 4, 5],
+                                },
+                                {
+                                    "ea": "0x1801BA130",
+                                    "size": 3,
+                                    "bytes": "4885c9",
+                                    "wild": [],
+                                },
+                            ],
+                        }
+                    ]
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["8B 0D ?? ?? ?? ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x1801BA12A"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_gv_sig_via_mcp(
+            session=session,
+            gv_va="0x180123456",
+            image_base=0x180000000,
+            gv_access_inst_va="0x1801BA12A",
+            min_sig_bytes=6,
+            allow_across_function_boundary=True,
             debug=False,
         )
 

@@ -284,12 +284,36 @@ def _normalize_generate_yaml_desired_fields(generate_yaml_desired_fields, debug=
                 generation_options["vfunc_sig_max_match"] = max_match
                 continue
 
+            if field_name == "gv_sig_allow_across_function_boundary":
+                if debug:
+                    print(
+                        "    Preprocess: bare "
+                        "gv_sig_allow_across_function_boundary field is "
+                        f"not allowed for {symbol_name}"
+                    )
+                return None
+
             if field_name.startswith("gv_sig_allow_across_function_boundary:"):
+                if "gv_sig_allow_across_function_boundary" in generation_options:
+                    if debug:
+                        print(
+                            "    Preprocess: duplicated "
+                            "gv_sig_allow_across_function_boundary directive "
+                            f"for {symbol_name}"
+                        )
+                    return None
                 value_text = field_name.split(":", 1)[1].strip().lower()
-                if value_text == "true":
-                    desired_output_fields.append("gv_sig_allow_across_function_boundary")
-                    generation_options["gv_sig_allow_across_function_boundary"] = True
-                    continue
+                if value_text != "true":
+                    if debug:
+                        print(
+                            "    Preprocess: invalid "
+                            "gv_sig_allow_across_function_boundary value "
+                            f"for {symbol_name}: {value_text}"
+                        )
+                    return None
+                desired_output_fields.append("gv_sig_allow_across_function_boundary")
+                generation_options["gv_sig_allow_across_function_boundary"] = True
+                continue
 
             desired_output_fields.append(field_name)
 
@@ -3429,6 +3453,40 @@ async def preprocess_gen_gv_sig_via_mcp(
         f"max_instructions = {max_instructions}\n"
         f"max_candidates = {max_candidates}\n"
         f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
+        "PAD_BYTES = {0xCC, 0x90}\n"
+        "SEGPERM_EXEC = int(getattr(idaapi, 'SEGPERM_EXEC', 4))\n"
+        "\n"
+        "def _is_same_exec_segment(ea, seg_start_ea):\n"
+        "    seg = idaapi.getseg(ea)\n"
+        "    if not seg:\n"
+        "        return False\n"
+        "    return seg.start_ea == seg_start_ea and bool(getattr(seg, 'perm', 0) & SEGPERM_EXEC)\n"
+        "\n"
+        "def _consume_padding(cursor, limit_end, seg_start_ea):\n"
+        "    padding = []\n"
+        "    while cursor < limit_end:\n"
+        "        if not _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            return cursor, padding, False\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "            return cursor, padding, True\n"
+        "        b = ida_bytes.get_byte(cursor)\n"
+        "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "            return cursor, padding, False\n"
+        "        pad_start = cursor\n"
+        "        pad_buf = bytearray()\n"
+        "        while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "                break\n"
+        "            b = ida_bytes.get_byte(cursor)\n"
+        "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
+        "                return cursor, padding, False\n"
+        "            pad_buf.append(b)\n"
+        "            cursor += 1\n"
+        "        if pad_buf:\n"
+        "            padding.append({'ea': hex(pad_start), 'size': len(pad_buf), 'bytes': bytes(pad_buf).hex(), 'wild': []})\n"
+        "    return cursor, padding, False\n"
         "\n"
         "def _resolve_disp_off(insn_ea, insn, raw):\n"
         "    cand_offsets = set()\n"
@@ -3456,6 +3514,11 @@ async def preprocess_gen_gv_sig_via_mcp(
         "    if not f:\n"
         "        return None\n"
         "\n"
+        "    origin_seg = idaapi.getseg(inst_ea)\n"
+        "    if not origin_seg or not (getattr(origin_seg, 'perm', 0) & SEGPERM_EXEC):\n"
+        "        return None\n"
+        "    origin_seg_start = origin_seg.start_ea\n"
+        "\n"
         "    if allow_across_boundary:\n"
         "        limit_end = inst_ea + max_sig_bytes\n"
         "    else:\n"
@@ -3466,6 +3529,27 @@ async def preprocess_gen_gv_sig_via_mcp(
         "    first_len = None\n"
         "\n"
         "    while cursor < limit_end and len(insts) < max_instructions:\n"
+        "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
+        "            break\n"
+        "\n"
+        "        if allow_across_boundary and cursor >= f.end_ea:\n"
+        "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
+        "            for pad_inst in padding_insts:\n"
+        "                if len(insts) >= max_instructions:\n"
+        "                    break\n"
+        "                insts.append(pad_inst)\n"
+        "                total += pad_inst['size']\n"
+        "                if total >= max_sig_bytes:\n"
+        "                    break\n"
+        "            if total >= max_sig_bytes or len(insts) >= max_instructions:\n"
+        "                break\n"
+        "            if not can_continue:\n"
+        "                break\n"
+        "\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
+        "            break\n"
+        "\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
         "        if not insn or insn.size <= 0:\n"
         "            break\n"
