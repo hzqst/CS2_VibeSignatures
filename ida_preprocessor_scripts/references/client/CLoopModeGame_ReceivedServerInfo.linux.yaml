@@ -1,0 +1,342 @@
+func_name: CLoopModeGame_ReceivedServerInfo
+func_va: '0x15cb220'
+disasm_code: |-
+  .text:00000000015CB220                 push    rbp
+  .text:00000000015CB221                 mov     rbp, rsp
+  .text:00000000015CB224                 push    r14
+  .text:00000000015CB226                 push    r13
+  .text:00000000015CB228                 mov     r13, rdx
+  .text:00000000015CB22B                 push    r12
+  .text:00000000015CB22D                 mov     r12, rsi
+  .text:00000000015CB230                 push    rbx
+  .text:00000000015CB231                 mov     ecx, [rdi+468h]
+  .text:00000000015CB237                 mov     rbx, rdi
+  .text:00000000015CB23A                 test    ecx, ecx
+  .text:00000000015CB23C                 jg      loc_15CB480
+  .text:00000000015CB242                 mov     rcx, [rbx+438h]
+  .text:00000000015CB249                 test    rcx, rcx
+  .text:00000000015CB24C                 jz      loc_15CB54E
+  .text:00000000015CB252                 lea     rax, qword_4656ED8
+  .text:00000000015CB259                 lea     rsi, aDefaultsession; "defaultSession"
+  .text:00000000015CB260                 mov     rdi, [rax]
+  .text:00000000015CB263                 mov     rax, [r12+28h]
+  .text:00000000015CB268                 and     rax, 0FFFFFFFFFFFFFFFCh
+  .text:00000000015CB26C                 mov     rdx, [rax]
+  .text:00000000015CB26F                 mov     rax, [rdi]
+  .text:00000000015CB272                 call    qword ptr [rax+68h]
+  .text:00000000015CB275                 mov     rdi, rbx
+  .text:00000000015CB278                 mov     r14, rax
+  .text:00000000015CB27B                 mov     rsi, rax
+  .text:00000000015CB27E                 call    CLoopModeGame_SetWorldSession
+  .text:00000000015CB283                 mov     rax, [r14]
+  .text:00000000015CB286                 lea     rsi, aCloopmodegameR; "--CLoopModeGame::ReceivedServerInfo"
+  .text:00000000015CB28D                 mov     rdi, r14
+  .text:00000000015CB290                 call    qword ptr [rax+8]
+  .text:00000000015CB293                 movzx   eax, byte ptr [r12+5Bh]
+  .text:00000000015CB299                 lea     rdi, [rbx+78h]
+  .text:00000000015CB29D                 mov     [rbx+6Dh], al
+  .text:00000000015CB2A0                 movzx   eax, byte ptr [r12+6Eh]
+  .text:00000000015CB2A6                 mov     [rbx+70h], al
+  .text:00000000015CB2A9                 mov     rax, [r12+48h]
+  .text:00000000015CB2AE                 and     rax, 0FFFFFFFFFFFFFFFCh
+  .text:00000000015CB2B2                 mov     rsi, [rax]
+  .text:00000000015CB2B5                 call    sub_BF7300
+  .text:00000000015CB2BA                 mov     rax, [r12+28h]
+  .text:00000000015CB2BF                 lea     rdi, [rbx+80h]
+  .text:00000000015CB2C6                 and     rax, 0FFFFFFFFFFFFFFFCh
+  .text:00000000015CB2CA                 mov     rsi, [rax]
+  .text:00000000015CB2CD                 call    sub_BF7300
+  .text:00000000015CB2D2                 movzx   eax, byte ptr [r12+5Ah]
+  .text:00000000015CB2D8                 mov     [rbx+6Fh], al
+  .text:00000000015CB2DB                 lea     rax, qword_4733850
+  .text:00000000015CB2E2                 mov     rax, [rax]
+  .text:00000000015CB2E5                 test    rax, rax
+  .text:00000000015CB2E8                 jz      short loc_15CB2FD
+  .text:00000000015CB2EA                 movzx   edx, byte ptr [r12+59h]
+  .text:00000000015CB2F0                 mov     byte ptr [rax+0BE6h], 0
+  .text:00000000015CB2F7                 mov     [rax+0BE5h], dl
+  .text:00000000015CB2FD                 cmp     dword ptr [rbx+468h], 1
+  .text:00000000015CB304                 jz      short loc_15CB313
+  .text:00000000015CB306                 mov     esi, 1
+  .text:00000000015CB30B                 mov     rdi, rbx
+  .text:00000000015CB30E                 call    CLoopModeGame_SetGameSystemState
+  .text:00000000015CB313                 lea     rdi, aGamerulesgames; "GameRulesGameSystem"
+  .text:00000000015CB31A                 call    IGameSystem_AddByName
+  .text:00000000015CB31F                 lea     rdi, aRendergamesyst; "RenderGameSystem"
+  .text:00000000015CB326                 call    IGameSystem_AddByName
+  .text:00000000015CB32B                 lea     rdi, aClientsoundsca; "ClientSoundscapeSystem"
+  .text:00000000015CB332                 call    IGameSystem_AddByName
+  .text:00000000015CB337                 lea     rdi, aBodygamesystem; "BodyGameSystem"
+  .text:00000000015CB33E                 call    IGameSystem_AddByName
+  .text:00000000015CB343                 lea     rdi, aAnimgraphupdat; "AnimGraphUpdate"
+  .text:00000000015CB34A                 call    IGameSystem_AddByName
+  .text:00000000015CB34F                 lea     rdi, aPhysicsgamesys_0; "PhysicsGameSystem"
+  .text:00000000015CB356                 call    IGameSystem_AddByName
+  .text:00000000015CB35B                 lea     rdi, aLightquerygame; "LightQueryGameSystem"
+  .text:00000000015CB362                 call    IGameSystem_AddByName
+  .text:00000000015CB367                 call    sub_1815170
+  .text:00000000015CB36C                 mov     rdi, rax
+  .text:00000000015CB36F                 call    IGameSystem_Add
+  .text:00000000015CB374                 call    sub_181A880
+  .text:00000000015CB379                 mov     rdi, rax
+  .text:00000000015CB37C                 call    IGameSystem_Add
+  .text:00000000015CB381                 lea     rdi, aColorCorrectio; "Color Correction Mgr"
+  .text:00000000015CB388                 call    IGameSystem_AddByName
+  .text:00000000015CB38D                 lea     rdi, unk_45A3740
+  .text:00000000015CB394                 call    IGameSystem_Add
+  .text:00000000015CB399                 lea     r14, qword_458F498
+  .text:00000000015CB3A0                 mov     rsi, r12
+  .text:00000000015CB3A3                 mov     rdi, [r14]
+  .text:00000000015CB3A6                 mov     rax, [rdi]
+  .text:00000000015CB3A9                 call    qword ptr [rax+0B0h]
+  .text:00000000015CB3AF                 test    al, al
+  .text:00000000015CB3B1                 jz      loc_15CB470
+  .text:00000000015CB3B7                 cmp     dword ptr [rbx+468h], 2
+  .text:00000000015CB3BE                 jz      short loc_15CB3CD
+  .text:00000000015CB3C0                 mov     esi, 2
+  .text:00000000015CB3C5                 mov     rdi, rbx
+  .text:00000000015CB3C8                 call    CLoopModeGame_SetGameSystemState
+  .text:00000000015CB3CD                 mov     rsi, r13
+  .text:00000000015CB3D0                 mov     rdi, r12
+  .text:00000000015CB3D3                 call    sub_E528A0
+  .text:00000000015CB3D8                 test    al, al
+  .text:00000000015CB3DA                 jz      loc_15CB470
+  .text:00000000015CB3E0                 cmp     dword ptr [rbx+468h], 3
+  .text:00000000015CB3E7                 jz      short loc_15CB3F6
+  .text:00000000015CB3E9                 mov     esi, 3
+  .text:00000000015CB3EE                 mov     rdi, rbx
+  .text:00000000015CB3F1                 call    CLoopModeGame_SetGameSystemState
+  .text:00000000015CB3F6                 mov     rsi, r13
+  .text:00000000015CB3F9                 mov     rdi, r12
+  .text:00000000015CB3FC                 call    sub_E38DE0
+  .text:00000000015CB401                 test    al, al
+  .text:00000000015CB403                 jz      short loc_15CB470
+  .text:00000000015CB405                 mov     rdi, [r14]
+  .text:00000000015CB408                 mov     rsi, r12
+  .text:00000000015CB40B                 mov     rdx, r13
+  .text:00000000015CB40E                 mov     rax, [rdi]
+  .text:00000000015CB411                 call    qword ptr [rax+0C8h]
+  .text:00000000015CB417                 mov     r12d, eax
+  .text:00000000015CB41A                 test    al, al
+  .text:00000000015CB41C                 jz      short loc_15CB470
+  .text:00000000015CB41E                 mov     rax, [r13+0]
+  .text:00000000015CB422                 mov     rdi, r13
+  .text:00000000015CB425                 mov     rsi, [rbx+438h]
+  .text:00000000015CB42C                 call    qword ptr [rax]
+  .text:00000000015CB42E                 lea     rax, qword_4656E88
+  .text:00000000015CB435                 mov     rdi, [rax]
+  .text:00000000015CB438                 lea     rax, qword_43F1280
+  .text:00000000015CB43F                 mov     rsi, [rax]
+  .text:00000000015CB442                 mov     rax, [rdi]
+  .text:00000000015CB445                 call    qword ptr [rax+0C8h]
+  .text:00000000015CB44B                 lea     rax, byte_45A76A0
+  .text:00000000015CB452                 cmp     byte ptr [rax], 0
+  .text:00000000015CB455                 jnz     short loc_15CB473
+  .text:00000000015CB457                 call    sub_15BDCE0
+  .text:00000000015CB45C                 pop     rbx
+  .text:00000000015CB45D                 mov     eax, r12d
+  .text:00000000015CB460                 pop     r12
+  .text:00000000015CB462                 pop     r13
+  .text:00000000015CB464                 pop     r14
+  .text:00000000015CB466                 pop     rbp
+  .text:00000000015CB467                 retn
+  .text:00000000015CB470                 xor     r12d, r12d
+  .text:00000000015CB473                 pop     rbx
+  .text:00000000015CB474                 mov     eax, r12d
+  .text:00000000015CB477                 pop     r12
+  .text:00000000015CB479                 pop     r13
+  .text:00000000015CB47B                 pop     r14
+  .text:00000000015CB47D                 pop     rbp
+  .text:00000000015CB47E                 retn
+  .text:00000000015CB480                 lea     r14, dword_45A7828
+  .text:00000000015CB487                 mov     esi, 3
+  .text:00000000015CB48C                 mov     edi, [r14]
+  .text:00000000015CB48F                 call    sub_BF9280
+  .text:00000000015CB494                 test    al, al
+  .text:00000000015CB496                 jz      loc_15CB52C
+  .text:00000000015CB49C                 mov     rcx, cs:off_4364040; "unallocated"
+  .text:00000000015CB4A3                 test    rcx, rcx
+  .text:00000000015CB4A6                 jz      loc_15CB5AC
+  .text:00000000015CB4AC                 lea     rax, off_4364040; "unallocated"
+  .text:00000000015CB4B3                 mov     r8, rcx
+  .text:00000000015CB4B6                 jmp     short loc_15CB4D1
+  .text:00000000015CB4C0                 mov     r8, [rax+10h]
+  .text:00000000015CB4C4                 add     rax, 10h
+  .text:00000000015CB4C8                 test    r8, r8
+  .text:00000000015CB4CB                 jz      loc_15CB590
+  .text:00000000015CB4D1                 mov     edx, [rax+8]
+  .text:00000000015CB4D4                 test    edx, edx
+  .text:00000000015CB4D6                 jnz     short loc_15CB4C0
+  .text:00000000015CB4D8                 mov     edx, [rbx+468h]
+  .text:00000000015CB4DE                 lea     rax, off_4364040; "unallocated"
+  .text:00000000015CB4E5                 jmp     short loc_15CB511
+  .text:00000000015CB500                 mov     rcx, [rax+10h]
+  .text:00000000015CB504                 add     rax, 10h
+  .text:00000000015CB508                 test    rcx, rcx
+  .text:00000000015CB50B                 jz      loc_15CB5A0
+  .text:00000000015CB511                 cmp     edx, [rax+8]
+  .text:00000000015CB514                 jnz     short loc_15CB500
+  .text:00000000015CB516                 mov     edi, [r14]
+  .text:00000000015CB519                 lea     rdx, aCloopmodegameR_0; "CLoopModeGame::ReceivedServerInfo resta"...
+  .text:00000000015CB520                 mov     esi, 3
+  .text:00000000015CB525                 xor     eax, eax
+  .text:00000000015CB527                 call    sub_BF7FA0
+  .text:00000000015CB52C                 cmp     byte ptr [rbx+6Ch], 0
+  .text:00000000015CB530                 jnz     loc_15CB242
+  .text:00000000015CB536                 mov     rdi, rbx
+  .text:00000000015CB539                 call    CLoopModeGame_Shutdown
+  .text:00000000015CB53E                 mov     rcx, [rbx+438h]
+  .text:00000000015CB545                 test    rcx, rcx
+  .text:00000000015CB548                 jnz     loc_15CB252
+  .text:00000000015CB54E                 mov     edi, 28h ; '('
+  .text:00000000015CB553                 call    sub_BEC020
+  .text:00000000015CB558                 mov     rcx, rax
+  .text:00000000015CB55B                 lea     rax, off_40E9D30
+  .text:00000000015CB562                 mov     qword ptr [rcx+10h], 0
+  .text:00000000015CB56A                 mov     [rcx], rax
+  .text:00000000015CB56D                 mov     qword ptr [rcx+18h], 0
+  .text:00000000015CB575                 mov     qword ptr [rcx+20h], 0
+  .text:00000000015CB57D                 mov     [rbx+438h], rcx
+  .text:00000000015CB584                 mov     dword ptr [rcx+8], 1
+  .text:00000000015CB58B                 jmp     loc_15CB252
+  .text:00000000015CB590                 mov     r8, cs:off_435F2B8; "__UNKNOWN__"
+  .text:00000000015CB597                 jmp     loc_15CB4D8
+  .text:00000000015CB5A0                 mov     rcx, cs:off_435F2B8; "__UNKNOWN__"
+  .text:00000000015CB5A7                 jmp     loc_15CB516
+  .text:00000000015CB5AC                 mov     rcx, cs:off_435F2B8; "__UNKNOWN__"
+  .text:00000000015CB5B3                 mov     r8, rcx
+  .text:00000000015CB5B6                 jmp     loc_15CB516
+procedure: |-
+  __int64 __fastcall CLoopModeGame_ReceivedServerInfo(__int64 a1, __int64 a2, void (__fastcall ***a3)(_QWORD, _QWORD))
+  {
+    __int64 v4; // r14
+    __int64 v5; // rax
+    __int64 v6; // rax
+    unsigned int v7; // r12d
+    const char *v9; // rcx
+    char **v10; // rax
+    const char *v11; // r8
+    char **v12; // rax
+    __int64 v13; // rax
+
+    if ( *(int *)(a1 + 1128) <= 0 )
+      goto LABEL_36;
+    if ( (unsigned __int8)sub_BF9280((unsigned int)dword_45A7828, 3) )
+    {
+      v9 = off_4364040;
+      if ( off_4364040 )
+      {
+        v10 = &off_4364040;
+        v11 = off_4364040;
+        while ( *((_DWORD *)v10 + 2) )
+        {
+          v11 = v10[2];
+          v10 += 2;
+          if ( !v11 )
+          {
+            v11 = off_435F2B8;
+            break;
+          }
+        }
+        v12 = &off_4364040;
+        while ( *(_DWORD *)(a1 + 1128) != *((_DWORD *)v12 + 2) )
+        {
+          v9 = v12[2];
+          v12 += 2;
+          if ( !v9 )
+          {
+            v9 = off_435F2B8;
+            break;
+          }
+        }
+      }
+      else
+      {
+        v9 = off_435F2B8;
+        v11 = off_435F2B8;
+      }
+      sub_BF7FA0(
+        (unsigned int)dword_45A7828,
+        3,
+        "CLoopModeGame::ReceivedServerInfo restarting loopmode game systems from '%s' to '%s'!\n",
+        v9,
+        v11);
+    }
+    if ( *(_BYTE *)(a1 + 108) )
+    {
+  LABEL_36:
+      if ( *(_QWORD *)(a1 + 1080) )
+        goto LABEL_3;
+    }
+    else
+    {
+      CLoopModeGame_Shutdown(a1);
+      if ( *(_QWORD *)(a1 + 1080) )
+        goto LABEL_3;
+    }
+    v13 = sub_BEC020(40);
+    *(_QWORD *)(v13 + 16) = 0;
+    *(_QWORD *)v13 = off_40E9D30;
+    *(_QWORD *)(v13 + 24) = 0;
+    *(_QWORD *)(v13 + 32) = 0;
+    *(_QWORD *)(a1 + 1080) = v13;
+    *(_DWORD *)(v13 + 8) = 1;
+  LABEL_3:
+    v4 = (*(__int64 (__fastcall **)(_QWORD *, const char *, _QWORD))(*qword_4656ED8 + 104LL))(
+           qword_4656ED8,
+           "defaultSession",
+           *(_QWORD *)(*(_QWORD *)(a2 + 40) & 0xFFFFFFFFFFFFFFFCLL));
+    CLoopModeGame_SetWorldSession(a1, v4);
+    (*(void (__fastcall **)(__int64, const char *))(*(_QWORD *)v4 + 8LL))(v4, "--CLoopModeGame::ReceivedServerInfo");
+    *(_BYTE *)(a1 + 109) = *(_BYTE *)(a2 + 91);
+    *(_BYTE *)(a1 + 112) = *(_BYTE *)(a2 + 110);
+    sub_BF7300(a1 + 120, *(_QWORD *)(*(_QWORD *)(a2 + 72) & 0xFFFFFFFFFFFFFFFCLL));
+    sub_BF7300(a1 + 128, *(_QWORD *)(*(_QWORD *)(a2 + 40) & 0xFFFFFFFFFFFFFFFCLL));
+    *(_BYTE *)(a1 + 111) = *(_BYTE *)(a2 + 90);
+    if ( qword_4733850 )
+      *(_WORD *)(qword_4733850 + 3045) = *(unsigned __int8 *)(a2 + 89);
+    if ( *(_DWORD *)(a1 + 1128) != 1 )
+      CLoopModeGame_SetGameSystemState(a1, 1);
+    IGameSystem_AddByName("GameRulesGameSystem");
+    IGameSystem_AddByName("RenderGameSystem");
+    IGameSystem_AddByName("ClientSoundscapeSystem");
+    IGameSystem_AddByName("BodyGameSystem");
+    IGameSystem_AddByName("AnimGraphUpdate");
+    IGameSystem_AddByName("PhysicsGameSystem");
+    IGameSystem_AddByName("LightQueryGameSystem");
+    v5 = sub_1815170();
+    IGameSystem_Add(v5);
+    v6 = sub_181A880();
+    IGameSystem_Add(v6);
+    IGameSystem_AddByName("Color Correction Mgr");
+    IGameSystem_Add(&unk_45A3740);
+    if ( !(*(unsigned __int8 (__fastcall **)(__int64, __int64))(*(_QWORD *)qword_458F498 + 176LL))(qword_458F498, a2) )
+      return 0;
+    if ( *(_DWORD *)(a1 + 1128) != 2 )
+      CLoopModeGame_SetGameSystemState(a1, 2);
+    if ( !(unsigned __int8)sub_E528A0(a2, a3) )
+      return 0;
+    if ( *(_DWORD *)(a1 + 1128) != 3 )
+      CLoopModeGame_SetGameSystemState(a1, 3);
+    if ( (unsigned __int8)sub_E38DE0(a2, a3)
+      && (v7 = (*(__int64 (__fastcall **)(__int64, __int64, void (__fastcall ***)(_QWORD, _QWORD)))(*(_QWORD *)qword_458F498
+                                                                                                  + 200LL))(
+                 qword_458F498,
+                 a2,
+                 a3),
+          (_BYTE)v7) )
+    {
+      (**a3)(a3, *(_QWORD *)(a1 + 1080));
+      (*(void (__fastcall **)(_QWORD *, __int64))(*qword_4656E88 + 200LL))(qword_4656E88, qword_43F1280);
+      if ( !byte_45A76A0 )
+      {
+        sub_15BDCE0();
+        return v7;
+      }
+    }
+    else
+    {
+      return 0;
+    }
+    return v7;
+  }

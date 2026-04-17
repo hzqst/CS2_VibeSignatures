@@ -202,13 +202,3 @@ items:
   classicy: by_decompile
   owner_func_name: IGameSystem_AddByName
   owner_module: client
-- symbol_name: IGameSystem_Add
-  skill_name: find-IGameSystem_AddByName-AND-IGameSystem_Add
-  classicy: by_decompile
-  owner_func_name: CLoopModeGame_ReceivedServerInfo
-  owner_module: client
-- symbol_name: IGameSystem_AddByName
-  skill_name: find-IGameSystem_AddByName-AND-IGameSystem_Add
-  classicy: by_decompile
-  owner_func_name: CLoopModeGame_ReceivedServerInfo
-  owner_module: client
