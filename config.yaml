@@ -770,8 +770,6 @@ modules:
       - name: find-CLoopModeGame_ReceivedServerInfo
         expected_output:
           - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
-        expected_input:
-          - CLoopModeGame_vtable.{platform}.yaml
 
       - name: find-CLoopModeGame_RegisterEventMap
         expected_output:
@@ -780,9 +778,24 @@ modules:
           - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-CLoopModeGame_LoopInitInternal
+        platform: linux
+        expected_output:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInit
+        expected_output:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
       - name: find-CLoopModeGame_SetWorldSession
         expected_output:
           - CLoopModeGame_SetWorldSession.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
 
       - name: find-CLoopModeGame_SetGameSystemState
         expected_output:
@@ -1082,8 +1095,18 @@ modules:
       - name: CLoopModeGame_vtable
         category: vtable
 
-      - name: CLoopModeGame_ReceivedServerInfo
+      - name: CLoopModeGame_LoopInitInternal
+        category: func
+        alias:
+          - CLoopModeGame::LoopInitInternal
+
+      - name: CLoopModeGame_LoopInit
         category: vfunc
+        alias:
+          - CLoopModeGame::LoopInit
+
+      - name: CLoopModeGame_ReceivedServerInfo
+        category: func
         alias:
           - CLoopModeGame::ReceivedServerInfo
 
@@ -2422,6 +2445,53 @@ modules:
         expected_output:
           - PhysEnableEntityCollisions.{platform}.yaml
 
+      - name: find-CLoopModeGame_vtable
+        expected_output:
+          - CLoopModeGame_vtable.{platform}.yaml
+
+      - name: find-CLoopModeGame_ReceivedServerInfo
+        expected_output:
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInitInternal
+        platform: linux
+        expected_output:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInit
+        expected_output:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_SetWorldSession
+        expected_output:
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+
+      - name: find-CLoopModeGame_SetGameSystemState
+        expected_output:
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+
+      - name: find-IGameSystem_DestroyAllGameSystems
+        expected_output:
+          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+
+      - name: find-CLoopModeGame_Shutdown-linux
+        platform: linux
+        expected_output:
+          - CLoopModeGame_Shutdown.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
+          - CLoopModeGame_vtable.{platform}.yaml
+
       - name: find-CLoopModeGame_LoopShutdown
         expected_output:
           - CLoopModeGame_LoopShutdown.{platform}.yaml
@@ -3590,6 +3660,44 @@ modules:
 
       - name: PhysEnableEntityCollisions
         category: func
+
+      - name: CLoopModeGame_vtable
+        category: vtable
+
+      - name: CLoopModeGame_LoopInitInternal
+        category: func
+        alias:
+          - CLoopModeGame::LoopInitInternal
+
+      - name: CLoopModeGame_LoopInit
+        category: vfunc
+        alias:
+          - CLoopModeGame::LoopInit
+
+      - name: CLoopModeGame_ReceivedServerInfo
+        category: func
+        alias:
+          - CLoopModeGame::ReceivedServerInfo
+
+      - name: CLoopModeGame_SetWorldSession
+        category: func
+        alias:
+          - CLoopModeGame::SetWorldSession
+
+      - name: CLoopModeGame_SetGameSystemState
+        category: func
+        alias:
+          - CLoopModeGame::SetGameSystemState
+
+      - name: IGameSystem_DestroyAllGameSystems
+        category: func
+        alias:
+          - IGameSystem::DestroyAllGameSystems
+
+      - name: CLoopModeGame_Shutdown
+        category: func
+        alias:
+          - CLoopModeGame::Shutdown
 
       - name: CLoopModeGame_LoopShutdown
         category: vfunc

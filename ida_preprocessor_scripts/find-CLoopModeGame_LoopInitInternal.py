@@ -1,30 +1,16 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CLoopModeGame_SetWorldSession skill."""
+"""Preprocess script for find-CLoopModeGame_LoopInitInternal skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CLoopModeGame_SetWorldSession",
+    "CLoopModeGame_LoopInitInternal",
 ]
 
-FUNC_XREFS_WINDOWS = [
+FUNC_XREFS = [
     {
-        "func_name": "CLoopModeGame_SetWorldSession",
-        "xref_strings": ["--CLoopModeGame::SetWorldSession", "++CLoopModeGame::SetWorldSession"],
-        "xref_gvs": [],
-        "xref_signatures": [],
-        "xref_funcs": [],
-        "exclude_funcs": ["CLoopModeGame_LoopInit"],
-        "exclude_strings": [],
-        "exclude_gvs": [],
-        "exclude_signatures": [],
-    },
-]
-
-FUNC_XREFS_LINUX = [
-    {
-        "func_name": "CLoopModeGame_SetWorldSession",
-        "xref_strings": ["--CLoopModeGame::SetWorldSession", "++CLoopModeGame::SetWorldSession"],
+        "func_name": "CLoopModeGame_LoopInitInternal",
+        "xref_strings": ["FULLMATCH:listenserver", "FULLMATCH:dedicated"],
         "xref_gvs": [],
         "xref_signatures": [],
         "xref_funcs": [],
@@ -35,11 +21,10 @@ FUNC_XREFS_LINUX = [
     },
 ]
 
-
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CLoopModeGame_SetWorldSession",
+        "CLoopModeGame_LoopInitInternal",
         [
             "func_name",
             "func_va",
@@ -63,7 +48,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xrefs=FUNC_XREFS_WINDOWS if platform == "windows" else FUNC_XREFS_LINUX,
+        func_xrefs=FUNC_XREFS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )
