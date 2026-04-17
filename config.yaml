@@ -817,6 +817,7 @@ modules:
         expected_input:
           - CLoopModeGame_vtable.{platform}.yaml
         expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
           - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
           - CLoopModeGame_SetWorldSession.{platform}.yaml
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
@@ -2499,6 +2500,7 @@ modules:
         expected_input:
           - CLoopModeGame_vtable.{platform}.yaml
         expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
           - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
           - CLoopModeGame_SetWorldSession.{platform}.yaml
           - CLoopModeGame_SetGameSystemState.{platform}.yaml

@@ -14,7 +14,7 @@ FUNC_XREFS_WINDOWS = [
         "xref_gvs": [],
         "xref_signatures": [],
         "xref_funcs": ["CLoopModeGame_SetGameSystemState"],
-        "exclude_funcs": ["CLoopModeGame_ReceivedServerInfo", "CLoopModeGame_SetWorldSession"],
+        "exclude_funcs": ["CLoopModeGame_ReceivedServerInfo", "CLoopModeGame_SetWorldSession", "CLoopModeGame_LoopInit"],
         "exclude_strings": [],
         "exclude_gvs": [],
         "exclude_signatures": [],
