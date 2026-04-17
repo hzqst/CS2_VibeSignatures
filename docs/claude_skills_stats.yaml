@@ -247,8 +247,3 @@ items:
   classicy: by_decompile
   owner_func_name: CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate
   owner_module: client
-- symbol_name: UTIL_CreateEntityByName
-  skill_name: find-UTIL_CreateEntityByName
-  classicy: by_decompile
-  owner_func_name: semantic_wrapper_over_internal_spawn
-  owner_module: server
