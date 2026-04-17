@@ -1,68 +1,46 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-IGameSystemFactory_Allocate-AND-IGameSystemFactory_HasName-AND-IGameSystem_SetName skill."""
+"""Preprocess script for find-CCSPlayer_ItemServices_GiveNamedItemBool skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "IGameSystemFactory_Allocate",
-    "IGameSystemFactory_HasName",
-    "IGameSystem_SetName",
+    "CCSPlayer_ItemServices_GiveNamedItemBool",
+]
+
+LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
+    (
+        "CCSPlayer_ItemServices_GiveNamedItemBool",
+        "prompt/call_llm_decompile.md",
+        "references/server/GiveCommand.{platform}.yaml",
+    ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("IGameSystemFactory_Allocate", "IGameSystemFactory"),
-    ("IGameSystemFactory_HasName", "IGameSystemFactory"),
-    ("IGameSystem_SetName", "IGameSystem"),
+    ("CCSPlayer_ItemServices_GiveNamedItemBool", "CCSPlayer_ItemServices"),
 ]
-
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "IGameSystemFactory_Allocate",
+        "CCSPlayer_ItemServices_GiveNamedItemBool",
         [
             "func_name",
             "func_va",
             "func_rva",
             "func_size",
-            "func_sig",
-            "vtable_name",
+            "vfunc_sig",
             "vfunc_offset",
             "vfunc_index",
-        ],
-    ),
-    (
-        "IGameSystemFactory_HasName",
-        [
-            "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
             "vtable_name",
-            "vfunc_offset",
-            "vfunc_index",
-        ],
-    ),
-    (
-        "IGameSystem_SetName",
-        [
-            "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "func_sig",
-            "vtable_name",
-            "vfunc_offset",
-            "vfunc_index",
         ],
     ),
 ]
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
-    new_binary_dir, platform, image_base, debug=False,
+    new_binary_dir, platform, image_base, llm_config=None, debug=False,
 ):
     """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
     return await preprocess_common_skill(
@@ -74,6 +52,8 @@ async def preprocess_skill(
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
         func_vtable_relations=FUNC_VTABLE_RELATIONS,
+        llm_decompile_specs=LLM_DECOMPILE,
+        llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )

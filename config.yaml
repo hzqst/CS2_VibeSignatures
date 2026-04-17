@@ -779,8 +779,6 @@ modules:
       - name: find-CLoopModeGame_ReceivedServerInfo
         expected_output:
           - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
-        expected_input:
-          - CLoopModeGame_vtable.{platform}.yaml
 
       - name: find-CLoopModeGame_RegisterEventMap
         expected_output:
@@ -789,26 +787,30 @@ modules:
           - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-CLoopModeGame_LoopInitInternal
+        platform: linux
+        expected_output:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInit
+        expected_output:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
       - name: find-CLoopModeGame_SetWorldSession
         expected_output:
           - CLoopModeGame_SetWorldSession.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
 
       - name: find-CLoopModeGame_SetGameSystemState
         expected_output:
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
 
-      # CLoopModeGame_Shutdown has been inlined in client.dll
-      - name: find-CLoopModeGame_LoopShutdown-windows
-        platform: windows
-        expected_output:
-          - CLoopModeGame_LoopShutdown.{platform}.yaml
-        expected_input:
-          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
-          - CLoopModeGame_SetWorldSession.{platform}.yaml
-          - CLoopModeGame_SetGameSystemState.{platform}.yaml
-          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
-          - CLoopModeGame_vtable.{platform}.yaml
-
+      # CLoopModeGame_Shutdown has been inlined in client.dll on Windows
       - name: find-CLoopModeGame_Shutdown-linux
         platform: linux
         expected_output:
@@ -816,16 +818,20 @@ modules:
         expected_input:
           - CLoopModeGame_SetWorldSession.{platform}.yaml
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
-          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
-  
-      - name: find-CLoopModeGame_LoopShutdown-linux
-        platform: linux
+
+      - name: find-CLoopModeGame_LoopShutdown
         expected_output:
           - CLoopModeGame_LoopShutdown.{platform}.yaml
         expected_input:
-          - CLoopModeGame_Shutdown.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_Shutdown.{platform}.yaml
 
       - name: find-IGameSystem_AddByName-AND-IGameSystem_Add
         expected_output:
@@ -842,11 +848,14 @@ modules:
         expected_input:
           - IGameSystem_AddByName.{platform}.yaml
 
-      - name: find-IGameSystem_DestroyAllGameSystems
+      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems
         expected_output:
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
-        expected_input:
-          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+          - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopShutdown.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_Shutdown.{platform}.yaml
 
       - name: find-IGameSystem_ClientPollNetworking
         expected_output:
@@ -1097,8 +1106,18 @@ modules:
       - name: CLoopModeGame_vtable
         category: vtable
 
-      - name: CLoopModeGame_ReceivedServerInfo
+      - name: CLoopModeGame_LoopInitInternal
+        category: func
+        alias:
+          - CLoopModeGame::LoopInitInternal
+
+      - name: CLoopModeGame_LoopInit
         category: vfunc
+        alias:
+          - CLoopModeGame::LoopInit
+
+      - name: CLoopModeGame_ReceivedServerInfo
+        category: func
         alias:
           - CLoopModeGame::ReceivedServerInfo
 
@@ -1156,6 +1175,11 @@ modules:
         category: func
         alias:
           - IGameSystem::DestroyAllGameSystems
+
+      - name: IGameSystem_LoopDestroyAllSystems
+        category: func
+        alias:
+          - IGameSystem::LoopDestroyAllSystems
 
       - name: IGameSystem_ClientPollNetworking
         category: vfunc
@@ -1889,6 +1913,8 @@ modules:
         expected_output:
           - IGameSystem_LoopPostInitAllSystems_pEventDispatcher.{platform}.yaml
           - IGameSystem_LoopDestroyAllSystems_s_GameSystems.{platform}.yaml
+        expected_input:
+          - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
         max_retries: 4
 
       - name: find-CSource2GameEntities_CheckTransmit
@@ -1932,6 +1958,17 @@ modules:
           - CBaseEntity_SetMoveType.{platform}.yaml
         expected_input:
           - CEnvShake_Spawn.{platform}.yaml
+
+      - name: find-GiveCommand
+        expected_output:
+          - GiveCommand.{platform}.yaml
+
+      - name: find-CCSPlayer_ItemServices_GiveNamedItemBool
+        expected_output:
+          - CCSPlayer_ItemServices_GiveNamedItemBool.{platform}.yaml
+        expected_input:
+          - GiveCommand.{platform}.yaml
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
 
       - name: find-BotKill_CommandHandler
         expected_output:
@@ -2437,6 +2474,68 @@ modules:
         expected_output:
           - PhysEnableEntityCollisions.{platform}.yaml
 
+      - name: find-CLoopModeGame_vtable
+        expected_output:
+          - CLoopModeGame_vtable.{platform}.yaml
+
+      - name: find-CLoopModeGame_ReceivedServerInfo
+        expected_output:
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInitInternal
+        platform: linux
+        expected_output:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopInit
+        expected_output:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_LoopInitInternal.{platform}.yaml
+
+      - name: find-CLoopModeGame_SetWorldSession
+        expected_output:
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+
+      - name: find-CLoopModeGame_SetGameSystemState
+        expected_output:
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+
+      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems
+        expected_output:
+          - IGameSystem_DestroyAllGameSystems.{platform}.yaml
+          - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopShutdown.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_Shutdown.{platform}.yaml
+
+      - name: find-CLoopModeGame_Shutdown-linux
+        platform: linux
+        expected_output:
+          - CLoopModeGame_Shutdown.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+          - CLoopModeGame_vtable.{platform}.yaml
+
+      - name: find-CLoopModeGame_LoopShutdown
+        expected_output:
+          - CLoopModeGame_LoopShutdown.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_vtable.{platform}.yaml
+        expected_input_windows:
+          - CLoopModeGame_LoopInit.{platform}.yaml
+          - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
+          - CLoopModeGame_SetWorldSession.{platform}.yaml
+          - CLoopModeGame_SetGameSystemState.{platform}.yaml
+        expected_input_linux:
+          - CLoopModeGame_Shutdown.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -2776,6 +2875,11 @@ modules:
         category: vfunc
         alias:
           - CCSPlayer_ItemServices::GiveNamedItem
+
+      - name: CCSPlayer_ItemServices_GiveNamedItemBool
+        category: vfunc
+        alias:
+          - CCSPlayer_ItemServices::GiveNamedItemBool
 
       - name: CCSPlayer_WeaponServices_CanUse
         category: vfunc
@@ -3495,6 +3599,9 @@ modules:
         alias:
           - CCSBotManager::BotAddCommand
 
+      - name: GiveCommand
+        category: func
+
       - name: BotKill_CommandHandler
         category: func
         alias:
@@ -3592,6 +3699,54 @@ modules:
 
       - name: PhysEnableEntityCollisions
         category: func
+
+      - name: CLoopModeGame_vtable
+        category: vtable
+
+      - name: CLoopModeGame_LoopInitInternal
+        category: func
+        alias:
+          - CLoopModeGame::LoopInitInternal
+
+      - name: CLoopModeGame_LoopInit
+        category: vfunc
+        alias:
+          - CLoopModeGame::LoopInit
+
+      - name: CLoopModeGame_ReceivedServerInfo
+        category: func
+        alias:
+          - CLoopModeGame::ReceivedServerInfo
+
+      - name: CLoopModeGame_SetWorldSession
+        category: func
+        alias:
+          - CLoopModeGame::SetWorldSession
+
+      - name: CLoopModeGame_SetGameSystemState
+        category: func
+        alias:
+          - CLoopModeGame::SetGameSystemState
+
+      - name: IGameSystem_DestroyAllGameSystems
+        category: func
+        alias:
+          - IGameSystem::DestroyAllGameSystems
+
+      - name: IGameSystem_LoopDestroyAllSystems
+        category: func
+        alias:
+          - IGameSystem::LoopDestroyAllSystems
+
+      - name: CLoopModeGame_Shutdown
+        category: func
+        alias:
+          - CLoopModeGame::Shutdown
+
+      - name: CLoopModeGame_LoopShutdown
+        category: vfunc
+        alias:
+          - CLoopModeGame::LoopShutdown
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll

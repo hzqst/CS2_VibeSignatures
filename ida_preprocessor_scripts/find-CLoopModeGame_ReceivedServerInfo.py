@@ -21,12 +21,6 @@ FUNC_XREFS = [
                  },
              ]
 
-FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class)
-    ("CLoopModeGame_ReceivedServerInfo", "CLoopModeGame"),
-]
-
-
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
@@ -37,9 +31,6 @@ GENERATE_YAML_DESIRED_FIELDS = [
             "func_rva",
             "func_size",
             "func_sig",
-            "vtable_name",
-            "vfunc_offset",
-            "vfunc_index",
         ],
     ),
 ]
@@ -58,7 +49,6 @@ async def preprocess_skill(
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
         func_xrefs=FUNC_XREFS,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )

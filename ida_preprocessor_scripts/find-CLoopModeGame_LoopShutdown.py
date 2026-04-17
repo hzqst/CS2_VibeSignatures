@@ -1,32 +1,44 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CLoopModeGame_LoopShutdown-windows skill."""
+"""Preprocess script for find-CLoopModeGame_LoopShutdown skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
-# CLoopModeGame_Shutdown has been inlined into CLoopModeGame_LoopShutdown on Windows
 TARGET_FUNCTION_NAMES = [
     "CLoopModeGame_LoopShutdown",
 ]
 
-FUNC_XREFS = [
-                 {
-                     "func_name": 'CLoopModeGame_LoopShutdown',
-                     "xref_strings": ['--CLoopModeGame::SetWorldSession'],
-                     "xref_gvs": [],
-                     "xref_signatures": [],
-                     "xref_funcs": ['CLoopModeGame_SetGameSystemState', 'IGameSystem_DestroyAllGameSystems'],
-                     "exclude_funcs": ['CLoopModeGame_ReceivedServerInfo', 'CLoopModeGame_SetWorldSession'],
-                     "exclude_strings": [],
-                     "exclude_gvs": [],
-                     "exclude_signatures": [],
-                 },
-             ]
+FUNC_XREFS_WINDOWS = [
+    {
+        "func_name": "CLoopModeGame_LoopShutdown",
+        "xref_strings": ["--CLoopModeGame::SetWorldSession"],
+        "xref_gvs": [],
+        "xref_signatures": [],
+        "xref_funcs": ["CLoopModeGame_SetGameSystemState"],
+        "exclude_funcs": ["CLoopModeGame_ReceivedServerInfo", "CLoopModeGame_SetWorldSession", "CLoopModeGame_LoopInit"],
+        "exclude_strings": [],
+        "exclude_gvs": [],
+        "exclude_signatures": [],
+    },
+]
+
+FUNC_XREFS_LINUX = [
+    {
+        "func_name": "CLoopModeGame_LoopShutdown",
+        "xref_strings": [],
+        "xref_gvs": [],
+        "xref_signatures": [],
+        "xref_funcs": ["CLoopModeGame_Shutdown"],
+        "exclude_funcs": ["CLoopModeGame_SetWorldSession", "CLoopModeGame_ReceivedServerInfo"],
+        "exclude_strings": [],
+        "exclude_gvs": [],
+        "exclude_signatures": [],
+    },
+]
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
     ("CLoopModeGame_LoopShutdown", "CLoopModeGame"),
 ]
-
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
@@ -58,7 +70,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_xrefs=FUNC_XREFS,
+        func_xrefs=FUNC_XREFS_WINDOWS if platform == "windows" else FUNC_XREFS_LINUX,
         func_vtable_relations=FUNC_VTABLE_RELATIONS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,

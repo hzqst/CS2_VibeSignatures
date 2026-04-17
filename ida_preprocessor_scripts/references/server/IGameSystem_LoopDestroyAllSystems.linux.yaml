@@ -1,0 +1,270 @@
+func_name: IGameSystem_LoopDestroyAllSystems
+func_va: '0xdd4470'
+disasm_code: |-
+  .text:0000000000DD4470                 cmp     cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher, 0
+  .text:0000000000DD4478                 jz      locret_DD4645
+  .text:0000000000DD447E                 push    rbp
+  .text:0000000000DD447F                 mov     rbp, rsp
+  .text:0000000000DD4482                 push    r15
+  .text:0000000000DD4484                 push    r14
+  .text:0000000000DD4486                 push    r13
+  .text:0000000000DD4488                 push    r12
+  .text:0000000000DD448A                 push    rbx
+  .text:0000000000DD448B                 sub     rsp, 28h
+  .text:0000000000DD448F                 mov     eax, cs:dword_235E660
+  .text:0000000000DD4495                 test    eax, eax
+  .text:0000000000DD4497                 js      loc_DD4646
+  .text:0000000000DD449D                 cmp     dword ptr cs:qword_24D9DD0, eax
+  .text:0000000000DD44A3                 jle     short loc_DD44F3
+  .text:0000000000DD44A5                 cdqe
+  .text:0000000000DD44A7                 lea     rdx, [rax+rax*2]
+  .text:0000000000DD44AB                 mov     rax, cs:qword_24D9DD8
+  .text:0000000000DD44B2                 lea     r13, [rax+rdx*8]
+  .text:0000000000DD44B6                 movsxd  rax, dword ptr [r13+0]
+  .text:0000000000DD44BA                 mov     edx, eax
+  .text:0000000000DD44BC                 sub     edx, 1
+  .text:0000000000DD44BF                 js      short loc_DD44F3
+  .text:0000000000DD44C1                 lea     r12, [rbp-40h]
+  .text:0000000000DD44C5                 movsxd  rbx, edx
+  .text:0000000000DD44C8                 mov     edx, edx
+  .text:0000000000DD44CA                 sub     rax, rdx
+  .text:0000000000DD44CD                 shl     rbx, 3
+  .text:0000000000DD44D1                 lea     r14, ds:0FFFFFFFFFFFFFFF0h[rax*8]
+  .text:0000000000DD44D9                 mov     rax, [r13+8]
+  .text:0000000000DD44DD                 mov     rsi, r12
+  .text:0000000000DD44E0                 mov     rdi, [rax+rbx]
+  .text:0000000000DD44E4                 sub     rbx, 8
+  .text:0000000000DD44E8                 mov     rax, [rdi]
+  .text:0000000000DD44EB                 call    qword ptr [rax+20h]
+  .text:0000000000DD44EE                 cmp     r14, rbx
+  .text:0000000000DD44F1                 jnz     short loc_DD44D9
+  .text:0000000000DD44F3                 cmp     cs:byte_24D9D98, 0
+  .text:0000000000DD44FA                 jnz     loc_DD4630
+  .text:0000000000DD4500                 mov     eax, cs:IGameSystem_LoopDestroyAllSystems_s_GameSystems
+  .text:0000000000DD4506                 mov     edx, eax
+  .text:0000000000DD4508                 sub     edx, 1
+  .text:0000000000DD450B                 js      loc_DD45D6
+  .text:0000000000DD4511                 movsxd  r9, edx
+  .text:0000000000DD4514                 movsxd  r12, eax
+  .text:0000000000DD4517                 mov     edx, edx
+  .text:0000000000DD4519                 sub     r12, rdx
+  .text:0000000000DD451C                 shl     r9, 4
+  .text:0000000000DD4520                 shl     r12, 4
+  .text:0000000000DD4524                 mov     r13, r9
+  .text:0000000000DD4527                 lea     rax, [r12-20h]
+  .text:0000000000DD452C                 mov     [rbp-50h], rax
+  .text:0000000000DD4530                 mov     rax, cs:qword_24D9E18
+  .text:0000000000DD4537                 lea     rcx, sub_DBA210
+  .text:0000000000DD453E                 mov     r12, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:0000000000DD4545                 mov     rbx, [rax+r13]
+  .text:0000000000DD4549                 mov     rax, [r12]
+  .text:0000000000DD454D                 mov     rax, [rax+8]
+  .text:0000000000DD4551                 cmp     rax, rcx
+  .text:0000000000DD4554                 jnz     short loc_DD45C0
+  .text:0000000000DD4556                 mov     rax, [r12+8]
+  .text:0000000000DD455B                 movsxd  rdx, dword ptr [rax]
+  .text:0000000000DD455E                 test    edx, edx
+  .text:0000000000DD4560                 jle     short loc_DD45C8
+  .text:0000000000DD4562                 lea     r8, [rdx+rdx*2]
+  .text:0000000000DD4566                 xor     r14d, r14d
+  .text:0000000000DD4569                 shl     r8, 3
+  .text:0000000000DD456D                 nop     dword ptr [rax]
+  .text:0000000000DD4570                 mov     r15, [rax+8]
+  .text:0000000000DD4574                 add     r15, r14
+  .text:0000000000DD4577                 mov     edi, [r15]
+  .text:0000000000DD457A                 test    edi, edi
+  .text:0000000000DD457C                 jle     short loc_DD45B0
+  .text:0000000000DD457E                 mov     rdx, [r15+8]
+  .text:0000000000DD4582                 movsxd  rsi, edi
+  .text:0000000000DD4585                 xor     eax, eax
+  .text:0000000000DD4587                 jmp     short loc_DD4599
+  .text:0000000000DD4590                 add     rax, 1
+  .text:0000000000DD4594                 cmp     rax, rsi
+  .text:0000000000DD4597                 jz      short loc_DD45B0
+  .text:0000000000DD4599                 cmp     rbx, [rdx+rax*8]
+  .text:0000000000DD459D                 jnz     short loc_DD4590
+  .text:0000000000DD459F                 mov     esi, edi
+  .text:0000000000DD45A1                 sub     esi, eax
+  .text:0000000000DD45A3                 sub     esi, 1
+  .text:0000000000DD45A6                 test    esi, esi
+  .text:0000000000DD45A8                 jg      short loc_DD4600
+  .text:0000000000DD45AA                 sub     edi, 1
+  .text:0000000000DD45AD                 mov     [r15], edi
+  .text:0000000000DD45B0                 add     r14, 18h
+  .text:0000000000DD45B4                 cmp     r14, r8
+  .text:0000000000DD45B7                 jz      short loc_DD45C8
+  .text:0000000000DD45B9                 mov     rax, [r12+8]
+  .text:0000000000DD45BE                 jmp     short loc_DD4570
+  .text:0000000000DD45C0                 mov     rsi, rbx
+  .text:0000000000DD45C3                 mov     rdi, r12
+  .text:0000000000DD45C6                 call    rax
+  .text:0000000000DD45C8                 sub     r13, 10h
+  .text:0000000000DD45CC                 cmp     [rbp-50h], r13
+  .text:0000000000DD45D0                 jnz     loc_DD4530
+  .text:0000000000DD45D6                 mov     cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher, 0
+  .text:0000000000DD45E1                 mov     cs:byte_24D9D98, 0
+  .text:0000000000DD45E8                 add     rsp, 28h
+  .text:0000000000DD45EC                 pop     rbx
+  .text:0000000000DD45ED                 pop     r12
+  .text:0000000000DD45EF                 pop     r13
+  .text:0000000000DD45F1                 pop     r14
+  .text:0000000000DD45F3                 pop     r15
+  .text:0000000000DD45F5                 pop     rbp
+  .text:0000000000DD45F6                 retn
+  .text:0000000000DD4600                 lea     edi, [rax+1]
+  .text:0000000000DD4603                 movsxd  rsi, esi
+  .text:0000000000DD4606                 mov     [rbp-48h], r8
+  .text:0000000000DD460A                 movsxd  rdi, edi
+  .text:0000000000DD460D                 shl     rsi, 3
+  .text:0000000000DD4611                 lea     r10, [rdx+rdi*8]
+  .text:0000000000DD4615                 lea     rdi, [rdx+rax*8]
+  .text:0000000000DD4619                 mov     rdx, rsi
+  .text:0000000000DD461C                 mov     rsi, r10
+  .text:0000000000DD461F                 call    sub_9818F0
+  .text:0000000000DD4624                 mov     edi, [r15]
+  .text:0000000000DD4627                 mov     r8, [rbp-48h]
+  .text:0000000000DD462B                 jmp     loc_DD45AA
+  .text:0000000000DD4630                 lea     rax, qword_25F53E8
+  .text:0000000000DD4637                 mov     rdi, [rax]
+  .text:0000000000DD463A                 mov     rax, [rdi]
+  .text:0000000000DD463D                 call    qword ptr [rax+60h]
+  .text:0000000000DD4640                 jmp     loc_DD4500
+  .text:0000000000DD4645                 retn
+  .text:0000000000DD4646                 lea     r12, [rbp-40h]
+  .text:0000000000DD464A                 xor     edx, edx
+  .text:0000000000DD464C                 mov     esi, 21h ; '!'
+  .text:0000000000DD4651                 mov     qword ptr [rbp-38h], 0
+  .text:0000000000DD4659                 lea     rax, off_217A8E0
+  .text:0000000000DD4660                 mov     rdi, r12
+  .text:0000000000DD4663                 mov     [rbp-40h], rax
+  .text:0000000000DD4667                 call    sub_DD43E0
+  .text:0000000000DD466C                 cmp     cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher, 0
+  .text:0000000000DD4674                 mov     cs:dword_235E660, eax
+  .text:0000000000DD467A                 jnz     loc_DD449D
+  .text:0000000000DD4680                 cmp     cs:byte_24D9D98, 0
+  .text:0000000000DD4687                 jnz     short loc_DD4630
+  .text:0000000000DD4689                 jmp     loc_DD4500
+procedure: |-
+  void IGameSystem_LoopDestroyAllSystems()
+  {
+    int v0; // eax
+    int *v1; // r13
+    int v2; // edx
+    __int64 v3; // rbx
+    unsigned __int64 v4; // r14
+    __int64 v5; // rdi
+    __int64 v6; // r13
+    __int64 v7; // r12
+    __int64 v8; // rbx
+    __int64 (__fastcall *v9)(); // rax
+    int *v10; // rax
+    __int64 v11; // rdx
+    __int64 v12; // r14
+    __int64 v13; // r8
+    __int64 v14; // r15
+    int v15; // edi
+    __int64 v16; // rdx
+    __int64 v17; // rax
+    unsigned __int64 v18; // [rsp-58h] [rbp-58h]
+    __int64 v19; // [rsp-50h] [rbp-50h]
+    _QWORD v20[9]; // [rsp-48h] [rbp-48h] BYREF
+
+    if ( !IGameSystem_LoopPostInitAllSystems_pEventDispatcher )
+      return;
+    v0 = dword_235E660;
+    if ( dword_235E660 >= 0
+      || (v20[1] = 0,
+          v20[0] = off_217A8E0,
+          v0 = sub_DD43E0(v20, 33, 0),
+          dword_235E660 = v0,
+          IGameSystem_LoopPostInitAllSystems_pEventDispatcher) )
+    {
+      if ( (int)qword_24D9DD0 > v0 )
+      {
+        v1 = (int *)(qword_24D9DD8 + 24LL * v0);
+        v2 = *v1 - 1;
+        if ( v2 >= 0 )
+        {
+          v3 = 8LL * v2;
+          v4 = 8 * (*v1 - (unsigned __int64)(unsigned int)v2) - 16;
+          do
+          {
+            v5 = *(_QWORD *)(*((_QWORD *)v1 + 1) + v3);
+            v3 -= 8;
+            (*(void (__fastcall **)(__int64, _QWORD *))(*(_QWORD *)v5 + 32LL))(v5, v20);
+          }
+          while ( v4 != v3 );
+        }
+      }
+      if ( !byte_24D9D98 )
+        goto LABEL_8;
+    }
+    else if ( !byte_24D9D98 )
+    {
+      goto LABEL_8;
+    }
+    (*(void (__fastcall **)(_QWORD *))(*qword_25F53E8 + 96LL))(qword_25F53E8);
+  LABEL_8:
+    if ( IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1 >= 0 )
+    {
+      v6 = 16LL * (IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1);
+      v18 = 16
+          * (IGameSystem_LoopDestroyAllSystems_s_GameSystems
+           - (unsigned __int64)(unsigned int)(IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1))
+          - 32;
+      do
+      {
+        v7 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+        v8 = *(_QWORD *)(qword_24D9E18 + v6);
+        v9 = *(__int64 (__fastcall **)())(*(_QWORD *)IGameSystem_LoopPostInitAllSystems_pEventDispatcher + 8LL);
+        if ( v9 == sub_DBA210 )
+        {
+          v10 = *(int **)(IGameSystem_LoopPostInitAllSystems_pEventDispatcher + 8);
+          v11 = *v10;
+          if ( (int)v11 > 0 )
+          {
+            v12 = 0;
+            v13 = 24 * v11;
+            while ( 1 )
+            {
+              v14 = v12 + *((_QWORD *)v10 + 1);
+              v15 = *(_DWORD *)v14;
+              if ( *(int *)v14 > 0 )
+              {
+                v16 = *(_QWORD *)(v14 + 8);
+                v17 = 0;
+                while ( v8 != *(_QWORD *)(v16 + 8 * v17) )
+                {
+                  if ( ++v17 == v15 )
+                    goto LABEL_20;
+                }
+                if ( v15 - (int)v17 - 1 > 0 )
+                {
+                  v19 = v13;
+                  sub_9818F0(v16 + 8 * v17, v16 + 8LL * ((int)v17 + 1), 8LL * (v15 - (int)v17 - 1));
+                  v15 = *(_DWORD *)v14;
+                  v13 = v19;
+                }
+                *(_DWORD *)v14 = v15 - 1;
+              }
+  LABEL_20:
+              v12 += 24;
+              if ( v12 == v13 )
+                break;
+              v10 = *(int **)(v7 + 8);
+            }
+          }
+        }
+        else
+        {
+          ((void (__fastcall *)(__int64, _QWORD))v9)(
+            IGameSystem_LoopPostInitAllSystems_pEventDispatcher,
+            *(_QWORD *)(qword_24D9E18 + v6));
+        }
+        v6 -= 16;
+      }
+      while ( v18 != v6 );
+    }
+    IGameSystem_LoopPostInitAllSystems_pEventDispatcher = 0;
+    byte_24D9D98 = 0;
+  }

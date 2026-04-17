@@ -1,0 +1,157 @@
+func_name: IGameSystem_LoopDestroyAllSystems
+func_va: '0x180500300'
+disasm_code: |-
+  .text:0000000180500300                 sub     rsp, 38h
+  .text:0000000180500304                 mov     r8, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:000000018050030B                 test    r8, r8
+  .text:000000018050030E                 jz      loc_180500444
+  .text:0000000180500314                 mov     eax, cs:dword_181B2257C
+  .text:000000018050031A                 mov     [rsp+38h+arg_8], rbx
+  .text:000000018050031F                 test    eax, eax
+  .text:0000000180500321                 jns     short loc_180500376
+  .text:0000000180500323                 mov     ecx, cs:TlsIndex
+  .text:0000000180500329                 mov     rax, gs:58h
+  .text:0000000180500332                 mov     edx, 208h
+  .text:0000000180500337                 mov     [rsp+38h+var_10], 0
+  .text:0000000180500340                 mov     rax, [rax+rcx*8]
+  .text:0000000180500344                 mov     eax, [rdx+rax]
+  .text:0000000180500347                 cmp     cs:dword_181D8C670, eax
+  .text:000000018050034D                 jg      loc_180500449
+  .text:0000000180500353                 mov     rax, cs:qword_181D8C668
+  .text:000000018050035A                 lea     rcx, [rsp+38h+var_18]
+  .text:000000018050035F                 mov     [rsp+38h+var_18], rax
+  .text:0000000180500364                 call    sub_1804E369C
+  .text:0000000180500369                 mov     r8, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:0000000180500370                 mov     cs:dword_181B2257C, eax
+  .text:0000000180500376                 mov     [rsp+38h+var_8], rdi
+  .text:000000018050037B                 test    r8, r8
+  .text:000000018050037E                 jz      short loc_1805003CF
+  .text:0000000180500380                 cmp     cs:dword_181D8C548, eax
+  .text:0000000180500386                 jle     short loc_1805003CF
+  .text:0000000180500388                 cdqe
+  .text:000000018050038A                 lea     rcx, [rax+rax*2]
+  .text:000000018050038E                 mov     rax, cs:qword_181D8C550
+  .text:0000000180500395                 lea     rdi, [rax+rcx*8]
+  .text:0000000180500399                 mov     eax, [rax+rcx*8]
+  .text:000000018050039C                 sub     eax, 1
+  .text:000000018050039F                 movsxd  rbx, eax
+  .text:00000001805003A2                 js      short loc_1805003CF
+  .text:00000001805003A4                 nop     dword ptr [rax+00h]
+  .text:00000001805003A8                 nop     dword ptr [rax+rax+00000000h]
+  .text:00000001805003B0                 mov     rcx, [rdi+8]
+  .text:00000001805003B4                 lea     rdx, [rsp+38h+arg_0]
+  .text:00000001805003B9                 mov     rcx, [rcx+rbx*8]
+  .text:00000001805003BD                 call    sub_1804E369C
+  .text:00000001805003C2                 sub     rbx, 1
+  .text:00000001805003C6                 jns     short loc_1805003B0
+  .text:00000001805003C8                 mov     r8, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:00000001805003CF                 cmp     cs:byte_181D8C5FC, 0
+  .text:00000001805003D6                 jz      short loc_1805003EC
+  .text:00000001805003D8                 mov     rcx, cs:qword_181FF7DE8
+  .text:00000001805003DF                 mov     rax, [rcx]
+  .text:00000001805003E2                 call    qword ptr [rax+60h]
+  .text:00000001805003E5                 mov     r8, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:00000001805003EC                 mov     eax, cs:IGameSystem_LoopDestroyAllSystems_s_GameSystems
+  .text:00000001805003F2                 sub     eax, 1
+  .text:00000001805003F5                 movsxd  rbx, eax
+  .text:00000001805003F8                 js      short loc_180500428
+  .text:00000001805003FA                 mov     rdi, rbx
+  .text:00000001805003FD                 shl     rdi, 4
+  .text:0000000180500401                 mov     rdx, cs:qword_181B24190
+  .text:0000000180500408                 mov     rcx, r8
+  .text:000000018050040B                 mov     rax, [r8]
+  .text:000000018050040E                 mov     rdx, [rdi+rdx]
+  .text:0000000180500412                 call    qword ptr [rax+8]
+  .text:0000000180500415                 sub     rbx, 1
+  .text:0000000180500419                 lea     rdi, [rdi-10h]
+  .text:000000018050041D                 js      short loc_180500428
+  .text:000000018050041F                 mov     r8, cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher
+  .text:0000000180500426                 jmp     short loc_180500401
+  .text:0000000180500428                 mov     rdi, [rsp+38h+var_8]
+  .text:000000018050042D                 mov     rbx, [rsp+38h+arg_8]
+  .text:0000000180500432                 mov     cs:IGameSystem_LoopPostInitAllSystems_pEventDispatcher, 0
+  .text:000000018050043D                 mov     cs:byte_181D8C5FC, 0
+  .text:0000000180500444                 add     rsp, 38h
+  .text:0000000180500448                 retn
+  .text:0000000180500449                 lea     rcx, dword_181D8C670
+  .text:0000000180500450                 call    sub_181486994
+  .text:0000000180500455                 cmp     cs:dword_181D8C670, 0FFFFFFFFh
+  .text:000000018050045C                 jnz     loc_180500353
+  .text:0000000180500462                 mov     rax, cs:off_181B22680
+  .text:0000000180500469                 lea     rcx, dword_181D8C670
+  .text:0000000180500470                 mov     cs:qword_181D8C668, rax
+  .text:0000000180500477                 call    sub_181486928
+  .text:000000018050047C                 jmp     loc_180500353
+procedure: |-
+  void __fastcall IGameSystem_LoopDestroyAllSystems()
+  {
+    __int64 v0; // rdx
+    __int64 v1; // r8
+    int v2; // eax
+    _QWORD *ThreadLocalStoragePointer; // rax
+    __int64 v4; // rdi
+    __int64 v5; // rbx
+    __int64 v6; // rbx
+    __int64 v7; // rdi
+    _QWORD v8[2]; // [rsp+20h] [rbp-18h] BYREF
+
+    v1 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+    if ( IGameSystem_LoopPostInitAllSystems_pEventDispatcher )
+    {
+      v2 = dword_181B2257C;
+      if ( dword_181B2257C < 0 )
+      {
+        ThreadLocalStoragePointer = NtCurrentTeb()->ThreadLocalStoragePointer;
+        v8[1] = 0;
+        if ( dword_181D8C670 > *(_DWORD *)(ThreadLocalStoragePointer[TlsIndex] + 520LL) )
+        {
+          sub_181486994(&dword_181D8C670);
+          if ( dword_181D8C670 == -1 )
+          {
+            qword_181D8C668 = (__int64)off_181B22680[0];
+            sub_181486928(&dword_181D8C670);
+          }
+        }
+        v8[0] = qword_181D8C668;
+        v2 = sub_1804E369C(v8);
+        v1 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+        dword_181B2257C = v2;
+      }
+      if ( v1 )
+      {
+        if ( dword_181D8C548 > v2 )
+        {
+          v4 = qword_181D8C550 + 24LL * v2;
+          v5 = *(_DWORD *)v4 - 1;
+          if ( *(_DWORD *)v4 - 1 >= 0 )
+          {
+            do
+              sub_1804E369C(*(_QWORD *)(*(_QWORD *)(v4 + 8) + 8 * v5--));
+            while ( v5 >= 0 );
+            v1 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+          }
+        }
+      }
+      if ( byte_181D8C5FC )
+      {
+        (*(void (__fastcall **)(__int64, __int64, __int64))(*(_QWORD *)qword_181FF7DE8 + 96LL))(qword_181FF7DE8, v0, v1);
+        v1 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+      }
+      v6 = IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1;
+      if ( IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1 >= 0 )
+      {
+        v7 = 16LL * (IGameSystem_LoopDestroyAllSystems_s_GameSystems - 1);
+        while ( 1 )
+        {
+          (*(void (__fastcall **)(__int64, _QWORD))(*(_QWORD *)v1 + 8LL))(v1, *(_QWORD *)(v7 + qword_181B24190));
+          --v6;
+          v7 -= 16;
+          if ( v6 < 0 )
+            break;
+          v1 = IGameSystem_LoopPostInitAllSystems_pEventDispatcher;
+        }
+      }
+      IGameSystem_LoopPostInitAllSystems_pEventDispatcher = 0;
+      byte_181D8C5FC = 0;
+    }
+  }
