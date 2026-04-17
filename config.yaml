@@ -2189,10 +2189,16 @@ modules:
           - CGameSceneNode_PostSpawnKeyValues.{platform}.yaml
           - CBaseEntity_SpawnRadius.{platform}.yaml
 
+      - name: find-CDedicatedServerWorkshopManager_SwitchToWorkshopMapGroup
+        expected_output:
+          - CDedicatedServerWorkshopManager_SwitchToWorkshopMapGroup.{platform}.yaml
+
       - name: find-g_pGameTypes-AND-IGameTypes_CreateWorkshopMapGroup
         expected_output:
           - g_pGameTypes.{platform}.yaml
           - IGameTypes_CreateWorkshopMapGroup.{platform}.yaml
+        expected_input:
+          - CDedicatedServerWorkshopManager_SwitchToWorkshopMapGroup.{platform}.yaml
 
       - name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
         expected_output:
@@ -3357,6 +3363,11 @@ modules:
         alias:
           - CCheckTransmitInfo::m_nPlayerSlot
           - CheckTransmitPlayerSlot
+
+      - name: CDedicatedServerWorkshopManager_SwitchToWorkshopMapGroup
+        category: func
+        alias:
+          - CDedicatedServerWorkshopManager::SwitchToWorkshopMapGroup
 
       - name: g_pGameTypes
         category: gv
