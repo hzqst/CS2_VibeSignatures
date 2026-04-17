@@ -447,6 +447,12 @@ modules:
         expected_input:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
 
+      - name: find-CNetworkGameServerBase_SendPeerList
+        expected_output:
+          - CNetworkGameServerBase_SendPeerList.{platform}.yaml
+        expected_input:
+          - CSVCMsg_PeerList_t_vtable.{platform}.yaml
+
       - name: find-CNetworkGameServerBase_ConnectClient
         expected_output:
           - CNetworkGameServerBase_ConnectClient.{platform}.yaml
@@ -610,6 +616,11 @@ modules:
         alias:
           - CServerSideClientBase::ClientPrintf
           - ClientPrintf
+
+      - name: CNetworkGameServerBase_SendPeerList
+        category: func
+        alias:
+          - CNetworkGameServerBase::SendPeerList
 
       - name: CNetworkGameServerBase_ConnectClient
         category: func
