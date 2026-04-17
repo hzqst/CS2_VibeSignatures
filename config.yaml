@@ -1904,6 +1904,8 @@ modules:
         expected_output:
           - IGameSystem_LoopPostInitAllSystems_pEventDispatcher.{platform}.yaml
           - IGameSystem_LoopDestroyAllSystems_s_GameSystems.{platform}.yaml
+        expected_input:
+          - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
         max_retries: 4
 
       - name: find-CSource2GameEntities_CheckTransmit

@@ -7,6 +7,22 @@ from ida_analyze_util import preprocess_common_skill
 TARGET_FUNCTION_NAMES = []
 TARGET_GLOBALVAR_NAMES = ["IGameSystem_LoopPostInitAllSystems_pEventDispatcher", "IGameSystem_LoopDestroyAllSystems_s_GameSystems"]
 
+LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
+    # Both globals are identified by decompiling IGameSystem_LoopDestroyAllSystems:
+    #   pEventDispatcher = the qword pointer zeroed at the end of the function
+    #   s_GameSystems     = the dword used as backward-loop count before zeroing pEventDispatcher
+    (
+        "IGameSystem_LoopPostInitAllSystems_pEventDispatcher",
+        "prompt/call_llm_decompile.md",
+        "references/server/IGameSystem_LoopDestroyAllSystems.{platform}.yaml",
+    ),
+    (
+        "IGameSystem_LoopDestroyAllSystems_s_GameSystems",
+        "prompt/call_llm_decompile.md",
+        "references/server/IGameSystem_LoopDestroyAllSystems.{platform}.yaml",
+    ),
+]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
@@ -40,9 +56,9 @@ GENERATE_YAML_DESIRED_FIELDS = [
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
-    new_binary_dir, platform, image_base, debug=False,
+    new_binary_dir, platform, image_base, llm_config=None, debug=False,
 ):
-    """Reuse previous gamever gv_sig to locate targets and write YAML."""
+    """Reuse previous gamever gv_sig to locate targets; fallback to LLM_DECOMPILE of IGameSystem_LoopDestroyAllSystems."""
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -52,6 +68,8 @@ async def preprocess_skill(
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
         gv_names=TARGET_GLOBALVAR_NAMES,
+        llm_decompile_specs=LLM_DECOMPILE,
+        llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )
