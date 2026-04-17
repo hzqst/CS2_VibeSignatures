@@ -237,13 +237,3 @@ items:
   classicy: by_decompile
   owner_func_name: IGameSystem_LoopPostInitAllSystems
   owner_module: server
-- symbol_name: IGameSystem_SetGameSystemGlobalPtrs
-  skill_name: find-IGameSystem_SetGameSystemGlobalPtrs-AND-IGameSystem_dtor
-  classicy: by_decompile
-  owner_func_name: CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate
-  owner_module: client
-- symbol_name: IGameSystem_dtor
-  skill_name: find-IGameSystem_SetGameSystemGlobalPtrs-AND-IGameSystem_dtor
-  classicy: by_decompile
-  owner_func_name: CGameSystemReallocatingFactory_CSpawnGroupMgrGameSystem_Deallocate
-  owner_module: client
