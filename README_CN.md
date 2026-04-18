@@ -572,12 +572,6 @@ uv run run_cpp_tests.py -gamever 14141 [-debug] [-fixheader] [-agent=claude/code
 
 ## 故障排查
 
-### Cannot load IDA library file {name}, Please make sure you are using IDA
-
-这是因为官方 idapro 包与 IDA 9.0 不兼容。
-
-处理方式：将 `Python3**/Lib/site-packages/idapro/__init__.py` 替换为 `CS2_VibeSignatures/patched-py/Lib/site-packages/idapro/__init__.py`。
-
 ### error: could not create 'ida.egg-info': access denied
 
 处理方式：在 `C:\Program Files\IDA Professional 9.0\idalib\python` 目录下，以**管理员权限**运行 `python py-activate-idalib.py`。
