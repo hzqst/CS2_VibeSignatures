@@ -2114,6 +2114,16 @@ modules:
           - CBaseEntity_vtable.{platform}.yaml
           - CCSPlayer_UseServices_OnUseImpl.{platform}.yaml
 
+      - name: find-CEntFireOutputAutoCompletionFunctor_vtable
+        expected_output:
+          - CEntFireOutputAutoCompletionFunctor_vtable.{platform}.yaml
+
+      - name: find-CEntFireOutputAutoCompletionFunctor_FireOutput
+        expected_output:
+          - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
+        expected_input:
+          - CEntFireOutputAutoCompletionFunctor_vtable.{platform}.yaml
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
@@ -3444,6 +3454,15 @@ modules:
         category: vfunc
         alias:
           - CCSPlayer_WeaponServices::SelectItem
+
+      - name: CEntFireOutputAutoCompletionFunctor_vtable
+        category: vtable
+        shared: true
+
+      - name: CEntFireOutputAutoCompletionFunctor_FireOutput
+        category: vfunc
+        alias:
+          - CEntFireOutputAutoCompletionFunctor::FireOutput
 
       - name: CEntityIOOutput_FireOutputInternal
         category: func
