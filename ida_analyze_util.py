@@ -2766,6 +2766,7 @@ async def preprocess_func_sig_via_mcp(
 
 def _build_signature_boundary_py_eval_helpers() -> str:
     return (
+        "import idc\n"
         "PAD_BYTES = {0xCC, 0x90}\n"
         "SEGPERM_EXEC = int(getattr(idaapi, 'SEGPERM_EXEC', 4))\n"
         "\n"
@@ -2775,6 +2776,25 @@ def _build_signature_boundary_py_eval_helpers() -> str:
         "        return False\n"
         "    return seg.start_ea == seg_start_ea and bool(getattr(seg, 'perm', 0) & int(getattr(idaapi, 'SEGPERM_EXEC', 4)))\n"
         "\n"
+        "def _try_decode_padding_nop(cursor, limit_end):\n"
+        "    insn = idautils.DecodeInstruction(cursor)\n"
+        "    if not insn or insn.size <= 0 or cursor + insn.size > limit_end:\n"
+        "        return None\n"
+        "    get_canon_mnem = getattr(insn, 'get_canon_mnem', None)\n"
+        "    mnem = ''\n"
+        "    if callable(get_canon_mnem):\n"
+        "        try:\n"
+        "            mnem = (get_canon_mnem() or '').lower()\n"
+        "        except Exception:\n"
+        "            mnem = ''\n"
+        "    if not mnem:\n"
+        "        mnem = (idc.print_insn_mnem(cursor) or '').lower()\n"
+        "    if mnem == 'nop':\n"
+        "        raw = ida_bytes.get_bytes(cursor, insn.size)\n"
+        "        if raw and len(raw) == insn.size:\n"
+        "            return {'ea': hex(cursor), 'size': insn.size, 'bytes': raw.hex(), 'wild': []}\n"
+        "    return None\n"
+        "\n"
         "def _consume_padding(cursor, limit_end, seg_start_ea):\n"
         "    padding = []\n"
         "    while cursor < limit_end:\n"
@@ -2783,6 +2803,11 @@ def _build_signature_boundary_py_eval_helpers() -> str:
         "        flags = ida_bytes.get_full_flags(cursor)\n"
         "        if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
         "            return cursor, padding, True\n"
+        "        nop_inst = _try_decode_padding_nop(cursor, limit_end)\n"
+        "        if nop_inst:\n"
+        "            padding.append(nop_inst)\n"
+        "            cursor += nop_inst['size']\n"
+        "            continue\n"
         "        b = ida_bytes.get_byte(cursor)\n"
         "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
         "            return cursor, padding, False\n"
@@ -2791,6 +2816,9 @@ def _build_signature_boundary_py_eval_helpers() -> str:
         "        while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
         "            flags = ida_bytes.get_full_flags(cursor)\n"
         "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
+        "                break\n"
+        "            nop_inst = _try_decode_padding_nop(cursor, limit_end)\n"
+        "            if nop_inst:\n"
         "                break\n"
         "            b = ida_bytes.get_byte(cursor)\n"
         "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
@@ -2835,9 +2863,10 @@ async def preprocess_gen_func_sig_via_mcp(
         max_sig_bytes: Maximum bytes collected from function head.
         max_instructions: Max instructions collected from function head.
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets.
-        allow_across_function_boundary: When True, allow the signature to extend
-            past the owning function's end by consuming CC/NOP padding and
-            continuing from the next code head in the same executable segment.
+        allow_across_function_boundary: When True, allow the signature to bridge
+            CC/NOP gaps that appear before the next code head, including gaps
+            inside the owning function and padding after the function end, while
+            staying in the same executable segment.
         debug: Enable debug output.
 
     Returns:
@@ -2913,7 +2942,10 @@ async def preprocess_gen_func_sig_via_mcp(
         "    while cursor < limit_end and len(insts) < max_instructions:\n"
         "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
         "            break\n"
-        "        if allow_across_boundary and cursor >= f.end_ea:\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if allow_across_boundary and (\n"
+        "            cursor >= f.end_ea or not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags)\n"
+        "        ):\n"
         "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
         "            for pad_inst in padding_insts:\n"
         "                if len(insts) >= max_instructions:\n"
@@ -2926,7 +2958,7 @@ async def preprocess_gen_func_sig_via_mcp(
         "                break\n"
         "            if not can_continue:\n"
         "                break\n"
-        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
         "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
         "            break\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
@@ -3290,9 +3322,9 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets
             relative to signature start.
         allow_across_function_boundary: When True, allow the signature to
-            extend past the owning function's end by consuming CC/NOP padding
-            and continuing from the next code head in the same executable
-            segment.
+            bridge CC/NOP gaps that appear before the next code head, including
+            gaps inside the owning function and padding after the function end,
+            while staying in the same executable segment.
         debug: Enable debug output.
 
     Returns:
@@ -3460,7 +3492,10 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "        while cursor < limit_end and len(insts) < max_instructions:\n"
         "            if not _is_same_exec_segment(cursor, origin_seg_start):\n"
         "                break\n"
-        "            if allow_across_boundary and cursor >= f.end_ea:\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "            if allow_across_boundary and (\n"
+        "                cursor >= f.end_ea or not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags)\n"
+        "            ):\n"
         "                cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
         "                for pad_inst in padding_insts:\n"
         "                    if len(insts) >= max_instructions:\n"
@@ -3473,7 +3508,7 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "                    break\n"
         "                if not can_continue:\n"
         "                    break\n"
-        "            flags = ida_bytes.get_full_flags(cursor)\n"
+        "                flags = ida_bytes.get_full_flags(cursor)\n"
         "            if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
         "                break\n"
         "            insn = idautils.DecodeInstruction(cursor)\n"
@@ -3704,9 +3739,10 @@ async def preprocess_gen_gv_sig_via_mcp(
         max_candidates: Maximum GV-access instruction candidates to evaluate.
         extra_wildcard_offsets: Optional iterable of extra wildcard offsets relative
             to signature start.
-        allow_across_function_boundary: When True, allow the signature to extend
-            past the owning function's end (across CC padding and into the next
-            function) to collect enough bytes for uniqueness.
+        allow_across_function_boundary: When True, allow the signature to bridge
+            CC/NOP gaps that appear before the next code head, including gaps
+            inside the owning function and padding after the function end, to
+            collect enough bytes for uniqueness.
         debug: Enable debug output.
 
     Returns:
@@ -3786,40 +3822,7 @@ async def preprocess_gen_gv_sig_via_mcp(
         f"max_instructions = {max_instructions}\n"
         f"max_candidates = {max_candidates}\n"
         f"allow_across_boundary = {bool(allow_across_function_boundary)}\n"
-        "PAD_BYTES = {0xCC, 0x90}\n"
-        "SEGPERM_EXEC = int(getattr(idaapi, 'SEGPERM_EXEC', 4))\n"
-        "\n"
-        "def _is_same_exec_segment(ea, seg_start_ea):\n"
-        "    seg = idaapi.getseg(ea)\n"
-        "    if not seg:\n"
-        "        return False\n"
-        "    return seg.start_ea == seg_start_ea and bool(getattr(seg, 'perm', 0) & int(getattr(idaapi, 'SEGPERM_EXEC', 4)))\n"
-        "\n"
-        "def _consume_padding(cursor, limit_end, seg_start_ea):\n"
-        "    padding = []\n"
-        "    while cursor < limit_end:\n"
-        "        if not _is_same_exec_segment(cursor, seg_start_ea):\n"
-        "            return cursor, padding, False\n"
-        "        flags = ida_bytes.get_full_flags(cursor)\n"
-        "        if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
-        "            return cursor, padding, True\n"
-        "        b = ida_bytes.get_byte(cursor)\n"
-        "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
-        "            return cursor, padding, False\n"
-        "        pad_start = cursor\n"
-        "        pad_buf = bytearray()\n"
-        "        while cursor < limit_end and _is_same_exec_segment(cursor, seg_start_ea):\n"
-        "            flags = ida_bytes.get_full_flags(cursor)\n"
-        "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
-        "                break\n"
-        "            b = ida_bytes.get_byte(cursor)\n"
-        "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
-        "                return cursor, padding, False\n"
-        "            pad_buf.append(b)\n"
-        "            cursor += 1\n"
-        "        if pad_buf:\n"
-        "            padding.append({'ea': hex(pad_start), 'size': len(pad_buf), 'bytes': bytes(pad_buf).hex(), 'wild': []})\n"
-        "    return cursor, padding, False\n"
+        f"{_build_signature_boundary_py_eval_helpers()}"
         "\n"
         "def _resolve_disp_off(insn_ea, insn, raw):\n"
         "    cand_offsets = set()\n"
@@ -3865,7 +3868,10 @@ async def preprocess_gen_gv_sig_via_mcp(
         "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
         "            break\n"
         "\n"
-        "        if allow_across_boundary and cursor >= f.end_ea:\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if allow_across_boundary and (\n"
+        "            cursor >= f.end_ea or not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags)\n"
+        "        ):\n"
         "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
         "            for pad_inst in padding_insts:\n"
         "                if len(insts) >= max_instructions:\n"
@@ -3878,8 +3884,8 @@ async def preprocess_gen_gv_sig_via_mcp(
         "                break\n"
         "            if not can_continue:\n"
         "                break\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
         "\n"
-        "        flags = ida_bytes.get_full_flags(cursor)\n"
         "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
         "            break\n"
         "\n"
@@ -5922,7 +5928,10 @@ async def preprocess_gen_struct_offset_sig_via_mcp(
         "    while cursor < limit_end and len(insts) < max_instructions and total < max_sig_bytes:\n"
         "        if not _is_same_exec_segment(cursor, origin_seg_start):\n"
         "            break\n"
-        "        if allow_across_boundary and cursor >= func.end_ea:\n"
+        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "        if allow_across_boundary and (\n"
+        "            cursor >= func.end_ea or not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags)\n"
+        "        ):\n"
         "            cursor, padding_insts, can_continue = _consume_padding(cursor, limit_end, origin_seg_start)\n"
         "            for pad_inst in padding_insts:\n"
         "                if len(insts) >= max_instructions:\n"
@@ -5935,7 +5944,7 @@ async def preprocess_gen_struct_offset_sig_via_mcp(
         "                break\n"
         "            if not can_continue:\n"
         "                break\n"
-        "        flags = ida_bytes.get_full_flags(cursor)\n"
+        "            flags = ida_bytes.get_full_flags(cursor)\n"
         "        if not ida_bytes.is_code(flags) or not ida_bytes.is_head(flags):\n"
         "            break\n"
         "        insn = idautils.DecodeInstruction(cursor)\n"
