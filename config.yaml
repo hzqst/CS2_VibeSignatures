@@ -1630,6 +1630,10 @@ modules:
         expected_output:
           - CEntityIdentity_SetEntityName.{platform}.yaml
 
+      - name: find-ScriptBinding_Entity_SetEntityName
+        expected_output:
+          - ScriptBinding_Entity_SetEntityName.{platform}.yaml
+
       - name: find-CBtActionCoordinatedBuy_vtable
         expected_output:
           - CBtActionCoordinatedBuy_vtable.{platform}.yaml
@@ -3012,6 +3016,11 @@ modules:
         category: func
         alias:
           - CEntityIdentity::SetEntityName
+
+      - name: ScriptBinding_Entity_SetEntityName
+        category: func
+        alias:
+          - Entity::SetEntityName
 
       - name: CBtActionCoordinatedBuy_vtable
         category: vtable
