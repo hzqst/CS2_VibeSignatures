@@ -2467,6 +2467,11 @@ modules:
         expected_output:
           - CBaseFilter_InputTestActivator.{platform}.yaml
 
+      - name: find-CBaseFilter_InputTestActivator_Register
+        platform: windows
+        expected_output:
+          - CBaseFilter_InputTestActivator_Register.{platform}.yaml
+
       - name: find-GameSystem_Think_CheckSteamBan
         expected_output:
           - GameSystem_Think_CheckSteamBan.{platform}.yaml
@@ -3793,6 +3798,11 @@ modules:
         category: func
         alias:
           - CBaseFilter::InputTestActivator
+
+      - name: CBaseFilter_InputTestActivator_Register
+        category: func
+        alias:
+          - CBaseFilter::InputTestActivator::Register
 
       - name: GameSystem_Think_CheckSteamBan
         category: func
