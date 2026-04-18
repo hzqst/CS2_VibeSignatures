@@ -3347,12 +3347,89 @@ found_struct_offset: []
                 self.assertIn("def _is_same_exec_segment", code)
                 self.assertIn("def _consume_padding", code)
                 self.assertIn(
-                    "if allow_across_boundary and cursor >= func.end_ea:",
+                    "cursor >= func.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 self.assertIn(
                     "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
                     "            return cursor, padding, True",
+                    code,
+                )
+                return _py_eval_payload(
+                    [
+                        {
+                            "offset_inst_va": "0x1801BA12A",
+                            "insts": [
+                                {
+                                    "size": 4,
+                                    "bytes": "498b4e58",
+                                    "wild": [3],
+                                },
+                                {
+                                    "size": 3,
+                                    "bytes": "4885c9",
+                                    "wild": [],
+                                },
+                            ],
+                        }
+                    ]
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["49 8B 4E ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x1801BA12A"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_struct_offset_sig_via_mcp(
+            session=session,
+            struct_name="CGameResourceService",
+            member_name="m_pEntitySystem",
+            offset="0x58",
+            offset_inst_va="0x1801BA12A",
+            image_base=0x180000000,
+            size=8,
+            min_sig_bytes=4,
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "struct_name": "CGameResourceService",
+                "member_name": "m_pEntitySystem",
+                "offset": "0x58",
+                "size": 8,
+                "offset_sig": "49 8B 4E ??",
+                "offset_sig_disp": 0,
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_struct_offset_sig_via_mcp_guards_internal_gap_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn(
+                    "cursor >= func.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 return _py_eval_payload(
@@ -3502,12 +3579,95 @@ found_struct_offset: []
                 self.assertIn("SEGPERM_EXEC", code)
                 self.assertIn("def _is_same_exec_segment", code)
                 self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
                 self.assertIn(
-                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 self.assertIn(
                     "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):",
+                    code,
+                )
+                return _py_eval_payload(
+                    [
+                        {
+                            "gv_inst_va": "0x1801BA12A",
+                            "gv_inst_length": 6,
+                            "gv_inst_disp": 2,
+                            "insts": [
+                                {
+                                    "ea": "0x1801BA12A",
+                                    "size": 6,
+                                    "bytes": "8b0d78563412",
+                                    "wild": [2, 3, 4, 5],
+                                },
+                                {
+                                    "ea": "0x1801BA130",
+                                    "size": 3,
+                                    "bytes": "4885c9",
+                                    "wild": [],
+                                },
+                            ],
+                        }
+                    ]
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["8B 0D ?? ?? ?? ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x1801BA12A"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_gv_sig_via_mcp(
+            session=session,
+            gv_va="0x180123456",
+            image_base=0x180000000,
+            gv_access_inst_va="0x1801BA12A",
+            min_sig_bytes=6,
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "gv_va": "0x180123456",
+                "gv_rva": "0x123456",
+                "gv_sig": "8B 0D ?? ?? ?? ??",
+                "gv_sig_va": "0x1801ba12a",
+                "gv_inst_offset": 0,
+                "gv_inst_length": 6,
+                "gv_inst_disp": 2,
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_gv_sig_via_mcp_guards_internal_gap_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
+                self.assertIn(
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 return _py_eval_payload(
@@ -3648,8 +3808,11 @@ found_struct_offset: []
                 self.assertIn("SEGPERM_EXEC", code)
                 self.assertIn("def _is_same_exec_segment", code)
                 self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
                 self.assertIn(
-                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 self.assertIn(
@@ -3707,11 +3870,88 @@ found_struct_offset: []
             result,
         )
 
+    async def test_preprocess_gen_func_sig_via_mcp_guards_internal_gap_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
+                self.assertIn(
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
+                    code,
+                )
+                return _py_eval_payload(
+                    {
+                        "func_va": "0x180123450",
+                        "func_size": "0x40",
+                        "insts": [
+                            {
+                                "ea": "0x180123450",
+                                "size": 7,
+                                "bytes": "488b0d78563412",
+                                "wild": [3, 4, 5, 6],
+                            }
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["48 8B 0D ?? ?? ?? ??"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x180123450"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_func_sig_via_mcp(
+            session=session,
+            func_va="0x180123450",
+            image_base=0x180000000,
+            min_sig_bytes=6,
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "func_va": "0x180123450",
+                "func_rva": "0x123450",
+                "func_size": "0x40",
+                "func_sig": "48 8B 0D ?? ?? ?? ??",
+            },
+            result,
+        )
+
     def test_build_signature_boundary_py_eval_helpers_allows_zero_padding_code_head(
         self,
     ) -> None:
         helper_code = ida_analyze_util._build_signature_boundary_py_eval_helpers()
 
+        self.assertIn("import idc\n", helper_code)
+        self.assertIn("def _try_decode_padding_nop", helper_code)
+        self.assertIn(
+            "get_canon_mnem = getattr(insn, 'get_canon_mnem', None)",
+            helper_code,
+        )
+        self.assertIn(
+            "mnem = (idc.print_insn_mnem(cursor) or '').lower()",
+            helper_code,
+        )
         self.assertIn(
             "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
             "            return cursor, padding, True",
@@ -3735,7 +3975,12 @@ found_struct_offset: []
         helper_code = ida_analyze_util._build_signature_boundary_py_eval_helpers()
 
         self.assertIn(
-            "b = ida_bytes.get_byte(cursor)\n"
+            "nop_inst = _try_decode_padding_nop(cursor, limit_end)\n"
+            "        if nop_inst:\n"
+            "            padding.append(nop_inst)\n"
+            "            cursor += nop_inst['size']\n"
+            "            continue\n"
+            "        b = ida_bytes.get_byte(cursor)\n"
             "        if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
             "            return cursor, padding, False",
             helper_code,
@@ -3745,11 +3990,41 @@ found_struct_offset: []
             "            flags = ida_bytes.get_full_flags(cursor)\n"
             "            if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
             "                break\n"
+            "            nop_inst = _try_decode_padding_nop(cursor, limit_end)\n"
+            "            if nop_inst:\n"
+            "                break\n"
             "            b = ida_bytes.get_byte(cursor)\n"
             "            if b == idaapi.BADADDR or b not in PAD_BYTES:\n"
             "                return cursor, padding, False\n"
             "            pad_buf.append(b)\n"
             "            cursor += 1",
+            helper_code,
+        )
+
+    def test_build_signature_boundary_py_eval_helpers_recognizes_multibyte_nop_padding(
+        self,
+    ) -> None:
+        helper_code = ida_analyze_util._build_signature_boundary_py_eval_helpers()
+
+        self.assertIn(
+            "def _try_decode_padding_nop(cursor, limit_end):\n"
+            "    insn = idautils.DecodeInstruction(cursor)\n"
+            "    if not insn or insn.size <= 0 or cursor + insn.size > limit_end:\n"
+            "        return None\n"
+            "    get_canon_mnem = getattr(insn, 'get_canon_mnem', None)\n"
+            "    mnem = ''\n"
+            "    if callable(get_canon_mnem):\n"
+            "        try:\n"
+            "            mnem = (get_canon_mnem() or '').lower()\n"
+            "        except Exception:\n"
+            "            mnem = ''\n"
+            "    if not mnem:\n"
+            "        mnem = (idc.print_insn_mnem(cursor) or '').lower()\n"
+            "    if mnem == 'nop':\n"
+            "        raw = ida_bytes.get_bytes(cursor, insn.size)\n"
+            "        if raw and len(raw) == insn.size:\n"
+            "            return {'ea': hex(cursor), 'size': insn.size, 'bytes': raw.hex(), 'wild': []}\n"
+            "    return None",
             helper_code,
         )
 
@@ -3987,13 +4262,94 @@ found_struct_offset: []
                 self.assertIn("SEGPERM_EXEC", code)
                 self.assertIn("def _is_same_exec_segment", code)
                 self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
                 self.assertIn(
-                    "if allow_across_boundary and cursor >= f.end_ea:",
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 self.assertIn(
                     "if ida_bytes.is_code(flags) and ida_bytes.is_head(flags):\n"
                     "            return cursor, padding, True",
+                    code,
+                )
+                return _py_eval_payload(
+                    {
+                        "vfunc_sig_va": "0x18004abc3",
+                        "vfunc_inst_length": 6,
+                        "vfunc_disp_offset": 2,
+                        "vfunc_disp_size": 4,
+                        "insts": [
+                            {
+                                "ea": "0x18004abc3",
+                                "size": 6,
+                                "bytes": "ff9078000000",
+                                "wild": [],
+                            },
+                            {
+                                "ea": "0x18004abc9",
+                                "size": 3,
+                                "bytes": "4885c0",
+                                "wild": [],
+                            },
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["FF 90 78 00 00 00"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x18004abc3"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_vfunc_sig_via_mcp(
+            session=session,
+            inst_va="0x18004ABC3",
+            vfunc_offset="0x78",
+            allow_across_function_boundary=True,
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "vfunc_sig": "FF 90 78 00 00 00",
+                "vfunc_sig_va": "0x18004abc3",
+                "vfunc_sig_disp": 0,
+                "vfunc_inst_length": 6,
+                "vfunc_disp_offset": 2,
+                "vfunc_disp_size": 4,
+                "vfunc_offset": "0x78",
+                "vfunc_sig_max_match": 1,
+            },
+            result,
+        )
+
+    async def test_preprocess_gen_vfunc_sig_via_mcp_guards_internal_gap_decode(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn("allow_across_boundary = True", code)
+                self.assertIn("def _consume_padding", code)
+                self.assertIn("def _try_decode_padding_nop", code)
+                self.assertIn("if mnem == 'nop':", code)
+                self.assertIn(
+                    "cursor >= f.end_ea or not ida_bytes.is_code(flags) "
+                    "or not ida_bytes.is_head(flags)",
                     code,
                 )
                 return _py_eval_payload(

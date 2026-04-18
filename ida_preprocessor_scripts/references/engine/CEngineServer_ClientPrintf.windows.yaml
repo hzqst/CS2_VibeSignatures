@@ -1,0 +1,37 @@
+func_name: CEngineServer_ClientPrintf
+func_va: '0x1800ace40'
+disasm_code: |-
+  .text:00000001800ACE40                 mov     rax, cs:g_pGameServer
+  .text:00000001800ACE47                 test    rax, rax
+  .text:00000001800ACE4A                 jz      short locret_1800ACE85
+  .text:00000001800ACE4C                 test    edx, edx
+  .text:00000001800ACE4E                 js      short loc_1800ACE77
+  .text:00000001800ACE50                 cmp     edx, [rax+250h]
+  .text:00000001800ACE56                 jge     short loc_1800ACE77
+  .text:00000001800ACE58                 mov     rax, [rax+258h]
+  .text:00000001800ACE5F                 movsxd  rcx, edx
+  .text:00000001800ACE62                 lea     rdx, aS; "%s"
+  .text:00000001800ACE69                 mov     rcx, [rax+rcx*8]
+  .text:00000001800ACE6D                 mov     rax, [rcx]
+  .text:00000001800ACE70                 jmp     qword ptr [rax+80h] ; 0x80 = CServerSideClientBase_ClientPrintf
+  .text:00000001800ACE77                 lea     rcx, aTriedToSprintT; "tried to sprint to a non-client\n"
+  .text:00000001800ACE7E                 jmp     cs:?ConMsg@@YAXPEBDZZ; ConMsg(char const *,...)
+  .text:00000001800ACE85                 retn
+procedure: |-
+  void __fastcall CEngineServer_ClientPrintf(__int64 a1, int a2)
+  {
+    __int64 v2; // rcx
+
+    if ( g_pGameServer )
+    {
+      if ( a2 < 0 || a2 >= *(_DWORD *)(g_pGameServer + 592) )
+      {
+        ConMsg("tried to sprint to a non-client\n");
+      }
+      else
+      {
+        v2 = *(_QWORD *)(*(_QWORD *)(g_pGameServer + 600) + 8LL * a2);
+        (*(void (**)(__int64, const char *, ...))(*(_QWORD *)v2 + 128LL))(v2, "%s"); // 128LL = 0x80 = CServerSideClientBase_ClientPrintf
+      }
+    }
+  }

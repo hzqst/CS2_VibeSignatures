@@ -461,12 +461,12 @@ modules:
         expected_output:
           - CNetworkGameServer_GetFreeClient.{platform}.yaml
 
-      - name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
+      - name: find-g_pGameServer-AND-CServerSideClientBase_ClientPrintf
         expected_output:
-          - CNetworkGameServer_ClientList.{platform}.yaml
+          - g_pGameServer.{platform}.yaml
           - CServerSideClientBase_ClientPrintf.{platform}.yaml
         expected_input:
-          - CNetworkGameServer_vtable.{platform}.yaml
+          - CEngineServer_ClientPrintf.{platform}.yaml
 
       - name: find-CNetworkGameClient_SendMovePacket
         expected_output:
@@ -558,6 +558,16 @@ modules:
         expected_output:
           - CEngineClient_vtable.{platform}.yaml
 
+      - name: find-CEngineServer_vtable
+        expected_output:
+          - CEngineServer_vtable.{platform}.yaml
+
+      - name: find-CEngineServer_ClientPrintf
+        expected_output:
+          - CEngineServer_ClientPrintf.{platform}.yaml
+        expected_input:
+          - CEngineServer_vtable.{platform}.yaml
+
       - name: find-CLoopTypeClientServerService_vtable
         expected_output:
           - CLoopTypeClientServerService_vtable.{platform}.yaml
@@ -603,13 +613,10 @@ modules:
         alias:
           - GameEntitySystem
 
-      - name: CNetworkGameServer
-        category: struct
-
-      - name: CNetworkGameServer_ClientList
-        category: structmember
-        struct: CNetworkGameServer
-        member: ClientList
+      - name: g_pGameServer
+        category: gv
+        alias:
+          - g_pGameServer
 
       - name: CServerSideClientBase_ClientPrintf
         category: vfunc
@@ -731,6 +738,14 @@ modules:
 
       - name: CEngineClient_vtable
         category: vtable
+
+      - name: CEngineServer_vtable
+        category: vtable
+
+      - name: CEngineServer_ClientPrintf
+        category: vfunc
+        alias:
+          - CEngineServer::ClientPrintf
 
       - name: CLoopTypeClientServerService_vtable
         category: vtable
@@ -1528,9 +1543,15 @@ modules:
         expected_input:
           - CFlashbangProjectile_Spawn.{platform}.yaml
 
+      - name: find-CTriggerGravity_GravityTouch_Register
+        expected_output:
+          - CTriggerGravity_GravityTouch_Register.{platform}.yaml
+
       - name: find-CTriggerGravity_GravityTouch
         expected_output:
           - CTriggerGravity_GravityTouch.{platform}.yaml
+        expected_input:
+          - CTriggerGravity_GravityTouch_Register.{platform}.yaml
 
       - name: find-CBasePlayerController_HandleCommand_JoinTeam
         expected_output:
@@ -1701,6 +1722,12 @@ modules:
         expected_output:
           - CCSGameRules_BeginRound.{platform}.yaml
 
+      - name: find-CCSGameRules_PlayerSpawn
+        expected_output:
+          - CCSGameRules_PlayerSpawn.{platform}.yaml
+        expected_input:
+          - CCSGameRules_vtable.{platform}.yaml
+
       - name: find-CBasePlayerController_Respawn
         expected_output:
           - CBasePlayerController_Respawn.{platform}.yaml
@@ -1724,6 +1751,10 @@ modules:
           - CCSPlayerPawn_PostThink.{platform}.yaml
         expected_input:
           - CCSPlayerPawn_vtable.{platform}.yaml
+
+      - name: find-CCSPlayerPawn_OnItemEquip
+        expected_output:
+          - CCSPlayerPawn_OnItemEquip.{platform}.yaml
 
       - name: find-CCSPlayerPawn_ProcessSuicideAsKillReward
         expected_output:
@@ -1856,20 +1887,12 @@ modules:
           - CCSPlayer_ItemServices_DropActivePlayerWeapon.{platform}.yaml
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
 
-      - name: find-CCSPlayer_ItemServices_RemoveWeapons
-        expected_output:
-          - CCSPlayer_ItemServices_RemoveWeapons.{platform}.yaml
-        expected_input:
-          - CCSPlayerStateDeathAnim_vtable.{platform}.yaml
-          - CCSPlayer_ItemServices_vtable.{platform}.yaml
-        max_retries: 4
-
       - name: find-CCSPlayer_WeaponServices_SelectItem
         expected_output:
           - CCSPlayer_WeaponServices_SelectItem.{platform}.yaml
         expected_input:
+          - CCSPlayerPawn_OnItemEquip.{platform}.yaml
           - CCSPlayer_WeaponServices_vtable.{platform}.yaml
-        max_retries: 4
 
       - name: find-NetworkStateChanged
         expected_output:
@@ -1901,12 +1924,14 @@ modules:
         expected_input:
           - CMultiplayRules_vtable.{platform}.yaml
 
-      - name: find-UTIL_PlayerSlotToPlayerController-AND-FireTargets
+      - name: find-UTIL_PlayerSlotToPlayerController-AND-FireTargets-AND-CCSPlayer_ItemServices_RemoveWeapons
         expected_output:
           - UTIL_PlayerSlotToPlayerController.{platform}.yaml
           - FireTargets.{platform}.yaml
+          - CCSPlayer_ItemServices_RemoveWeapons.{platform}.yaml
         expected_input:
           - CMultiplayRules_ClientDisconnected.{platform}.yaml
+          - CCSPlayer_ItemServices_vtable.{platform}.yaml
 
       - name: find-CInferno_InfernoThink
         expected_output:
@@ -2089,9 +2114,21 @@ modules:
           - CBaseEntity_vtable.{platform}.yaml
           - CCSPlayer_UseServices_OnUseImpl.{platform}.yaml
 
+      - name: find-CEntFireOutputAutoCompletionFunctor_vtable
+        expected_output:
+          - CEntFireOutputAutoCompletionFunctor_vtable.{platform}.yaml
+
+      - name: find-CEntFireOutputAutoCompletionFunctor_FireOutput
+        expected_output:
+          - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
+        expected_input:
+          - CEntFireOutputAutoCompletionFunctor_vtable.{platform}.yaml
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
+        expected_input:
+          - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
 
       - name: find-CEntitySystem_AddEntityIOEvent
         expected_output:
@@ -2100,10 +2137,14 @@ modules:
       - name: find-CGameEntitySystem_FindEntityByClassName
         expected_output:
           - CGameEntitySystem_FindEntityByClassName.{platform}.yaml
+        expected_input:
+          - CCSGameRules_PlayerSpawn.{platform}.yaml
 
       - name: find-CGameEntitySystem_FindEntityByName
         expected_output:
           - CGameEntitySystem_FindEntityByName.{platform}.yaml
+        expected_input:
+          - FireTargets.{platform}.yaml
 
       - name: find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
         expected_output:
@@ -2277,6 +2318,14 @@ modules:
       - name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
         expected_output:
           - CSpawnGroupMgrGameSystem_GetSpawnGroups.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_DumpSpawnGroups.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_DumpSpawnGroups
+        expected_output:
+          - CSpawnGroupMgrGameSystem_DumpSpawnGroups.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
       - name: find-CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
         expected_output:
@@ -2323,6 +2372,60 @@ modules:
       - name: find-CSpawnGroupMgrGameSystem_SpawnGroupPrecache
         expected_output:
           - CSpawnGroupMgrGameSystem_SpawnGroupPrecache.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_AllocateSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_AllocateSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_ReleaseSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_ReleaseSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupInit
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupInit.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroupForSaveFile
+        expected_output:
+          - CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroupForSaveFile.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntities
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntities.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_SetActiveSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SetActiveSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_UnloadSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_UnloadSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
+      - name: find-CSpawnGroupMgrGameSystem_SaveGame_Start
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SaveGame_Start.{platform}.yaml
         expected_input:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
@@ -2819,6 +2922,11 @@ modules:
         alias:
           - CTriggerGravity::GravityTouch
 
+      - name: CTriggerGravity_GravityTouch_Register
+        category: func
+        alias:
+          - CTriggerGravity::GravityTouch_Register
+
       - name: CBasePlayerController_HandleCommand_JoinTeam
         category: func
         alias:
@@ -3008,6 +3116,11 @@ modules:
         alias:
           - CCSGameRules::BeginRound
 
+      - name: CCSGameRules_PlayerSpawn
+        category: vfunc
+        alias:
+          - CCSGameRules::PlayerSpawn
+
       - name: CBasePlayerController_Respawn
         category: vfunc
         alias:
@@ -3041,6 +3154,11 @@ modules:
           - CCSPlayerPawnBase_PostThink
           - CCSPlayerPawn_PostThink
           - PostThink
+
+      - name: CCSPlayerPawn_OnItemEquip
+        category: func
+        alias:
+          - CCSPlayerPawn::OnItemEquip
 
       - name: CCSPlayerPawn_ProcessSuicideAsKillReward
         category: func
@@ -3348,6 +3466,15 @@ modules:
         alias:
           - CCSPlayer_WeaponServices::SelectItem
 
+      - name: CEntFireOutputAutoCompletionFunctor_vtable
+        category: vtable
+        shared: true
+
+      - name: CEntFireOutputAutoCompletionFunctor_FireOutput
+        category: vfunc
+        alias:
+          - CEntFireOutputAutoCompletionFunctor::FireOutput
+
       - name: CEntityIOOutput_FireOutputInternal
         category: func
         alias:
@@ -3545,6 +3672,12 @@ modules:
           - CSpawnGroupMgrGameSystem::GetSpawnGroups
           - GetSpawnGroups
 
+      - name: CSpawnGroupMgrGameSystem_DumpSpawnGroups
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::DumpSpawnGroups
+          - DumpSpawnGroups
+
       - name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntitiesInternal
         category: func
         alias:
@@ -3588,6 +3721,51 @@ modules:
         alias:
           - CSpawnGroupMgrGameSystem::SpawnGroupPrecache
           - SpawnGroupPrecache
+
+      - name: CSpawnGroupMgrGameSystem_AllocateSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::AllocateSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_ReleaseSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::ReleaseSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupInit
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupInit
+
+      - name: CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::CreateLoadingSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_CreateLoadingSpawnGroupForSaveFile
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::CreateLoadingSpawnGroupForSaveFile
+
+      - name: CSpawnGroupMgrGameSystem_SpawnGroupSpawnEntities
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SpawnGroupSpawnEntities
+
+      - name: CSpawnGroupMgrGameSystem_SetActiveSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SetActiveSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_UnloadSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::UnloadSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_SaveGame_Start
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SaveGame_Start
 
       - name: IGameSystem_SpawnGroupPrecache
         category: vfunc

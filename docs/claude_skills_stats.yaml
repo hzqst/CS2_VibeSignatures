@@ -32,11 +32,6 @@ items:
   classicy: by_decompile
   owner_func_name: ResourceDataThink_penalty_notification_handler
   owner_module: server
-- symbol_name: CCSPlayer_ItemServices_RemoveWeapons
-  skill_name: find-CCSPlayer_ItemServices_RemoveWeapons
-  classicy: by_decompile
-  owner_func_name: CCSPlayerStateDeathAnim_OnEnter
-  owner_module: server
 - symbol_name: CCSPlayer_MovementServices_CheckJumpButton_WaterPatch
   skill_name: find-CCSPlayer_MovementServices_CheckJumpButton_WaterPatch
   classicy: misc
@@ -46,16 +41,6 @@ items:
   skill_name: find-CCSPlayer_MovementServices_FullWalkMove_SpeedClamp
   classicy: misc
   owner_func_name: CCSPlayer_MovementServices_FullWalkMove
-  owner_module: server
-- symbol_name: CCSPlayer_WeaponServices_SelectItem
-  skill_name: find-CCSPlayer_WeaponServices_SelectItem
-  classicy: by_decompile
-  owner_func_name: CCSBot_SwitchToBestWeapon
-  owner_module: server
-- symbol_name: CEntityIOOutput_FireOutputInternal
-  skill_name: find-CEntityIOOutput_FireOutputInternal
-  classicy: by_decompile
-  owner_func_name: output_validation_wrapper_caller
   owner_module: server
 - symbol_name: CEntityIdentity_AcceptInput
   skill_name: find-CEntityIdentity_AcceptInput
@@ -71,16 +56,6 @@ items:
   skill_name: find-CEntitySystem_AddEntityIOEvent
   classicy: by_decompile
   owner_func_name: DisableUpdateTarget_setup_function
-  owner_module: server
-- symbol_name: CGameEntitySystem_FindEntityByClassName
-  skill_name: find-CGameEntitySystem_FindEntityByClassName
-  classicy: by_decompile
-  owner_func_name: path_track_loop_caller
-  owner_module: server
-- symbol_name: CGameEntitySystem_FindEntityByName
-  skill_name: find-CGameEntitySystem_FindEntityByName
-  classicy: by_decompile
-  owner_func_name: commentary_semaphore_caller
   owner_module: server
 - symbol_name: CGamePlayerEquip_InputTriggerForActivatedPlayer
   skill_name: find-CGamePlayerEquip_InputTriggerForAllPlayers-AND-CGamePlayerEquip_InputTriggerForActivatedPlayer
@@ -107,16 +82,6 @@ items:
   classicy: by_decompile
   owner_func_name: CBaseAnimGraph_GetAnimationController
   owner_module: server
-- symbol_name: CNetworkGameServer_ClientList
-  skill_name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
-  classicy: by_decompile
-  owner_func_name: non_client_sprint_handler
-  owner_module: engine
-- symbol_name: CServerSideClientBase_ClientPrintf
-  skill_name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
-  classicy: by_decompile
-  owner_func_name: non_client_sprint_handler
-  owner_module: engine
 - symbol_name: CNetworkMessages_AllowAdditionalMessageRegistration
   skill_name: find-CNetworkMessages_AllowAdditionalMessageRegistration-AND-CNetworkMessages_IsAdditionalMessageRegistrationAllowed
   classicy: misc
@@ -147,18 +112,8 @@ items:
   classicy: misc
   owner_func_name: CPhysBox_Use
   owner_module: server
-- symbol_name: CSpawnGroupMgrGameSystem_GetSpawnGroups
-  skill_name: find-CSpawnGroupMgrGameSystem_GetSpawnGroups
-  classicy: by_decompile
-  owner_func_name: spawn_group_debug_dump_function
-  owner_module: server
 - symbol_name: CSpawnGroupMgrGameSystem_HasName
   skill_name: find-CSpawnGroupMgrGameSystem_HasName
   classicy: misc
   owner_func_name: null
   owner_module: client
-- symbol_name: CTriggerGravity_GravityTouch
-  skill_name: find-CTriggerGravity_GravityTouch
-  classicy: by_decompile
-  owner_func_name: CTriggerGravity_registration_initializer
-  owner_module: server

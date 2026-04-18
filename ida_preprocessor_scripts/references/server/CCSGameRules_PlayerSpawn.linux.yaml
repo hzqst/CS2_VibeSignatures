@@ -1,0 +1,310 @@
+func_name: CCSGameRules_PlayerSpawn
+func_va: '0x11aa500'
+disasm_code: |-
+  .text:00000000011AA4F0                 mov     rax, ds:elf_gnu_hash_indexes+0BA0h
+  .text:00000000011AA4F8                 ud2
+  .text:00000000011AA500                 push    rbp
+  .text:00000000011AA501                 mov     rbp, rsp
+  .text:00000000011AA504                 push    r15
+  .text:00000000011AA506                 push    r14
+  .text:00000000011AA508                 push    r13
+  .text:00000000011AA50A                 push    r12
+  .text:00000000011AA50C                 push    rbx
+  .text:00000000011AA50D                 sub     rsp, 8
+  .text:00000000011AA511                 test    rsi, rsi
+  .text:00000000011AA514                 jz      loc_11AA6A8
+  .text:00000000011AA51A                 mov     rax, [rsi]
+  .text:00000000011AA51D                 mov     rbx, rdi
+  .text:00000000011AA520                 mov     r12, rsi
+  .text:00000000011AA523                 mov     rdi, rsi
+  .text:00000000011AA526                 call    qword ptr [rax+538h]
+  .text:00000000011AA52C                 test    al, al
+  .text:00000000011AA52E                 jz      loc_11AA6A8
+  .text:00000000011AA534                 mov     eax, [r12+1090h]
+  .text:00000000011AA53C                 test    eax, eax
+  .text:00000000011AA53E                 jz      short loc_11AA550
+  .text:00000000011AA540                 add     rsp, 8
+  .text:00000000011AA544                 pop     rbx
+  .text:00000000011AA545                 pop     r12
+  .text:00000000011AA547                 pop     r13
+  .text:00000000011AA549                 pop     r14
+  .text:00000000011AA54B                 pop     r15
+  .text:00000000011AA54D                 pop     rbp
+  .text:00000000011AA54E                 retn
+  .text:00000000011AA550                 lea     r13, unk_2542660
+  .text:00000000011AA557                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA55C                 mov     rdi, r13
+  .text:00000000011AA55F                 call    sub_1A872F0
+  .text:00000000011AA564                 test    rax, rax
+  .text:00000000011AA567                 jz      loc_11AA7E0
+  .text:00000000011AA56D                 mov     eax, [rax]
+  .text:00000000011AA56F                 test    eax, eax
+  .text:00000000011AA571                 jg      loc_11AA740
+  .text:00000000011AA577                 lea     r13, unk_2542650
+  .text:00000000011AA57E                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA583                 mov     rdi, r13
+  .text:00000000011AA586                 call    sub_1A872F0
+  .text:00000000011AA58B                 test    rax, rax
+  .text:00000000011AA58E                 jz      loc_11AA7C8
+  .text:00000000011AA594                 mov     eax, [rax]
+  .text:00000000011AA596                 test    eax, eax
+  .text:00000000011AA598                 jg      loc_11AA6C0
+  .text:00000000011AA59E                 mov     rax, [r12]
+  .text:00000000011AA5A2                 mov     rdi, r12
+  .text:00000000011AA5A5                 call    qword ptr [rax+0D18h]
+  .text:00000000011AA5AB                 test    al, al
+  .text:00000000011AA5AD                 jnz     loc_11AA780
+  .text:00000000011AA5B3                 cmp     byte ptr [r12+624h], 1
+  .text:00000000011AA5BC                 lea     r13, aGamePlayerEqui; "game_player_equip"
+  .text:00000000011AA5C3                 lea     r14, qword_259B430
+  .text:00000000011AA5CA                 setnbe  r15b
+  .text:00000000011AA5CE                 xor     ebx, ebx
+  .text:00000000011AA5D0                 mov     rdi, [r14]
+  .text:00000000011AA5D3                 mov     rsi, rbx
+  .text:00000000011AA5D6                 mov     rdx, r13
+  .text:00000000011AA5D9                 call    CGameEntitySystem_FindEntityByClassName
+  .text:00000000011AA5DE                 mov     rbx, rax
+  .text:00000000011AA5E1                 test    rax, rax
+  .text:00000000011AA5E4                 jz      short loc_11AA650
+  .text:00000000011AA5E6                 lea     rdx, _ZTI16CGamePlayerEquip; `typeinfo for'CGamePlayerEquip
+  .text:00000000011AA5ED                 xor     ecx, ecx
+  .text:00000000011AA5EF                 mov     rdi, rbx
+  .text:00000000011AA5F2                 lea     rsi, _ZTI11CBaseEntity; `typeinfo for'CBaseEntity
+  .text:00000000011AA5F9                 call    sub_975D50
+  .text:00000000011AA5FE                 test    rax, rax
+  .text:00000000011AA601                 jz      short loc_11AA5D0
+  .text:00000000011AA603                 mov     eax, [rax+640h]
+  .text:00000000011AA609                 test    al, 1
+  .text:00000000011AA60B                 jnz     short loc_11AA5D0
+  .text:00000000011AA60D                 test    r15b, r15b
+  .text:00000000011AA610                 jz      short loc_11AA638
+  .text:00000000011AA612                 test    al, 2
+  .text:00000000011AA614                 jz      short loc_11AA638
+  .text:00000000011AA616                 mov     rdi, [r12+0E80h]
+  .text:00000000011AA61E                 test    rdi, rdi
+  .text:00000000011AA621                 jz      short loc_11AA638
+  .text:00000000011AA623                 mov     rax, [rdi]
+  .text:00000000011AA626                 mov     esi, 1
+  .text:00000000011AA62B                 call    qword ptr [rax+0C0h]
+  .text:00000000011AA631                 nop     dword ptr [rax+00000000h]
+  .text:00000000011AA638                 mov     rax, [rbx]
+  .text:00000000011AA63B                 mov     rsi, r12
+  .text:00000000011AA63E                 mov     rdi, rbx
+  .text:00000000011AA641                 xor     r15d, r15d
+  .text:00000000011AA644                 call    qword ptr [rax+498h]
+  .text:00000000011AA64A                 jmp     short loc_11AA5D0
+  .text:00000000011AA650                 mov     rax, [r12]
+  .text:00000000011AA654                 mov     rdi, r12
+  .text:00000000011AA657                 call    qword ptr [rax+0D18h]
+  .text:00000000011AA65D                 test    al, al
+  .text:00000000011AA65F                 jz      loc_11AA540
+  .text:00000000011AA665                 mov     rax, [r12]
+  .text:00000000011AA669                 mov     rdi, r12
+  .text:00000000011AA66C                 mov     rax, [rax+0D18h]
+  .text:00000000011AA673                 test    r15b, r15b
+  .text:00000000011AA676                 jz      loc_11AA7F0
+  .text:00000000011AA67C                 call    rax
+  .text:00000000011AA67E                 test    al, al
+  .text:00000000011AA680                 jz      loc_11AA4F0
+  .text:00000000011AA686                 mov     rdi, [r12+0E80h]
+  .text:00000000011AA68E                 add     rsp, 8
+  .text:00000000011AA692                 pop     rbx
+  .text:00000000011AA693                 pop     r12
+  .text:00000000011AA695                 pop     r13
+  .text:00000000011AA697                 pop     r14
+  .text:00000000011AA699                 pop     r15
+  .text:00000000011AA69B                 pop     rbp
+  .text:00000000011AA69C                 jmp     CCSPlayer_ItemServices_GiveDefaultItems
+  .text:00000000011AA6A8                 lea     rdi, aPlayerspawn; "PlayerSpawn"
+  .text:00000000011AA6AF                 xor     eax, eax
+  .text:00000000011AA6B1                 call    sub_9803D0
+  .text:00000000011AA6B6                 nop     word ptr [rax+rax+00000000h]
+  .text:00000000011AA6C0                 mov     ebx, [rbx+120h]
+  .text:00000000011AA6C6                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA6CB                 mov     rdi, r13
+  .text:00000000011AA6CE                 call    sub_A555D0
+  .text:00000000011AA6D3                 mov     ecx, eax
+  .text:00000000011AA6D5                 mov     eax, ebx
+  .text:00000000011AA6D7                 cdq
+  .text:00000000011AA6D8                 idiv    ecx
+  .text:00000000011AA6DA                 test    edx, edx
+  .text:00000000011AA6DC                 jnz     loc_11AA59E
+  .text:00000000011AA6E2                 lea     rdi, [r12+0FF8h]
+  .text:00000000011AA6EA                 call    sub_A40BA0
+  .text:00000000011AA6EF                 test    rax, rax
+  .text:00000000011AA6F2                 jz      loc_11AA59E
+  .text:00000000011AA6F8                 mov     rbx, [rax]
+  .text:00000000011AA6FB                 test    rbx, rbx
+  .text:00000000011AA6FE                 jz      loc_11AA59E
+  .text:00000000011AA704                 mov     rdi, [rbx+0AB0h]
+  .text:00000000011AA70B                 call    sub_13FA9F0
+  .text:00000000011AA710                 mov     rbx, [rbx+0AB0h]
+  .text:00000000011AA717                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA71C                 lea     rdi, unk_2542AF0
+  .text:00000000011AA723                 call    sub_A555D0
+  .text:00000000011AA728                 xor     ecx, ecx
+  .text:00000000011AA72A                 mov     edx, 1
+  .text:00000000011AA72F                 mov     esi, eax
+  .text:00000000011AA731                 mov     rdi, rbx
+  .text:00000000011AA734                 call    sub_1408A90
+  .text:00000000011AA739                 jmp     loc_11AA59E
+  .text:00000000011AA740                 mov     r14d, [rbx+120h]
+  .text:00000000011AA747                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA74C                 mov     rdi, r13
+  .text:00000000011AA74F                 call    sub_A555D0
+  .text:00000000011AA754                 mov     ecx, eax
+  .text:00000000011AA756                 mov     eax, r14d
+  .text:00000000011AA759                 cdq
+  .text:00000000011AA75A                 idiv    ecx
+  .text:00000000011AA75C                 test    edx, edx
+  .text:00000000011AA75E                 jnz     loc_11AA577
+  .text:00000000011AA764                 mov     rdi, [r12+0E80h]
+  .text:00000000011AA76C                 mov     esi, 1
+  .text:00000000011AA771                 mov     rax, [rdi]
+  .text:00000000011AA774                 call    qword ptr [rax+0C0h]
+  .text:00000000011AA77A                 jmp     loc_11AA577
+  .text:00000000011AA780                 lea     rdi, unk_2542730
+  .text:00000000011AA787                 mov     esi, 0FFFFFFFFh
+  .text:00000000011AA78C                 call    sub_A555D0
+  .text:00000000011AA791                 cmp     eax, 1
+  .text:00000000011AA794                 jnz     loc_11AA5B3
+  .text:00000000011AA79A                 mov     rax, [r12]
+  .text:00000000011AA79E                 mov     rdi, r12
+  .text:00000000011AA7A1                 call    qword ptr [rax+0D18h]
+  .text:00000000011AA7A7                 test    al, al
+  .text:00000000011AA7A9                 jz      loc_11AA4F0
+  .text:00000000011AA7AF                 mov     rdi, [r12+0E80h]
+  .text:00000000011AA7B7                 call    sub_1351BD0
+  .text:00000000011AA7BC                 jmp     loc_11AA5B3
+  .text:00000000011AA7C8                 mov     rax, cs:qword_2542658
+  .text:00000000011AA7CF                 mov     rax, [rax+8]
+  .text:00000000011AA7D3                 jmp     loc_11AA594
+  .text:00000000011AA7E0                 mov     rax, cs:qword_2542668
+  .text:00000000011AA7E7                 mov     rax, [rax+8]
+  .text:00000000011AA7EB                 jmp     loc_11AA56D
+  .text:00000000011AA7F0                 call    rax
+  .text:00000000011AA7F2                 test    al, al
+  .text:00000000011AA7F4                 jz      loc_11AA4F0
+  .text:00000000011AA7FA                 mov     rdi, [r12+0E80h]
+  .text:00000000011AA802                 add     rsp, 8
+  .text:00000000011AA806                 pop     rbx
+  .text:00000000011AA807                 pop     r12
+  .text:00000000011AA809                 pop     r13
+  .text:00000000011AA80B                 pop     r14
+  .text:00000000011AA80D                 pop     r15
+  .text:00000000011AA80F                 pop     rbp
+  .text:00000000011AA810                 jmp     sub_1356720
+procedure: |-
+  __int64 __fastcall CCSGameRules_PlayerSpawn(__int64 a1, __int64 a2, double a3, float a4)
+  {
+    __int64 v4; // rbx
+    _QWORD **v5; // r12
+    void *v6; // r13
+    __int64 result; // rax
+    int *v8; // rax
+    int *v9; // rax
+    bool v10; // r15
+    __int64 v11; // rbx
+    __int64 v12; // rax
+    __int64 v13; // rax
+    int v14; // eax
+    _QWORD *v15; // rdi
+    unsigned __int8 (__fastcall *v16)(_QWORD **); // rax
+    int v17; // ebx
+    __int64 *v18; // rax
+    __int64 v19; // rbx
+    __int64 v20; // rbx
+    __int64 v21; // rsi
+    int v22; // r14d
+
+    if ( !a2 || (v4 = a1, v5 = (_QWORD **)a2, !(*(unsigned __int8 (__fastcall **)(__int64))(*(_QWORD *)a2 + 1336LL))(a2)) )
+    {
+      sub_9803D0("PlayerSpawn");
+  LABEL_26:
+      v17 = *(_DWORD *)(v4 + 288);
+      if ( !(v17 % (int)sub_A555D0(v6, 0xFFFFFFFFLL)) )
+      {
+        v18 = (__int64 *)sub_A40BA0(v5 + 511);
+        if ( v18 )
+        {
+          v19 = *v18;
+          if ( *v18 )
+          {
+            sub_13FA9F0(*(_QWORD *)(v19 + 2736));
+            v20 = *(_QWORD *)(v19 + 2736);
+            v21 = (unsigned int)sub_A555D0(&unk_2542AF0, 0xFFFFFFFFLL);
+            sub_1408A90(v20, v21, 1, 0);
+          }
+        }
+      }
+      goto LABEL_11;
+    }
+    result = *(unsigned int *)(a2 + 4240);
+    if ( (_DWORD)result )
+      return result;
+    v8 = (int *)sub_1A872F0((__int64)&unk_2542660, -1);
+    if ( !v8 )
+      v8 = *(int **)(qword_2542668 + 8);
+    if ( *v8 > 0 )
+    {
+      v22 = *(_DWORD *)(a1 + 288);
+      if ( !(v22 % (int)sub_A555D0(&unk_2542660, 0xFFFFFFFFLL)) )
+        (*(void (__fastcall **)(_QWORD, __int64))(**(_QWORD **)(a2 + 3712) + 192LL))(*(_QWORD *)(a2 + 3712), 1);
+    }
+    v6 = &unk_2542650;
+    v9 = (int *)sub_1A872F0((__int64)&unk_2542650, -1);
+    if ( !v9 )
+      v9 = *(int **)(qword_2542658 + 8);
+    if ( *v9 > 0 )
+      goto LABEL_26;
+  LABEL_11:
+    if ( ((unsigned __int8 (__fastcall *)(_QWORD **))(*v5)[419])(v5)
+      && (unsigned int)sub_A555D0(&unk_2542730, 0xFFFFFFFFLL) == 1 )
+    {
+      if ( !((unsigned __int8 (__fastcall *)(_QWORD **))(*v5)[419])(v5) )
+        goto LABEL_37;
+      sub_1351BD0(v5[464]);
+    }
+    v10 = *((_BYTE *)v5 + 1572) > 1u;
+    v11 = 0;
+    while ( 1 )
+    {
+      v12 = CGameEntitySystem_FindEntityByClassName(qword_259B430, v11, "game_player_equip");
+      v11 = v12;
+      if ( !v12 )
+        break;
+      v13 = sub_975D50(v12, &`typeinfo for'CBaseEntity, &`typeinfo for'CGamePlayerEquip, 0);
+      if ( v13 )
+      {
+        v14 = *(_DWORD *)(v13 + 1600);
+        if ( (v14 & 1) == 0 )
+        {
+          if ( v10 && (v14 & 2) != 0 )
+          {
+            v15 = v5[464];
+            if ( v15 )
+              (*(void (__fastcall **)(_QWORD *, __int64))(*v15 + 192LL))(v15, 1);
+          }
+          v10 = 0;
+          (*(void (__fastcall **)(__int64, _QWORD **))(*(_QWORD *)v11 + 1176LL))(v11, v5);
+        }
+      }
+    }
+    result = ((__int64 (__fastcall *)(_QWORD **))(*v5)[419])(v5);
+    if ( (_BYTE)result )
+    {
+      v16 = (unsigned __int8 (__fastcall *)(_QWORD **))(*v5)[419];
+      if ( v10 )
+      {
+        if ( v16(v5) )
+          return CCSPlayer_ItemServices_GiveDefaultItems(v5[464], a3, a4);
+      }
+      else if ( v16(v5) )
+      {
+        return sub_1356720(v5[464]);
+      }
+  LABEL_37:
+      BUG();
+    }
+    return result;
+  }

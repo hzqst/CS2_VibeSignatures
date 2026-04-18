@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CCSPlayer_WeaponServices_SelectItem skill."""
+"""Preprocess script for find-CEntFireOutputAutoCompletionFunctor_FireOutput skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CCSPlayer_WeaponServices_SelectItem",
+    "CEntFireOutputAutoCompletionFunctor_FireOutput",
 ]
 
 FUNC_XREFS = [
     {
-        "func_name": "CCSPlayer_WeaponServices_SelectItem",
-        "xref_strings": [],
+        "func_name": "CEntFireOutputAutoCompletionFunctor_FireOutput",
+        "xref_strings": [
+            "Couldn't find output named '%s' on entity '%s'.",
+        ],
         "xref_gvs": [],
         "xref_signatures": [],
-        "xref_funcs": ["CCSPlayerPawn_OnItemEquip"],
+        "xref_funcs": [],
         "exclude_funcs": [],
         "exclude_strings": [],
         "exclude_gvs": [],
@@ -23,13 +25,13 @@ FUNC_XREFS = [
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CCSPlayer_WeaponServices_SelectItem", "CCSPlayer_WeaponServices"),
+    ("CEntFireOutputAutoCompletionFunctor_FireOutput", "CEntFireOutputAutoCompletionFunctor"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CCSPlayer_WeaponServices_SelectItem",
+        "CEntFireOutputAutoCompletionFunctor_FireOutput",
         [
             "func_name",
             "func_va",
