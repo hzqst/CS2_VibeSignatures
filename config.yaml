@@ -2388,6 +2388,12 @@ modules:
         expected_input:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_SaveGame_Start
+        expected_output:
+          - CSpawnGroupMgrGameSystem_SaveGame_Start.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
       - name: find-IGameSystem_SpawnGroupPrecache
         expected_output:
           - IGameSystem_SpawnGroupPrecache.{platform}.yaml
@@ -3701,6 +3707,11 @@ modules:
         category: vfunc
         alias:
           - CSpawnGroupMgrGameSystem::UnloadSpawnGroup
+
+      - name: CSpawnGroupMgrGameSystem_SaveGame_Start
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::SaveGame_Start
 
       - name: IGameSystem_SpawnGroupPrecache
         category: vfunc
