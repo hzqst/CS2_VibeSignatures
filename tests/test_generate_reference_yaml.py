@@ -677,6 +677,64 @@ class TestParsePyEvalJsonResult(unittest.TestCase):
 
 
 class TestExportReferencePayload(unittest.IsolatedAsyncioTestCase):
+    async def test_export_reference_payload_uses_shared_py_eval_builder(self) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": "",
+            }
+        )
+
+        with patch.object(
+            generate_reference_yaml,
+            "build_function_detail_export_py_eval",
+            return_value="PY-CODE",
+        ) as mock_builder:
+            payload = await generate_reference_yaml.export_reference_payload_via_mcp(
+                session=session,
+                func_name="CNetworkMessages_FindNetworkGroup",
+                func_va="0x180123450",
+                debug=False,
+            )
+
+        mock_builder.assert_called_once_with(0x180123450)
+        session.call_tool.assert_awaited_once_with(
+            name="py_eval",
+            arguments={"code": "PY-CODE"},
+        )
+        self.assertEqual(
+            {
+                "func_name": "CNetworkMessages_FindNetworkGroup",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": "",
+            },
+            payload,
+        )
+
+    async def test_export_reference_payload_raises_when_shared_builder_throws(self) -> None:
+        session = AsyncMock()
+
+        with (
+            patch.object(
+                generate_reference_yaml,
+                "build_function_detail_export_py_eval",
+                side_effect=Exception("boom"),
+            ),
+            self.assertRaises(generate_reference_yaml.ReferenceGenerationError) as ctx,
+        ):
+            await generate_reference_yaml.export_reference_payload_via_mcp(
+                session=session,
+                func_name="CNetworkMessages_FindNetworkGroup",
+                func_va="0x180123450",
+                debug=False,
+            )
+
+        self.assertEqual("unable to export reference payload via IDA", str(ctx.exception))
+
     async def test_export_reference_payload_keeps_empty_procedure_when_hexrays_missing(
         self,
     ) -> None:

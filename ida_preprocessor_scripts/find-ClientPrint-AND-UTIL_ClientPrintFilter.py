@@ -1,25 +1,41 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-GetCSWeaponDataFromKey skill."""
+"""Preprocess script for find-ClientPrint-AND-UTIL_ClientPrintFilter skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "GetCSWeaponDataFromKey",
+    "ClientPrint",
+    "UTIL_ClientPrintFilter",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "GetCSWeaponDataFromKey",
+        "ClientPrint",
         "prompt/call_llm_decompile.md",
-        "references/server/CSmokeGrenadeProjectile_Create.{platform}.yaml",
+        "references/server/CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml",
+    ),
+    (
+        "UTIL_ClientPrintFilter",
+        "prompt/call_llm_decompile.md",
+        "references/server/CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml",
     ),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "GetCSWeaponDataFromKey",
+        "ClientPrint",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
+        ],
+    ),
+    (
+        "UTIL_ClientPrintFilter",
         [
             "func_name",
             "func_sig",

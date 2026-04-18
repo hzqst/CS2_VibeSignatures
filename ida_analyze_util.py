@@ -1206,56 +1206,246 @@ async def _find_function_addr_by_names_via_mcp(session, candidate_names, debug=F
     return resolved_matches[0]
 
 
+def build_function_detail_export_py_eval(func_va_int: int) -> str:
+    return textwrap.dedent(
+        fr"""
+        import ida_bytes, ida_funcs, ida_lines, ida_segment, idautils, idc, json
+        try:
+            import ida_hexrays
+        except Exception:
+            ida_hexrays = None
+
+        func_ea = {func_va_int}
+
+        def _append_chunk_range(chunk_ranges, start_ea, end_ea):
+            try:
+                start_ea = int(start_ea)
+                end_ea = int(end_ea)
+            except Exception:
+                return
+            if start_ea < end_ea:
+                chunk_ranges.append((start_ea, end_ea))
+
+        def _collect_chunk_ranges(func):
+            chunk_ranges = []
+            try:
+                initial_chunk_ranges = []
+                for start_ea, end_ea in idautils.Chunks(func.start_ea):
+                    _append_chunk_range(initial_chunk_ranges, start_ea, end_ea)
+                chunk_ranges = initial_chunk_ranges
+            except Exception:
+                pass
+            if not chunk_ranges:
+                tail_chunk_ranges = []
+                try:
+                    try:
+                        tail_iterator = ida_funcs.func_tail_iterator_t(func)
+                    except Exception:
+                        tail_iterator = ida_funcs.func_tail_iterator_t()
+                        if not tail_iterator.set_ea(func.start_ea):
+                            tail_iterator = None
+                    if tail_iterator is not None and tail_iterator.first():
+                        while True:
+                            chunk = tail_iterator.chunk()
+                            _append_chunk_range(
+                                tail_chunk_ranges,
+                                getattr(chunk, 'start_ea', None),
+                                getattr(chunk, 'end_ea', None),
+                            )
+                            if not tail_iterator.next():
+                                break
+                except Exception:
+                    tail_chunk_ranges = []
+                if tail_chunk_ranges:
+                    _append_chunk_range(
+                        tail_chunk_ranges,
+                        func.start_ea,
+                        func.end_ea,
+                    )
+                    chunk_ranges = tail_chunk_ranges
+            if not chunk_ranges:
+                chunk_ranges = [(int(func.start_ea), int(func.end_ea))]
+            return sorted(set(chunk_ranges))
+
+        def _find_chunk_end(ea, chunk_ranges):
+            for start_ea, end_ea in chunk_ranges:
+                if start_ea <= ea < end_ea:
+                    return end_ea
+            return None
+
+        def _is_in_chunk_ranges(ea, chunk_ranges):
+            return _find_chunk_end(ea, chunk_ranges) is not None
+
+        def _format_address(ea):
+            seg = ida_segment.getseg(ea)
+            seg_name = ida_segment.get_segm_name(seg) if seg else ''
+            return f"{{seg_name}}:{{ea:016X}}" if seg_name else f"{{ea:016X}}"
+
+        def _iter_comment_lines(ea):
+            seen = set()
+            for repeatable in (0, 1):
+                try:
+                    comment = idc.get_cmt(ea, repeatable)
+                except Exception:
+                    comment = None
+                if not comment:
+                    continue
+                text = ida_lines.tag_remove(comment).strip()
+                if text and text not in seen:
+                    seen.add(text)
+                    yield text
+
+            get_extra_cmt = getattr(idc, 'get_extra_cmt', None)
+            if get_extra_cmt is None:
+                return
+
+            for index in range(-10, 11):
+                try:
+                    comment = get_extra_cmt(ea, index)
+                except Exception:
+                    continue
+                if not comment:
+                    continue
+                text = ida_lines.tag_remove(comment).strip()
+                if text and text not in seen:
+                    seen.add(text)
+                    yield text
+
+        def _iter_chunk_code_heads(chunk_ranges):
+            for start_ea, end_ea in chunk_ranges:
+                ea = int(start_ea)
+                while ea != idc.BADADDR and ea < end_ea:
+                    try:
+                        flags = ida_bytes.get_flags(ea)
+                    except Exception:
+                        break
+                    if ida_bytes.is_code(flags):
+                        yield ea
+                    try:
+                        next_ea = idc.next_head(ea, end_ea)
+                    except Exception:
+                        break
+                    if next_ea == idc.BADADDR or next_ea <= ea:
+                        break
+                    ea = next_ea
+
+        def _render_disasm_lines(eas):
+            lines = []
+            for ea in eas:
+                ea = int(ea)
+                address_text = _format_address(ea)
+                for comment in _iter_comment_lines(ea):
+                    lines.append(f"{{address_text}}                 ; {{comment}}")
+                disasm_line = ida_lines.tag_remove(idc.generate_disasm_line(ea, 0) or '').strip()
+                if disasm_line:
+                    lines.append(f"{{address_text}}                 {{disasm_line}}")
+            return '\n'.join(lines).strip()
+
+        def get_disasm(start_ea):
+            func = ida_funcs.get_func(start_ea)
+            if func is None:
+                return ''
+
+            chunk_ranges = _collect_chunk_ranges(func)
+            fallback_eas = sorted(set(int(ea) for ea in _iter_chunk_code_heads(chunk_ranges)))
+            if not fallback_eas:
+                return ''
+
+            try:
+                pending_eas = [int(func.start_ea)]
+                visited_eas = set()
+                collected_eas = set()
+                code_head_count = len(fallback_eas)
+                max_steps = code_head_count * 4 + 256
+                steps = 0
+
+                while pending_eas and steps < max_steps:
+                    ea = int(pending_eas.pop())
+                    while True:
+                        if not _is_in_chunk_ranges(ea, chunk_ranges):
+                            break
+                        flags = ida_bytes.get_flags(ea)
+                        if not ida_bytes.is_code(flags):
+                            break
+                        if ea in visited_eas:
+                            break
+
+                        visited_eas.add(ea)
+                        collected_eas.add(ea)
+                        steps += 1
+
+                        mnem = (idc.print_insn_mnem(ea) or '').lower()
+                        refs = [
+                            int(ref)
+                            for ref in idautils.CodeRefsFrom(ea, False)
+                            if _is_in_chunk_ranges(int(ref), chunk_ranges)
+                        ]
+                        chunk_end = _find_chunk_end(ea, chunk_ranges)
+                        next_ea = idc.next_head(ea, chunk_end) if chunk_end is not None else idc.BADADDR
+
+                        if mnem in ('ret', 'retn', 'retf', 'iret', 'iretd', 'iretq', 'int3', 'hlt', 'ud2'):
+                            break
+                        if mnem == 'jmp':
+                            for ref in reversed(refs):
+                                if ref not in visited_eas:
+                                    pending_eas.append(ref)
+                            break
+                        if mnem.startswith('j'):
+                            for ref in reversed(refs):
+                                if ref not in visited_eas:
+                                    pending_eas.append(ref)
+                            if next_ea == idc.BADADDR or next_ea <= ea:
+                                break
+                            ea = int(next_ea)
+                            continue
+                        if next_ea == idc.BADADDR or next_ea <= ea:
+                            break
+                        ea = int(next_ea)
+
+                collected_eas.update(fallback_eas)
+                return _render_disasm_lines(sorted(collected_eas))
+            except Exception:
+                return _render_disasm_lines(fallback_eas)
+
+        def get_pseudocode(start_ea):
+            if ida_hexrays is None:
+                return ''
+            try:
+                if not ida_hexrays.init_hexrays_plugin():
+                    return ''
+                cfunc = ida_hexrays.decompile(start_ea)
+            except Exception:
+                return ''
+            if not cfunc:
+                return ''
+            return '\n'.join(ida_lines.tag_remove(line.line) for line in cfunc.get_pseudocode())
+
+        globals().update(locals())
+
+        func = ida_funcs.get_func(func_ea)
+        if func is None:
+            raise ValueError(f"Function not found: {{hex(func_ea)}}")
+
+        func_start = int(func.start_ea)
+        result = json.dumps(
+            {{
+                "func_name": ida_funcs.get_func_name(func_start) or f"sub_{{func_start:X}}",
+                "func_va": hex(func_start),
+                "disasm_code": get_disasm(func_start),
+                "procedure": get_pseudocode(func_start),
+            }}
+        )
+        """
+    ).strip() + "\n"
+
+
 async def _export_function_detail_via_mcp(session, func_name, func_va, debug=False):
     try:
         func_va_int = _parse_int_value(func_va)
     except Exception:
         return None
 
-    py_code = (
-        "import ida_funcs, ida_lines, ida_segment, idautils, idc, json\n"
-        "try:\n"
-        "    import ida_hexrays\n"
-        "except Exception:\n"
-        "    ida_hexrays = None\n"
-        f"func_ea = {func_va_int}\n"
-        "def get_disasm(start_ea):\n"
-        "    func = ida_funcs.get_func(start_ea)\n"
-        "    if func is None:\n"
-        "        return ''\n"
-        "    lines = []\n"
-        "    for ea in idautils.FuncItems(func.start_ea):\n"
-        "        if ea < func.start_ea or ea >= func.end_ea:\n"
-        "            continue\n"
-        "        seg = ida_segment.getseg(ea)\n"
-        "        seg_name = ida_segment.get_segm_name(seg) if seg else ''\n"
-        "        address_text = f'{seg_name}:{ea:016X}' if seg_name else f'{ea:016X}'\n"
-        "        disasm_line = idc.generate_disasm_line(ea, 0) or ''\n"
-        "        lines.append(f\"{address_text}                 {ida_lines.tag_remove(disasm_line)}\")\n"
-        "    return '\\n'.join(lines)\n"
-        "def get_pseudocode(start_ea):\n"
-        "    if ida_hexrays is None:\n"
-        "        return ''\n"
-        "    try:\n"
-        "        if not ida_hexrays.init_hexrays_plugin():\n"
-        "            return ''\n"
-        "        cfunc = ida_hexrays.decompile(start_ea)\n"
-        "    except Exception:\n"
-        "        return ''\n"
-        "    if not cfunc:\n"
-        "        return ''\n"
-        "    return '\\n'.join(ida_lines.tag_remove(line.line) for line in cfunc.get_pseudocode())\n"
-        "func = ida_funcs.get_func(func_ea)\n"
-        "if func is None:\n"
-        "    raise ValueError(f'Function not found: {hex(func_ea)}')\n"
-        "func_start = int(func.start_ea)\n"
-        "result = json.dumps({\n"
-        "    'func_name': ida_funcs.get_func_name(func_start) or f'sub_{func_start:X}',\n"
-        "    'func_va': hex(func_start),\n"
-        "    'disasm_code': get_disasm(func_start),\n"
-        "    'procedure': get_pseudocode(func_start),\n"
-        "})\n"
-    )
+    py_code = build_function_detail_export_py_eval(func_va_int)
 
     try:
         eval_result = await session.call_tool(
@@ -4813,6 +5003,44 @@ def _parse_int_value(value):
     return int(value)
 
 
+def _is_explicit_address_literal(value):
+    """Return True when *value* is an explicit hex address like ``0x180012340``."""
+    if not isinstance(value, str):
+        return False
+    raw = value.strip()
+    return len(raw) > 2 and raw.lower().startswith("0x")
+
+
+def _load_gv_or_explicit_ea(
+    new_binary_dir,
+    platform,
+    gv_spec,
+    *,
+    debug=False,
+    debug_label="gv",
+):
+    normalized_gv_spec = str(gv_spec or "").strip()
+    if _is_explicit_address_literal(normalized_gv_spec):
+        try:
+            return _parse_int_value(normalized_gv_spec)
+        except Exception:
+            if debug:
+                print(
+                    f"    Preprocess: invalid explicit address for "
+                    f"{debug_label}: {gv_spec}"
+                )
+            return None
+
+    return _load_symbol_addr_from_current_yaml(
+        new_binary_dir,
+        platform,
+        normalized_gv_spec,
+        "gv_va",
+        debug=debug,
+        debug_label=debug_label,
+    )
+
+
 def _load_symbol_addr_from_current_yaml(
     new_binary_dir,
     platform,
@@ -5900,7 +6128,11 @@ async def preprocess_func_xrefs_via_mcp(
         return None
 
     dep_func_names = list(xref_funcs or []) + list(exclude_funcs or [])
-    dep_gv_names = list(xref_gvs or []) + list(exclude_gvs or [])
+    dep_gv_names = [
+        gv_name
+        for gv_name in list(xref_gvs or []) + list(exclude_gvs or [])
+        if not _is_explicit_address_literal(gv_name)
+    ]
     if dep_func_names or dep_gv_names or vtable_class:
         if not new_binary_dir:
             if debug:
@@ -5938,11 +6170,10 @@ async def preprocess_func_xrefs_via_mcp(
         candidate_sets.append(addr_set)
 
     for xref_gv_name in (xref_gvs or []):
-        xref_gv_va = _load_symbol_addr_from_current_yaml(
+        xref_gv_va = _load_gv_or_explicit_ea(
             new_binary_dir,
             platform,
             xref_gv_name,
-            "gv_va",
             debug=debug,
             debug_label="xref_gv",
         )
@@ -6105,11 +6336,10 @@ async def preprocess_func_xrefs_via_mcp(
 
     excluded_gv_func_addrs = set()
     for excluded_gv_name in (exclude_gvs or []):
-        excluded_gv_va = _load_symbol_addr_from_current_yaml(
+        excluded_gv_va = _load_gv_or_explicit_ea(
             new_binary_dir,
             platform,
             excluded_gv_name,
-            "gv_va",
             debug=debug,
             debug_label="exclude_gv",
         )
@@ -6303,10 +6533,19 @@ def _can_probe_future_func_fast_path(
     if not isinstance(xref_spec, dict):
         return True
 
-    dependency_symbol_names = list(xref_spec.get("xref_funcs") or []) + list(
-        xref_spec.get("exclude_funcs") or []
-    ) + list(xref_spec.get("xref_gvs") or []) + list(
-        xref_spec.get("exclude_gvs") or []
+    dependency_symbol_names = (
+        list(xref_spec.get("xref_funcs") or [])
+        + list(xref_spec.get("exclude_funcs") or [])
+        + [
+            gv_name
+            for gv_name in (xref_spec.get("xref_gvs") or [])
+            if not _is_explicit_address_literal(gv_name)
+        ]
+        + [
+            gv_name
+            for gv_name in (xref_spec.get("exclude_gvs") or [])
+            if not _is_explicit_address_literal(gv_name)
+        ]
     )
     if not dependency_symbol_names:
         return True
@@ -6393,8 +6632,10 @@ async def preprocess_common_skill(
       ``func_name`` plus list fields for positive xref sources
       (``xref_strings``, ``xref_gvs``, ``xref_signatures``, ``xref_funcs``)
       and exclusions (``exclude_funcs``, ``exclude_strings``,
-      ``exclude_gvs``, ``exclude_signatures``). Dependency symbol addresses
-      are read only from current-version YAML files in ``new_binary_dir``.
+      ``exclude_gvs``, ``exclude_signatures``). ``xref_gvs``/``exclude_gvs``
+      entries may be YAML symbol names or explicit ``0x...`` addresses.
+      Symbolic entries are resolved from current-version YAML files in
+      ``new_binary_dir``.
       Used as a fallback when ``preprocess_func_sig_via_mcp`` fails for a
       func target that has a matching func-xref entry, or as the sole
       resolution method for func targets that only appear in this list.

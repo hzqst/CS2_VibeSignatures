@@ -23,7 +23,7 @@ except ImportError:
     ClientSession = None
     streamable_http_client = None
 
-from ida_analyze_util import parse_mcp_result
+from ida_analyze_util import build_function_detail_export_py_eval, parse_mcp_result
 
 
 class ReferenceGenerationError(RuntimeError):
@@ -438,52 +438,9 @@ async def export_reference_payload_via_mcp(
         raise ReferenceGenerationError("unable to export reference payload via IDA")
 
     func_va_int = int(normalized_input_func_va, 0)
-    py_code = (
-        "import ida_funcs, ida_lines, ida_segment, idautils, idc, json\n"
-        "try:\n"
-        "    import ida_hexrays\n"
-        "except Exception:\n"
-        "    ida_hexrays = None\n"
-        f"func_ea = {func_va_int}\n"
-        "def get_disasm(start_ea):\n"
-        "    func = ida_funcs.get_func(start_ea)\n"
-        "    if func is None:\n"
-        "        return ''\n"
-        "    lines = []\n"
-        "    for ea in idautils.FuncItems(func.start_ea):\n"
-        "        if ea < func.start_ea or ea >= func.end_ea:\n"
-        "            continue\n"
-        "        seg = ida_segment.getseg(ea)\n"
-        "        seg_name = ida_segment.get_segm_name(seg) if seg else ''\n"
-        "        address_text = f'{seg_name}:{ea:016X}' if seg_name else f'{ea:016X}'\n"
-        "        disasm_line = idc.generate_disasm_line(ea, 0) or ''\n"
-        "        lines.append(f\"{address_text}                 {ida_lines.tag_remove(disasm_line)}\")\n"
-        "    return '\\n'.join(lines)\n"
-        "def get_pseudocode(start_ea):\n"
-        "    if ida_hexrays is None:\n"
-        "        return ''\n"
-        "    try:\n"
-        "        if not ida_hexrays.init_hexrays_plugin():\n"
-        "            return ''\n"
-        "        cfunc = ida_hexrays.decompile(start_ea)\n"
-        "    except Exception:\n"
-        "        return ''\n"
-        "    if not cfunc:\n"
-        "        return ''\n"
-        "    return '\\n'.join(ida_lines.tag_remove(line.line) for line in cfunc.get_pseudocode())\n"
-        "func = ida_funcs.get_func(func_ea)\n"
-        "if func is None:\n"
-        "    raise ValueError(f'Function not found: {hex(func_ea)}')\n"
-        "func_start = int(func.start_ea)\n"
-        "result = json.dumps({\n"
-        "    'func_name': ida_funcs.get_func_name(func_start) or f'sub_{func_start:X}',\n"
-        "    'func_va': hex(func_start),\n"
-        "    'disasm_code': get_disasm(func_start),\n"
-        "    'procedure': get_pseudocode(func_start),\n"
-        "})\n"
-    )
 
     try:
+        py_code = build_function_detail_export_py_eval(func_va_int)
         eval_result = await session.call_tool(
             name="py_eval",
             arguments={"code": py_code},

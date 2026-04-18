@@ -1,25 +1,41 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-GetCSWeaponDataFromKey skill."""
+"""Preprocess script for find-DispatchParticleEffect-AND-UTIL_PlayerSlotToPlayerPawn skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "GetCSWeaponDataFromKey",
+    "DispatchParticleEffect",
+    "UTIL_PlayerSlotToPlayerPawn",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "GetCSWeaponDataFromKey",
+        "DispatchParticleEffect",
         "prompt/call_llm_decompile.md",
-        "references/server/CSmokeGrenadeProjectile_Create.{platform}.yaml",
+        "references/server/ParticleTestStart_CommandHandler.{platform}.yaml",
+    ),
+    (
+        "UTIL_PlayerSlotToPlayerPawn",
+        "prompt/call_llm_decompile.md",
+        "references/server/ParticleTestStart_CommandHandler.{platform}.yaml",
     ),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "GetCSWeaponDataFromKey",
+        "DispatchParticleEffect",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
+        ],
+    ),
+    (
+        "UTIL_PlayerSlotToPlayerPawn",
         [
             "func_name",
             "func_sig",

@@ -434,8 +434,8 @@ modules:
         expected_output:
           - CServerSideClient_IsHearingClient.{platform}.yaml
         expected_input:
+          - CNetworkGameServerBase_SendPeerList.{platform}.yaml
           - CServerSideClient_vtable.{platform}.yaml
-          - CSVCMsg_PeerList_t_vtable.{platform}.yaml
 
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
@@ -446,6 +446,12 @@ modules:
           - CGameResourceService_m_pEntitySystem.{platform}.yaml
         expected_input:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
+
+      - name: find-CNetworkGameServerBase_SendPeerList
+        expected_output:
+          - CNetworkGameServerBase_SendPeerList.{platform}.yaml
+        expected_input:
+          - CSVCMsg_PeerList_t_vtable.{platform}.yaml
 
       - name: find-CNetworkGameServerBase_ConnectClient
         expected_output:
@@ -610,6 +616,11 @@ modules:
         alias:
           - CServerSideClientBase::ClientPrintf
           - ClientPrintf
+
+      - name: CNetworkGameServerBase_SendPeerList
+        category: func
+        alias:
+          - CNetworkGameServerBase::SendPeerList
 
       - name: CNetworkGameServerBase_ConnectClient
         category: func
@@ -1506,6 +1517,10 @@ modules:
           - CFlashbangProjectile_vtable.{platform}.yaml
           - CBaseEntity_Spawn.{platform}.yaml
 
+      - name: find-CSmokeGrenadeProjectile_Create
+        expected_output:
+          - CSmokeGrenadeProjectile_Create.{platform}.yaml
+
       - name: find-CBaseModelEntity_SetModel-AND-CBaseEntity_SetGravityScale
         expected_output:
           - CBaseModelEntity_SetModel.{platform}.yaml
@@ -1547,6 +1562,10 @@ modules:
       - name: find-FireTarget_CommandHandler
         expected_output:
           - FireTarget_CommandHandler.{platform}.yaml
+
+      - name: find-ParticleTestStart_CommandHandler
+        expected_output:
+          - ParticleTestStart_CommandHandler.{platform}.yaml
 
       - name: find-g_pGameRules-AND-CGameRules_FindPickerEntity
         expected_output:
@@ -1706,6 +1725,17 @@ modules:
         expected_input:
           - CCSPlayerPawn_vtable.{platform}.yaml
 
+      - name: find-CCSPlayerPawn_ProcessSuicideAsKillReward
+        expected_output:
+          - CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml
+
+      - name: find-ClientPrint-AND-UTIL_ClientPrintFilter
+        expected_output:
+          - ClientPrint.{platform}.yaml
+          - UTIL_ClientPrintFilter.{platform}.yaml
+        expected_input:
+          - CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml
+
       - name: find-CSource2Server_Init
         expected_output:
           - CSource2Server_Init.{platform}.yaml
@@ -1772,6 +1802,8 @@ modules:
       - name: find-GetCSWeaponDataFromKey
         expected_output:
           - GetCSWeaponDataFromKey.{platform}.yaml
+        expected_input:
+          - CSmokeGrenadeProjectile_Create.{platform}.yaml
 
       - name: find-GiveNamedItem
         expected_output:
@@ -2341,9 +2373,12 @@ modules:
           - CGamePlayerEquip_InputTriggerForAllPlayers.{platform}.yaml
           - CGamePlayerEquip_InputTriggerForActivatedPlayer.{platform}.yaml
 
-      - name: find-DispatchParticleEffect
+      - name: find-DispatchParticleEffect-AND-UTIL_PlayerSlotToPlayerPawn
         expected_output:
           - DispatchParticleEffect.{platform}.yaml
+          - UTIL_PlayerSlotToPlayerPawn.{platform}.yaml
+        expected_input:
+          - ParticleTestStart_CommandHandler.{platform}.yaml
 
       - name: find-CNavMesh_GetNearestNavArea
         expected_output:
@@ -2764,6 +2799,11 @@ modules:
         alias:
           - CFlashbangProjectile::Spawn
 
+      - name: CSmokeGrenadeProjectile_Create
+        category: func
+        alias:
+          - CSmokeGrenadeProjectile::Create
+
       - name: CBaseModelEntity_SetModel
         category: func
         alias:
@@ -2810,6 +2850,9 @@ modules:
           - CSource2GameClients::ClientDisconnect
 
       - name: FireTarget_CommandHandler
+        category: func
+
+      - name: ParticleTestStart_CommandHandler
         category: func
 
       - name: g_pGameRules
@@ -2999,6 +3042,11 @@ modules:
           - CCSPlayerPawn_PostThink
           - PostThink
 
+      - name: CCSPlayerPawn_ProcessSuicideAsKillReward
+        category: func
+        alias:
+          - CCSPlayerPawn::ProcessSuicideAsKillReward
+
       - name: CGameRules_ClientSettingsChanged
         category: vfunc
         alias:
@@ -3008,9 +3056,6 @@ modules:
         category: vfunc
         alias:
           - CMultiplayRules::ClientDisconnected
-
-      - name: ClientPrint
-        category: func
 
       - name: CSource2Server_Init
         category: vfunc
@@ -3095,6 +3140,9 @@ modules:
         category: func
 
       - name: ClientPrint
+        category: func
+
+      - name: UTIL_ClientPrintFilter
         category: func
 
       - name: UTIL_ClientPrintAll
@@ -3582,6 +3630,9 @@ modules:
           - CGamePlayerEquip::InputTriggerForActivatedPlayer
 
       - name: DispatchParticleEffect
+        category: func
+
+      - name: UTIL_PlayerSlotToPlayerPawn
         category: func
 
       - name: CNavMesh_GetNearestNavArea
