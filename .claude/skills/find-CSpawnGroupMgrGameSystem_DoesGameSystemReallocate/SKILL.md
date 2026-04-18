@@ -54,7 +54,7 @@ Validate that `target_vfunc_index < vtable_numvfunc`, then read:
 
 - `candidate_func_addr = CSpawnGroupMgrGameSystem_vtable[target_vfunc_index]`
 
-This adjacent-slot rule is required because `IGameSystem::HasName` immediately follows `IGameSystem::SetName` in the `IGameSystem` vtable.
+This adjacent-slot rule is required because `IGameSystem::DoesGameSystemReallocate` immediately follows `IGameSystem::SetName` in the `IGameSystem` vtable.
 
 ### 5. Decompile and Verify the Candidate
 
@@ -132,8 +132,8 @@ VTable parameters:
 5. Verify the wrapper calls through the factory vtable at `IGameSystemFactory_DoesGameSystemReallocate.vfunc_offset`
 
 This is robust because:
-- The vtable adjacency (`SetName` followed by `HasName`) is a stable layout property
-- The wrapper function pattern (delegate to factory `HasName`) is distinctive
+- The vtable adjacency (`SetName` followed by `DoesGameSystemReallocate`) is a stable layout property
+- The wrapper function pattern (delegate to factory `DoesGameSystemReallocate`) is distinctive
 - Cross-checking the factory vfunc offset provides a second independent verification
 
 ## Output YAML Format
