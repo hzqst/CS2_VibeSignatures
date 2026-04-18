@@ -2137,6 +2137,8 @@ modules:
       - name: find-CGameEntitySystem_FindEntityByClassName
         expected_output:
           - CGameEntitySystem_FindEntityByClassName.{platform}.yaml
+        expected_input:
+          - CCSGameRules_PlayerSpawn.{platform}.yaml
 
       - name: find-CGameEntitySystem_FindEntityByName
         expected_output:
