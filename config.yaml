@@ -2148,9 +2148,12 @@ modules:
         expected_input:
           - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
 
-      - name: find-CEntitySystem_AddEntityIOEvent
+      - name: find-CEntitySystem_AddEntityIOEvent-AND-CEntitySystem_AddEntityIOEvent2
         expected_output:
           - CEntitySystem_AddEntityIOEvent.{platform}.yaml
+          - CEntitySystem_AddEntityIOEvent2.{platform}.yaml
+        expected_input:
+          - CMomentaryRotButton_Use.{platform}.yaml
 
       - name: find-CGameEntitySystem_FindEntityByClassName
         expected_output:
@@ -3522,6 +3525,11 @@ modules:
         category: func
         alias:
           - CEntitySystem::AddEntityIOEvent
+
+      - name: CEntitySystem_AddEntityIOEvent2
+        category: func
+        alias:
+          - CEntitySystem::AddEntityIOEvent2
 
       - name: CGameEntitySystem_FindEntityByClassName
         category: func

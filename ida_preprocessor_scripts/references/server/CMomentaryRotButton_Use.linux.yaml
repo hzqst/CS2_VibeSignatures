@@ -1,0 +1,312 @@
+func_name: CMomentaryRotButton_Use
+func_va: '0x1646660'
+disasm_code: |-
+  .text:0000000001646660                 cmp     byte ptr [rdi+0AD9h], 0
+  .text:0000000001646667                 jnz     locret_1646710
+  .text:000000000164666D                 push    rbp
+  .text:000000000164666E                 mov     rbp, rsp
+  .text:0000000001646671                 push    r15
+  .text:0000000001646673                 mov     r15, rdi
+  .text:0000000001646676                 push    r14
+  .text:0000000001646678                 push    r13
+  .text:000000000164667A                 push    r12
+  .text:000000000164667C                 push    rbx
+  .text:000000000164667D                 sub     rsp, 38h
+  .text:0000000001646681                 cmp     byte ptr [rdi+0AD8h], 0
+  .text:0000000001646688                 jnz     loc_1646760
+  .text:000000000164668E                 mov     eax, [rdi+0C08h]
+  .text:0000000001646694                 xor     ebx, ebx
+  .text:0000000001646696                 test    eax, eax
+  .text:0000000001646698                 jnz     short loc_16466CE
+  .text:000000000164669A                 neg     dword ptr [rdi+0C34h]
+  .text:00000000016466A0                 lea     rbx, [rdi+0B00h]
+  .text:00000000016466A7                 lea     rdi, [rdi+0A60h]
+  .text:00000000016466AE                 call    sub_A40BA0
+  .text:00000000016466B3                 mov     rsi, rax
+  .text:00000000016466B6                 test    rax, rax
+  .text:00000000016466B9                 jz      short loc_16466BE
+  .text:00000000016466BB                 mov     rsi, [rax]
+  .text:00000000016466BE                 mov     rdi, rbx
+  .text:00000000016466C1                 mov     rdx, r15
+  .text:00000000016466C4                 mov     ebx, 1
+  .text:00000000016466C9                 call    sub_162D520
+  .text:00000000016466CE                 mov     dword ptr [r15+0C08h], 1
+  .text:00000000016466D9                 mov     rdi, r15
+  .text:00000000016466DC                 call    sub_C80D10
+  .text:00000000016466E1                 mov     rdi, r15
+  .text:00000000016466E4                 mov     rsi, rax
+  .text:00000000016466E7                 call    sub_16458F0
+  .text:00000000016466EC                 mov     esi, ebx
+  .text:00000000016466EE                 call    sub_1646480
+  .text:00000000016466F3                 cmp     qword ptr [r15+548h], 0
+  .text:00000000016466FB                 jz      short loc_1646718
+  .text:00000000016466FD                 lea     rsp, [rbp-28h]
+  .text:0000000001646701                 pop     rbx
+  .text:0000000001646702                 pop     r12
+  .text:0000000001646704                 pop     r13
+  .text:0000000001646706                 pop     r14
+  .text:0000000001646708                 pop     r15
+  .text:000000000164670A                 pop     rbp
+  .text:000000000164670B                 retn
+  .text:0000000001646710                 retn
+  .text:0000000001646718                 movss   xmm0, cs:dword_77F38C
+  .text:0000000001646720                 mov     rdi, r15
+  .text:0000000001646723                 xor     r8d, r8d
+  .text:0000000001646726                 xor     ecx, ecx
+  .text:0000000001646728                 lea     rsi, sub_1624640
+  .text:000000000164672F                 xor     edx, edx
+  .text:0000000001646731                 call    sub_C9D640
+  .text:0000000001646736                 mov     rax, [r15+10h]
+  .text:000000000164673A                 mov     edi, [rax+38h]
+  .text:000000000164673D                 call    sub_119D060
+  .text:0000000001646742                 lea     rsp, [rbp-28h]
+  .text:0000000001646746                 mov     rdi, r15
+  .text:0000000001646749                 xor     esi, esi
+  .text:000000000164674B                 pop     rbx
+  .text:000000000164674C                 pop     r12
+  .text:000000000164674E                 pop     r13
+  .text:0000000001646750                 pop     r14
+  .text:0000000001646752                 pop     r15
+  .text:0000000001646754                 pop     rbp
+  .text:0000000001646755                 jmp     sub_C9E020
+  .text:0000000001646760                 xor     r8d, r8d
+  .text:0000000001646763                 mov     rbx, [rsi]
+  .text:0000000001646766                 mov     ecx, 1
+  .text:000000000164676B                 mov     edx, 1
+  .text:0000000001646770                 lea     rsi, [rdi+0A98h]
+  .text:0000000001646777                 call    sub_168D640
+  .text:000000000164677C                 mov     rax, [r15+10h]
+  .text:0000000001646780                 mov     edi, [rax+38h]
+  .text:0000000001646783                 call    sub_119D060
+  .text:0000000001646788                 comiss  xmm0, dword ptr [r15+0ADCh]
+  .text:0000000001646790                 jbe     loc_16466FD
+  .text:0000000001646796                 lea     rdi, [r15+0B18h]
+  .text:000000000164679D                 mov     rdx, r15
+  .text:00000000016467A0                 mov     rsi, rbx
+  .text:00000000016467A3                 call    sub_162D520
+  .text:00000000016467A8                 mov     rax, [r15+10h]
+  .text:00000000016467AC                 mov     edi, [rax+38h]
+  .text:00000000016467AF                 call    sub_119D060
+  .text:00000000016467B4                 addss   xmm0, dword ptr cs:xmmword_86BA40
+  .text:00000000016467BC                 movss   dword ptr [r15+0ADCh], xmm0
+  .text:00000000016467C5                 test    byte ptr [r15+641h], 20h
+  .text:00000000016467CD                 jz      loc_16466FD
+  .text:00000000016467D3                 lea     r12, qword_2664490
+  .text:00000000016467DA                 xor     r9d, r9d
+  .text:00000000016467DD                 mov     r8, r15
+  .text:00000000016467E0                 mov     rcx, r15
+  .text:00000000016467E3                 movss   xmm0, cs:dword_86CFD0
+  .text:00000000016467EB                 mov     rsi, r15
+  .text:00000000016467EE                 divss   xmm0, dword ptr [r15+0A10h]
+  .text:00000000016467F7                 lea     rdx, aDisableupdatet; "_DisableUpdateTarget"
+  .text:00000000016467FE                 movss   dword ptr [rbp-54h], xmm0
+  .text:0000000001646803                 pxor    xmm0, xmm0
+  .text:0000000001646807                 lea     rbx, [rbp-40h]
+  .text:000000000164680B                 mov     rdi, [r12]
+  .text:000000000164680F                 push    0
+  .text:0000000001646811                 lea     r14, [rbp-50h]
+  .text:0000000001646815                 push    0
+  .text:0000000001646817                 lea     r13, aSetposition; "SetPosition"
+  .text:000000000164681E                 call    CEntitySystem_AddEntityIOEvent2
+  .text:0000000001646823                 movss   xmm0, dword ptr [rbp-54h]
+  .text:0000000001646828                 mov     rsi, rbx
+  .text:000000000164682B                 mov     rdi, r14
+  .text:000000000164682E                 mov     qword ptr [rbp-50h], 0
+  .text:0000000001646836                 mov     dword ptr [rbp-48h], 1
+  .text:000000000164683D                 movss   dword ptr [rbp-50h], xmm0
+  .text:0000000001646842                 mov     dword ptr [rbp-38h], 0
+  .text:0000000001646849                 call    sub_161E1C0
+  .text:000000000164684E                 mov     rdi, [r12]
+  .text:0000000001646852                 mov     r9, rbx
+  .text:0000000001646855                 mov     r8, r15
+  .text:0000000001646858                 movss   xmm0, cs:dword_86D6A8
+  .text:0000000001646860                 mov     rcx, r15
+  .text:0000000001646863                 mov     rdx, r13
+  .text:0000000001646866                 mov     rsi, r15
+  .text:0000000001646869                 mov     [rsp+78h+var_78], 0
+  .text:0000000001646871                 push    0
+  .text:0000000001646873                 push    0
+  .text:0000000001646875                 call    CEntitySystem_AddEntityIOEvent
+  .text:000000000164687A                 add     rsp, 20h
+  .text:000000000164687E                 test    byte ptr [rbp-36h], 1
+  .text:0000000001646882                 jz      short loc_1646898
+  .text:0000000001646884                 mov     rax, cs:g_pMemAlloc_ptr
+  .text:000000000164688B                 mov     rsi, [rbp-40h]
+  .text:000000000164688F                 mov     rdi, [rax]
+  .text:0000000001646892                 mov     rax, [rdi]
+  .text:0000000001646895                 call    qword ptr [rax+20h]
+  .text:0000000001646898                 mov     rsi, rbx
+  .text:000000000164689B                 mov     rdi, r14
+  .text:000000000164689E                 mov     qword ptr [rbp-50h], 0
+  .text:00000000016468A6                 mov     dword ptr [rbp-38h], 0
+  .text:00000000016468AD                 call    sub_161E1C0
+  .text:00000000016468B2                 mov     rdi, [r12]
+  .text:00000000016468B6                 sub     rsp, 8
+  .text:00000000016468BA                 mov     r9, rbx
+  .text:00000000016468BD                 movss   xmm0, cs:dword_86D8EC
+  .text:00000000016468C5                 push    0
+  .text:00000000016468C7                 mov     r8, r15
+  .text:00000000016468CA                 mov     rcx, r15
+  .text:00000000016468CD                 push    0
+  .text:00000000016468CF                 mov     rdx, r13
+  .text:00000000016468D2                 mov     rsi, r15
+  .text:00000000016468D5                 push    0
+  .text:00000000016468D7                 call    CEntitySystem_AddEntityIOEvent
+  .text:00000000016468DC                 add     rsp, 20h
+  .text:00000000016468E0                 test    byte ptr [rbp-36h], 1
+  .text:00000000016468E4                 jz      short loc_16468FA
+  .text:00000000016468E6                 mov     rax, cs:g_pMemAlloc_ptr
+  .text:00000000016468ED                 mov     rsi, [rbp-40h]
+  .text:00000000016468F1                 mov     rdi, [rax]
+  .text:00000000016468F4                 mov     rax, [rdi]
+  .text:00000000016468F7                 call    qword ptr [rax+20h]
+  .text:00000000016468FA                 movss   xmm0, dword ptr cs:xmmword_86BA40
+  .text:0000000001646902                 mov     rsi, rbx
+  .text:0000000001646905                 mov     rdi, r14
+  .text:0000000001646908                 mov     dword ptr [rbp-38h], 0
+  .text:000000000164690F                 mulss   xmm0, dword ptr [rbp-54h]
+  .text:0000000001646914                 movss   dword ptr [rbp-50h], xmm0
+  .text:0000000001646919                 call    sub_161E1C0
+  .text:000000000164691E                 mov     rdi, [r12]
+  .text:0000000001646922                 sub     rsp, 8
+  .text:0000000001646926                 mov     r9, rbx
+  .text:0000000001646929                 movss   xmm0, cs:dword_86D668
+  .text:0000000001646931                 push    0
+  .text:0000000001646933                 mov     r8, r15
+  .text:0000000001646936                 mov     rcx, r15
+  .text:0000000001646939                 push    0
+  .text:000000000164693B                 mov     rdx, r13
+  .text:000000000164693E                 mov     rsi, r15
+  .text:0000000001646941                 push    0
+  .text:0000000001646943                 call    CEntitySystem_AddEntityIOEvent
+  .text:0000000001646948                 add     rsp, 20h
+  .text:000000000164694C                 test    byte ptr [rbp-36h], 1
+  .text:0000000001646950                 jz      short loc_1646966
+  .text:0000000001646952                 mov     rax, cs:g_pMemAlloc_ptr
+  .text:0000000001646959                 mov     rsi, [rbp-40h]
+  .text:000000000164695D                 mov     rdi, [rax]
+  .text:0000000001646960                 mov     rax, [rdi]
+  .text:0000000001646963                 call    qword ptr [rax+20h]
+  .text:0000000001646966                 mov     rsi, rbx
+  .text:0000000001646969                 mov     rdi, r14
+  .text:000000000164696C                 mov     qword ptr [rbp-50h], 0
+  .text:0000000001646974                 mov     dword ptr [rbp-38h], 0
+  .text:000000000164697B                 call    sub_161E1C0
+  .text:0000000001646980                 mov     rdi, [r12]
+  .text:0000000001646984                 sub     rsp, 8
+  .text:0000000001646988                 mov     r9, rbx
+  .text:000000000164698B                 movss   xmm0, cs:dword_86D3A4
+  .text:0000000001646993                 push    0
+  .text:0000000001646995                 mov     r8, r15
+  .text:0000000001646998                 mov     rcx, r15
+  .text:000000000164699B                 push    0
+  .text:000000000164699D                 mov     rdx, r13
+  .text:00000000016469A0                 mov     rsi, r15
+  .text:00000000016469A3                 push    0
+  .text:00000000016469A5                 call    CEntitySystem_AddEntityIOEvent
+  .text:00000000016469AA                 add     rsp, 20h
+  .text:00000000016469AE                 test    byte ptr [rbp-36h], 1
+  .text:00000000016469B2                 jz      short loc_16469C8
+  .text:00000000016469B4                 mov     rax, cs:g_pMemAlloc_ptr
+  .text:00000000016469BB                 mov     rsi, [rbp-40h]
+  .text:00000000016469BF                 mov     rdi, [rax]
+  .text:00000000016469C2                 mov     rax, [rdi]
+  .text:00000000016469C5                 call    qword ptr [rax+20h]
+  .text:00000000016469C8                 mov     rdi, [r12]
+  .text:00000000016469CC                 mov     rcx, r15
+  .text:00000000016469CF                 push    0
+  .text:00000000016469D1                 xor     r9d, r9d
+  .text:00000000016469D4                 movss   xmm0, dword ptr cs:xmmword_86BA40
+  .text:00000000016469DC                 push    0
+  .text:00000000016469DE                 mov     r8, r15
+  .text:00000000016469E1                 mov     rsi, r15
+  .text:00000000016469E4                 lea     rdx, aEnableupdateta; "_EnableUpdateTarget"
+  .text:00000000016469EB                 call    CEntitySystem_AddEntityIOEvent2
+  .text:00000000016469F0                 pop     rdx
+  .text:00000000016469F1                 pop     rcx
+  .text:00000000016469F2                 jmp     loc_16466FD
+procedure: |-
+  void __fastcall CMomentaryRotButton_Use(__int64 a1, __int64 *a2)
+  {
+    unsigned int v2; // ebx
+    _QWORD *v3; // rax
+    _QWORD *v4; // rsi
+    __int64 v5; // rax
+    float v6; // xmm0_4
+    __int64 v7; // rbx
+    float v8; // [rsp+1Ch] [rbp-5Ch]
+    __int64 v9; // [rsp+20h] [rbp-58h] BYREF
+    int v10; // [rsp+28h] [rbp-50h]
+    __int64 v11; // [rsp+30h] [rbp-48h] BYREF
+    int v12; // [rsp+38h] [rbp-40h]
+    __int64 v13; // [rsp+70h] [rbp-8h] BYREF
+
+    if ( !*(_BYTE *)(a1 + 2777) )
+    {
+      if ( *(_BYTE *)(a1 + 2776) )
+      {
+        v7 = *a2;
+        sub_168D640(a1, a1 + 2712, 1, 1, 0);
+        if ( sub_119D060(*(_DWORD *)(*(_QWORD *)(a1 + 16) + 56LL)) > *(float *)(a1 + 2780) )
+        {
+          sub_162D520(a1 + 2840, v7, a1);
+          *(float *)(a1 + 2780) = sub_119D060(*(_DWORD *)(*(_QWORD *)(a1 + 16) + 56LL)) + 0.5;
+          if ( (*(_BYTE *)(a1 + 1601) & 0x20) != 0 )
+          {
+            v8 = 2.0 / *(float *)(a1 + 2576);
+            CEntitySystem_AddEntityIOEvent2(qword_2664490, a1, (unsigned int)"_DisableUpdateTarget", a1, a1, 0, 0, 0);
+            v10 = 1;
+            v9 = LODWORD(v8);
+            v12 = 0;
+            sub_161E1C0(&v9, &v11);
+            CEntitySystem_AddEntityIOEvent(qword_2664490, a1, (unsigned int)"SetPosition", a1, a1, (unsigned int)&v13 - 64, 0, 0, 0);
+            if ( (v12 & 0x10000) != 0 )
+              (*(void (__fastcall **)(_QWORD *, __int64, float))(*g_pMemAlloc + 32LL))(g_pMemAlloc, v11, 0.0099999998);
+            v9 = 0;
+            v12 = 0;
+            sub_161E1C0(&v9, &v11);
+            CEntitySystem_AddEntityIOEvent(qword_2664490, a1, (unsigned int)"SetPosition", a1, a1, (unsigned int)&v13 - 64, 0, 0, 0);
+            if ( (v12 & 0x10000) != 0 )
+              (*(void (__fastcall **)(_QWORD *, __int64, float))(*g_pMemAlloc + 32LL))(g_pMemAlloc, v11, 0.1);
+            v12 = 0;
+            *(float *)&v9 = 0.5 * v8;
+            sub_161E1C0(&v9, &v11);
+            CEntitySystem_AddEntityIOEvent(qword_2664490, a1, (unsigned int)"SetPosition", a1, a1, (unsigned int)&v13 - 64, 0, 0, 0);
+            if ( (v12 & 0x10000) != 0 )
+              (*(void (__fastcall **)(_QWORD *, __int64, float))(*g_pMemAlloc + 32LL))(g_pMemAlloc, v11, 0.2);
+            v9 = 0;
+            v12 = 0;
+            sub_161E1C0(&v9, &v11);
+            CEntitySystem_AddEntityIOEvent(qword_2664490, a1, (unsigned int)"SetPosition", a1, a1, (unsigned int)&v13 - 64, 0, 0, 0);
+            if ( (v12 & 0x10000) != 0 )
+              (*(void (__fastcall **)(_QWORD *, __int64, float))(*g_pMemAlloc + 32LL))(g_pMemAlloc, v11, 0.30000001);
+            CEntitySystem_AddEntityIOEvent2(qword_2664490, a1, (unsigned int)"_EnableUpdateTarget", a1, a1, 0, 0, 0);
+          }
+        }
+      }
+      else
+      {
+        v2 = 0;
+        if ( !*(_DWORD *)(a1 + 3080) )
+        {
+          *(_DWORD *)(a1 + 3124) = -*(_DWORD *)(a1 + 3124);
+          v3 = (_QWORD *)sub_A40BA0(a1 + 2656);
+          v4 = v3;
+          if ( v3 )
+            v4 = (_QWORD *)*v3;
+          v2 = 1;
+          sub_162D520(a1 + 2816, v4, a1);
+        }
+        *(_DWORD *)(a1 + 3080) = 1;
+        v5 = sub_C80D10(a1);
+        sub_16458F0(a1, v5);
+        sub_1646480(a1, v2);
+        if ( !*(_QWORD *)(a1 + 1352) )
+        {
+          sub_C9D640(a1, sub_1624640, 0, 0, 0, 0.0);
+          v6 = sub_119D060(*(_DWORD *)(*(_QWORD *)(a1 + 16) + 56LL));
+          sub_C9E020(a1, 0, v6);
+        }
+      }
+    }
+  }
