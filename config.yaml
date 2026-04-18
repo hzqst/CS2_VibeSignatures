@@ -461,12 +461,12 @@ modules:
         expected_output:
           - CNetworkGameServer_GetFreeClient.{platform}.yaml
 
-      - name: find-CNetworkGameServer-AND-CServerSideClientBase_ClientPrintf
+      - name: find-g_pGameServer-AND-CServerSideClientBase_ClientPrintf
         expected_output:
-          - CNetworkGameServer_ClientList.{platform}.yaml
+          - g_pGameServer.{platform}.yaml
           - CServerSideClientBase_ClientPrintf.{platform}.yaml
         expected_input:
-          - CNetworkGameServer_vtable.{platform}.yaml
+          - CEngineServer_ClientPrintf.{platform}.yaml
 
       - name: find-CNetworkGameClient_SendMovePacket
         expected_output:
@@ -613,13 +613,10 @@ modules:
         alias:
           - GameEntitySystem
 
-      - name: CNetworkGameServer
-        category: struct
-
-      - name: CNetworkGameServer_ClientList
-        category: structmember
-        struct: CNetworkGameServer
-        member: ClientList
+      - name: g_pGameServer
+        category: gv
+        alias:
+          - g_pGameServer
 
       - name: CServerSideClientBase_ClientPrintf
         category: vfunc

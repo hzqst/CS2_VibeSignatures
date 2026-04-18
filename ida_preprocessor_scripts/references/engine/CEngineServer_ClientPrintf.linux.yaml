@@ -1,0 +1,43 @@
+func_name: CEngineServer_ClientPrintf
+func_va: '0x6b17b0'
+disasm_code: |-
+  .text:00000000006B17B0                 mov     rax, cs:g_pGameServer
+  .text:00000000006B17B7                 test    rax, rax
+  .text:00000000006B17BA                 jz      short locret_6B1800
+  .text:00000000006B17BC                 test    esi, esi
+  .text:00000000006B17BE                 js      short loc_6B17F0
+  .text:00000000006B17C0                 cmp     esi, [rax+250h]
+  .text:00000000006B17C6                 jge     short loc_6B17F0
+  .text:00000000006B17C8                 mov     rax, [rax+258h]
+  .text:00000000006B17CF                 movsxd  rsi, esi
+  .text:00000000006B17D2                 mov     rdi, [rax+rsi*8]
+  .text:00000000006B17D6                 lea     rsi, aS; "%s"
+  .text:00000000006B17DD                 mov     rax, [rdi]
+  .text:00000000006B17E0                 mov     rcx, [rax+90h] ; 0x90 = CServerSideClientBase_ClientPrintf
+  .text:00000000006B17E7                 xor     eax, eax
+  .text:00000000006B17E9                 jmp     rcx
+  .text:00000000006B17F0                 lea     rdi, aTriedToSprintT; "tried to sprint to a non-client\n"
+  .text:00000000006B17F7                 xor     eax, eax
+  .text:00000000006B17F9                 jmp     sub_2B1F60
+  .text:00000000006B1800                 retn
+procedure: |-
+  __int64 __fastcall CEngineServer_ClientPrintf(__int64 a1, int a2, const char *a3)
+  {
+    __int64 result; // rax
+    __int64 v4; // rdi
+
+    result = g_pGameServer;
+    if ( g_pGameServer )
+    {
+      if ( a2 < 0 || a2 >= *(_DWORD *)(g_pGameServer + 592) )
+      {
+        return sub_2B1F60("tried to sprint to a non-client\n");
+      }
+      else
+      {
+        v4 = *(_QWORD *)(*(_QWORD *)(g_pGameServer + 600) + 8LL * a2);
+        return (*(__int64 (**)(__int64, const char *, ...))(*(_QWORD *)v4 + 144LL))(v4, "%s", a3); // 144LL = 0x90 = CServerSideClientBase_ClientPrintf
+      }
+    }
+    return result;
+  }
