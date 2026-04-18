@@ -2463,13 +2463,15 @@ modules:
         expected_output:
           - TraceShape.{platform}.yaml
 
-      - name: find-CBaseFilter_InputTestActivator
-        expected_output:
-          - CBaseFilter_InputTestActivator.{platform}.yaml
-
       - name: find-CBaseFilter_InputTestActivator_Register
         platform: windows
         expected_output:
+          - CBaseFilter_InputTestActivator_Register.{platform}.yaml
+
+      - name: find-CBaseFilter_InputTestActivator
+        expected_output:
+          - CBaseFilter_InputTestActivator.{platform}.yaml
+        expected_input_windows:
           - CBaseFilter_InputTestActivator_Register.{platform}.yaml
 
       - name: find-GameSystem_Think_CheckSteamBan
