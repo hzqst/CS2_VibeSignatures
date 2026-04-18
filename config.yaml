@@ -2340,6 +2340,12 @@ modules:
         expected_input:
           - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
 
+      - name: find-CSpawnGroupMgrGameSystem_AllocateSpawnGroup
+        expected_output:
+          - CSpawnGroupMgrGameSystem_AllocateSpawnGroup.{platform}.yaml
+        expected_input:
+          - CSpawnGroupMgrGameSystem_vtable.{platform}.yaml
+
       - name: find-IGameSystem_SpawnGroupPrecache
         expected_output:
           - IGameSystem_SpawnGroupPrecache.{platform}.yaml
@@ -3613,6 +3619,11 @@ modules:
         alias:
           - CSpawnGroupMgrGameSystem::SpawnGroupPrecache
           - SpawnGroupPrecache
+
+      - name: CSpawnGroupMgrGameSystem_AllocateSpawnGroup
+        category: vfunc
+        alias:
+          - CSpawnGroupMgrGameSystem::AllocateSpawnGroup
 
       - name: IGameSystem_SpawnGroupPrecache
         category: vfunc
