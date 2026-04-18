@@ -1,5 +1,7 @@
 import json
+import sys
 import tempfile
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, call, patch
@@ -27,6 +29,14 @@ def _py_eval_payload(payload: object) -> _FakeCallToolResult:
             "stderr": "",
         }
     )
+
+
+def _function_detail_export_py_eval(func_va: str | int) -> str:
+    if isinstance(func_va, str):
+        func_va_int = int(func_va, 0)
+    else:
+        func_va_int = int(func_va)
+    return ida_analyze_util.build_function_detail_export_py_eval(func_va_int)
 
 
 def _write_yaml(path: Path, payload: dict[str, object]) -> None:
@@ -2517,6 +2527,261 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result)
 
 
+class TestFunctionDetailExportPyEvalBuilder(unittest.IsolatedAsyncioTestCase):
+    def test_build_function_detail_export_py_eval_contains_chunk_comment_and_fallback_logic(
+        self,
+    ) -> None:
+        py_code = ida_analyze_util.build_function_detail_export_py_eval(0x180123450)
+        first_chunk_fallback = py_code.find("if not chunk_ranges:")
+        tail_iterator_fallback = py_code.find("ida_funcs.func_tail_iterator_t(func)")
+        tail_iterator_no_arg_fallback = py_code.find("ida_funcs.func_tail_iterator_t()")
+        tail_iterator_set_ea = py_code.find("tail_iterator.set_ea(func.start_ea)")
+        final_single_range_guard = py_code.rfind("if not chunk_ranges:")
+        final_single_range_fallback = py_code.rfind(
+            "chunk_ranges = [(int(func.start_ea), int(func.end_ea))]"
+        )
+
+        self.assertIn("for start_ea, end_ea in idautils.Chunks(func.start_ea):", py_code)
+        self.assertIn("initial_chunk_ranges = []", py_code)
+        self.assertIn(
+            "_append_chunk_range(initial_chunk_ranges, start_ea, end_ea)",
+            py_code,
+        )
+        self.assertIn("chunk_ranges = initial_chunk_ranges", py_code)
+        self.assertIn("except Exception:\n        pass", py_code)
+        self.assertNotEqual(-1, first_chunk_fallback)
+        self.assertNotEqual(-1, tail_iterator_fallback)
+        self.assertNotEqual(-1, tail_iterator_no_arg_fallback)
+        self.assertNotEqual(-1, tail_iterator_set_ea)
+        self.assertNotEqual(-1, final_single_range_guard)
+        self.assertNotEqual(-1, final_single_range_fallback)
+        self.assertLess(first_chunk_fallback, tail_iterator_fallback)
+        self.assertLess(tail_iterator_fallback, tail_iterator_no_arg_fallback)
+        self.assertLess(tail_iterator_no_arg_fallback, tail_iterator_set_ea)
+        self.assertLess(tail_iterator_set_ea, final_single_range_guard)
+        self.assertLess(final_single_range_guard, final_single_range_fallback)
+        self.assertLess(tail_iterator_fallback, final_single_range_fallback)
+        self.assertIn("pending_eas = [int(func.start_ea)]", py_code)
+        self.assertIn("mnem == 'jmp'", py_code)
+        self.assertIn("mnem.startswith('j')", py_code)
+        self.assertIn("idc.get_cmt(ea, repeatable)", py_code)
+        self.assertIn("get_extra_cmt = getattr(idc, 'get_extra_cmt', None)", py_code)
+        self.assertIn(
+            "fallback_eas = sorted(set(int(ea) for ea in _iter_chunk_code_heads(chunk_ranges)))",
+            py_code,
+        )
+        self.assertIn("def _render_disasm_lines(eas):", py_code)
+        self.assertNotIn("for ea in idautils.FuncItems(func.start_ea):", py_code)
+
+    def test_build_function_detail_export_py_eval_runs_with_ida_mcp_split_scope(
+        self,
+    ) -> None:
+        fake_func = types.SimpleNamespace(start_ea=0x1000, end_ea=0x1003)
+        ida_bytes = types.ModuleType("ida_bytes")
+        ida_funcs = types.ModuleType("ida_funcs")
+        ida_lines = types.ModuleType("ida_lines")
+        ida_segment = types.ModuleType("ida_segment")
+        idautils = types.ModuleType("idautils")
+        idc = types.ModuleType("idc")
+
+        ida_bytes.get_flags = lambda ea: 1
+        ida_bytes.is_code = lambda flags: True
+        ida_funcs.get_func = lambda ea: fake_func
+        ida_funcs.get_func_name = lambda ea: "FakeFunc"
+        ida_lines.tag_remove = lambda text: text
+        ida_segment.getseg = lambda ea: object()
+        ida_segment.get_segm_name = lambda seg: ".text"
+        idautils.Chunks = lambda start_ea: iter([(0x1000, 0x1003)])
+        idautils.CodeRefsFrom = lambda ea, flow: []
+        idc.BADADDR = -1
+        idc.generate_disasm_line = lambda ea, flags: "retn" if ea == 0x1002 else "nop"
+        idc.get_cmt = (
+            lambda ea, repeatable: "entry comment" if ea == 0x1000 and repeatable == 0 else None
+        )
+        idc.get_extra_cmt = lambda ea, index: None
+        idc.next_head = lambda ea, end_ea: ea + 1 if ea + 1 < end_ea else idc.BADADDR
+        idc.print_insn_mnem = lambda ea: "ret" if ea == 0x1002 else "nop"
+
+        fake_modules = {
+            "ida_bytes": ida_bytes,
+            "ida_funcs": ida_funcs,
+            "ida_lines": ida_lines,
+            "ida_segment": ida_segment,
+            "idautils": idautils,
+            "idc": idc,
+        }
+        py_code = ida_analyze_util.build_function_detail_export_py_eval(0x1000)
+        exec_globals: dict[str, object] = {}
+        exec_locals: dict[str, object] = {}
+
+        with patch.dict(sys.modules, fake_modules):
+            exec(py_code, exec_globals, exec_locals)
+
+        payload = json.loads(str(exec_locals["result"]))
+        self.assertEqual("FakeFunc", payload["func_name"])
+        self.assertIn(".text:0000000000001000                 ; entry comment", payload["disasm_code"])
+        self.assertIn(".text:0000000000001002                 retn", payload["disasm_code"])
+
+    async def test_export_function_detail_via_mcp_uses_shared_py_eval_builder(self) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": "",
+            }
+        )
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "0x180123450",
+            debug=False,
+        )
+
+        expected_py_code = _function_detail_export_py_eval(0x180123450)
+        session.call_tool.assert_awaited_once_with(
+            name="py_eval",
+            arguments={"code": expected_py_code},
+        )
+        self.assertEqual(
+            {
+                "func_name": "CNetworkMessages_FindNetworkGroup",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": "",
+            },
+            payload,
+        )
+
+    async def test_export_function_detail_via_mcp_normalizes_none_procedure_to_empty_string(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": None,
+            }
+        )
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "0x180123450",
+            debug=False,
+        )
+
+        self.assertIsNotNone(payload)
+        self.assertEqual("", payload["procedure"])
+
+    async def test_export_function_detail_via_mcp_returns_none_when_py_eval_raises(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        session.call_tool.side_effect = RuntimeError("boom")
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "0x180123450",
+            debug=False,
+        )
+
+        self.assertIsNone(payload)
+
+    async def test_export_function_detail_via_mcp_returns_none_without_calling_py_eval_when_input_func_va_is_invalid(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "bad",
+            debug=False,
+        )
+
+        self.assertIsNone(payload)
+        session.call_tool.assert_not_called()
+
+    async def test_export_function_detail_via_mcp_returns_none_when_disasm_code_missing_or_empty(
+        self,
+    ) -> None:
+        for detail_payload in (
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "procedure": "",
+            },
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "disasm_code": "   ",
+                "procedure": "",
+            },
+        ):
+            with self.subTest(detail_payload=detail_payload):
+                session = AsyncMock()
+                session.call_tool.return_value = _py_eval_payload(detail_payload)
+
+                payload = await ida_analyze_util._export_function_detail_via_mcp(
+                    session,
+                    "CNetworkMessages_FindNetworkGroup",
+                    "0x180123450",
+                    debug=False,
+                )
+
+                self.assertIsNone(payload)
+
+    async def test_export_function_detail_via_mcp_returns_none_when_func_va_is_invalid(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "func_name": "sub_180123450",
+                "func_va": "not-an-address",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": "",
+            }
+        )
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "0x180123450",
+            debug=False,
+        )
+
+        self.assertIsNone(payload)
+
+    async def test_export_function_detail_via_mcp_returns_none_when_procedure_is_not_string(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "func_name": "sub_180123450",
+                "func_va": "0x180123450",
+                "disasm_code": "text:180123450 push rbp",
+                "procedure": 123,
+            }
+        )
+
+        payload = await ida_analyze_util._export_function_detail_via_mcp(
+            session,
+            "CNetworkMessages_FindNetworkGroup",
+            "0x180123450",
+            debug=False,
+        )
+
+        self.assertIsNone(payload)
+
+
 class TestLlmDecompileSupport(unittest.IsolatedAsyncioTestCase):
     def test_parse_llm_decompile_response_normalizes_found_funcptr(self) -> None:
         response_text = """
@@ -3837,6 +4102,9 @@ found_struct_offset: []
                 },
             )
             fake_client = object()
+            expected_detail_export_code = _function_detail_export_py_eval(
+                target_detail_payload["func_va"]
+            )
 
             async def _session_call_tool(*, name, arguments):
                 self.assertEqual("py_eval", name)
@@ -3850,7 +4118,7 @@ found_struct_offset: []
                             }
                         ]
                     )
-                if "'disasm_code': get_disasm(func_start)" in code:
+                if code == expected_detail_export_code:
                     return _py_eval_payload(target_detail_payload)
                 raise AssertionError(f"unexpected py_eval code: {code}")
 
@@ -5292,6 +5560,9 @@ found_struct_offset: []
                     "procedure": target_detail_payload["procedure"],
                 },
             )
+            expected_detail_export_code = _function_detail_export_py_eval(
+                target_detail_payload["func_va"]
+            )
 
             async def _session_call_tool(*, name, arguments):
                 self.assertEqual("py_eval", name)
@@ -5305,7 +5576,7 @@ found_struct_offset: []
                             }
                         ]
                     )
-                if "'disasm_code': get_disasm(func_start)" in code:
+                if code == expected_detail_export_code:
                     return _py_eval_payload(target_detail_payload)
                 raise AssertionError(f"unexpected py_eval code: {code}")
 
@@ -6284,6 +6555,9 @@ found_struct_offset: []
                     "procedure": target_detail_payload["procedure"],
                 },
             )
+            expected_detail_export_code = _function_detail_export_py_eval(
+                target_detail_payload["func_va"]
+            )
 
             async def _session_call_tool(*, name, arguments):
                 self.assertEqual("py_eval", name)
@@ -6297,7 +6571,7 @@ found_struct_offset: []
                             }
                         ]
                     )
-                if "'disasm_code': get_disasm(func_start)" in code:
+                if code == expected_detail_export_code:
                     return _py_eval_payload(target_detail_payload)
                 raise AssertionError(f"unexpected py_eval code: {code}")
 
@@ -6441,6 +6715,9 @@ found_struct_offset: []
                     "procedure": target_detail_payload["procedure"],
                 },
             )
+            expected_detail_export_code = _function_detail_export_py_eval(
+                target_detail_payload["func_va"]
+            )
 
             async def _session_call_tool(*, name, arguments):
                 self.assertEqual("py_eval", name)
@@ -6454,7 +6731,7 @@ found_struct_offset: []
                             }
                         ]
                     )
-                if "'disasm_code': get_disasm(func_start)" in code:
+                if code == expected_detail_export_code:
                     return _py_eval_payload(target_detail_payload)
                 raise AssertionError(f"unexpected py_eval code: {code}")
 
