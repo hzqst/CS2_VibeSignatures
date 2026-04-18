@@ -1,0 +1,246 @@
+func_name: CBaseTrigger_StartTouch
+func_va: '0x1803ce6a0'
+disasm_code: |-
+  .text:00000001803CE6A0                 push    rdi
+  .text:00000001803CE6A2                 push    r14
+  .text:00000001803CE6A4                 sub     rsp, 28h
+  .text:00000001803CE6A8                 mov     rax, [rcx]
+  .text:00000001803CE6AB                 mov     r14, rdx
+  .text:00000001803CE6AE                 mov     rdi, rcx
+  .text:00000001803CE6B1                 call    qword ptr [rax+850h] ; 0x850 = CBaseTrigger_PassesTriggerFilters
+  .text:00000001803CE6B7                 test    al, al
+  .text:00000001803CE6B9                 jz      loc_1803CE8AB
+  .text:00000001803CE6BF                 mov     [rsp+38h+var_18], r15
+  .text:00000001803CE6C4                 mov     [rsp+38h+arg_0], rbx
+  .text:00000001803CE6C9                 test    r14, r14
+  .text:00000001803CE6CC                 jz      short loc_1803CE6FD
+  .text:00000001803CE6CE                 mov     rax, [r14+10h]
+  .text:00000001803CE6D2                 test    rax, rax
+  .text:00000001803CE6D5                 jz      short loc_1803CE6FD
+  .text:00000001803CE6D7                 mov     edx, [rax+10h]
+  .text:00000001803CE6DA                 mov     ecx, 7FFFh
+  .text:00000001803CE6DF                 mov     eax, [rax+30h]
+  .text:00000001803CE6E2                 mov     ebx, edx
+  .text:00000001803CE6E4                 and     eax, 1
+  .text:00000001803CE6E7                 shr     ebx, 0Fh
+  .text:00000001803CE6EA                 sub     ebx, eax
+  .text:00000001803CE6EC                 mov     eax, edx
+  .text:00000001803CE6EE                 and     eax, ecx
+  .text:00000001803CE6F0                 shl     ebx, 0Fh
+  .text:00000001803CE6F3                 cmp     edx, 0FFFFFFFFh
+  .text:00000001803CE6F6                 cmovnz  ecx, eax
+  .text:00000001803CE6F9                 or      ebx, ecx
+  .text:00000001803CE6FB                 jmp     short loc_1803CE702
+  .text:00000001803CE6FD                 mov     ebx, 0FFFFFFFFh
+  .text:00000001803CE702                 movsxd  r15, dword ptr [rdi+858h]
+  .text:00000001803CE709                 xor     edx, edx
+  .text:00000001803CE70B                 test    r15d, r15d
+  .text:00000001803CE70E                 jle     short loc_1803CE736
+  .text:00000001803CE710                 mov     rax, [rdi+860h]
+  .text:00000001803CE717                 mov     ecx, edx
+  .text:00000001803CE719                 nop     dword ptr [rax+00000000h]
+  .text:00000001803CE720                 cmp     [rax], ebx
+  .text:00000001803CE722                 jz      loc_1803CE7B0
+  .text:00000001803CE728                 inc     edx
+  .text:00000001803CE72A                 inc     rcx
+  .text:00000001803CE72D                 add     rax, 4
+  .text:00000001803CE731                 cmp     rcx, r15
+  .text:00000001803CE734                 jl      short loc_1803CE720
+  .text:00000001803CE736                 cmp     r15d, [rdi+868h]
+  .text:00000001803CE73D                 jnz     loc_1803CE839
+  .text:00000001803CE743                 test    dword ptr [rdi+86Ch], 40000000h
+  .text:00000001803CE74D                 jnz     loc_1803CE839
+  .text:00000001803CE753                 mov     ecx, [rdi+868h]
+  .text:00000001803CE759                 mov     [rsp+38h+arg_8], rbp
+  .text:00000001803CE75E                 mov     [rsp+38h+arg_10], rsi
+  .text:00000001803CE763                 cmp     ecx, 7FFFFFFEh
+  .text:00000001803CE769                 jle     short loc_1803CE776
+  .text:00000001803CE76B                 mov     edx, 1
+  .text:00000001803CE770                 call    cs:UtlVectorMemory_FailedAllocation
+  .text:00000001803CE776                 mov     ecx, [rdi+868h]
+  .text:00000001803CE77C                 mov     r9d, 4
+  .text:00000001803CE782                 mov     edx, [rdi+86Ch]
+  .text:00000001803CE788                 and     edx, 3FFFFFFFh
+  .text:00000001803CE78E                 lea     ebp, [rcx+1]
+  .text:00000001803CE791                 mov     r8d, ebp
+  .text:00000001803CE794                 call    cs:UtlVectorMemory_CalcNewAllocationCount
+  .text:00000001803CE79A                 mov     esi, eax
+  .text:00000001803CE79C                 cmp     eax, ebp
+  .text:00000001803CE79E                 jge     short loc_1803CE7DE
+  .text:00000001803CE7A0                 test    eax, eax
+  .text:00000001803CE7A2                 jnz     short loc_1803CE7D0
+  .text:00000001803CE7A4                 cmp     ebp, 0FFFFFFFFh
+  .text:00000001803CE7A7                 jg      short loc_1803CE7D0
+  .text:00000001803CE7A9                 mov     esi, 0FFFFFFFFh
+  .text:00000001803CE7AE                 jmp     short loc_1803CE7DE
+  .text:00000001803CE7B0                 cmp     edx, 0FFFFFFFFh
+  .text:00000001803CE7B3                 jz      short loc_1803CE736
+  .text:00000001803CE7B5                 mov     rax, [r14]
+  .text:00000001803CE7B8                 mov     rdx, rdi
+  .text:00000001803CE7BB                 mov     rcx, r14
+  .text:00000001803CE7BE                 call    qword ptr [rax+6D8h]
+  .text:00000001803CE7C4                 jmp     loc_1803CE880
+  .text:00000001803CE7D0                 lea     eax, [rsi+rbp]
+  .text:00000001803CE7D3                 cdq
+  .text:00000001803CE7D4                 sub     eax, edx
+  .text:00000001803CE7D6                 sar     eax, 1
+  .text:00000001803CE7D8                 mov     esi, eax
+  .text:00000001803CE7DA                 cmp     eax, ebp
+  .text:00000001803CE7DC                 jl      short loc_1803CE7D0
+  .text:00000001803CE7DE                 movsxd  r9, dword ptr [rdi+868h]
+  .text:00000001803CE7E5                 mov     rcx, [rdi+860h]
+  .text:00000001803CE7EC                 shl     r9, 2
+  .text:00000001803CE7F0                 movsxd  r8, esi
+  .text:00000001803CE7F3                 shl     r8, 2
+  .text:00000001803CE7F7                 test    dword ptr [rdi+86Ch], 0C0000000h
+  .text:00000001803CE801                 setz    dl
+  .text:00000001803CE804                 call    cs:UtlVectorMemory_Alloc
+  .text:00000001803CE80A                 mov     rbp, [rsp+38h+arg_8]
+  .text:00000001803CE80F                 mov     [rdi+860h], rax
+  .text:00000001803CE816                 mov     eax, [rdi+86Ch]
+  .text:00000001803CE81C                 test    eax, 0C0000000h
+  .text:00000001803CE821                 jz      short loc_1803CE82E
+  .text:00000001803CE823                 and     eax, 3FFFFFFFh
+  .text:00000001803CE828                 mov     [rdi+86Ch], eax
+  .text:00000001803CE82E                 mov     [rdi+868h], esi
+  .text:00000001803CE834                 mov     rsi, [rsp+38h+arg_10]
+  .text:00000001803CE839                 inc     dword ptr [rdi+858h]
+  .text:00000001803CE83F                 mov     rdx, rdi
+  .text:00000001803CE842                 mov     rax, [rdi+860h]
+  .text:00000001803CE849                 mov     rcx, r14
+  .text:00000001803CE84C                 mov     [rax+r15*4], ebx
+  .text:00000001803CE850                 mov     rax, [r14]
+  .text:00000001803CE853                 call    qword ptr [rax+6D8h]
+  .text:00000001803CE859                 cmp     dword ptr [rdi+858h], 1
+  .text:00000001803CE860                 jnz     short loc_1803CE880
+  .text:00000001803CE862                 mov     rax, [rdi]
+  .text:00000001803CE865                 mov     rcx, rdi
+  .text:00000001803CE868                 call    qword ptr [rax+858h]
+  .text:00000001803CE86E                 lea     rcx, [rdi+7C8h]
+  .text:00000001803CE875                 mov     r8, rdi
+  .text:00000001803CE878                 mov     rdx, r14
+  .text:00000001803CE87B                 call    sub_18028E700
+  .text:00000001803CE880                 mov     rax, [rdi]
+  .text:00000001803CE883                 mov     rdx, r14
+  .text:00000001803CE886                 mov     rcx, rdi
+  .text:00000001803CE889                 call    qword ptr [rax+860h]
+  .text:00000001803CE88F                 lea     rcx, [rdi+7B0h]
+  .text:00000001803CE896                 mov     r8, rdi
+  .text:00000001803CE899                 mov     rdx, r14
+  .text:00000001803CE89C                 call    sub_18028E700
+  .text:00000001803CE8A1                 mov     r15, [rsp+38h+var_18]
+  .text:00000001803CE8A6                 mov     rbx, [rsp+38h+arg_0]
+  .text:00000001803CE8AB                 add     rsp, 28h
+  .text:00000001803CE8AF                 pop     r14
+  .text:00000001803CE8B1                 pop     rdi
+  .text:00000001803CE8B2                 retn
+procedure: |-
+  __int64 __fastcall CBaseTrigger_StartTouch(__int64 a1, _QWORD *a2)
+  {
+    __int64 result; // rax
+    __int64 v5; // rax
+    unsigned int v6; // edx
+    int v7; // ecx
+    int v8; // ebx
+    __int64 v9; // r15
+    int v10; // edx
+    _DWORD *v11; // rax
+    __int64 v12; // rcx
+    __int64 v13; // rcx
+    __int64 v14; // rcx
+    int v15; // ebp
+    int v16; // eax
+    __int64 v17; // rdx
+    int v18; // esi
+    int v19; // eax
+
+    result = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)a1 + 2128LL))(a1); // 2128LL = 0x850 = CBaseTrigger_PassesTriggerFilters
+    if ( (_BYTE)result )
+    {
+      if ( a2 && (v5 = a2[2]) != 0 )
+      {
+        v6 = *(_DWORD *)(v5 + 16);
+        v7 = 0x7FFF;
+        if ( v6 != -1 )
+          v7 = v6 & 0x7FFF;
+        v8 = v7 | (((v6 >> 15) - (*(_DWORD *)(v5 + 48) & 1)) << 15);
+      }
+      else
+      {
+        v8 = -1;
+      }
+      v9 = *(int *)(a1 + 2136);
+      v10 = 0;
+      if ( (int)v9 <= 0 )
+        goto LABEL_12;
+      v11 = *(_DWORD **)(a1 + 2144);
+      v12 = 0;
+      while ( *v11 != v8 )
+      {
+        ++v10;
+        ++v12;
+        ++v11;
+        if ( v12 >= v9 )
+          goto LABEL_12;
+      }
+      if ( v10 == -1 )
+      {
+  LABEL_12:
+        if ( (_DWORD)v9 == *(_DWORD *)(a1 + 2152) && (*(_DWORD *)(a1 + 2156) & 0x40000000) == 0 )
+        {
+          v13 = *(unsigned int *)(a1 + 2152);
+          if ( (_DWORD)v13 == 0x7FFFFFFF )
+            UtlVectorMemory_FailedAllocation(v13, 1);
+          v14 = *(unsigned int *)(a1 + 2152);
+          v15 = v14 + 1;
+          v16 = UtlVectorMemory_CalcNewAllocationCount(
+                  v14,
+                  *(_DWORD *)(a1 + 2156) & 0x3FFFFFFF,
+                  (unsigned int)(v14 + 1),
+                  4);
+          v18 = v16;
+          if ( v16 < v15 )
+          {
+            if ( v16 || v15 > -1 )
+            {
+              do
+              {
+                v17 = (unsigned int)((v18 + v15) >> 31);
+                v18 = (v18 + v15) / 2;
+              }
+              while ( v18 < v15 );
+            }
+            else
+            {
+              v18 = -1;
+            }
+          }
+          LOBYTE(v17) = (*(_DWORD *)(a1 + 2156) & 0xC0000000) == 0;
+          *(_QWORD *)(a1 + 2144) = UtlVectorMemory_Alloc(
+                                     *(_QWORD *)(a1 + 2144),
+                                     v17,
+                                     4LL * v18,
+                                     4LL * *(int *)(a1 + 2152));
+          v19 = *(_DWORD *)(a1 + 2156);
+          if ( (v19 & 0xC0000000) != 0 )
+            *(_DWORD *)(a1 + 2156) = v19 & 0x3FFFFFFF;
+          *(_DWORD *)(a1 + 2152) = v18;
+        }
+        ++*(_DWORD *)(a1 + 2136);
+        *(_DWORD *)(*(_QWORD *)(a1 + 2144) + 4 * v9) = v8;
+        (*(void (__fastcall **)(_QWORD *, __int64))(*a2 + 1752LL))(a2, a1);
+        if ( *(_DWORD *)(a1 + 2136) == 1 )
+        {
+          (*(void (__fastcall **)(__int64))(*(_QWORD *)a1 + 2136LL))(a1);
+          sub_18028E700(a1 + 1992, a2, a1);
+        }
+      }
+      else
+      {
+        (*(void (__fastcall **)(_QWORD *, __int64))(*a2 + 1752LL))(a2, a1);
+      }
+      (*(void (__fastcall **)(__int64, _QWORD *))(*(_QWORD *)a1 + 2144LL))(a1, a2);
+      return sub_18028E700(a1 + 1968, a2, a1);
+    }
+    return result;
+  }

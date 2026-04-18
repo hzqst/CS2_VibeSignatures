@@ -1,0 +1,157 @@
+func_name: CBaseFilter_InputTestActivator_Register
+func_va: '0x1800cc730'
+disasm_code: |-
+  .text:00000001800CC730                 sub     rsp, 28h
+  .text:00000001800CC734                 mov     ecx, cs:TlsIndex
+  .text:00000001800CC73A                 lea     rax, qword_181BA74E8
+  .text:00000001800CC741                 mov     cs:qword_181B93FF8, rax
+  .text:00000001800CC748                 mov     rax, gs:58h
+  .text:00000001800CC751                 mov     edx, 208h
+  .text:00000001800CC756                 mov     rax, [rax+rcx*8]
+  .text:00000001800CC75A                 mov     eax, [rdx+rax]
+  .text:00000001800CC75D                 cmp     cs:dword_181EACCCC, eax
+  .text:00000001800CC763                 jg      short loc_1800CC790
+  .text:00000001800CC765                 lea     rax, unk_181B97788
+  .text:00000001800CC76C                 mov     cs:dword_181B93FE8, 4
+  .text:00000001800CC776                 mov     cs:qword_181B93FE0, rax
+  .text:00000001800CC77D                 lea     rax, qword_181B93FE0
+  .text:00000001800CC784                 mov     cs:qword_181EA8848, rax
+  .text:00000001800CC78B                 add     rsp, 28h
+  .text:00000001800CC78F                 retn
+  .text:00000001800CC790                 lea     rcx, dword_181EACCCC
+  .text:00000001800CC797                 call    sub_181486994
+  .text:00000001800CC79C                 cmp     cs:dword_181EACCCC, 0FFFFFFFFh
+  .text:00000001800CC7A3                 jnz     short loc_1800CC765
+  .text:00000001800CC7A5                 xor     r8d, r8d
+  .text:00000001800CC7A8                 mov     cs:dword_181B977A0, 6
+  .text:00000001800CC7B2                 mov     edx, 1
+  .text:00000001800CC7B7                 mov     cs:qword_181B977B0, r8
+  .text:00000001800CC7BE                 xorps   xmm0, xmm0
+  .text:00000001800CC7C1                 mov     cs:qword_181B977C8, rdx
+  .text:00000001800CC7C8                 lea     rax, aNegated; "Negated"
+  .text:00000001800CC7CF                 mov     cs:word_181B97804, dx
+  .text:00000001800CC7D6                 mov     cs:off_181B977A8, rax; "Negated"
+  .text:00000001800CC7DD                 lea     rcx, aMOnfail; "m_OnFail"
+  .text:00000001800CC7E4                 lea     rax, aInputtestactiv; "InputTestActivator"
+  .text:00000001800CC7EB                 mov     cs:word_181B9786C, dx
+  .text:00000001800CC7F2                 mov     cs:off_181B977F8, rax; "InputTestActivator"
+  .text:00000001800CC7F9                 lea     rax, aTestactivator; "TestActivator"
+  .text:00000001800CC800                 mov     cs:off_181B97810, rax; "TestActivator"
+  .text:00000001800CC807                 lea     rax, CBaseFilter_InputTestActivator
+  .text:00000001800CC80E                 mov     cs:off_181B97820, rax
+  .text:00000001800CC815                 lea     rax, aMOnpass; "m_OnPass"
+  .text:00000001800CC81C                 mov     cs:off_181B97860, rax; "m_OnPass"
+  .text:00000001800CC823                 lea     rax, aOnpass; "OnPass"
+  .text:00000001800CC82A                 mov     cs:off_181B97878, rax; "OnPass"
+  .text:00000001800CC831                 mov     rax, cs:off_181C31D08
+  .text:00000001800CC838                 mov     cs:word_181B978D4, dx
+  .text:00000001800CC83F                 lea     rdx, aOnfail; "OnFail"
+  .text:00000001800CC846                 mov     cs:off_181B978C8, rcx; "m_OnFail"
+  .text:00000001800CC84D                 lea     rcx, dword_181EACCCC
+  .text:00000001800CC854                 mov     cs:qword_181B97880, rax
+  .text:00000001800CC85B                 mov     cs:qword_181B978E8, rax
+  .text:00000001800CC862                 mov     cs:qword_181B977B8, r8
+  .text:00000001800CC869                 mov     cs:qword_181B977C0, r8
+  .text:00000001800CC870                 mov     cs:qword_181B977D0, r8
+  .text:00000001800CC877                 mov     cs:word_181B977D8, r8w
+  .text:00000001800CC87F                 movdqa  cs:xmmword_181B977E0, xmm0
+  .text:00000001800CC887                 mov     cs:byte_181B977F0, r8b
+  .text:00000001800CC88E                 mov     cs:dword_181B97800, r8d
+  .text:00000001800CC895                 mov     cs:dword_181B97808, 8
+  .text:00000001800CC89F                 mov     cs:qword_181B97818, r8
+  .text:00000001800CC8A6                 mov     cs:qword_181B97828, r8
+  .text:00000001800CC8AD                 mov     cs:qword_181B97830, r8
+  .text:00000001800CC8B4                 mov     cs:qword_181B97838, r8
+  .text:00000001800CC8BB                 mov     cs:word_181B97840, r8w
+  .text:00000001800CC8C3                 mov     cs:qword_181B97848, r8
+  .text:00000001800CC8CA                 mov     cs:qword_181B97850, r8
+  .text:00000001800CC8D1                 mov     cs:byte_181B97858, 0Bh
+  .text:00000001800CC8D8                 mov     cs:dword_181B97868, 4B0h
+  .text:00000001800CC8E2                 mov     cs:dword_181B97870, 16h
+  .text:00000001800CC8EC                 mov     cs:qword_181B97888, r8
+  .text:00000001800CC8F3                 mov     cs:qword_181B97890, r8
+  .text:00000001800CC8FA                 mov     cs:qword_181B97898, 18h
+  .text:00000001800CC905                 mov     cs:qword_181B978A0, r8
+  .text:00000001800CC90C                 mov     cs:word_181B978A8, r8w
+  .text:00000001800CC914                 movdqa  cs:xmmword_181B978B0, xmm0
+  .text:00000001800CC91C                 mov     cs:byte_181B978C0, 0Bh
+  .text:00000001800CC923                 mov     cs:dword_181B978D0, 4C8h
+  .text:00000001800CC92D                 mov     cs:dword_181B978D8, 16h
+  .text:00000001800CC937                 mov     cs:off_181B978E0, rdx; "OnFail"
+  .text:00000001800CC93E                 mov     cs:qword_181B978F0, r8
+  .text:00000001800CC945                 mov     cs:qword_181B978F8, r8
+  .text:00000001800CC94C                 mov     cs:qword_181B97900, 18h
+  .text:00000001800CC957                 mov     cs:qword_181B97908, r8
+  .text:00000001800CC95E                 mov     cs:word_181B97910, r8w
+  .text:00000001800CC966                 mov     cs:qword_181B97918, r8
+  .text:00000001800CC96D                 mov     cs:qword_181B97920, r8
+  .text:00000001800CC974                 call    sub_181486928
+  .text:00000001800CC979                 jmp     loc_1800CC765
+procedure: |-
+  __int64 *CBaseFilter_InputTestActivator_Register()
+  {
+    qword_181B93FF8 = (__int64)&qword_181BA74E8;
+    if ( dword_181EACCCC > *(_DWORD *)(*((_QWORD *)NtCurrentTeb()->ThreadLocalStoragePointer + (unsigned int)TlsIndex)
+                                     + 520LL) )
+    {
+      sub_181486994(&dword_181EACCCC);
+      if ( dword_181EACCCC == -1 )
+      {
+        dword_181B977A0 = 6;
+        qword_181B977B0 = 0;
+        qword_181B977C8 = 1;
+        word_181B97804 = 1;
+        off_181B977A8 = "Negated";
+        word_181B9786C = 1;
+        off_181B977F8 = "InputTestActivator";
+        off_181B97810 = "TestActivator";
+        off_181B97820 = (__int64 (__fastcall *)())CBaseFilter_InputTestActivator;
+        off_181B97860 = "m_OnPass";
+        off_181B97878 = "OnPass";
+        word_181B978D4 = 1;
+        off_181B978C8 = "m_OnFail";
+        qword_181B97880 = (__int64)off_181C31D08;
+        qword_181B978E8 = (__int64)off_181C31D08;
+        qword_181B977B8 = 0;
+        qword_181B977C0 = 0;
+        qword_181B977D0 = 0;
+        word_181B977D8 = 0;
+        xmmword_181B977E0 = 0;
+        byte_181B977F0 = 0;
+        dword_181B97800 = 0;
+        dword_181B97808 = 8;
+        qword_181B97818 = 0;
+        qword_181B97828 = 0;
+        qword_181B97830 = 0;
+        qword_181B97838 = 0;
+        word_181B97840 = 0;
+        qword_181B97848 = 0;
+        qword_181B97850 = 0;
+        byte_181B97858 = 11;
+        dword_181B97868 = 1200;
+        dword_181B97870 = 22;
+        qword_181B97888 = 0;
+        qword_181B97890 = 0;
+        qword_181B97898 = 24;
+        qword_181B978A0 = 0;
+        word_181B978A8 = 0;
+        xmmword_181B978B0 = 0;
+        byte_181B978C0 = 11;
+        dword_181B978D0 = 1224;
+        dword_181B978D8 = 22;
+        off_181B978E0 = "OnFail";
+        qword_181B978F0 = 0;
+        qword_181B978F8 = 0;
+        qword_181B97900 = 24;
+        qword_181B97908 = 0;
+        word_181B97910 = 0;
+        qword_181B97918 = 0;
+        qword_181B97920 = 0;
+        sub_181486928(&dword_181EACCCC);
+      }
+    }
+    dword_181B93FE8 = 4;
+    qword_181B93FE0 = (__int64)&unk_181B97788;
+    qword_181EA8848 = (__int64)&qword_181B93FE0;
+    return &qword_181B93FE0;
+  }

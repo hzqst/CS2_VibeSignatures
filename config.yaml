@@ -1464,6 +1464,16 @@ modules:
         expected_output:
           - CBaseTrigger_vtable.{platform}.yaml
 
+      - name: find-CMomentaryRotButton_vtable
+        expected_output:
+          - CMomentaryRotButton_vtable.{platform}.yaml
+
+      - name: find-CMomentaryRotButton_Use
+        expected_output:
+          - CMomentaryRotButton_Use.{platform}.yaml
+        expected_input:
+          - CMomentaryRotButton_vtable.{platform}.yaml
+
       - name: find-CTriggerPush_vtable
         expected_output:
           - CTriggerPush_vtable.{platform}.yaml
@@ -1623,10 +1633,18 @@ modules:
       - name: find-CEntityIdentity_AcceptInput
         expected_output:
           - CEntityIdentity_AcceptInput.{platform}.yaml
+        expected_input:
+          - CEntityInstance_AcceptInput.{platform}.yaml
 
       - name: find-CEntityIdentity_SetEntityName
         expected_output:
           - CEntityIdentity_SetEntityName.{platform}.yaml
+        expected_input:
+          - ScriptBinding_Entity_SetEntityName.{platform}.yaml
+
+      - name: find-ScriptBinding_Entity_SetEntityName
+        expected_output:
+          - ScriptBinding_Entity_SetEntityName.{platform}.yaml
 
       - name: find-CBtActionCoordinatedBuy_vtable
         expected_output:
@@ -2112,7 +2130,7 @@ modules:
           - CBaseEntity_Use.{platform}.yaml
         expected_input:
           - CBaseEntity_vtable.{platform}.yaml
-          - CCSPlayer_UseServices_OnUseImpl.{platform}.yaml
+          - CMomentaryRotButton_Use.{platform}.yaml
 
       - name: find-CEntFireOutputAutoCompletionFunctor_vtable
         expected_output:
@@ -2130,9 +2148,12 @@ modules:
         expected_input:
           - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
 
-      - name: find-CEntitySystem_AddEntityIOEvent
+      - name: find-CEntitySystem_AddEntityIOEvent-AND-CEntitySystem_AddEntityIOEvent2
         expected_output:
           - CEntitySystem_AddEntityIOEvent.{platform}.yaml
+          - CEntitySystem_AddEntityIOEvent2.{platform}.yaml
+        expected_input:
+          - CMomentaryRotButton_Use.{platform}.yaml
 
       - name: find-CGameEntitySystem_FindEntityByClassName
         expected_output:
@@ -2463,9 +2484,16 @@ modules:
         expected_output:
           - TraceShape.{platform}.yaml
 
+      - name: find-CBaseFilter_InputTestActivator_Register
+        platform: windows
+        expected_output:
+          - CBaseFilter_InputTestActivator_Register.{platform}.yaml
+
       - name: find-CBaseFilter_InputTestActivator
         expected_output:
           - CBaseFilter_InputTestActivator.{platform}.yaml
+        expected_input_windows:
+          - CBaseFilter_InputTestActivator_Register.{platform}.yaml
 
       - name: find-GameSystem_Think_CheckSteamBan
         expected_output:
@@ -2835,6 +2863,14 @@ modules:
       - name: CBaseTrigger_vtable
         category: vtable
 
+      - name: CMomentaryRotButton_vtable
+        category: vtable
+
+      - name: CMomentaryRotButton_Use
+        category: vfunc
+        alias:
+          - CMomentaryRotButton::Use
+
       - name: CPointTeleport_vtable
         category: vtable
 
@@ -3003,6 +3039,11 @@ modules:
         category: func
         alias:
           - CEntityIdentity::SetEntityName
+
+      - name: ScriptBinding_Entity_SetEntityName
+        category: func
+        alias:
+          - Entity::SetEntityName
 
       - name: CBtActionCoordinatedBuy_vtable
         category: vtable
@@ -3485,6 +3526,11 @@ modules:
         alias:
           - CEntitySystem::AddEntityIOEvent
 
+      - name: CEntitySystem_AddEntityIOEvent2
+        category: func
+        alias:
+          - CEntitySystem::AddEntityIOEvent2
+
       - name: CGameEntitySystem_FindEntityByClassName
         category: func
         alias:
@@ -3793,6 +3839,11 @@ modules:
         category: func
         alias:
           - CBaseFilter::InputTestActivator
+
+      - name: CBaseFilter_InputTestActivator_Register
+        category: func
+        alias:
+          - CBaseFilter::InputTestActivator::Register
 
       - name: GameSystem_Think_CheckSteamBan
         category: func
