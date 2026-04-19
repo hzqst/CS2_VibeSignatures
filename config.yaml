@@ -621,6 +621,12 @@ modules:
         expected_output:
           - CLoopTypeClientSimple_ActivateEngineServices.{platform}.yaml
 
+      - name: find-CLoopTypeClientServer_LoopTypeInit
+        expected_output:
+          - CLoopTypeClientServer_LoopTypeInit.{platform}.yaml
+        expected_input:
+          - CLoopTypeClientServer_vtable.{platform}.yaml
+
       - name: find-CLoopTypeClientServer_FrameUpdate
         expected_output:
           - CLoopTypeClientServer_FrameUpdate.{platform}.yaml
@@ -927,6 +933,11 @@ modules:
         category: func
         alias:
           - CLoopTypeClientServer::ActivateEngineServices
+
+      - name: CLoopTypeClientServer_LoopTypeInit
+        category: vfunc
+        alias:
+          - CLoopTypeClientServer::LoopTypeInit
 
       - name: CLoopTypeClientServer_FrameUpdate
         category: vfunc
