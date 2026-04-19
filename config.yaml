@@ -2943,6 +2943,19 @@ modules:
         expected_output:
           - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
 
+      - name: find-CLoopModeGame_OnEventMapCallbacks-server
+        expected_output:
+          - RegisterEventListener_Abstract.{platform}.yaml
+          - CLoopModeGame_OnServerAdvanceTick.{platform}.yaml
+          - CLoopModeGame_OnServerBeginSimulate.{platform}.yaml
+          - CLoopModeGame_OnServerPostSimulate.{platform}.yaml
+          - CLoopModeGame_OnServerPostAdvanceTick.{platform}.yaml
+          - CLoopModeGame_OnServerBeginAsyncPostTickWork.{platform}.yaml
+          - CLoopModeGame_OnServerEndAsyncPostTickWork.{platform}.yaml
+          - CLoopModeGame_OnFrameBoundary.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_RegisterEventMapInternal.{platform}.yaml
+
       - name: find-CLoopModeGame_ReceivedServerInfo
         expected_output:
           - CLoopModeGame_ReceivedServerInfo.{platform}.yaml
@@ -4407,6 +4420,44 @@ modules:
         category: func
         alias:
           - CLoopModeGame::RegisterEventMapInternal
+
+      - name: RegisterEventListener_Abstract
+        category: func
+
+      - name: CLoopModeGame_OnServerAdvanceTick
+        category: func
+        alias:
+          - CLoopModeGame::OnServerAdvanceTick
+
+      - name: CLoopModeGame_OnServerBeginSimulate
+        category: func
+        alias:
+          - CLoopModeGame::OnServerBeginSimulate
+
+      - name: CLoopModeGame_OnServerPostSimulate
+        category: func
+        alias:
+          - CLoopModeGame::OnServerPostSimulate
+
+      - name: CLoopModeGame_OnServerPostAdvanceTick
+        category: func
+        alias:
+          - CLoopModeGame::OnServerPostAdvanceTick
+
+      - name: CLoopModeGame_OnServerBeginAsyncPostTickWork
+        category: func
+        alias:
+          - CLoopModeGame::OnServerBeginAsyncPostTickWork
+
+      - name: CLoopModeGame_OnServerEndAsyncPostTickWork
+        category: func
+        alias:
+          - CLoopModeGame::OnServerEndAsyncPostTickWork
+
+      - name: CLoopModeGame_OnFrameBoundary
+        category: func
+        alias:
+          - CLoopModeGame::OnFrameBoundary
 
       - name: CLoopModeGame_ReceivedServerInfo
         category: func
