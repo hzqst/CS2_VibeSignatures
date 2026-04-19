@@ -4961,3 +4961,28 @@ cpp_tests:
       - client # bin/{gamever}/client/ILoopModeGame_*.{platform}.yaml
       - server # bin/{gamever}/server/ILoopModeGame_*.{platform}.yaml
       - engine # bin/{gamever}/engine/ILoopModeGame_*.{platform}.yaml
+
+  - name: ILoopType_MSVC
+    symbol: ILoopType
+    cpp: cpp_tests/ilooptype.cpp
+    headers:
+    - hl2sdk_cs2/public/iloopmode.h # This is for LLM agent
+    claude_permission_mode: acceptEdits
+    claude_allowed_tools: Read,Edit,MultiEdit,Write
+    target: x86_64-pc-windows-msvc
+    include_directories:
+      - hl2sdk_cs2/game/shared
+      - hl2sdk_cs2/public
+      - hl2sdk_cs2/public/tier0
+      - hl2sdk_cs2/public/tier1
+    defines:
+      - COMPILER_MSVC=1
+      - COMPILER_MSVC64=1
+      - _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+    additional_compiler_options:
+      - fms-extensions
+      - fms-compatibility
+      - Xclang
+      - fdump-vtable-layouts
+    reference_modules:
+      - engine # bin/{gamever}/engine/CLoopTypeClientServer_*.{platform}.yaml
