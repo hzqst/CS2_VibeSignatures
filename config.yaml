@@ -812,6 +812,12 @@ modules:
         expected_input:
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-ILoopMode_OnLoopActivate
+        expected_output:
+          - ILoopMode_OnLoopActivate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnLoopActivate.{platform}.yaml
+
       - name: find-CLoopModeGame_AddViewsToSceneSystem
         expected_output:
           - CLoopModeGame_AddViewsToSceneSystem.{platform}.yaml
@@ -1192,6 +1198,11 @@ modules:
         category: vfunc
         alias:
           - CLoopModeGame::OnLoopActivate
+
+      - name: ILoopMode_OnLoopActivate
+        category: vfunc
+        alias:
+          - ILoopMode::OnLoopActivate
 
       - name: CLoopModeGame_AddViewsToSceneSystem
         category: vfunc
@@ -2757,6 +2768,12 @@ modules:
         expected_input:
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-ILoopMode_OnLoopActivate
+        expected_output:
+          - ILoopMode_OnLoopActivate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnLoopActivate.{platform}.yaml
+
       - name: find-CLoopModeGame_AddViewsToSceneSystem
         expected_output:
           - CLoopModeGame_AddViewsToSceneSystem.{platform}.yaml
@@ -4156,6 +4173,11 @@ modules:
         category: vfunc
         alias:
           - CLoopModeGame::OnLoopActivate
+
+      - name: ILoopMode_OnLoopActivate
+        category: vfunc
+        alias:
+          - ILoopMode::OnLoopActivate
 
       - name: CLoopModeGame_AddViewsToSceneSystem
         category: vfunc
