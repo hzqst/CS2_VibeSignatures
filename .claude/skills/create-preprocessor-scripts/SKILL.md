@@ -35,7 +35,7 @@ The user or issue will provide some or all of:
 
 ## Overview
 
-Six preprocessor patterns exist. The discovery method and target type determine which to use:
+Eight preprocessor patterns exist. The discovery method and target type determine which to use:
 
 | Pattern | Discovery Method | Has FUNC_XREFS | Has LLM_DECOMPILE | Has INHERIT_VFUNCS | Has FUNC_VTABLE_RELATIONS | preprocess_skill has llm_config |
 |---------|-----------------|-----------------|---------------------|--------------------|---------------------------|-------------------------------|
@@ -46,6 +46,7 @@ Six preprocessor patterns exist. The discovery method and target type determine 
 | **E** -- Struct member offset via LLM_DECOMPILE | Decompile a known predecessor function, identify struct field access offsets | No | Yes | No | No | Yes |
 | **F** -- Virtual function via INHERIT_VFUNCS | Inherit vtable slot index from a known base-class vfunc, look up same slot in derived-class vtable | No | No | Yes | No | No |
 | **G** -- ConCommand handler function | Find the handler callback registered via `RegisterConCommand` by matching command name and help string | No (uses COMMAND_NAME/HELP_STRING) | No | No | No | No |
+| **H** -- Secondary (ordinal) vtable | Locate a class's secondary vtable via mangled symbol (Windows) or offset-to-top (Linux) | No | No | No | No | No |
 
 Additionally, **struct member offsets** can be mixed into any pattern as a secondary target (see "Struct Member Mixin" section below).
 
@@ -63,6 +64,7 @@ From the user's input, determine:
    - Has predecessor function + category `structmember` -> **Pattern E**
    - Has base vfunc name + category `vfunc` (derived-class override of known base vfunc) -> **Pattern F**
    - Has `COMMAND_NAME` + `HELP_STRING` (ConCommand handler callback) -> **Pattern G**
+   - Has mangled vtable symbol / offset-to-top + category `vtable` (secondary vtable for a class) -> **Pattern H**
 
 2. **Do xref strings differ between Windows and Linux?** If yes, use platform-specific `FUNC_XREFS_WINDOWS` / `FUNC_XREFS_LINUX` variant.
 
@@ -588,6 +590,92 @@ async def preprocess_skill(
 - config.yaml category is `func`, no `expected_input` needed
 - The handler function is always a regular function (not virtual), so no `FUNC_VTABLE_RELATIONS`
 
+### Pattern H -- Secondary (ordinal) vtable
+
+Use when: the target is a **secondary vtable** (`_vtable2`) for a class that has multiple inheritance. Located via the mangled symbol name on Windows (e.g. `??_7ClassName@@6B@_0`) and via matching `offset-to-top` on Linux.
+
+This pattern does NOT use `preprocess_common_skill`. It uses the `_ordinal_vtable_common` helper instead.
+
+**User inputs for Pattern H:**
+- **Class name** -- e.g. `CLoopTypeClientServerService`
+- **Windows mangled symbol** -- e.g. `??_7CLoopTypeClientServerService@@6B@_0` (the `@_0` suffix distinguishes the secondary vtable)
+- **Linux offset-to-top** -- e.g. `-56` (a negative decimal value from `dq -NN ; offset to this` in the vtable layout)
+
+```python
+#!/usr/bin/env python3
+"""Preprocess script for find-{CLASS_NAME}_vtable2 skill."""
+
+from pathlib import Path
+
+from ida_analyze_util import write_vtable_yaml
+from ida_preprocessor_scripts._ordinal_vtable_common import (
+    preprocess_ordinal_vtable_via_mcp,
+)
+
+
+TARGET_CLASS_NAME = "{CLASS_NAME}"
+TARGET_OUTPUT_STEM = "{CLASS_NAME}_vtable2"
+WINDOWS_SYMBOL_ALIASES = ["??_7{CLASS_NAME}@@6B@_0"]
+LINUX_EXPECTED_OFFSET_TO_TOP = {OFFSET_TO_TOP}  # negative decimal, e.g. -8, -56
+
+
+async def preprocess_skill(
+    session,
+    skill_name,
+    expected_outputs,
+    old_yaml_map,
+    new_binary_dir,
+    platform,
+    image_base,
+    debug=False,
+):
+    _ = skill_name, old_yaml_map, new_binary_dir
+
+    expected_filename = f"{TARGET_OUTPUT_STEM}.{platform}.yaml"
+    matching_outputs = [
+        output_path
+        for output_path in expected_outputs
+        if Path(output_path).name == expected_filename
+    ]
+    if len(matching_outputs) != 1:
+        return False
+
+    if platform == "windows":
+        symbol_aliases = WINDOWS_SYMBOL_ALIASES
+        expected_offset_to_top = None
+    elif platform == "linux":
+        symbol_aliases = None
+        expected_offset_to_top = LINUX_EXPECTED_OFFSET_TO_TOP
+    else:
+        return False
+
+    result = await preprocess_ordinal_vtable_via_mcp(
+        session=session,
+        class_name=TARGET_CLASS_NAME,
+        ordinal=0,
+        image_base=image_base,
+        platform=platform,
+        debug=debug,
+        symbol_aliases=symbol_aliases,
+        expected_offset_to_top=expected_offset_to_top,
+    )
+    if not result:
+        return False
+
+    write_vtable_yaml(matching_outputs[0], result)
+    return True
+```
+
+**Key differences from all other patterns:**
+- Does NOT use `preprocess_common_skill` -- uses `preprocess_ordinal_vtable_via_mcp` from `_ordinal_vtable_common` plus `write_vtable_yaml` from `ida_analyze_util`
+- No `TARGET_FUNCTION_NAMES`, `FUNC_XREFS`, `LLM_DECOMPILE`, `FUNC_VTABLE_RELATIONS`, or `INHERIT_VFUNCS`
+- config.yaml category is `vtable`, no `expected_input` needed
+- Output stem is `{CLASS_NAME}_vtable2`, config.yaml symbol name matches
+- Windows uses `WINDOWS_SYMBOL_ALIASES` (mangled name with `@_0` suffix)
+- Linux uses `LINUX_EXPECTED_OFFSET_TO_TOP` (negative decimal offset-to-top value)
+- The `ordinal=0` parameter selects the first secondary vtable (use `ordinal=1` for a third vtable, etc.)
+- The `expected_filename` variable in the f-string uses the curly-brace trick: define `TARGET_OUTPUT_STEM` as a plain string, then build the filename with `f"{TARGET_OUTPUT_STEM}.{platform}.yaml"`
+
 ### FULLMATCH: Prefix for Xref Strings (Patterns A & B)
 
 When the xref string is short or generic (e.g. `"Precache"`, `"userid"`, `"team"`), use the `FULLMATCH:` prefix to require **exact string matching** instead of substring matching. Without it, `"Precache"` would match `"PrecacheModel"`, `"PrecacheSound"`, etc.
@@ -647,18 +735,18 @@ The `vtable_name` from `FUNC_VTABLE_RELATIONS` is used as **metadata** written t
 
 ### Key Differences Between Patterns
 
-| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) | Pattern G (ConCommand handler) |
-|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|-------------------------------|
-| FUNC_XREFS | Yes | Yes | No | No | No | No | No (uses COMMAND_NAME/HELP_STRING) |
-| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No | No |
-| INHERIT_VFUNCS | No | No | No | No | No | Yes | No |
-| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No | No |
-| `llm_config` param | No | No | Yes | Yes | Yes | No | No |
-| Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` |
-| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` |
-| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` |
-| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size |
-| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` |
+| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) | Pattern G (ConCommand handler) | Pattern H (ordinal vtable) |
+|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|-------------------------------|---------------------------|
+| FUNC_XREFS | Yes | Yes | No | No | No | No | No (uses COMMAND_NAME/HELP_STRING) | No |
+| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No | No | No |
+| INHERIT_VFUNCS | No | No | No | No | No | Yes | No | No |
+| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No | No | No |
+| `llm_config` param | No | No | Yes | Yes | Yes | No | No | No |
+| Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` | `preprocess_ordinal_vtable_via_mcp` |
+| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` | `TARGET_CLASS_NAME` (single string) |
+| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` | `class_name=`, `ordinal=` |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size | (vtable YAML via write_vtable_yaml) |
+| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` | `vtable` |
 
 ---
 
@@ -1031,3 +1119,16 @@ Before finishing, verify:
 ```
 
 **Key insight -- FUNC_VTABLE_RELATIONS for vfunc offsets:** Even though `IGameTypes_CreateWorkshopMapGroup` is a vfunc call-site offset (not a function in a vtable we own), `FUNC_VTABLE_RELATIONS` is still required because the `GENERATE_YAML_DESIRED_FIELDS` include `vtable_name` and `vfunc_sig`. The system uses the vtable class name from `FUNC_VTABLE_RELATIONS` as metadata -- it does NOT attempt to look up an `IGameTypes_vtable` YAML.
+
+### Example: Secondary vtable via ordinal lookup (Pattern H)
+
+**User says:** Find `CLoopTypeClientServerService_vtable2` in engine. Windows mangled name: `??_7CLoopTypeClientServerService@@6B@_0`. Linux: `_ZTI28CLoopTypeClientServerService` with `dq -56 ; offset to this`.
+
+**Result:** `ida_preprocessor_scripts/find-CLoopTypeClientServerService_vtable2.py` with:
+- `TARGET_CLASS_NAME = "CLoopTypeClientServerService"`
+- `TARGET_OUTPUT_STEM = "CLoopTypeClientServerService_vtable2"`
+- `WINDOWS_SYMBOL_ALIASES = ["??_7CLoopTypeClientServerService@@6B@_0"]`
+- `LINUX_EXPECTED_OFFSET_TO_TOP = -56`
+- Uses `preprocess_ordinal_vtable_via_mcp` with `ordinal=0`
+- config.yaml skill entry with no `expected_input`
+- config.yaml symbol entry with `category: vtable`
