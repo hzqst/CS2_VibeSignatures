@@ -2757,6 +2757,13 @@ modules:
         expected_output:
           - CLoopModeGame_ShutdownServer.{platform}.yaml
 
+      - name: find-CLoopModeGame_OnLoopDeactivate
+        expected_output:
+          - CLoopModeGame_OnLoopDeactivate.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_ShutdownServer.{platform}.yaml
+          - CLoopModeGame_vtable.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -4119,6 +4126,11 @@ modules:
         category: func
         alias:
           - CLoopModeGame::ShutdownServer
+
+      - name: CLoopModeGame_OnLoopDeactivate
+        category: vfunc
+        alias:
+          - CLoopModeGame::OnLoopDeactivate
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
