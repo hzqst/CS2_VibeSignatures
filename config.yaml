@@ -567,6 +567,12 @@ modules:
           - CNetworkGameServer_vtable.{platform}.yaml
           - INetworkGameServer_ClientUpdate.{platform}.yaml
 
+      - name: find-ISource2Server_ClientUpdate
+        expected_output:
+          - ISource2Server_ClientUpdate.{platform}.yaml
+        expected_input:
+          - CNetworkGameServer_ClientUpdate.{platform}.yaml
+
       - name: find-INetworkMessages_SetIsForServer
         expected_output:
           - INetworkMessages_SetIsForServer.{platform}.yaml
@@ -836,6 +842,12 @@ modules:
         category: vfunc
         alias:
           - CNetworkGameServer::ClientUpdate
+
+      - name: ISource2Server_ClientUpdate
+        category: vfunc
+        alias:
+          - ISource2Server::ClientUpdate
+        shared: true
 
       - name: INetworkMessages_SetIsForServer
         category: vfunc
