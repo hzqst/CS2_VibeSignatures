@@ -627,6 +627,12 @@ modules:
         expected_input:
           - CLoopTypeClientServer_vtable.{platform}.yaml
 
+      - name: find-ILoopType_AddEngineService
+        expected_output:
+          - ILoopType_AddEngineService.{platform}.yaml
+        expected_input:
+          - CLoopTypeClientServer_LoopTypeInit.{platform}.yaml
+
       - name: find-CLoopTypeClientServer_FrameUpdate
         expected_output:
           - CLoopTypeClientServer_FrameUpdate.{platform}.yaml
@@ -978,6 +984,11 @@ modules:
         category: vfunc
         alias:
           - ILoopMode::HandleInputEvent
+
+      - name: ILoopType_AddEngineService
+        category: vfunc
+        alias:
+          - ILoopType::AddEngineService
 
       - name: CEngineServiceMgr_vtable
         category: vtable
