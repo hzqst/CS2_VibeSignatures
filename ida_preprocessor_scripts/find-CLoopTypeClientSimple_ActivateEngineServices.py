@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CLoopTypeClientSimple_BuildAndActivateLoopTypes skill."""
+"""Preprocess script for find-CLoopTypeClientSimple_ActivateEngineServices skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CLoopTypeClientSimple_BuildAndActivateLoopTypes",
+    "CLoopTypeClientSimple_ActivateEngineServices",
 ]
 
 FUNC_XREFS = [
                  {
-                     "func_name": 'CLoopTypeClientSimple_BuildAndActivateLoopTypes',
+                     "func_name": 'CLoopTypeClientSimple_ActivateEngineServices',
                      "xref_strings": ['levelload', 'remoteconnect', 'sourcetvrelay'],
                      "xref_gvs": [],
                      "xref_signatures": [],
@@ -25,7 +25,7 @@ FUNC_XREFS = [
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CLoopTypeClientSimple_BuildAndActivateLoopTypes",
+        "CLoopTypeClientSimple_ActivateEngineServices",
         [
             "func_name",
             "func_va",

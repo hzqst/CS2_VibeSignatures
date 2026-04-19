@@ -621,6 +621,12 @@ modules:
         expected_output:
           - CLoopTypeClientSimple_ActivateEngineServices.{platform}.yaml
 
+      - name: find-CLoopTypeClientServer_FrameUpdate
+        expected_output:
+          - CLoopTypeClientServer_FrameUpdate.{platform}.yaml
+        expected_input:
+          - CLoopTypeClientServer_vtable.{platform}.yaml
+
       - name: find-CLoopTypeClientServer_AllocateLoopMode
         expected_output:
           - CLoopTypeClientServer_AllocateLoopMode.{platform}.yaml
@@ -657,12 +663,6 @@ modules:
 
       - name: find-CEngineServiceMgr__MainLoop
         expected_output:
-          - CEngineServiceMgr__MainLoop.{platform}.yaml
-
-      - name: find-ILoopType_FrameUpdate
-        expected_output:
-          - ILoopType_FrameUpdate.{platform}.yaml
-        expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
 
     symbols:
@@ -908,7 +908,12 @@ modules:
       - name: CLoopTypeClientSimple_ActivateEngineServices
         category: func
         alias:
-          - CLoopTypeClientServer::BuildAndActivateLoopTypes
+          - CLoopTypeClientServer::ActivateEngineServices
+
+      - name: CLoopTypeClientServer_FrameUpdate
+        category: vfunc
+        alias:
+          - CLoopTypeClientServer::FrameUpdate
 
       - name: CLoopTypeClientServer_AllocateLoopMode
         category: vfunc
@@ -942,11 +947,6 @@ modules:
         category: func
         alias:
           - CEngineServiceMgr::_MainLoop
-
-      - name: ILoopType_FrameUpdate
-        category: vfunc
-        alias:
-          - ILoopType::FrameUpdate
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
