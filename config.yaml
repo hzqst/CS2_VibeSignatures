@@ -554,6 +554,12 @@ modules:
         expected_input:
           - CNetworkServerService_RegisterEventMapInternal.{platform}.yaml
 
+      - name: find-INetworkGameServer_ClientUpdate
+        expected_output:
+          - INetworkGameServer_ClientUpdate.{platform}.yaml
+        expected_input:
+          - CNetworkServerService_OnServerPostAdvanceTick.{platform}.yaml
+
       - name: find-INetworkMessages_SetIsForServer
         expected_output:
           - INetworkMessages_SetIsForServer.{platform}.yaml
@@ -813,6 +819,11 @@ modules:
         category: func
         alias:
           - CNetworkServerService::OnSimpleLoopFrameUpdate
+
+      - name: INetworkGameServer_ClientUpdate
+        category: vfunc
+        alias:
+          - INetworkGameServer::ClientUpdate
 
       - name: INetworkMessages_SetIsForServer
         category: vfunc
