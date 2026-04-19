@@ -536,6 +536,10 @@ modules:
         expected_input:
           - CNetworkServerService_vtable.{platform}.yaml
 
+      - name: find-CNetworkServerService_RegisterEventMapInternal
+        expected_output:
+          - CNetworkServerService_RegisterEventMapInternal.{platform}.yaml
+
       - name: find-INetworkMessages_SetIsForServer
         expected_output:
           - INetworkMessages_SetIsForServer.{platform}.yaml
@@ -745,6 +749,11 @@ modules:
         category: vfunc
         alias:
           - CNetworkServerService::Init
+
+      - name: CNetworkServerService_RegisterEventMapInternal
+        category: func
+        alias:
+          - CNetworkServerService::RegisterEventMapInternal
 
       - name: INetworkMessages_SetIsForServer
         category: vfunc
