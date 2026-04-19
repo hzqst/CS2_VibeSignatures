@@ -2753,6 +2753,10 @@ modules:
         expected_input_linux:
           - CLoopModeGame_Shutdown.{platform}.yaml
 
+      - name: find-CLoopModeGame_ShutdownServer
+        expected_output:
+          - CLoopModeGame_ShutdownServer.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -4110,6 +4114,11 @@ modules:
         category: vfunc
         alias:
           - CLoopModeGame::LoopShutdown
+
+      - name: CLoopModeGame_ShutdownServer
+        category: func
+        alias:
+          - CLoopModeGame::ShutdownServer
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
