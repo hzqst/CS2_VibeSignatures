@@ -592,6 +592,12 @@ modules:
         expected_input:
           - CLoopTypeClientServerService_vtable2.{platform}.yaml
 
+      - name: find-ILoopMode_HandleInputEvent
+        expected_output:
+          - ILoopMode_HandleInputEvent.{platform}.yaml
+        expected_input:
+          - CLoopTypeClientServerService_HandleInputEvent.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -777,6 +783,11 @@ modules:
         category: vfunc
         alias:
           - CLoopTypeClientServerService::HandleInputEvent
+
+      - name: ILoopMode_HandleInputEvent
+        category: vfunc
+        alias:
+          - ILoopMode::HandleInputEvent
 
   - name: client
     path_windows: game/csgo/bin/win64/client.dll
