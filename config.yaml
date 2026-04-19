@@ -1906,6 +1906,14 @@ modules:
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
 
+      - name: find-IGameSystem_ServerPreEntityThink-AND-IGameSystem_ServerPostEntityThink
+        expected_output:
+          - IGameSystem_ServerPreEntityThink.{platform}.yaml
+          - IGameSystem_ServerPostEntityThink.{platform}.yaml
+        expected_input:
+          - CSource2Server_GameFrame.{platform}.yaml
+          - IGameSystem_vtable.{platform}.yaml
+
       - name: find-CGameEventManager_Init-AND-gameeventmanager
         expected_output:
           - CGameEventManager_Init.{platform}.yaml
@@ -3763,6 +3771,16 @@ modules:
         category: vfunc
         alias:
           - IGameSystem::BuildGameSessionManifest
+
+      - name: IGameSystem_ServerPreEntityThink
+        category: vfunc
+        alias:
+          - IGameSystem::ServerPreEntityThink
+
+      - name: IGameSystem_ServerPostEntityThink
+        category: vfunc
+        alias:
+          - IGameSystem::ServerPostEntityThink
 
       - name: CSource2GameClients_StartHLTVServer
         category: vfunc
