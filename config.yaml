@@ -791,6 +791,17 @@ modules:
         expected_input:
           - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
 
+      - name: find-CLoopTypeSimple_vtable
+        expected_output:
+          - CLoopTypeSimple_vtable.{platform}.yaml
+
+      - name: find-CLoopTypeSimple_FrameUpdate
+        expected_output:
+          - CLoopTypeSimple_FrameUpdate.{platform}.yaml
+        expected_input:
+          - CLoopTypeSimple_vtable.{platform}.yaml
+          - ILoopType_FrameUpdate.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -1070,6 +1081,15 @@ modules:
         category: vfunc
         alias:
           - CLoopTypeClientServer::EngineLoop
+
+      - name: CLoopTypeSimple_vtable
+        category: vtable
+
+      - name: CLoopTypeSimple_FrameUpdate
+        category: vfunc
+        alias:
+          - CLoopTypeSimple::FrameUpdate
+
 
       - name: CLoopTypeClientServerService_OnLoopActivate
         category: vfunc
