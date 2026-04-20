@@ -35,7 +35,7 @@ The user or issue will provide some or all of:
 
 ## Overview
 
-Ten preprocessor patterns exist. The discovery method and target type determine which to use:
+Eleven preprocessor patterns exist. The discovery method and target type determine which to use:
 
 | Pattern | Discovery Method | Has FUNC_XREFS | Has LLM_DECOMPILE | Has INHERIT_VFUNCS | Has FUNC_VTABLE_RELATIONS | preprocess_skill has llm_config |
 |---------|-----------------|-----------------|---------------------|--------------------|---------------------------|-------------------------------|
@@ -49,6 +49,7 @@ Ten preprocessor patterns exist. The discovery method and target type determine 
 | **H** -- Secondary (ordinal) vtable | Locate a class's secondary vtable via mangled symbol (Windows) or offset-to-top (Linux) | No | No | No | No | No |
 | **I** -- Interface vfunc offset via thunk instruction walk | Walk a known concrete-class thunk via `py_eval` + `idaapi.decode_insn`, extract `jmp [reg+disp]` displacement as vfunc_offset | No | No | No | No | No |
 | **J** -- IGameSystem vfunc via dispatch scan | Scan `IGameSystem_DispatchCall(idx, callback, ...)` call sites in a known predecessor; map targets by scan/index order using `_igamesystem_dispatch_common` | No | No | No | No | No |
+| **K** -- IGameSystem vfunc via slot dispatch scan | Walk an `IGameSystem_Loop*AllSystems` dispatcher function body; extract `[rax+offset]` vtable call displacements via `_igamesystem_slot_dispatch_common`; output is slot-only (no `func_sig`) | No | No | No | No | No |
 
 Additionally, **struct member offsets** can be mixed into any pattern as a secondary target (see "Struct Member Mixin" section below).
 
@@ -70,6 +71,7 @@ From the user's input, determine:
    - Has mangled vtable symbol / offset-to-top + category `vtable` (secondary vtable for a class) -> **Pattern H**
    - Target is an **interface vfunc offset** with no feasible `func_sig`/`vfunc_sig`, and the offset can be read from a concrete-class thunk's `jmp [reg+disp]` instruction -> **Pattern I**
    - Target is an `IGameSystem` vfunc visible as the callback argument to `IGameSystem_DispatchCall(...)` in a known predecessor's decompile -> **Pattern J**
+   - Target is an `IGameSystem` abstract vfunc (slot-only output: `func_name, vtable_name, vfunc_offset, vfunc_index`; no `func_sig`) dispatched by a known `IGameSystem_Loop*AllSystems` function that iterates all game systems via vtable; the dispatcher's output YAML (`func_va`) is already available -> **Pattern K**
 
 2. **Do xref strings differ between Windows and Linux?** If yes, use platform-specific `FUNC_XREFS_WINDOWS` / `FUNC_XREFS_LINUX` variant.
 
@@ -159,18 +161,18 @@ The `vtable_name` from `FUNC_VTABLE_RELATIONS` is used as **metadata** written t
 
 ### Key Differences Between Patterns
 
-| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) | Pattern G (ConCommand handler) | Pattern H (ordinal vtable) | Pattern I (iface vfunc thunk walk) | Pattern J (IGameSystem dispatch) |
-|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|-------------------------------|---------------------------|-----------------------------------|----------------------------------|
-| FUNC_XREFS | Yes | Yes | No | No | No | No | No (uses COMMAND_NAME/HELP_STRING) | No | No | No |
-| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No | No | No | No | No |
-| INHERIT_VFUNCS | No | No | No | No | No | Yes | No | No | No | No |
-| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No | No | No | No | No |
-| `llm_config` param | No | No | Yes | Yes | Yes | No | No | No | No | No |
-| Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` | `preprocess_ordinal_vtable_via_mcp` | `py_eval` + `write_func_yaml` (custom) | `preprocess_igamesystem_dispatch_skill` |
-| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` | `TARGET_CLASS_NAME` (single string) | `TARGET_FUNC_NAME` + `PREDECESSOR_STEM` (module-level constants) | `TARGET_SPECS` (list of dicts with `target_name`, `rename_to`, optional `dispatch_rank`) |
-| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` | `class_name=`, `ordinal=` | (custom: reads YAML, calls `py_eval`) | `source_yaml_stem=`, `target_specs=`, `via_internal_wrapper=`, `multi_order=` |
-| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | Standard: func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index; Slot-only: func_name, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size | (vtable YAML via write_vtable_yaml) | func_name, vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index |
-| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` | `vtable` | `vfunc` | `vfunc` |
+| Aspect | Pattern A (func + xref) | Pattern B (vfunc + xref) | Pattern C (vfunc + LLM) | Pattern D (func + LLM) | Pattern E (structmember + LLM) | Pattern F (vfunc + inherit) | Pattern G (ConCommand handler) | Pattern H (ordinal vtable) | Pattern I (iface vfunc thunk walk) | Pattern J (IGameSystem dispatch) | Pattern K (IGameSystem slot dispatch) |
+|--------|------------------------|--------------------------|------------------------|------------------------|-------------------------------|---------------------------|-------------------------------|---------------------------|-----------------------------------|----------------------------------|---------------------------------------|
+| FUNC_XREFS | Yes | Yes | No | No | No | No | No (uses COMMAND_NAME/HELP_STRING) | No | No | No | No |
+| FUNC_VTABLE_RELATIONS | No | Yes | Yes | No | No | No | No | No | No | No | No |
+| INHERIT_VFUNCS | No | No | No | No | No | Yes | No | No | No | No | No |
+| LLM_DECOMPILE | No | No | Yes | Yes | Yes | No | No | No | No | No | No |
+| `llm_config` param | No | No | Yes | Yes | Yes | No | No | No | No | No | No |
+| Helper module | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_common_skill` | `preprocess_registerconcommand_skill` | `preprocess_ordinal_vtable_via_mcp` | `py_eval` + `write_func_yaml` (custom) | `preprocess_igamesystem_dispatch_skill` | `preprocess_igamesystem_slot_dispatch_skill` (from `_igamesystem_slot_dispatch_common`) |
+| Target list | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_FUNCTION_NAMES` | `TARGET_STRUCT_MEMBER_NAMES` | (none -- defined in INHERIT_VFUNCS) | `TARGET_FUNCTION_NAMES` | `TARGET_CLASS_NAME` (single string) | `TARGET_FUNC_NAME` + `PREDECESSOR_STEM` (module-level constants) | `TARGET_SPECS` (list of dicts with `target_name`, `rename_to`, optional `dispatch_rank`) | `TARGET_SPECS` (list of dicts with `target_name`, `vtable_name`, optional `dispatch_rank`) |
+| preprocess param | `func_names=` | `func_names=` | `func_names=` | `func_names=` | `struct_member_names=` | `inherit_vfuncs=` | `command_name=`, `help_string=` | `class_name=`, `ordinal=` | (custom: reads YAML, calls `py_eval`) | `source_yaml_stem=`, `target_specs=`, `via_internal_wrapper=`, `multi_order=` | `dispatcher_yaml_stem=`, `target_specs=`, `multi_order=`, `expected_dispatch_count=` |
+| YAML fields | func_name, func_sig, func_va, func_rva, func_size | Same + vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, vfunc_sig, vfunc_offset, vfunc_index, vtable_name | func_name, func_sig, func_va, func_rva, func_size | struct_name, member_name, offset, size, offset_sig, offset_sig_disp | Standard: func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index; Slot-only: func_name, vtable_name, vfunc_offset, vfunc_index | func_name, func_sig, func_va, func_rva, func_size | (vtable YAML via write_vtable_yaml) | func_name, vtable_name, vfunc_offset, vfunc_index | func_name, func_va, func_rva, func_size, func_sig, vtable_name, vfunc_offset, vfunc_index | func_name, vtable_name, vfunc_offset, vfunc_index |
+| config category | `func` | `vfunc` | `vfunc` | `func` | `structmember` | `vfunc` | `func` | `vtable` | `vfunc` | `vfunc` | `vfunc` |
 
 ---
 
@@ -202,6 +204,7 @@ Find the module section (e.g. `server`, `engine`, `networksystem`) and add entri
 - Pattern F (standard): needs both the derived class vtable YAML and the base vfunc YAML in `expected_input`
 - Pattern F (slot-only): needs ONLY the base vfunc YAML in `expected_input` -- no vtable YAML for the interface class
 - Pattern J: needs both the predecessor function YAML and `IGameSystem_vtable.{platform}.yaml` in `expected_input`
+- Pattern K: needs ONLY `{DISPATCHER_YAML_STEM}.{platform}.yaml` in `expected_input` -- no `IGameSystem_vtable.{platform}.yaml` needed
 - Multi-function scripts use `-AND-` in the name: `find-FuncA-AND-FuncB`
 - Place the new entry near related functions (e.g. `CCSPlayer_MovementServices_*` entries together)
 
@@ -669,3 +672,80 @@ MULTI_ORDER = "index"
 **Key insight -- `VIA_INTERNAL_WRAPPER`:**
 - Set to `False` when the predecessor function itself contains the `IGameSystem_DispatchCall` sites directly (like `CSource2Server_GameFrame`).
 - Set to `True` when the predecessor immediately tail-calls or inlines a distinct named sub-function that holds the actual dispatch calls (e.g. `CLoopModeGame_OnClientPreOutput` → `CLoopModeGame_OnClientPreOutputInternal`). In that case also set `INTERNAL_RENAME_TO` to the wrapper's intended name so it gets annotated in IDA.
+
+### Example: IGameSystem abstract vfunc via slot dispatch scan (Pattern K)
+
+**User says:** Find `IGameSystem_GamePreShutdown` in server. It's an abstract `IGameSystem` vfunc (slot-only, no `func_sig` needed) dispatched by `IGameSystem_LoopPreShutdownAllSystems`, which iterates all game systems and calls their `GamePreShutdown` vfunc via `[rax+offset]`. The dispatcher YAML stem is `IGameSystem_LoopPreShutdownAllSystems`.
+
+**Result:** `ida_preprocessor_scripts/find-IGameSystem_GamePreShutdown.py` with:
+
+```python
+from ida_preprocessor_scripts._igamesystem_slot_dispatch_common import (
+    preprocess_igamesystem_slot_dispatch_skill,
+)
+
+DISPATCHER_YAML_STEM = "IGameSystem_LoopPreShutdownAllSystems"
+
+TARGET_SPECS = [
+    {
+        "target_name": "IGameSystem_GamePreShutdown",
+        "vtable_name": "IGameSystem",
+        "dispatch_rank": 0,
+    },
+]
+
+EXPECTED_DISPATCH_COUNT = 1
+
+async def preprocess_skill(session, skill_name, expected_outputs, old_yaml_map,
+                           new_binary_dir, platform, image_base, debug=False):
+    _ = skill_name; _ = old_yaml_map; _ = image_base
+    return await preprocess_igamesystem_slot_dispatch_skill(
+        session=session,
+        expected_outputs=expected_outputs,
+        new_binary_dir=new_binary_dir,
+        platform=platform,
+        dispatcher_yaml_stem=DISPATCHER_YAML_STEM,
+        target_specs=TARGET_SPECS,
+        multi_order="index",
+        expected_dispatch_count=EXPECTED_DISPATCH_COUNT,
+        debug=debug,
+    )
+```
+
+**config.yaml:**
+```yaml
+      - name: find-IGameSystem_GamePreShutdown
+        expected_output:
+          - IGameSystem_GamePreShutdown.{platform}.yaml
+        expected_input:
+          - IGameSystem_LoopPreShutdownAllSystems.{platform}.yaml
+```
+
+**config.yaml symbol entry:**
+```yaml
+      - name: IGameSystem_GamePreShutdown
+        category: vfunc
+        alias:
+          - IGameSystem::GamePreShutdown
+```
+
+**Output YAML (both platforms):**
+```yaml
+func_name: IGameSystem_GamePreShutdown
+vtable_name: IGameSystem
+vfunc_offset: '0x...'
+vfunc_index: ...
+```
+
+**Key insight -- Pattern K vs Pattern J vs Pattern F slot-only:**
+- **Pattern J** (`_igamesystem_dispatch_common`): the target IS the `callback` function argument passed to `IGameSystem_DispatchCall(...)` -- a full concrete function with `func_va`, `func_sig`, etc. Use when the dispatch scan is done inside a game-loop function like `CSource2Server_GameFrame`.
+- **Pattern K** (`_igamesystem_slot_dispatch_common`): the target is an abstract vfunc offset extracted from a dedicated `IGameSystem_Loop*AllSystems` dispatcher. The dispatcher walks all game systems and calls their vfunc at a fixed `[rax+offset]`. Output is slot-only (no `func_sig`). Use when the dispatcher is one of the `IGameSystem_Loop*AllSystems` family.
+- **Pattern F slot-only**: use when a concrete override of the same slot already has a known `vfunc_index` in its output YAML. Pattern K is preferred when no concrete override YAML exists yet but the `IGameSystem_Loop*AllSystems` dispatcher YAML is available.
+
+**`EXPECTED_DISPATCH_COUNT`:** Set to the number of unique vtable call sites in the dispatcher. For `IGameSystem_Loop*AllSystems` functions that dispatch exactly one vfunc, set it to `1`. If the dispatcher has `N` unique `[rax+offset]` calls mapping to `N` different abstract vfuncs, set it to `N` and add all `N` targets to `TARGET_SPECS` with unique `dispatch_rank` values.
+
+**`preprocess_skill` signature note:** Pattern K does NOT take an `llm_config` parameter (unlike Patterns C/D/E). The signature is:
+```python
+async def preprocess_skill(session, skill_name, expected_outputs, old_yaml_map,
+                           new_binary_dir, platform, image_base, debug=False):
+```
