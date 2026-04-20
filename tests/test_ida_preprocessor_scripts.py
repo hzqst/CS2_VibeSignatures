@@ -12,7 +12,7 @@ import ida_skill_preprocessor
 
 FLATTENED_SERIALIZERS_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
-    "find-CFlattenedSerializers_CreateFieldChangedEventQueue-impl.py"
+    "find-CFlattenedSerializers_CreateFieldChangedEventQueue.py"
 )
 SET_IS_FOR_SERVER_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
@@ -32,9 +32,9 @@ I_GET_LOGGING_CHANNEL_LINUX_SCRIPT_PATH = Path(
 )
 NETWORK_GROUP_STATS_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
-    "find-CNetworkMessages_GetNetworkGroupCount-AND-"
-    "CNetworkMessages_GetNetworkGroupName-AND-"
-    "CNetworkMessages_GetNetworkGroupColor.py"
+    "find-INetworkMessages_GetNetworkGroupCount-AND-"
+    "INetworkMessages_GetNetworkGroupName-AND-"
+    "INetworkMessages_GetNetworkGroupColor.py"
 )
 REALLOCATING_FACTORY_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
@@ -65,8 +65,7 @@ CNETWORK_SERVER_SERVICE_INIT_SCRIPT_PATH = Path(
 )
 PROCESS_MOVEMENT_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
-    "find-CCSPlayer_MovementServices_ProcessMovement-AND-"
-    "CCSPlayer_MovementServices_CheckMovingGround.py"
+    "find-CCSPlayer_MovementServices_ProcessMovement.py"
 )
 BOT_ADD_COMMAND_HANDLER_SCRIPT_PATH = Path(
     "ida_preprocessor_scripts/"
@@ -798,14 +797,14 @@ class TestFindCFlattenedSerializersCreateFieldChangedEventQueueImpl(
     async def test_preprocess_skill_forwards_expected_inherit_vfuncs(self) -> None:
         module = _load_module(
             FLATTENED_SERIALIZERS_SCRIPT_PATH,
-            "find_CFlattenedSerializers_CreateFieldChangedEventQueue_impl",
+            "find_CFlattenedSerializers_CreateFieldChangedEventQueue",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
         expected_inherit_vfuncs = [
             (
                 "CFlattenedSerializers_CreateFieldChangedEventQueue",
                 "CFlattenedSerializers",
-                "../server/CFlattenedSerializers_CreateFieldChangedEventQueue",
+                "../server/IFlattenedSerializers_CreateFieldChangedEventQueue",
                 True,
             )
         ]
@@ -878,7 +877,6 @@ class TestFindCNetworkMessagesSetIsForServerImpl(unittest.IsolatedAsyncioTestCas
                     "func_va",
                     "func_rva",
                     "func_size",
-                    "func_sig",
                     "vtable_name",
                     "vfunc_offset",
                     "vfunc_index",
@@ -991,34 +989,34 @@ class TestFindCNetworkMessagesGetNetworkGroupStats(
     async def test_preprocess_skill_forwards_llm_and_vtable_wiring(self) -> None:
         module = _load_module(
             NETWORK_GROUP_STATS_SCRIPT_PATH,
-            "find_CNetworkMessages_GetNetworkGroupStats",
+            "find_INetworkMessages_GetNetworkGroupStats",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
         expected_llm_decompile_specs = [
             (
-                "CNetworkMessages_GetNetworkGroupCount",
+                "INetworkMessages_GetNetworkGroupCount",
                 "prompt/call_llm_decompile.md",
                 "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
             ),
             (
-                "CNetworkMessages_GetNetworkGroupName",
+                "INetworkMessages_GetNetworkGroupName",
                 "prompt/call_llm_decompile.md",
                 "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
             ),
             (
-                "CNetworkMessages_GetNetworkGroupColor",
+                "INetworkMessages_GetNetworkGroupColor",
                 "prompt/call_llm_decompile.md",
                 "references/networksystem/CNetworkSystem_SendNetworkStats.{platform}.yaml",
             ),
         ]
         expected_func_vtable_relations = [
-            ("CNetworkMessages_GetNetworkGroupCount", "CNetworkMessages"),
-            ("CNetworkMessages_GetNetworkGroupName", "CNetworkMessages"),
-            ("CNetworkMessages_GetNetworkGroupColor", "CNetworkMessages"),
+            ("INetworkMessages_GetNetworkGroupCount", "INetworkMessages"),
+            ("INetworkMessages_GetNetworkGroupName", "INetworkMessages"),
+            ("INetworkMessages_GetNetworkGroupColor", "INetworkMessages"),
         ]
         expected_generate_yaml_desired_fields = [
             (
-                "CNetworkMessages_GetNetworkGroupCount",
+                "INetworkMessages_GetNetworkGroupCount",
                 [
                     "func_name",
                     "vfunc_sig",
@@ -1028,7 +1026,7 @@ class TestFindCNetworkMessagesGetNetworkGroupStats(
                 ],
             ),
             (
-                "CNetworkMessages_GetNetworkGroupName",
+                "INetworkMessages_GetNetworkGroupName",
                 [
                     "func_name",
                     "vfunc_sig",
@@ -1038,7 +1036,7 @@ class TestFindCNetworkMessagesGetNetworkGroupStats(
                 ],
             ),
             (
-                "CNetworkMessages_GetNetworkGroupColor",
+                "INetworkMessages_GetNetworkGroupColor",
                 [
                     "func_name",
                     "vfunc_sig",
@@ -1080,9 +1078,9 @@ class TestFindCNetworkMessagesGetNetworkGroupStats(
             platform="windows",
             image_base=0x180000000,
             func_names=[
-                "CNetworkMessages_GetNetworkGroupCount",
-                "CNetworkMessages_GetNetworkGroupName",
-                "CNetworkMessages_GetNetworkGroupColor",
+                "INetworkMessages_GetNetworkGroupCount",
+                "INetworkMessages_GetNetworkGroupName",
+                "INetworkMessages_GetNetworkGroupColor",
             ],
             func_vtable_relations=expected_func_vtable_relations,
             llm_decompile_specs=expected_llm_decompile_specs,
@@ -1787,8 +1785,8 @@ class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSer
 ):
     async def test_preprocess_skill_forwards_split_field_contracts(self) -> None:
         module = _load_module(
-            "ida_preprocessor_scripts/find-INetworkMessages_SetNetworkSerializationContextData-AND-CFlattenedSerializers_CreateFieldChangedEventQueue.py",
-            "find_INetworkMessages_SetNetworkSerializationContextData_AND_CFlattenedSerializers_CreateFieldChangedEventQueue",
+            "ida_preprocessor_scripts/find-INetworkMessages_SetNetworkSerializationContextData-AND-IFlattenedSerializers_CreateFieldChangedEventQueue.py",
+            "find_INetworkMessages_SetNetworkSerializationContextData_AND_IFlattenedSerializers_CreateFieldChangedEventQueue",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
         expected_llm_decompile_specs = [
@@ -1798,14 +1796,17 @@ class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSer
                 "references/server/CEntitySystem_Activate.{platform}.yaml",
             ),
             (
-                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+                "IFlattenedSerializers_CreateFieldChangedEventQueue",
                 "prompt/call_llm_decompile.md",
                 "references/server/CEntitySystem_Activate.{platform}.yaml",
             ),
         ]
         expected_func_vtable_relations = [
             ("INetworkMessages_SetNetworkSerializationContextData", "INetworkMessages"),
-            ("CFlattenedSerializers_CreateFieldChangedEventQueue", "CFlattenedSerializers"),
+            (
+                "IFlattenedSerializers_CreateFieldChangedEventQueue",
+                "IFlattenedSerializers",
+            ),
         ]
         expected_generate_yaml_desired_fields = [
             (
@@ -1819,7 +1820,7 @@ class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSer
                 ],
             ),
             (
-                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+                "IFlattenedSerializers_CreateFieldChangedEventQueue",
                 [
                     "func_name",
                     "vfunc_sig",
@@ -1862,7 +1863,7 @@ class TestFindINetworkMessagesSetNetworkSerializationContextDataAndCFlattenedSer
             image_base=0x180000000,
             func_names=[
                 "INetworkMessages_SetNetworkSerializationContextData",
-                "CFlattenedSerializers_CreateFieldChangedEventQueue",
+                "IFlattenedSerializers_CreateFieldChangedEventQueue",
             ],
             func_vtable_relations=expected_func_vtable_relations,
             llm_decompile_specs=expected_llm_decompile_specs,
@@ -1879,10 +1880,26 @@ class TestFindCBaseEntityCollisionRulesChanged(unittest.IsolatedAsyncioTestCase)
             "find_CBaseEntity_CollisionRulesChanged",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
+        expected_llm_decompile_specs = [
+            (
+                "CBaseEntity_CollisionRulesChanged",
+                "prompt/call_llm_decompile.md",
+                "references/server/PhysEnableEntityCollisions.{platform}.yaml",
+            )
+        ]
+        expected_func_vtable_relations = [
+            ("CBaseEntity_CollisionRulesChanged", "CBaseEntity")
+        ]
         expected_generate_yaml_desired_fields = [
             (
                 "CBaseEntity_CollisionRulesChanged",
-                ["func_name", "func_va", "func_rva", "func_size", "func_sig"],
+                [
+                    "func_name",
+                    "vfunc_sig",
+                    "vfunc_offset",
+                    "vfunc_index",
+                    "vtable_name",
+                ],
             )
         ]
 
@@ -1911,6 +1928,9 @@ class TestFindCBaseEntityCollisionRulesChanged(unittest.IsolatedAsyncioTestCase)
             platform="windows",
             image_base=0x180000000,
             func_names=["CBaseEntity_CollisionRulesChanged"],
+            func_vtable_relations=expected_func_vtable_relations,
+            llm_decompile_specs=expected_llm_decompile_specs,
+            llm_config=None,
             generate_yaml_desired_fields=expected_generate_yaml_desired_fields,
             debug=True,
         )
@@ -2146,8 +2166,7 @@ class TestFindCcsPlayerMovementServicesProcessMovement(
     async def test_script_forwards_gv_backed_func_xrefs(self) -> None:
         module = _load_module(
             PROCESS_MOVEMENT_SCRIPT_PATH,
-            "find_CCSPlayer_MovementServices_ProcessMovement_AND_"
-            "CCSPlayer_MovementServices_CheckMovingGround",
+            "find_CCSPlayer_MovementServices_ProcessMovement",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
         expected_func_xrefs = [
@@ -2157,7 +2176,10 @@ class TestFindCcsPlayerMovementServicesProcessMovement(
                 "xref_gvs": ["CPlayer_MovementServices_s_pRunCommandPawn"],
                 "xref_signatures": [],
                 "xref_funcs": [],
-                "exclude_funcs": [],
+                "exclude_funcs": [
+                    "CPlayer_MovementServices_ForceButtons",
+                    "CPlayer_MovementServices_ForceButtonState",
+                ],
                 "exclude_strings": [],
                 "exclude_gvs": [],
                 "exclude_signatures": [],
@@ -2165,21 +2187,10 @@ class TestFindCcsPlayerMovementServicesProcessMovement(
         ]
         expected_func_names = [
             "CCSPlayer_MovementServices_ProcessMovement",
-            "CCSPlayer_MovementServices_CheckMovingGround",
         ]
         expected_generate_yaml_desired_fields = [
             (
                 "CCSPlayer_MovementServices_ProcessMovement",
-                [
-                    "func_name",
-                    "func_va",
-                    "func_rva",
-                    "func_size",
-                    "func_sig",
-                ],
-            ),
-            (
-                "CCSPlayer_MovementServices_CheckMovingGround",
                 [
                     "func_name",
                     "func_va",
