@@ -778,6 +778,13 @@ modules:
         expected_input:
           - CEngineServiceMgr_Shutdown.{platform}.yaml
 
+      - name: find-CEngineServiceMgr_GetActiveLoopClientServerMode
+        expected_output:
+          - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
+        expected_input:
+          - CEngineServiceMgr_vtable.{platform}.yaml
+          - ../client/IEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -1140,6 +1147,11 @@ modules:
         category: vfunc
         alias:
           - CEngineServiceMgr::Shutdown
+
+      - name: CEngineServiceMgr_GetActiveLoopClientServerMode
+        category: vfunc
+        alias:
+          - CEngineServiceMgr::GetActiveLoopClientServerMode
 
       - name: CEngineGameUI_vtable
         category: vtable
