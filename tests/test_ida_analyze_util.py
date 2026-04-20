@@ -4651,6 +4651,87 @@ found_struct_offset: []
             result,
         )
 
+    async def test_preprocess_gen_vfunc_sig_via_mcp_accepts_implicit_zero_slot(
+        self,
+    ) -> None:
+        session = AsyncMock()
+
+        def _fake_call_tool(*, name: str, arguments: dict[str, object]):
+            if name == "py_eval":
+                code = arguments["code"]
+                self.assertIn(
+                    "import idaapi, ida_bytes, idautils, ida_ua, idc, json",
+                    code,
+                )
+                self.assertIn("def _has_implicit_zero_vfunc_slot", code)
+                self.assertIn("target_vfunc_offset == 0", code)
+                self.assertIn("disp_off, disp_size = 0, 0", code)
+                return _py_eval_payload(
+                    {
+                        "vfunc_sig_va": "0x18004abc3",
+                        "vfunc_inst_length": 2,
+                        "vfunc_disp_offset": 0,
+                        "vfunc_disp_size": 0,
+                        "insts": [
+                            {
+                                "ea": "0x18004abc3",
+                                "size": 2,
+                                "bytes": "ff10",
+                                "wild": [],
+                            },
+                            {
+                                "ea": "0x18004abc5",
+                                "size": 3,
+                                "bytes": "488bd8",
+                                "wild": [],
+                            },
+                            {
+                                "ea": "0x18004abc8",
+                                "size": 3,
+                                "bytes": "4885db",
+                                "wild": [],
+                            },
+                        ],
+                    }
+                )
+            if name == "find_bytes":
+                self.assertEqual(
+                    ["FF 10 48 8B D8 48 85 DB"],
+                    arguments["patterns"],
+                )
+                return _FakeCallToolResult(
+                    [
+                        {
+                            "matches": ["0x18004abc3"],
+                            "n": 1,
+                        }
+                    ]
+                )
+            raise AssertionError(f"unexpected MCP tool: {name}")
+
+        session.call_tool.side_effect = _fake_call_tool
+
+        result = await ida_analyze_util.preprocess_gen_vfunc_sig_via_mcp(
+            session=session,
+            inst_va="0x18004ABC3",
+            vfunc_offset="0x0",
+            debug=False,
+        )
+
+        self.assertEqual(
+            {
+                "vfunc_sig": "FF 10 48 8B D8 48 85 DB",
+                "vfunc_sig_va": "0x18004abc3",
+                "vfunc_sig_disp": 0,
+                "vfunc_inst_length": 2,
+                "vfunc_disp_offset": 0,
+                "vfunc_disp_size": 0,
+                "vfunc_offset": "0x0",
+                "vfunc_sig_max_match": 1,
+            },
+            result,
+        )
+
     async def test_preprocess_gen_vfunc_sig_via_mcp_accepts_match_count_within_limit(
         self,
     ) -> None:

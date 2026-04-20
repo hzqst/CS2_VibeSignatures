@@ -3386,6 +3386,8 @@ async def preprocess_gen_vfunc_sig_via_mcp(
     (`vfunc_sig_disp = 0`). The first instruction is fully fixed, including the
     displacement bytes that encode `vfunc_offset`; subsequent instructions may
     wildcard volatile operands and branch displacements.
+    Slot 0 may also be represented implicitly by a `call`/`jmp` memory operand
+    without encoded displacement bytes, e.g. `call qword ptr [rax]`.
 
     Args:
         session: Active MCP ClientSession.
@@ -3466,7 +3468,7 @@ async def preprocess_gen_vfunc_sig_via_mcp(
             return None
 
     py_code = (
-        "import idaapi, ida_bytes, idautils, ida_ua, json\n"
+        "import idaapi, ida_bytes, idautils, ida_ua, idc, json\n"
         f"target_inst = {inst_va_int}\n"
         f"target_vfunc_offset = {vfunc_offset_int}\n"
         f"max_sig_bytes = {max_sig_bytes}\n"
@@ -3512,6 +3514,18 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "    uniq.sort(key=lambda item: (item[1], -item[0]), reverse=True)\n"
         "    return uniq\n"
         "\n"
+        "def _has_implicit_zero_vfunc_slot(insn):\n"
+        "    mnem = (idc.print_insn_mnem(insn.ea) or '').lower()\n"
+        "    if mnem not in ('call', 'jmp'):\n"
+        "        return False\n"
+        "    for op in insn.ops:\n"
+        "        ot = int(op.type)\n"
+        "        if ot == int(idaapi.o_void):\n"
+        "            continue\n"
+        "        if ot == int(idaapi.o_phrase):\n"
+        "            return True\n"
+        "    return False\n"
+        "\n"
         "def _wildcard_instruction(insn, raw):\n"
         "    wild = set()\n"
         "    for op in insn.ops:\n"
@@ -3554,10 +3568,16 @@ async def preprocess_gen_vfunc_sig_via_mcp(
         "    result = json.dumps(None)\n"
         "else:\n"
         "    disp_hits = _find_vfunc_disp(insn0, raw0, target_vfunc_offset)\n"
+        "    disp_off = None\n"
+        "    disp_size = None\n"
         "    if not disp_hits:\n"
-        "        result = json.dumps(None)\n"
+        "        if target_vfunc_offset == 0 and _has_implicit_zero_vfunc_slot(insn0):\n"
+        "            disp_off, disp_size = 0, 0\n"
+        "        else:\n"
+        "            result = json.dumps(None)\n"
         "    else:\n"
         "        disp_off, disp_size = disp_hits[0]\n"
+        "    if disp_size is not None:\n"
         "        origin_seg = idaapi.getseg(target_inst)\n"
         "        origin_seg_start = origin_seg.start_ea if origin_seg else idaapi.BADADDR\n"
         "        insts = []\n"
@@ -3657,9 +3677,14 @@ async def preprocess_gen_vfunc_sig_via_mcp(
             print("    Preprocess: malformed vfunc signature candidate metadata")
         return None
 
-    if first_len <= 0 or disp_off < 0 or disp_size <= 0:
+    if first_len <= 0 or disp_off < 0 or disp_size < 0:
         if debug:
             print("    Preprocess: invalid vfunc signature candidate lengths")
+        return None
+
+    if disp_size == 0 and (vfunc_offset_int != 0 or disp_off != 0):
+        if debug:
+            print("    Preprocess: invalid implicit zero-slot vfunc metadata")
         return None
 
     if not isinstance(insts, list) or len(insts) == 0:
