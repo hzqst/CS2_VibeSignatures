@@ -2435,6 +2435,12 @@ modules:
         expected_input:
           - CGameRulesGameSystem_vtable.{platform}.yaml
 
+      - name: find-IGameSystem_GameShutdown
+        expected_output:
+          - IGameSystem_GameShutdown.{platform}.yaml
+        expected_input:
+          - CGameRulesGameSystem_GameShutdown.{platform}.yaml
+
       - name: find-CTakeDamageInfo_GetWeaponName
         expected_output:
           - CTakeDamageInfo_GetWeaponName.{platform}.yaml
@@ -3999,6 +4005,11 @@ modules:
         category: vfunc
         alias:
           - CGameRulesGameSystem::GameShutdown
+
+      - name: IGameSystem_GameShutdown
+        category: vfunc
+        alias:
+          - IGameSystem::GameShutdown
 
       - name: CMultiplayRules_ClientDisconnected
         category: vfunc
