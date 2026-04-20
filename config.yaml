@@ -1917,6 +1917,10 @@ modules:
         expected_output:
           - CGameRules_vtable.{platform}.yaml
 
+      - name: find-CGameRulesGameSystem_vtable
+        expected_output:
+          - CGameRulesGameSystem_vtable.{platform}.yaml
+
       - name: find-CMultiplayRules_vtable
         expected_output:
           - CMultiplayRules_vtable.{platform}.yaml
@@ -2412,6 +2416,12 @@ modules:
           - CGameRules_ClientSettingsChanged.{platform}.yaml
         expected_input:
           - CGameRules_vtable.{platform}.yaml
+
+      - name: find-CGameRulesGameSystem_GameInit
+        expected_output:
+          - CGameRulesGameSystem_GameInit.{platform}.yaml
+        expected_input:
+          - CGameRulesGameSystem_vtable.{platform}.yaml
 
       - name: find-CTakeDamageInfo_GetWeaponName
         expected_output:
@@ -3485,6 +3495,9 @@ modules:
       - name: CGameRules_vtable
         category: vtable
 
+      - name: CGameRulesGameSystem_vtable
+        category: vtable
+
       - name: CMultiplayRules_vtable
         category: vtable
 
@@ -3959,6 +3972,11 @@ modules:
         category: vfunc
         alias:
           - CGameRules::ClientSettingsChanged
+
+      - name: CGameRulesGameSystem_GameInit
+        category: vfunc
+        alias:
+          - CGameRulesGameSystem::GameInit
 
       - name: CMultiplayRules_ClientDisconnected
         category: vfunc
