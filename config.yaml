@@ -765,6 +765,13 @@ modules:
         expected_input:
           - CEngineGameUI_Shutdown.{platform}.yaml
 
+      - name: find-CEngineServiceMgr_Shutdown
+        expected_output:
+          - CEngineServiceMgr_Shutdown.{platform}.yaml
+        expected_input:
+          - CEngineServiceMgr_vtable.{platform}.yaml
+          - IAppSystem_Shutdown.{platform}.yaml
+
     symbols:
       - name: CNetworkGameServer_vtable
         category: vtable
@@ -1117,6 +1124,11 @@ modules:
         category: func
         alias:
           - CEngineServiceMgr::DeactivateLoop
+
+      - name: CEngineServiceMgr_Shutdown
+        category: vfunc
+        alias:
+          - CEngineServiceMgr::Shutdown
 
       - name: CEngineGameUI_vtable
         category: vtable
