@@ -1364,10 +1364,11 @@ modules:
         expected_input:
           - IGameSystem_AddByName.{platform}.yaml
 
-      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems
+      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems-AND-IGameSystem_LoopPreShutdownAllSystems
         expected_output:
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
           - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
+          - IGameSystem_LoopPreShutdownAllSystems.{platform}.yaml
         expected_input_windows:
           - CLoopModeGame_LoopShutdown.{platform}.yaml
         expected_input_linux:
@@ -1750,6 +1751,11 @@ modules:
         category: func
         alias:
           - IGameSystem::LoopDestroyAllSystems
+
+      - name: IGameSystem_LoopPreShutdownAllSystems
+        category: func
+        alias:
+          - IGameSystem::LoopPreShutdownAllSystems
 
       - name: IGameSystem_ClientPollNetworking
         category: vfunc
@@ -3428,10 +3434,11 @@ modules:
         expected_output:
           - CLoopModeGame_SetGameSystemState.{platform}.yaml
 
-      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems
+      - name: find-IGameSystem_DestroyAllGameSystems-AND-IGameSystem_LoopDestroyAllSystems-AND-IGameSystem_LoopPreShutdownAllSystems
         expected_output:
           - IGameSystem_DestroyAllGameSystems.{platform}.yaml
           - IGameSystem_LoopDestroyAllSystems.{platform}.yaml
+          - IGameSystem_LoopPreShutdownAllSystems.{platform}.yaml
         expected_input_windows:
           - CLoopModeGame_LoopShutdown.{platform}.yaml
         expected_input_linux:
@@ -4989,6 +4996,11 @@ modules:
         category: func
         alias:
           - IGameSystem::LoopDestroyAllSystems
+
+      - name: IGameSystem_LoopPreShutdownAllSystems
+        category: func
+        alias:
+          - IGameSystem::LoopPreShutdownAllSystems
 
       - name: CLoopModeGame_Shutdown
         category: func
