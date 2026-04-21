@@ -742,6 +742,8 @@ modules:
           - CEngineServiceMgr_DeactivateLoop.{platform}.yaml
         expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
+        skip_if_exists:
+          - ILoopType_DeallocateLoopMode.{platform}.yaml
 
       - name: find-ILoopType_DeallocateLoopMode
         expected_output:
