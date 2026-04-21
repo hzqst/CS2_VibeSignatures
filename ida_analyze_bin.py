@@ -56,7 +56,12 @@ except ImportError as e:
     print("Please install required dependencies with: uv sync")
     sys.exit(1)
 
-from ida_skill_preprocessor import preprocess_single_skill_via_mcp
+from ida_skill_preprocessor import (
+    PREPROCESS_STATUS_ABSENT_OK,
+    PREPROCESS_STATUS_FAILED,
+    PREPROCESS_STATUS_SUCCESS,
+    preprocess_single_skill_via_mcp,
+)
 from ida_vcall_finder import (
     aggregate_vcall_results_for_object,
     export_object_xref_details_via_mcp,
@@ -1717,7 +1722,7 @@ def process_binary(
                     old_yaml_map[new_path] = old_path
 
             try:
-                preprocess_ok = _run_preprocess_single_skill_via_mcp(
+                preprocess_status = _run_preprocess_single_skill_via_mcp(
                     host=host,
                     port=port,
                     skill_name=skill_name,
@@ -1736,9 +1741,19 @@ def process_binary(
             except Exception as e:
                 if debug:
                     print(f"  Pre-processing error for {skill_name}: {e}")
-                preprocess_ok = False
+                preprocess_status = PREPROCESS_STATUS_FAILED
 
-            if preprocess_ok:
+            if (
+                preprocess_status is True
+                or preprocess_status == PREPROCESS_STATUS_SUCCESS
+            ):
+                preprocess_status = PREPROCESS_STATUS_SUCCESS
+            elif preprocess_status == PREPROCESS_STATUS_ABSENT_OK:
+                preprocess_status = PREPROCESS_STATUS_ABSENT_OK
+            else:
+                preprocess_status = PREPROCESS_STATUS_FAILED
+
+            if preprocess_status == PREPROCESS_STATUS_SUCCESS:
                 missing_outputs = [p for p in expected_outputs if not os.path.exists(p)]
                 if missing_outputs:
                     fail_count += 1
@@ -1750,6 +1765,10 @@ def process_binary(
                         print(f"  Pre-processed: {skill_name} (signature reuse)")
                     else:
                         print(f"  Pre-processed: {skill_name}")
+                continue
+            if preprocess_status == PREPROCESS_STATUS_ABSENT_OK:
+                skip_count += 1
+                print(f"  Skipping skill: {skill_name} (preprocess reported absent_ok)")
                 continue
 
             if all_expected_outputs_exist(expected_outputs):

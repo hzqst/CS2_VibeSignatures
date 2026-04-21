@@ -837,15 +837,25 @@ def _build_llm_decompile_specs_map(llm_decompile_specs, debug=False):
                     f"{func_name}: {reference_yaml_path!r}"
                 )
             return None
-        if func_name in specs_map:
-            if debug:
-                print(f"    Preprocess: duplicated llm_decompile target: {func_name}")
-            return None
 
-        specs_map[func_name] = {
+        llm_spec = {
             "prompt_path": prompt_path,
             "reference_yaml_path": reference_yaml_path,
         }
+        existing_specs = specs_map.get(func_name)
+        if existing_specs is not None:
+            if existing_specs[0]["prompt_path"] != prompt_path:
+                if debug:
+                    print(
+                        "    Preprocess: mixed llm_decompile prompt paths for "
+                        f"{func_name}: {existing_specs[0]['prompt_path']!r} != "
+                        f"{prompt_path!r}"
+                    )
+                return None
+            existing_specs.append(llm_spec)
+            continue
+
+        specs_map[func_name] = [llm_spec]
 
     return specs_map
 
@@ -1967,6 +1977,68 @@ async def _load_llm_decompile_target_detail_via_mcp(
     return detail_payload
 
 
+async def _load_llm_decompile_target_details_via_mcp(
+    session,
+    target_func_names,
+    new_binary_dir=None,
+    platform=None,
+    debug=False,
+):
+    if isinstance(target_func_names, str):
+        normalized_target_names = [target_func_names]
+    elif isinstance(target_func_names, (tuple, list)):
+        normalized_target_names = list(target_func_names)
+    else:
+        normalized_target_names = []
+
+    target_items = []
+    for target_func_name in normalized_target_names:
+        target_func_name = str(target_func_name or "").strip()
+        if not target_func_name:
+            continue
+        target_detail = await _load_llm_decompile_target_detail_via_mcp(
+            session,
+            target_func_name,
+            new_binary_dir=new_binary_dir,
+            platform=platform,
+            debug=debug,
+        )
+        if target_detail is not None:
+            target_items.append(target_detail)
+    return target_items
+
+
+def _render_llm_decompile_blocks(reference_items, target_items):
+    def _normalize_items(items):
+        if isinstance(items, dict):
+            return [items]
+        if isinstance(items, (tuple, list)):
+            return [item for item in items if isinstance(item, dict)]
+        return []
+
+    def _render_block(block_kind, item):
+        func_name = str(item.get("func_name", "") or "").strip() or "<unknown>"
+        disasm_code = str(item.get("disasm_code", "") or "")
+        procedure = str(item.get("procedure", "") or "")
+        return (
+            f"### {block_kind} Function: {func_name}\n\n"
+            "**Disassembly**\n\n"
+            f"```c\n{disasm_code}\n```\n\n"
+            "**Procedure**\n\n"
+            f"```c\n{procedure}\n```"
+        )
+
+    reference_blocks = "\n\n".join(
+        _render_block("Reference", item)
+        for item in _normalize_items(reference_items)
+    )
+    target_blocks = "\n\n".join(
+        _render_block("Target", item)
+        for item in _normalize_items(target_items)
+    )
+    return reference_blocks, target_blocks
+
+
 def parse_llm_decompile_response(response_text):
     response_text = str(response_text or "").strip()
     if not response_text:
@@ -2097,39 +2169,55 @@ def _prepare_llm_decompile_request(
             print(f"    Preprocess: create_openai_client unavailable for {func_name}")
         return None
 
+    if isinstance(llm_spec, dict):
+        llm_specs = [llm_spec]
+    elif isinstance(llm_spec, (tuple, list)) and llm_spec:
+        llm_specs = list(llm_spec)
+    else:
+        if debug:
+            print(f"    Preprocess: invalid llm_decompile spec for {func_name}")
+        return None
+
+    if not all(isinstance(spec, dict) for spec in llm_specs):
+        if debug:
+            print(f"    Preprocess: invalid llm_decompile spec for {func_name}")
+        return None
+
+    prompt_value = llm_specs[0].get("prompt_path")
+    if not isinstance(prompt_value, str) or not prompt_value:
+        if debug:
+            print(
+                "    Preprocess: invalid llm_decompile prompt path for "
+                f"{func_name}: {prompt_value!r}"
+            )
+        return None
+
+    for current_spec in llm_specs[1:]:
+        current_prompt_value = current_spec.get("prompt_path")
+        if current_prompt_value != prompt_value:
+            if debug:
+                print(
+                    "    Preprocess: mixed llm_decompile prompt paths for "
+                    f"{func_name}: {prompt_value!r} != {current_prompt_value!r}"
+                )
+            return None
+
     scripts_dir = _get_preprocessor_scripts_dir()
     prompt_path = Path(
         _resolve_llm_decompile_template_value(
-            llm_spec["prompt_path"],
-            platform,
-        )
-    )
-    reference_yaml_path = Path(
-        _resolve_llm_decompile_template_value(
-            llm_spec["reference_yaml_path"],
+            prompt_value,
             platform,
         )
     )
     if not prompt_path.is_absolute():
         prompt_path = scripts_dir / prompt_path
-    if not reference_yaml_path.is_absolute():
-        reference_yaml_path = scripts_dir / reference_yaml_path
     prompt_path = prompt_path.resolve()
-    reference_yaml_path = reference_yaml_path.resolve()
 
     if not prompt_path.is_file():
         if debug:
             print(
                 f"    Preprocess: llm_decompile prompt missing for {func_name}: "
                 f"{prompt_path}"
-            )
-        return None
-
-    if not reference_yaml_path.is_file():
-        if debug:
-            print(
-                f"    Preprocess: llm_decompile reference missing for {func_name}: "
-                f"{reference_yaml_path}"
             )
         return None
 
@@ -2143,33 +2231,71 @@ def _prepare_llm_decompile_request(
             )
         return None
 
-    try:
-        with open(reference_yaml_path, "r", encoding="utf-8") as handle:
-            reference_data = yaml.safe_load(handle) or {}
-    except Exception as exc:
-        if debug:
-            print(
-                f"    Preprocess: failed to read llm_decompile reference for "
-                f"{func_name}: {exc}"
+    reference_items = []
+    reference_yaml_paths = []
+    target_func_names = []
+    for current_spec in llm_specs:
+        reference_value = current_spec.get("reference_yaml_path")
+        if not isinstance(reference_value, str) or not reference_value:
+            if debug:
+                print(
+                    "    Preprocess: invalid llm_decompile reference path for "
+                    f"{func_name}: {reference_value!r}"
+                )
+            return None
+        reference_yaml_path = Path(
+            _resolve_llm_decompile_template_value(
+                reference_value,
+                platform,
             )
-        return None
+        )
+        if not reference_yaml_path.is_absolute():
+            reference_yaml_path = scripts_dir / reference_yaml_path
+        reference_yaml_path = reference_yaml_path.resolve()
 
-    if not isinstance(reference_data, dict):
-        if debug:
-            print(
-                f"    Preprocess: invalid llm_decompile reference payload for "
-                f"{func_name}"
-            )
-        return None
+        if not reference_yaml_path.is_file():
+            if debug:
+                print(
+                    f"    Preprocess: llm_decompile reference missing for "
+                    f"{func_name}: {reference_yaml_path}"
+                )
+            return None
 
-    target_func_name = str(reference_data.get("func_name", "") or "").strip()
-    if not target_func_name:
-        if debug:
-            print(
-                f"    Preprocess: llm_decompile reference func_name missing for "
-                f"{func_name}"
-            )
-        return None
+        try:
+            with open(reference_yaml_path, "r", encoding="utf-8") as handle:
+                reference_data = yaml.safe_load(handle) or {}
+        except Exception as exc:
+            if debug:
+                print(
+                    f"    Preprocess: failed to read llm_decompile reference for "
+                    f"{func_name}: {exc}"
+                )
+            return None
+
+        if not isinstance(reference_data, dict):
+            if debug:
+                print(
+                    f"    Preprocess: invalid llm_decompile reference payload for "
+                    f"{func_name}"
+                )
+            return None
+
+        target_func_name = str(reference_data.get("func_name", "") or "").strip()
+        if not target_func_name:
+            if debug:
+                print(
+                    "    Preprocess: llm_decompile reference func_name missing for "
+                    f"{func_name}"
+                )
+            return None
+
+        reference_items.append(reference_data)
+        reference_yaml_paths.append(os.fspath(reference_yaml_path))
+        target_func_names.append(target_func_name)
+
+    reference_data = reference_items[0]
+    reference_yaml_path = reference_yaml_paths[0]
+    target_func_name = target_func_names[0]
 
     if fake_as == "codex":
         client = None
@@ -2195,11 +2321,11 @@ def _prepare_llm_decompile_request(
             f"    Preprocess: llm_decompile request ready for {func_name}: "
             f"platform={str(platform or '').strip() or '<empty>'}, "
             f"model={model}, prompt_path={prompt_path}, "
-            f"reference_yaml_path={reference_yaml_path}"
+            f"reference_yaml_paths={reference_yaml_paths}"
         )
         _debug_print_json(
-            f"llm_decompile reference payload for {func_name}",
-            reference_data,
+            f"llm_decompile reference payloads for {func_name}",
+            reference_items,
             debug=True,
         )
 
@@ -2207,7 +2333,10 @@ def _prepare_llm_decompile_request(
         "client": client,
         "model": model,
         "prompt_path": os.fspath(prompt_path),
-        "reference_yaml_path": os.fspath(reference_yaml_path),
+        "reference_items": reference_items,
+        "reference_yaml_paths": reference_yaml_paths,
+        "target_func_names": target_func_names,
+        "reference_yaml_path": reference_yaml_path,
         "prompt_template": prompt_template,
         "target_func_name": target_func_name,
         "disasm_for_reference": str(reference_data.get("disasm_code", "") or ""),
@@ -2225,21 +2354,35 @@ def _build_llm_decompile_request_cache_key(llm_request):
         return None
     model = str(llm_request.get("model", "")).strip()
     prompt_path = str(llm_request.get("prompt_path", "")).strip()
-    reference_yaml_path = str(llm_request.get("reference_yaml_path", "")).strip()
-    if not model or not prompt_path or not reference_yaml_path:
+    reference_yaml_paths = llm_request.get("reference_yaml_paths")
+    if reference_yaml_paths is None:
+        reference_yaml_path = str(llm_request.get("reference_yaml_path", "")).strip()
+        reference_yaml_paths = [reference_yaml_path] if reference_yaml_path else []
+    if isinstance(reference_yaml_paths, str):
+        reference_yaml_paths = [reference_yaml_paths]
+    if not isinstance(reference_yaml_paths, (tuple, list)):
+        return None
+    reference_yaml_paths = tuple(
+        str(reference_yaml_path).strip()
+        for reference_yaml_path in reference_yaml_paths
+        if str(reference_yaml_path).strip()
+    )
+    if not model or not prompt_path or not reference_yaml_paths:
         return None
     temperature = llm_request.get("temperature")
-    return model, prompt_path, reference_yaml_path, temperature
+    return model, prompt_path, reference_yaml_paths, temperature
 
 
 async def call_llm_decompile(
     client,
     model,
     symbol_name_list,
-    disasm_code,
-    procedure,
+    disasm_code="",
+    procedure="",
     disasm_for_reference="",
     procedure_for_reference="",
+    reference_blocks=None,
+    target_blocks=None,
     prompt_template=None,
     platform=None,
     temperature=None,
@@ -2261,6 +2404,28 @@ async def call_llm_decompile(
     else:
         symbol_name_text = str(symbol_name_list or "").strip()
 
+    if reference_blocks is None or target_blocks is None:
+        fallback_reference_blocks, fallback_target_blocks = _render_llm_decompile_blocks(
+            [
+                {
+                    "func_name": "Reference",
+                    "disasm_code": disasm_for_reference,
+                    "procedure": procedure_for_reference,
+                }
+            ],
+            [
+                {
+                    "func_name": "Target",
+                    "disasm_code": disasm_code,
+                    "procedure": procedure,
+                }
+            ],
+        )
+        if reference_blocks is None:
+            reference_blocks = fallback_reference_blocks
+        if target_blocks is None:
+            target_blocks = fallback_target_blocks
+
     if prompt_template is not None:
         try:
             prompt = _resolve_llm_decompile_template_value(
@@ -2272,6 +2437,8 @@ async def call_llm_decompile(
                 procedure_for_reference=str(procedure_for_reference or ""),
                 disasm_code=str(disasm_code or ""),
                 procedure=str(procedure or ""),
+                reference_blocks=str(reference_blocks or ""),
+                target_blocks=str(target_blocks or ""),
                 platform=str(platform or "").strip(),
             )
         except Exception as exc:
@@ -2284,10 +2451,8 @@ async def call_llm_decompile(
     else:
         prompt = (
             "You are a reverse engineering expert.\n\n"
-            f"Reference disassembly:\n{disasm_for_reference}\n\n"
-            f"Reference procedure:\n{procedure_for_reference}\n\n"
-            f"Target disassembly:\n{disasm_code}\n\n"
-            f"Target procedure:\n{procedure}\n\n"
+            f"Reference functions:\n{reference_blocks}\n\n"
+            f"Target functions:\n{target_blocks}\n\n"
             f"Please collect all references to \"{symbol_name_text}\" and output YAML."
         )
     system_prompt = "You are a reverse engineering expert."
@@ -7572,6 +7737,48 @@ async def preprocess_common_skill(
             llm_symbol_name_list = [seed_symbol_name]
         return llm_symbol_name_list
 
+    async def _call_llm_decompile_for_request(llm_request, llm_symbol_name_list):
+        try:
+            target_func_names = llm_request.get("target_func_names")
+            if target_func_names is None:
+                target_func_name = str(llm_request.get("target_func_name", "") or "").strip()
+                target_func_names = [target_func_name] if target_func_name else []
+            llm_target_details = await _load_llm_decompile_target_details_via_mcp(
+                session,
+                target_func_names,
+                new_binary_dir=new_binary_dir,
+                platform=platform,
+                debug=debug,
+            )
+            if not llm_target_details:
+                return _empty_llm_decompile_result()
+            reference_blocks, target_blocks = _render_llm_decompile_blocks(
+                llm_request.get("reference_items"),
+                llm_target_details,
+            )
+            primary_target_detail = llm_target_details[0]
+            return await call_llm_decompile(
+                client=llm_request["client"],
+                model=llm_request["model"],
+                symbol_name_list=llm_symbol_name_list,
+                disasm_code=primary_target_detail.get("disasm_code", ""),
+                procedure=primary_target_detail.get("procedure", ""),
+                disasm_for_reference=llm_request["disasm_for_reference"],
+                procedure_for_reference=llm_request["procedure_for_reference"],
+                reference_blocks=reference_blocks,
+                target_blocks=target_blocks,
+                prompt_template=llm_request["prompt_template"],
+                platform=platform,
+                temperature=llm_request.get("temperature"),
+                effort=llm_request.get("effort"),
+                api_key=llm_request.get("api_key"),
+                base_url=llm_request.get("base_url"),
+                fake_as=llm_request.get("fake_as"),
+                debug=debug,
+            )
+        except Exception:
+            return _empty_llm_decompile_result()
+
     # Process func/vfunc targets
     for func_name in all_func_names:
         target_output = matched_func_outputs[func_name]
@@ -7628,37 +7835,10 @@ async def preprocess_common_skill(
                     func_name,
                     llm_cache_key,
                 )
-
-                try:
-                    llm_target_detail = await _load_llm_decompile_target_detail_via_mcp(
-                        session,
-                        llm_request["target_func_name"],
-                        new_binary_dir=new_binary_dir,
-                        platform=platform,
-                        debug=debug,
-                    )
-                    if llm_target_detail is None:
-                        llm_result = _empty_llm_decompile_result()
-                    else:
-                        llm_result = await call_llm_decompile(
-                            client=llm_request["client"],
-                            model=llm_request["model"],
-                            symbol_name_list=llm_symbol_name_list,
-                            disasm_code=llm_target_detail["disasm_code"],
-                            procedure=llm_target_detail["procedure"],
-                            disasm_for_reference=llm_request["disasm_for_reference"],
-                            procedure_for_reference=llm_request["procedure_for_reference"],
-                            prompt_template=llm_request["prompt_template"],
-                            platform=platform,
-                            temperature=llm_request.get("temperature"),
-                            effort=llm_request.get("effort"),
-                            api_key=llm_request.get("api_key"),
-                            base_url=llm_request.get("base_url"),
-                            fake_as=llm_request.get("fake_as"),
-                            debug=debug,
-                        )
-                except Exception:
-                    llm_result = _empty_llm_decompile_result()
+                llm_result = await _call_llm_decompile_for_request(
+                    llm_request,
+                    llm_symbol_name_list,
+                )
                 for symbol_name in llm_symbol_name_list:
                     llm_result_by_symbol_name[symbol_name] = llm_result
             if can_use_direct_func_fallback:
@@ -7935,36 +8115,10 @@ async def preprocess_common_skill(
                     gv_name,
                     llm_cache_key,
                 )
-                try:
-                    llm_target_detail = await _load_llm_decompile_target_detail_via_mcp(
-                        session,
-                        llm_request["target_func_name"],
-                        new_binary_dir=new_binary_dir,
-                        platform=platform,
-                        debug=debug,
-                    )
-                    if llm_target_detail is None:
-                        llm_result = _empty_llm_decompile_result()
-                    else:
-                        llm_result = await call_llm_decompile(
-                            client=llm_request["client"],
-                            model=llm_request["model"],
-                            symbol_name_list=llm_symbol_name_list,
-                            disasm_code=llm_target_detail["disasm_code"],
-                            procedure=llm_target_detail["procedure"],
-                            disasm_for_reference=llm_request["disasm_for_reference"],
-                            procedure_for_reference=llm_request["procedure_for_reference"],
-                            prompt_template=llm_request["prompt_template"],
-                            platform=platform,
-                            temperature=llm_request.get("temperature"),
-                            effort=llm_request.get("effort"),
-                            api_key=llm_request.get("api_key"),
-                            base_url=llm_request.get("base_url"),
-                            fake_as=llm_request.get("fake_as"),
-                            debug=debug,
-                        )
-                except Exception:
-                    llm_result = _empty_llm_decompile_result()
+                llm_result = await _call_llm_decompile_for_request(
+                    llm_request,
+                    llm_symbol_name_list,
+                )
                 for symbol_name in llm_symbol_name_list:
                     llm_result_by_symbol_name[symbol_name] = llm_result
 
@@ -8099,36 +8253,10 @@ async def preprocess_common_skill(
                     struct_member_name,
                     llm_cache_key,
                 )
-                try:
-                    llm_target_detail = await _load_llm_decompile_target_detail_via_mcp(
-                        session,
-                        llm_request["target_func_name"],
-                        new_binary_dir=new_binary_dir,
-                        platform=platform,
-                        debug=debug,
-                    )
-                    if llm_target_detail is None:
-                        llm_result = _empty_llm_decompile_result()
-                    else:
-                        llm_result = await call_llm_decompile(
-                            client=llm_request["client"],
-                            model=llm_request["model"],
-                            symbol_name_list=llm_symbol_name_list,
-                            disasm_code=llm_target_detail["disasm_code"],
-                            procedure=llm_target_detail["procedure"],
-                            disasm_for_reference=llm_request["disasm_for_reference"],
-                            procedure_for_reference=llm_request["procedure_for_reference"],
-                            prompt_template=llm_request["prompt_template"],
-                            platform=platform,
-                            temperature=llm_request.get("temperature"),
-                            effort=llm_request.get("effort"),
-                            api_key=llm_request.get("api_key"),
-                            base_url=llm_request.get("base_url"),
-                            fake_as=llm_request.get("fake_as"),
-                            debug=debug,
-                        )
-                except Exception:
-                    llm_result = _empty_llm_decompile_result()
+                llm_result = await _call_llm_decompile_for_request(
+                    llm_request,
+                    llm_symbol_name_list,
+                )
                 for symbol_name in llm_symbol_name_list:
                     llm_result_by_symbol_name[symbol_name] = llm_result
 

@@ -747,7 +747,9 @@ modules:
         expected_output:
           - ILoopType_DeallocateLoopMode.{platform}.yaml
         expected_input:
-          - CEngineServiceMgr_DeactivateLoop.{platform}.yaml
+          - CEngineServiceMgr__MainLoop.{platform}.yaml
+        prerequisite:
+          - find-CEngineServiceMgr_DeactivateLoop
 
       - name: find-CEngineGameUI_vtable
         expected_output:
@@ -777,19 +779,6 @@ modules:
           - ILoopType_LoopTypeShutdown.{platform}.yaml
         expected_input:
           - CEngineServiceMgr_Shutdown.{platform}.yaml
-
-      - name: find-CEngineServiceMgr_GetActiveLoopClientServerMode
-        expected_output:
-          - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
-        expected_input:
-          - CEngineServiceMgr_vtable.{platform}.yaml
-          - ../client/IEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
-
-      - name: find-ILoopType_GetClientServerMode
-        expected_output:
-          - ILoopType_GetClientServerMode.{platform}.yaml
-        expected_input:
-          - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
 
       - name: find-CLoopTypeSimple_vtable
         expected_output:
@@ -5037,6 +5026,24 @@ modules:
         category: vfunc
         alias:
           - ILoopMode::OnLoopDeactivate
+
+  - name: engine # Execute skills for engine2.dll again after client.dll
+    path_windows: game/bin/win64/engine2.dll
+    path_linux: game/bin/linuxsteamrt64/libengine2.so
+
+    skills:
+      - name: find-CEngineServiceMgr_GetActiveLoopClientServerMode
+        expected_output:
+          - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
+        expected_input:
+          - CEngineServiceMgr_vtable.{platform}.yaml
+          - ../client/IEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
+
+      - name: find-ILoopType_GetClientServerMode
+        expected_output:
+          - ILoopType_GetClientServerMode.{platform}.yaml
+        expected_input:
+          - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
 
   - name: networksystem # Execute skills for networksystem.dll again after server.dll
     path_windows: game/bin/win64/networksystem.dll
