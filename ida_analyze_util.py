@@ -32,10 +32,11 @@ except Exception:
 # Uses CLASS_NAME_PLACEHOLDER for substitution (avoids brace-escaping issues).
 # Returns JSON via the 'result' variable.
 _VTABLE_PY_EVAL_TEMPLATE = r'''
-import ida_bytes, ida_name, idaapi, idautils, ida_segment, json
+import ida_auto, ida_bytes, ida_name, idaapi, ida_segment, idautils, idc, json
 
 class_name = CLASS_NAME_PLACEHOLDER
 candidate_symbols = CANDIDATE_SYMBOLS_PLACEHOLDER
+debug_enabled = DEBUG_PLACEHOLDER
 ptr_size = 8 if idaapi.inf_is_64bit() else 4
 
 vtable_start = None
@@ -58,6 +59,56 @@ def _try_direct_symbol(symbol_name):
         vtable_symbol = symbol_name
         is_linux = False
     return True
+
+def _debug(message):
+    if debug_enabled:
+        print(message)
+
+
+def _resolve_vtable_func_start(ptr_value):
+    func = idaapi.get_func(ptr_value)
+    if func is not None and func.start_ea <= ptr_value < func.end_ea:
+        return func.start_ea
+
+    flags = ida_bytes.get_full_flags(ptr_value)
+    if not ida_bytes.is_code(flags):
+        try:
+            ida_bytes.del_items(ptr_value, ida_bytes.DELIT_SIMPLE, ptr_size)
+        except Exception as exc:
+            _debug(
+                f"    Preprocess vtable: del_items failed for {hex(ptr_value)}: {exc}"
+            )
+        try:
+            idc.create_insn(ptr_value)
+        except Exception as exc:
+            _debug(
+                f"    Preprocess vtable: create_insn failed for {hex(ptr_value)}: {exc}"
+            )
+
+    try:
+        idaapi.add_func(ptr_value)
+    except Exception as exc:
+        _debug(f"    Preprocess vtable: add_func failed for {hex(ptr_value)}: {exc}")
+
+    try:
+        ida_auto.auto_wait()
+    except Exception:
+        pass
+
+    func = idaapi.get_func(ptr_value)
+    if func is None:
+        _debug(
+            f"    Preprocess vtable: no function covers {hex(ptr_value)} after recovery"
+        )
+        return None
+    if not (func.start_ea <= ptr_value < func.end_ea):
+        _debug(
+            "    Preprocess vtable: recovered function "
+            f"{hex(func.start_ea)} does not cover {hex(ptr_value)}"
+        )
+        return None
+    return func.start_ea
+
 
 for symbol_name in candidate_symbols:
     if _try_direct_symbol(symbol_name):
@@ -134,17 +185,12 @@ else:
             break
         if not (target_seg.perm & ida_segment.SEGPERM_EXEC):
             break
-        func = idaapi.get_func(ptr_value)
-        if func is not None:
-            entries[count] = hex(ptr_value)
-            count += 1
-            continue
-        flags = ida_bytes.get_full_flags(ptr_value)
-        if ida_bytes.is_code(flags):
-            entries[count] = hex(ptr_value)
-            count += 1
-            continue
-        break
+        func_start = _resolve_vtable_func_start(ptr_value)
+        if func_start is None:
+            break
+        entries[count] = hex(func_start)
+        count += 1
+        continue
 
     size_in_bytes = count * ptr_size
     result = json.dumps({
@@ -490,7 +536,7 @@ def build_remote_text_export_py_eval(
     )
 
 
-def _build_vtable_py_eval(class_name, symbol_aliases=None):
+def _build_vtable_py_eval(class_name, symbol_aliases=None, debug=False):
     """Build the vtable py_eval script for the given class name."""
     return (
         _VTABLE_PY_EVAL_TEMPLATE
@@ -499,6 +545,7 @@ def _build_vtable_py_eval(class_name, symbol_aliases=None):
             "CANDIDATE_SYMBOLS_PLACEHOLDER",
             json.dumps(list(symbol_aliases or [])),
         )
+        .replace("DEBUG_PLACEHOLDER", "True" if debug else "False")
     )
 
 
@@ -2545,7 +2592,11 @@ async def preprocess_vtable_via_mcp(
         Dict with vtable YAML data, or None on failure
     """
     _ = platform  # Reserved for future platform-specific behavior.
-    py_code = _build_vtable_py_eval(class_name, symbol_aliases=symbol_aliases)
+    py_code = _build_vtable_py_eval(
+        class_name,
+        symbol_aliases=symbol_aliases,
+        debug=debug,
+    )
 
     try:
         result = await session.call_tool(

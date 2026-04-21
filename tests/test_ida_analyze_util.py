@@ -594,6 +594,116 @@ class TestVtableAliasSupport(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("0x8", written_payload["vfunc_offset"])
 
 
+class TestVtableEntryRecoverySupport(unittest.IsolatedAsyncioTestCase):
+    def test_build_vtable_py_eval_embeds_debug_flag(self) -> None:
+        py_code = ida_analyze_util._build_vtable_py_eval(
+            "CSource2Client",
+            debug=True,
+        )
+
+        self.assertIn('"CSource2Client"', py_code)
+        self.assertIn("debug_enabled = True", py_code)
+        self.assertNotIn("DEBUG_PLACEHOLDER", py_code)
+
+    async def test_preprocess_vtable_via_mcp_forwards_debug_to_builder(self) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload(
+            {
+                "vtable_class": "CSource2Client",
+                "vtable_symbol": "_ZTV14CSource2Client + 0x10",
+                "vtable_va": "0x424f6c0",
+                "vtable_size": "0x18",
+                "vtable_numvfunc": 3,
+                "vtable_entries": {
+                    "0": "0x174e400",
+                    "1": "0x174dcd0",
+                    "2": "0x17481f0",
+                },
+            }
+        )
+
+        with patch.object(
+            ida_analyze_util,
+            "_build_vtable_py_eval",
+            return_value="py-code",
+        ) as mock_build:
+            result = await ida_analyze_util.preprocess_vtable_via_mcp(
+                session=session,
+                class_name="CSource2Client",
+                image_base=0x400000,
+                platform="linux",
+                debug=True,
+            )
+
+        self.assertEqual(
+            {
+                "vtable_class": "CSource2Client",
+                "vtable_symbol": "_ZTV14CSource2Client + 0x10",
+                "vtable_va": "0x424f6c0",
+                "vtable_rva": hex(0x424F6C0 - 0x400000),
+                "vtable_size": "0x18",
+                "vtable_numvfunc": 3,
+                "vtable_entries": {
+                    0: "0x174e400",
+                    1: "0x174dcd0",
+                    2: "0x17481f0",
+                },
+            },
+            result,
+        )
+        mock_build.assert_called_once_with(
+            "CSource2Client",
+            symbol_aliases=None,
+            debug=True,
+        )
+        session.call_tool.assert_awaited_once_with(
+            name="py_eval",
+            arguments={"code": "py-code"},
+        )
+
+    def test_build_vtable_py_eval_recovers_exec_entries_to_func_start(self) -> None:
+        py_code = ida_analyze_util._build_vtable_py_eval(
+            "CSource2Client",
+            debug=True,
+        )
+
+        self.assertIn(
+            "import ida_auto, ida_bytes, ida_name, idaapi, ida_segment, idautils, idc, json",
+            py_code,
+        )
+        self.assertIn("def _debug(message):", py_code)
+        self.assertIn("def _resolve_vtable_func_start(ptr_value):", py_code)
+        self.assertIn(
+            "ida_bytes.del_items(ptr_value, ida_bytes.DELIT_SIMPLE, ptr_size)",
+            py_code,
+        )
+        self.assertIn("idc.create_insn(ptr_value)", py_code)
+        self.assertIn("idaapi.add_func(ptr_value)", py_code)
+        self.assertIn("ida_auto.auto_wait()", py_code)
+        self.assertIn("func_start = _resolve_vtable_func_start(ptr_value)", py_code)
+        self.assertIn("entries[count] = hex(func_start)", py_code)
+
+    def test_build_vtable_py_eval_rejects_uncovered_recovery_result(self) -> None:
+        py_code = ida_analyze_util._build_vtable_py_eval(
+            "CSource2Client",
+            debug=True,
+        )
+
+        self.assertIn("if func is None:", py_code)
+        self.assertIn(
+            'f"    Preprocess vtable: no function covers {hex(ptr_value)} after recovery"',
+            py_code,
+        )
+        self.assertIn(
+            "if not (func.start_ea <= ptr_value < func.end_ea):",
+            py_code,
+        )
+        self.assertIn(
+            'f"{hex(func.start_ea)} does not cover {hex(ptr_value)}"',
+            py_code,
+        )
+
+
 class TestVtableArtifactStemSupport(unittest.IsolatedAsyncioTestCase):
     def test_normalizes_plain_class_name_to_primary_vtable_artifact(self) -> None:
         self.assertEqual(
