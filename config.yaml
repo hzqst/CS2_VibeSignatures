@@ -2090,6 +2090,13 @@ modules:
           - CBaseEntity_OnTakeDamage.{platform}.yaml
           - CBaseEntity_vtable.{platform}.yaml
 
+      - name: find-CBasePlayerPawn_OnTakeDamage
+        expected_output:
+          - CBasePlayerPawn_OnTakeDamage.{platform}.yaml
+        expected_input:
+          - CBasePlayerPawn_vtable.{platform}.yaml
+          - CBaseEntity_OnTakeDamage.{platform}.yaml
+
       - name: find-CCSPlayerPawn_OnTakeDamage
         expected_output:
           - CCSPlayerPawn_OnTakeDamage.{platform}.yaml
@@ -3712,6 +3719,11 @@ modules:
         category: vfunc
         alias:
           - CBasePlayerPawn::OnTakeDamage_Dead
+
+      - name: CBasePlayerPawn_OnTakeDamage
+        category: vfunc
+        alias:
+          - CBasePlayerPawn::OnTakeDamage
 
       - name: CCSPlayerPawn_OnTakeDamage_Alive
         category: vfunc
