@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Preprocess script for finding CCSPlayerController think schema globals on Linux.
 
-Decompiles CCSPlayerController_RegisterThink and identifies the 4 global variables
+Decompiles CCSPlayerController_GetThinkFunction and identifies the 4 global variables
 where the schema name results are stored. The actual think function pointers are
 at these globals + 0x28, resolved by a separate programmatic script.
 """
@@ -20,22 +20,22 @@ LLM_DECOMPILE = [
     (
         "g_CCSPlayerController_PlayerForceTeamThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "g_CCSPlayerController_ResetForceTeamThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "g_CCSPlayerController_ResourceDataThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "g_CCSPlayerController_InventoryUpdateThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
 ]
 

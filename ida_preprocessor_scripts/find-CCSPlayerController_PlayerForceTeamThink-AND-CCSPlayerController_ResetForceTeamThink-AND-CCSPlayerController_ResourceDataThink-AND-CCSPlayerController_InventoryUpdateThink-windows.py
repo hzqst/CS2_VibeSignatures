@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Preprocess script for finding CCSPlayerController think functions on Windows.
 
-Decompiles CCSPlayerController_RegisterThink and identifies the 4 think function
+Decompiles CCSPlayerController_GetThinkFunction and identifies the 4 think function
 pointers stored in the schema structure initialization code.
 """
 
@@ -19,22 +19,22 @@ LLM_DECOMPILE = [
     (
         "CCSPlayerController_PlayerForceTeamThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "CCSPlayerController_ResetForceTeamThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "CCSPlayerController_ResourceDataThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
     (
         "CCSPlayerController_InventoryUpdateThink",
         "prompt/call_llm_decompile.md",
-        "references/server/CCSPlayerController_RegisterThink.{platform}.yaml",
+        "references/server/CCSPlayerController_GetThinkFunction.{platform}.yaml",
     ),
 ]
 
