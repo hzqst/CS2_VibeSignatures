@@ -44,21 +44,14 @@ vtable_symbol = ""
 is_linux = False
 
 def _try_direct_symbol(symbol_name):
-    global vtable_start, vtable_symbol, is_linux
     if not symbol_name:
-        return False
+        return None
     addr = ida_name.get_name_ea(idaapi.BADADDR, symbol_name)
     if addr == idaapi.BADADDR:
-        return False
+        return None
     if symbol_name.startswith("_ZTV"):
-        vtable_start = addr + 0x10
-        vtable_symbol = symbol_name + " + 0x10"
-        is_linux = True
-    else:
-        vtable_start = addr
-        vtable_symbol = symbol_name
-        is_linux = False
-    return True
+        return (addr + 0x10, symbol_name + " + 0x10", True)
+    return (addr, symbol_name, False)
 
 def _debug(message):
     if debug_enabled:
@@ -109,20 +102,29 @@ def _resolve_vtable_func_start(ptr_value):
         return None
     return func.start_ea
 
+# Workaround: py_eval uses exec(code, exec_globals, exec_locals) with separate
+# dicts.  Top-level variables land in exec_locals, but nested functions only see
+# exec_globals.  Copy everything into globals so functions can resolve ptr_size,
+# debug_enabled, _debug, etc.
+globals().update(locals())
 
 for symbol_name in candidate_symbols:
-    if _try_direct_symbol(symbol_name):
+    _found = _try_direct_symbol(symbol_name)
+    if _found:
+        vtable_start, vtable_symbol, is_linux = _found
         break
 
 # Direct symbol: Windows ??_7ClassName@@6B@
 if vtable_start is None:
-    win_name = "??_7" + class_name + "@@6B@"
-    _try_direct_symbol(win_name)
+    _found = _try_direct_symbol("??_7" + class_name + "@@6B@")
+    if _found:
+        vtable_start, vtable_symbol, is_linux = _found
 
 # Direct symbol: Linux _ZTV<len>ClassName
 if vtable_start is None:
-    linux_name = "_ZTV" + str(len(class_name)) + class_name
-    _try_direct_symbol(linux_name)
+    _found = _try_direct_symbol("_ZTV" + str(len(class_name)) + class_name)
+    if _found:
+        vtable_start, vtable_symbol, is_linux = _found
 
 # RTTI fallback: Windows ??_R4ClassName@@6B@
 if vtable_start is None:
@@ -5935,18 +5937,18 @@ async def _func_contains_signature_via_mcp(session, func_va, signature, debug=Fa
         return None
 
     py_code = (
-        "import idaapi, ida_search, json\n"
+        "import idaapi, ida_bytes, json\n"
         f"func_va = {func_va_int}\n"
         f"signature = {json.dumps(signature)}\n"
         "func = idaapi.get_func(func_va)\n"
         "contains = False\n"
         "if func is not None:\n"
-        "    match_ea = ida_search.find_binary(\n"
-        "        func.start_ea,\n"
-        "        func.end_ea,\n"
+        "    match_ea = ida_bytes.find_bytes(\n"
         "        signature,\n"
-        "        16,\n"
-        "        ida_search.SEARCH_DOWN,\n"
+        "        func.start_ea,\n"
+        "        range_end=func.end_ea,\n"
+        "        flags=ida_bytes.BIN_SEARCH_FORWARD | ida_bytes.BIN_SEARCH_NOSHOW,\n"
+        "        radix=16,\n"
         "    )\n"
         "    contains = match_ea != idaapi.BADADDR and match_ea < func.end_ea\n"
         "result = json.dumps({'contains': contains})\n"
@@ -5974,6 +5976,53 @@ async def _func_contains_signature_via_mcp(session, func_va, signature, debug=Fa
     if not isinstance(contains, bool):
         return None
     return contains
+
+
+_SIGNATURE_XREF_PROBE_MAX_CANDIDATES = 256
+
+
+def _intersect_addr_sets(addr_sets):
+    """Return the intersection of address sets, or an empty set."""
+    if not addr_sets:
+        return set()
+
+    common_addrs = set(addr_sets[0])
+    for addr_set in addr_sets[1:]:
+        common_addrs &= set(addr_set)
+    return common_addrs
+
+
+async def _filter_func_addrs_by_signature_via_mcp(
+    session,
+    func_addrs,
+    signature,
+    keep_matches,
+    debug=False,
+):
+    """
+    Probe whether each candidate function contains a signature.
+
+    Returns:
+        Set[int]: Filtered function starts, or None on probe failure.
+    """
+    filtered_funcs = set()
+    for candidate_func_va in sorted(func_addrs):
+        contains_signature = await _func_contains_signature_via_mcp(
+            session=session,
+            func_va=candidate_func_va,
+            signature=signature,
+            debug=debug,
+        )
+        if contains_signature is None:
+            if debug:
+                print(
+                    "    Preprocess: failed to probe signature for "
+                    f"{hex(candidate_func_va)}"
+                )
+            return None
+        if contains_signature is keep_matches:
+            filtered_funcs.add(candidate_func_va)
+    return filtered_funcs
 
 
 async def _get_func_basic_info_via_mcp(session, func_va, image_base, debug=False):
@@ -6778,11 +6827,37 @@ async def preprocess_func_xrefs_via_mcp(
         candidate_sets.append(addr_set)
 
     for xref_signature in (xref_signatures or []):
-        addr_set = await _collect_xref_func_starts_for_signature(
-            session=session,
-            xref_signature=xref_signature,
-            debug=debug,
-        )
+        addr_set = None
+        narrowed_candidates = _intersect_addr_sets(candidate_sets)
+        if narrowed_candidates and (
+            len(narrowed_candidates) <= _SIGNATURE_XREF_PROBE_MAX_CANDIDATES
+        ):
+            if debug:
+                short = str(xref_signature)[:80]
+                print(
+                    "    Preprocess: probing signature xref within "
+                    f"{len(narrowed_candidates)} narrowed function(s): {short}"
+                )
+            addr_set = await _filter_func_addrs_by_signature_via_mcp(
+                session=session,
+                func_addrs=narrowed_candidates,
+                signature=xref_signature,
+                keep_matches=True,
+                debug=debug,
+            )
+            if addr_set is None:
+                if debug:
+                    print(
+                        "    Preprocess: failed to probe signature xref within "
+                        "narrowed candidates"
+                    )
+                return None
+        else:
+            addr_set = await _collect_xref_func_starts_for_signature(
+                session=session,
+                xref_signature=xref_signature,
+                debug=debug,
+            )
         if not addr_set:
             if debug:
                 short = str(xref_signature)[:80]
@@ -6854,9 +6929,7 @@ async def preprocess_func_xrefs_via_mcp(
             )
         return None
 
-    common_funcs = set(candidate_sets[0])
-    for addr_set in candidate_sets[1:]:
-        common_funcs = common_funcs & addr_set
+    common_funcs = _intersect_addr_sets(candidate_sets)
 
     excluded_string_func_addrs = set()
     for excluded_string in (exclude_strings or []):
@@ -6930,23 +7003,17 @@ async def preprocess_func_xrefs_via_mcp(
     for excluded_signature in (exclude_signatures or []):
         if not common_funcs:
             break
-        filtered_funcs = set()
-        for candidate_func_va in sorted(common_funcs):
-            contains_signature = await _func_contains_signature_via_mcp(
-                session=session,
-                func_va=candidate_func_va,
-                signature=excluded_signature,
-                debug=debug,
-            )
-            if contains_signature is None:
-                if debug:
-                    print(
-                        f"    Preprocess: failed to probe exclude signature "
-                        f"for {hex(candidate_func_va)}"
-                    )
-                return None
-            if not contains_signature:
-                filtered_funcs.add(candidate_func_va)
+        filtered_funcs = await _filter_func_addrs_by_signature_via_mcp(
+            session=session,
+            func_addrs=common_funcs,
+            signature=excluded_signature,
+            keep_matches=False,
+            debug=debug,
+        )
+        if filtered_funcs is None:
+            if debug:
+                print("    Preprocess: failed to probe exclude signature")
+            return None
         common_funcs = filtered_funcs
 
     if debug:

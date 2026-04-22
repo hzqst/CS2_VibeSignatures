@@ -39,46 +39,21 @@ LLM_DECOMPILE = [
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
-    # (symbol_name, generate_yaml_fields)
     (
         "CCSPlayerController_PlayerForceTeamThink",
-        [
-            "func_name",
-            "func_sig",
-            "func_va",
-            "func_rva",
-            "func_size",
-        ],
+        ["func_name", "func_sig", "func_va", "func_rva", "func_size"],
     ),
     (
         "CCSPlayerController_ResetForceTeamThink",
-        [
-            "func_name",
-            "func_sig",
-            "func_va",
-            "func_rva",
-            "func_size",
-        ],
+        ["func_name", "func_va", "func_rva", "func_size"],# too short to have an unique signature
     ),
     (
         "CCSPlayerController_ResourceDataThink",
-        [
-            "func_name",
-            "func_sig",
-            "func_va",
-            "func_rva",
-            "func_size",
-        ],
+        ["func_name", "func_sig", "func_va", "func_rva", "func_size"],
     ),
     (
         "CCSPlayerController_InventoryUpdateThink",
-        [
-            "func_name",
-            "func_sig",
-            "func_va",
-            "func_rva",
-            "func_size",
-        ],
+        ["func_name", "func_va", "func_rva", "func_size"],# too short to have an unique signature
     ),
 ]
 

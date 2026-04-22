@@ -2155,6 +2155,27 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             debug=True,
         )
 
+    async def test_func_contains_signature_via_mcp_uses_ida_bytes_find_bytes(
+        self,
+    ) -> None:
+        session = AsyncMock()
+        session.call_tool.return_value = _py_eval_payload({"contains": True})
+
+        result = await ida_analyze_util._func_contains_signature_via_mcp(
+            session=session,
+            func_va="0x180020000",
+            signature="48 8B ?? ??",
+            debug=True,
+        )
+
+        self.assertTrue(result)
+        session.call_tool.assert_awaited_once()
+        py_code = session.call_tool.await_args.kwargs["arguments"]["code"]
+        self.assertIn("import idaapi, ida_bytes, json", py_code)
+        self.assertIn("ida_bytes.find_bytes(", py_code)
+        self.assertIn("range_end=func.end_ea", py_code)
+        self.assertNotIn("ida_search.find_binary", py_code)
+
     async def test_normalize_func_start_returns_existing_function(self) -> None:
         session = AsyncMock()
         session.call_tool.return_value = _py_eval_payload(
@@ -2371,8 +2392,12 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
         ) as mock_collect_string, patch.object(
             ida_analyze_util,
             "_collect_xref_func_starts_for_signature",
-            AsyncMock(return_value={0x180200000}),
+            AsyncMock(return_value={0x180100000}),
         ) as mock_collect_signature, patch.object(
+            ida_analyze_util,
+            "_func_contains_signature_via_mcp",
+            AsyncMock(side_effect=[False, True]),
+        ) as mock_func_contains_signature, patch.object(
             ida_analyze_util,
             "preprocess_gen_func_sig_via_mcp",
             AsyncMock(
@@ -2416,10 +2441,22 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             xref_string="Networking",
             debug=True,
         )
-        mock_collect_signature.assert_awaited_once_with(
-            session="session",
-            xref_signature="C7 44 24 40 64 FF FF FF",
-            debug=True,
+        mock_collect_signature.assert_not_called()
+        mock_func_contains_signature.assert_has_awaits(
+            [
+                call(
+                    session="session",
+                    func_va=0x180100000,
+                    signature="C7 44 24 40 64 FF FF FF",
+                    debug=True,
+                ),
+                call(
+                    session="session",
+                    func_va=0x180200000,
+                    signature="C7 44 24 40 64 FF FF FF",
+                    debug=True,
+                ),
+            ]
         )
         mock_gen_sig.assert_awaited_once()
 
@@ -2781,9 +2818,9 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             AsyncMock(return_value={0x180200000}),
         ), patch.object(
             ida_analyze_util,
-            "_collect_xref_func_starts_for_signature",
-            AsyncMock(return_value={0x180200000}),
-        ), patch.object(
+            "_func_contains_signature_via_mcp",
+            AsyncMock(return_value=True),
+        ) as mock_func_contains_signature, patch.object(
             ida_analyze_util,
             "preprocess_gen_func_sig_via_mcp",
             AsyncMock(
@@ -2814,6 +2851,12 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             )
 
         self.assertEqual("48 89 5C 24 08", result["func_sig"])
+        mock_func_contains_signature.assert_awaited_once_with(
+            session="session",
+            func_va=0x180200000,
+            signature="C7 44 24 40 64 FF FF FF",
+            debug=False,
+        )
         mock_gen_sig.assert_awaited_once()
         self.assertTrue(
             mock_gen_sig.await_args.kwargs["allow_across_function_boundary"]
@@ -2890,13 +2933,9 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         with patch.object(
             ida_analyze_util,
-            "_collect_xref_func_starts_for_string",
-            AsyncMock(return_value={0x180100000}),
-        ), patch.object(
-            ida_analyze_util,
             "_collect_xref_func_starts_for_signature",
             AsyncMock(return_value=set()),
-        ), patch.object(
+        ) as mock_collect_signature, patch.object(
             ida_analyze_util,
             "preprocess_gen_func_sig_via_mcp",
             AsyncMock(return_value=None),
@@ -2904,7 +2943,7 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             result = await ida_analyze_util.preprocess_func_xrefs_via_mcp(
                 session="session",
                 func_name="LoggingChannel_Init",
-                xref_strings=["Networking"],
+                xref_strings=[],
                 xref_gvs=[],
                 xref_signatures=["C7 44 24 40 64 FF FF FF"],
                 xref_funcs=[],
@@ -2919,6 +2958,11 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             )
 
         self.assertIsNone(result)
+        mock_collect_signature.assert_awaited_once_with(
+            session="session",
+            xref_signature="C7 44 24 40 64 FF FF FF",
+            debug=True,
+        )
         mock_gen_sig.assert_not_called()
 
     async def test_preprocess_common_skill_forwards_dict_func_xrefs_fields(
