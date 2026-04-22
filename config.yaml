@@ -2923,6 +2923,13 @@ modules:
         expected_output:
           - CPointTeleportAPI_TeleportEntityInternal.{platform}.yaml
 
+      - name: find-CBaseEntity_Teleport
+        expected_output:
+          - CBaseEntity_Teleport.{platform}.yaml
+        expected_input:
+          - CPointTeleportAPI_TeleportEntityInternal.{platform}.yaml
+          - CBaseEntity_vtable.{platform}.yaml
+
       - name: find-CPointTeleport_Activate
         expected_output:
           - CPointTeleport_Activate.{platform}.yaml
@@ -4575,6 +4582,11 @@ modules:
         category: func
         alias:
           - CPointTeleportAPI::TeleportEntityInternal
+
+      - name: CBaseEntity_Teleport
+        category: vfunc
+        alias:
+          - CBaseEntity::Teleport
 
       - name: CPointTeleport_Activate
         category: vfunc
