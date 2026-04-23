@@ -29,6 +29,12 @@ MODULE_ENABLED = True
 # Relative path to gamedata file within this dist directory
 GAMEDATA_PATH = "gamedata/cs2fixes.games.txt"
 
+# Upstream download sources: (raw_url, relative_dest_path)
+DOWNLOAD_SOURCES = [
+    ("https://raw.githubusercontent.com/Source2ZE/CS2Fixes/main/gamedata/cs2fixes.games.txt",
+     GAMEDATA_PATH),
+]
+
 
 # Struct member offsets that need to be divided by a factor before writing.
 # CS2Fixes indexes some structs by element count (pointer-sized slots) rather
