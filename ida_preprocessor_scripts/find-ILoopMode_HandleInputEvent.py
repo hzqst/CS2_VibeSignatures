@@ -66,6 +66,44 @@ def _read_func_va(yaml_path):
     return None
 
 
+def _read_vfunc_offset(yaml_path):
+    """Return vfunc_offset as int from a function YAML, or None on failure."""
+    try:
+        with open(yaml_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        if isinstance(data, dict):
+            vfunc_offset = data.get("vfunc_offset")
+            if vfunc_offset is not None:
+                return int(str(vfunc_offset), 0)
+    except Exception:
+        pass
+    return None
+
+
+def _resolve_old_vfunc_offset(old_yaml_map, output_path, expected_filename):
+    """Resolve previous-gamever vfunc_offset from supported old_yaml_map shapes."""
+    if not old_yaml_map:
+        return None
+
+    for key in (output_path, expected_filename, TARGET_FUNC_NAME):
+        if key not in old_yaml_map:
+            continue
+        old_entry = old_yaml_map[key]
+        if isinstance(old_entry, dict):
+            vfunc_offset = old_entry.get("vfunc_offset")
+            if vfunc_offset is not None:
+                try:
+                    return int(str(vfunc_offset), 0)
+                except (ValueError, TypeError):
+                    continue
+        elif isinstance(old_entry, str) and os.path.exists(old_entry):
+            vfunc_offset = _read_vfunc_offset(old_entry)
+            if vfunc_offset is not None:
+                return vfunc_offset
+
+    return None
+
+
 async def preprocess_skill(
     session,
     skill_name,
@@ -94,23 +132,24 @@ async def preprocess_skill(
     output_path = matching_outputs[0]
 
     # Reuse previous gamever result if available
-    if TARGET_FUNC_NAME in old_yaml_map:
-        old_data = old_yaml_map[TARGET_FUNC_NAME]
-        vfunc_offset_raw = old_data.get("vfunc_offset")
-        if vfunc_offset_raw is not None:
-            try:
-                vfunc_offset = int(str(vfunc_offset_raw), 0)
-                if debug:
-                    print(f"    Preprocess: reusing old vfunc_offset={hex(vfunc_offset)} for {TARGET_FUNC_NAME}")
-                write_func_yaml(output_path, {
-                    "func_name": TARGET_FUNC_NAME,
-                    "vtable_name": VTABLE_CLASS,
-                    "vfunc_offset": hex(vfunc_offset),
-                    "vfunc_index": vfunc_offset // 8,
-                })
-                return True
-            except (ValueError, TypeError):
-                pass
+    vfunc_offset = _resolve_old_vfunc_offset(
+        old_yaml_map,
+        output_path,
+        expected_filename,
+    )
+    if vfunc_offset is not None:
+        if debug:
+            print(
+                "    Preprocess: reusing old "
+                f"vfunc_offset={hex(vfunc_offset)} for {TARGET_FUNC_NAME}"
+            )
+        write_func_yaml(output_path, {
+            "func_name": TARGET_FUNC_NAME,
+            "vtable_name": VTABLE_CLASS,
+            "vfunc_offset": hex(vfunc_offset),
+            "vfunc_index": vfunc_offset // 8,
+        })
+        return True
 
     # Read predecessor func_va from its output YAML
     predecessor_yaml = os.path.join(new_binary_dir, f"{PREDECESSOR_STEM}.{platform}.yaml")
