@@ -10,7 +10,7 @@ disasm_code: |-
   .text:0000000000514DC5                 test    rdi, rdi
   .text:0000000000514DC8                 jz      short loc_514DD0
   .text:0000000000514DCA                 mov     rax, [rdi]
-  .text:0000000000514DCD                 jmp     qword ptr [rax+60h]; 0x60 = 96LL = ILoopType_GetClientServerMode
+  .text:0000000000514DCD                 jmp     qword ptr [rax+60h]; 0x60 = 96LL = CLoopTypeBase_GetClientServerMode
   .text:0000000000514DD0                 xor     eax, eax
   .text:0000000000514DD2                 retn
 procedure: |-
@@ -21,7 +21,7 @@ procedure: |-
 
     v1 = *(_DWORD *)(a1 + 168);
     if ( v1 >= 0 && (v2 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * (unsigned __int16)v1)) != 0 )
-      return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v2 + 96LL))(v2);// 0x60 = 96LL = ILoopType_GetClientServerMode
+      return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v2 + 96LL))(v2);// 0x60 = 96LL = CLoopTypeBase_GetClientServerMode
     else
       return 0;
   }

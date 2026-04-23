@@ -10,8 +10,8 @@ disasm_code: |-
   .text:000000018021BE95                 test    rcx, rcx
   .text:000000018021BE98                 jz      short loc_18021BEA1
   .text:000000018021BE9A                 mov     rax, [rcx]
-  .text:000000018021BE9D                 ; 0x58 = 88L = ILoopType_GetClientServerMode
-  .text:000000018021BE9D                 jmp     qword ptr [rax+58h]; 0x58 = 88L = ILoopType_GetClientServerMode
+  .text:000000018021BE9D                 ; 0x58 = 88L = CLoopTypeBase_GetClientServerMode
+  .text:000000018021BE9D                 jmp     qword ptr [rax+58h]; 0x58 = 88L = CLoopTypeBase_GetClientServerMode
   .text:000000018021BEA1                 xor     eax, eax
   .text:000000018021BEA3                 retn
 procedure: |-
@@ -22,7 +22,7 @@ procedure: |-
 
     v1 = *(_DWORD *)(a1 + 168);                   // 0xA8 = 168 = CEngineServiceMgr::m_pActiveLoop
     if ( v1 >= 0 && (v2 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * (unsigned __int16)v1)) != 0 )
-      return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v2 + 88LL))(v2);// 0x58 = 88L = ILoopType_GetClientServerMode
+      return (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)v2 + 88LL))(v2);// 0x58 = 88L = CLoopTypeBase_GetClientServerMode
     else
       return 0;
   }

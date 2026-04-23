@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-ILoopType_LoopTypeShutdown skill."""
+"""Preprocess script for find-CLoopTypeBase_DeallocateLoopMode skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "ILoopType_LoopTypeShutdown",
+    "CLoopTypeBase_DeallocateLoopMode",
 ]
 
 LLM_DECOMPILE = [
     (
-        "ILoopType_LoopTypeShutdown",
+        "CLoopTypeBase_DeallocateLoopMode",
         "prompt/call_llm_decompile.md",
-        "references/engine/CEngineServiceMgr_Shutdown.{platform}.yaml",
+        "references/engine/CEngineServiceMgr_DeactivateLoop.{platform}.yaml",
+    ),
+    (
+        "CLoopTypeBase_DeallocateLoopMode",
+        "prompt/call_llm_decompile.md",
+        "references/engine/CEngineServiceMgr__MainLoop.{platform}.yaml",
     ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
-    ("ILoopType_LoopTypeShutdown", "ILoopType"),
+    ("CLoopTypeBase_DeallocateLoopMode", "CLoopTypeBase"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     (
-        "ILoopType_LoopTypeShutdown",
+        "CLoopTypeBase_DeallocateLoopMode",
         [
             "func_name",
             "vfunc_sig",

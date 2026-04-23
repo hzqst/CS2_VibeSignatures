@@ -248,7 +248,7 @@ modules:
         expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
         skip_if_exists:
-          - ILoopType_DeallocateLoopMode.{platform}.yaml
+          - CLoopTypeBase_DeallocateLoopMode.{platform}.yaml
 """.strip()
                 + "\n",
                 encoding="utf-8",
@@ -257,7 +257,7 @@ modules:
             modules = ida_analyze_bin.parse_config(str(config_path))
 
         self.assertEqual(
-            ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+            ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
             modules[0]["skills"][0]["skip_if_exists"],
         )
 
@@ -295,8 +295,8 @@ class TestSkillOrdering(unittest.TestCase):
     ) -> None:
         skills = [
             {
-                "name": "find-ILoopType_DeallocateLoopMode",
-                "expected_output": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                "name": "find-CLoopTypeBase_DeallocateLoopMode",
+                "expected_output": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
                 "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
                 "prerequisite": ["find-CEngineServiceMgr_DeactivateLoop"],
             },
@@ -304,7 +304,7 @@ class TestSkillOrdering(unittest.TestCase):
                 "name": "find-CEngineServiceMgr_DeactivateLoop",
                 "expected_output": ["CEngineServiceMgr_DeactivateLoop.{platform}.yaml"],
                 "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
-                "skip_if_exists": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                "skip_if_exists": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
             },
             {
                 "name": "find-CEngineServiceMgr__MainLoop",
@@ -316,7 +316,7 @@ class TestSkillOrdering(unittest.TestCase):
 
         self.assertLess(
             ordered.index("find-CEngineServiceMgr_DeactivateLoop"),
-            ordered.index("find-ILoopType_DeallocateLoopMode"),
+            ordered.index("find-CLoopTypeBase_DeallocateLoopMode"),
         )
 
 
@@ -335,7 +335,7 @@ class TestProcessBinary(unittest.TestCase):
                 if skill_name == "find-CEngineServiceMgr_DeactivateLoop":
                     return "absent_ok"
                 Path(expected_outputs[0]).write_text(
-                    "func_name: ILoopType_DeallocateLoopMode\n",
+                    "func_name: CLoopTypeBase_DeallocateLoopMode\n",
                     encoding="utf-8",
                 )
                 return "success"
@@ -381,8 +381,8 @@ class TestProcessBinary(unittest.TestCase):
                             "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
                         },
                         {
-                            "name": "find-ILoopType_DeallocateLoopMode",
-                            "expected_output": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                            "name": "find-CLoopTypeBase_DeallocateLoopMode",
+                            "expected_output": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
                             "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
                             "prerequisite": ["find-CEngineServiceMgr_DeactivateLoop"],
                         },
@@ -413,8 +413,8 @@ class TestProcessBinary(unittest.TestCase):
             binary_dir = Path(temp_dir) / "bin" / "14141" / "engine"
             binary_dir.mkdir(parents=True, exist_ok=True)
             binary_path = str(binary_dir / "libengine2.so")
-            (binary_dir / "ILoopType_DeallocateLoopMode.windows.yaml").write_text(
-                "func_name: ILoopType_DeallocateLoopMode\n",
+            (binary_dir / "CLoopTypeBase_DeallocateLoopMode.windows.yaml").write_text(
+                "func_name: CLoopTypeBase_DeallocateLoopMode\n",
                 encoding="utf-8",
             )
 
@@ -430,7 +430,7 @@ class TestProcessBinary(unittest.TestCase):
                             "name": "find-CEngineServiceMgr_DeactivateLoop",
                             "expected_output": ["CEngineServiceMgr_DeactivateLoop.{platform}.yaml"],
                             "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
-                            "skip_if_exists": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                            "skip_if_exists": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
                         }
                     ],
                     agent="codex",
@@ -454,7 +454,7 @@ class TestProcessBinary(unittest.TestCase):
                 "expected_output": ["CEngineServiceMgr_DeactivateLoop.{platform}.yaml"],
                 "expected_input": [],
                 "skip_if_exists": [
-                    "ILoopType_DeallocateLoopMode.{platform}.yaml",
+                    "CLoopTypeBase_DeallocateLoopMode.{platform}.yaml",
                     "ILoopType_OtherMode.{platform}.yaml",
                 ],
             }
@@ -464,8 +464,8 @@ class TestProcessBinary(unittest.TestCase):
             binary_dir = Path(temp_dir) / "bin" / "14141" / "engine"
             binary_dir.mkdir(parents=True, exist_ok=True)
             binary_path = str(binary_dir / "libengine2.so")
-            (binary_dir / "ILoopType_DeallocateLoopMode.windows.yaml").write_text(
-                "func_name: ILoopType_DeallocateLoopMode\n",
+            (binary_dir / "CLoopTypeBase_DeallocateLoopMode.windows.yaml").write_text(
+                "func_name: CLoopTypeBase_DeallocateLoopMode\n",
                 encoding="utf-8",
             )
 
@@ -525,7 +525,7 @@ class TestProcessBinary(unittest.TestCase):
             def _fake_preprocess(*, skill_name, expected_outputs, **_kwargs):
                 if skill_name == "produce-ilooptype":
                     Path(expected_outputs[0]).write_text(
-                        "func_name: ILoopType_DeallocateLoopMode\n",
+                        "func_name: CLoopTypeBase_DeallocateLoopMode\n",
                         encoding="utf-8",
                     )
                     return "success"
@@ -556,14 +556,14 @@ class TestProcessBinary(unittest.TestCase):
                     skills=[
                         {
                             "name": "produce-ilooptype",
-                            "expected_output": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                            "expected_output": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
                             "expected_input": [],
                         },
                         {
                             "name": "find-CEngineServiceMgr_DeactivateLoop",
                             "expected_output": ["CEngineServiceMgr_DeactivateLoop.{platform}.yaml"],
                             "expected_input": ["CEngineServiceMgr__MainLoop.{platform}.yaml"],
-                            "skip_if_exists": ["ILoopType_DeallocateLoopMode.{platform}.yaml"],
+                            "skip_if_exists": ["CLoopTypeBase_DeallocateLoopMode.{platform}.yaml"],
                             "prerequisite": ["produce-ilooptype"],
                         },
                     ],

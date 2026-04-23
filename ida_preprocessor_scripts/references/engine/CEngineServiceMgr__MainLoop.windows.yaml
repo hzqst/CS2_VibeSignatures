@@ -218,8 +218,8 @@ disasm_code: |-
   .text:000000018021CFD5                 movzx   ecx, word ptr cs:dword_18090AE08
   .text:000000018021CFDC                 mov     rcx, [rax+rcx*8]
   .text:000000018021CFE0                 mov     rax, [rcx]
-  .text:000000018021CFE3                 ; 0x40 = 64LL = ILoopType_FrameUpdate
-  .text:000000018021CFE3                 call    qword ptr [rax+40h]; 0x40 = 64LL = ILoopType_FrameUpdate
+  .text:000000018021CFE3                 ; 0x40 = 64LL = CLoopTypeBase_FrameUpdate
+  .text:000000018021CFE3                 call    qword ptr [rax+40h]; 0x40 = 64LL = CLoopTypeBase_FrameUpdate
   .text:000000018021CFE6                 jmp     short loc_18021D002
   .text:000000018021CFE8                 mov     rcx, cs:g_pResourceSystem
   .text:000000018021CFEF                 test    rcx, rcx
@@ -1029,8 +1029,8 @@ disasm_code: |-
   .text:000000018021DDB5                 lea     rdx, [rbp+340h+var_350]
   .text:000000018021DDB9                 mov     rcx, [rax+rcx*8]
   .text:000000018021DDBD                 mov     rax, [rcx]
-  .text:000000018021DDC0                 ; 0x30 = 48LL = ILoopType_LoopActivate
-  .text:000000018021DDC0                 call    qword ptr [rax+30h]; 0x30 = 48LL = ILoopType_LoopActivate
+  .text:000000018021DDC0                 ; 0x30 = 48LL = CLoopTypeBase_LoopActivate
+  .text:000000018021DDC0                 call    qword ptr [rax+30h]; 0x30 = 48LL = CLoopTypeBase_LoopActivate
   .text:000000018021DDC3                 mov     rax, cs:qword_180909C90
   .text:000000018021DDCA                 lea     rcx, qword_180909C90
   .text:000000018021DDD1                 call    qword ptr [rax+110h]
@@ -1343,7 +1343,7 @@ procedure: |-
     else
     {
       (*(void (__fastcall **)(_QWORD, _OWORD *))(**(_QWORD **)(qword_18090AD98 + 8LL * (unsigned __int16)dword_18090AE08)
-                                               + 64LL))(// 0x40 = 64LL = ILoopType_FrameUpdate
+                                               + 64LL))(// 0x40 = 64LL = CLoopTypeBase_FrameUpdate
         *(_QWORD *)(qword_18090AD98 + 8LL * (unsigned __int16)dword_18090AE08),
         v111);
     }
@@ -1876,7 +1876,7 @@ procedure: |-
         (*(void (__fastcall **)(_QWORD))(*g_pMemAlloc + 24LL))(g_pMemAlloc);
     }
     (*(void (__fastcall **)(_QWORD, _OWORD *, void *))(**(_QWORD **)(qword_18090AD98 + 8LL * (unsigned __int16)v88)
-                                                     + 48LL))(// 0x30 = 48LL = ILoopType_LoopActivate
+                                                     + 48LL))(// 0x30 = 48LL = CLoopTypeBase_LoopActivate
       *(_QWORD *)(qword_18090AD98 + 8LL * (unsigned __int16)v88),
       v111,
       &unk_18090AED8);

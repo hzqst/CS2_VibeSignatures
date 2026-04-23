@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-ILoopType_LoopTypeInit skill."""
+"""Preprocess script for find-CLoopTypeBase_DeactivateLoop skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("ILoopType_LoopTypeInit", "ILoopType", "CLoopTypeClientServer_LoopTypeInit", False),
+    ("CLoopTypeBase_DeactivateLoop", "CLoopTypeBase", "CLoopTypeClientServer_DeactivateLoop", False),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "ILoopType_LoopTypeInit",
+        "CLoopTypeBase_DeactivateLoop",
         [
             "func_name",
             "vtable_name",
@@ -31,7 +31,7 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Reuse old vfunc slot; fallback to inheriting vtable index from CLoopTypeClientServer_LoopTypeInit."""
+    """Reuse old vfunc slot; fallback to inheriting vtable index from CLoopTypeClientServer_DeactivateLoop."""
     _ = skill_name
 
     return await preprocess_common_skill(

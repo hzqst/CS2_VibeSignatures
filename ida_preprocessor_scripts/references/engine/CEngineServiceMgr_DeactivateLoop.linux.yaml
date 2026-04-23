@@ -16,12 +16,12 @@ disasm_code: |-
   .text:00000000005189F1                 lea     rdx, [rdi+178h]
   .text:00000000005189F8                 mov     rax, [r12]
   .text:00000000005189FC                 mov     rdi, r12
-  .text:00000000005189FF                 ; 0x40 = 64LL = ILoopType_LoopDeactivate
-  .text:00000000005189FF                 call    qword ptr [rax+40h]; 0x40 = 64LL = ILoopType_LoopDeactivate
+  .text:00000000005189FF                 ; 0x40 = 64LL = CLoopTypeBase_LoopDeactivate
+  .text:00000000005189FF                 call    qword ptr [rax+40h]; 0x40 = 64LL = CLoopTypeBase_LoopDeactivate
   .text:0000000000518A02                 mov     rax, [r12]
   .text:0000000000518A06                 mov     rdi, r12
-  .text:0000000000518A09                 ; 0x30 = 48LL = ILoopType_DeallocateLoopMode
-  .text:0000000000518A09                 call    qword ptr [rax+30h]; 0x30 = 48LL = ILoopType_DeallocateLoopMode
+  .text:0000000000518A09                 ; 0x30 = 48LL = CLoopTypeBase_DeallocateLoopMode
+  .text:0000000000518A09                 call    qword ptr [rax+30h]; 0x30 = 48LL = CLoopTypeBase_DeallocateLoopMode
   .text:0000000000518A0C                 call    Plat_NeedsLowFragmentation_0
   .text:0000000000518A11                 test    al, al
   .text:0000000000518A13                 jnz     short loc_518A30
@@ -48,8 +48,8 @@ procedure: |-
     if ( (int)result >= 0 )
     {
       v4 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * (unsigned __int16)result);
-      (*(void (__fastcall **)(__int64, __int64, __int64))(*(_QWORD *)v4 + 64LL))(v4, a2, a1 + 376);// 0x40 = 64LL = ILoopType_LoopDeactivate
-      (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 48LL))(v4);// 0x30 = 48LL = ILoopType_DeallocateLoopMode
+      (*(void (__fastcall **)(__int64, __int64, __int64))(*(_QWORD *)v4 + 64LL))(v4, a2, a1 + 376);// 0x40 = 64LL = CLoopTypeBase_LoopDeactivate
+      (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 48LL))(v4);// 0x30 = 48LL = CLoopTypeBase_DeallocateLoopMode
       result = Plat_NeedsLowFragmentation_0();
       if ( (_BYTE)result )
         result = (*(__int64 (__fastcall **)(__int64))(*(_QWORD *)g_pSceneSystem + 1080LL))(g_pSceneSystem);
