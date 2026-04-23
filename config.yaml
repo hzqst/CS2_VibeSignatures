@@ -5142,6 +5142,7 @@ cpp_tests:
     claude_allowed_tools: Read,Edit,MultiEdit,Write
     target: x86_64-pc-windows-msvc
     include_directories:
+      - cpp_tests/stubs
       - hl2sdk_cs2/game/shared
       - hl2sdk_cs2/public
       - hl2sdk_cs2/public/tier0
