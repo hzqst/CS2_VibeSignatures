@@ -5,7 +5,7 @@ from ida_analyze_util import preprocess_common_skill
 
 INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("CLoopTypeSimple_FrameUpdate", "CLoopTypeSimple", "ILoopType_FrameUpdate", True),
+    ("CLoopTypeSimple_FrameUpdate", "CLoopTypeSimple", "CLoopTypeBase_FrameUpdate", True),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [

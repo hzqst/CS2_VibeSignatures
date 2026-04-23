@@ -151,8 +151,8 @@ disasm_code: |-
   .text:000000000091E983                 mov     rsi, r13
   .text:000000000091E986                 mov     rdi, [rdx+rax*8]
   .text:000000000091E98A                 mov     rax, [rdi]
-  .text:000000000091E98D                 ; 0x48 = 72LL = ILoopType_FrameUpdate
-  .text:000000000091E98D                 call    qword ptr [rax+48h]; 0x48 = 72LL = ILoopType_FrameUpdate
+  .text:000000000091E98D                 ; 0x48 = 72LL = CLoopTypeBase_FrameUpdate
+  .text:000000000091E98D                 call    qword ptr [rax+48h]; 0x48 = 72LL = CLoopTypeBase_FrameUpdate
   .text:000000000091E990                 mov     eax, [rbx+170h]
   .text:000000000091E996                 cmp     eax, 1
   .text:000000000091E999                 jz      loc_91F00F
@@ -643,8 +643,8 @@ disasm_code: |-
   .text:000000000091F2FE                 mov     rdi, [rdx+rax*8]
   .text:000000000091F302                 lea     rdx, [rbx+178h]
   .text:000000000091F309                 mov     rax, [rdi]
-  .text:000000000091F30C                 ; 0x38 = 56LL = ILoopType_LoopActivate
-  .text:000000000091F30C                 call    qword ptr [rax+38h]; 0x38 = 56LL = ILoopType_LoopActivate
+  .text:000000000091F30C                 ; 0x38 = 56LL = CLoopTypeBase_LoopActivate
+  .text:000000000091F30C                 call    qword ptr [rax+38h]; 0x38 = 56LL = CLoopTypeBase_LoopActivate
   .text:000000000091F30F                 mov     rax, cs:qword_977220
   .text:000000000091F316                 lea     rdi, qword_977220
   .text:000000000091F31D                 call    qword ptr [rax+118h]
@@ -1217,7 +1217,7 @@ procedure: |-
     {
       v24 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * (unsigned __int16)v23);
       (*(void (__fastcall **)(__int64, _OWORD *, double, double, double, double, double, double))(*(_QWORD *)v24
-                                                                                                + 72LL))(// 0x48 = 72LL = ILoopType_FrameUpdate
+                                                                                                + 72LL))(// 0x48 = 72LL = CLoopTypeBase_FrameUpdate
         v24,
         v111,
         *(double *)si128.m128i_i64,
@@ -1647,7 +1647,7 @@ procedure: |-
           }
   LABEL_127:
           v79 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * (unsigned __int16)v103);
-          (*(void (__fastcall **)(__int64, _OWORD *, __int64))(*(_QWORD *)v79 + 56LL))(v79, v111, a1 + 376);// 0x38 = 56LL = ILoopType_LoopActivate
+          (*(void (__fastcall **)(__int64, _OWORD *, __int64))(*(_QWORD *)v79 + 56LL))(v79, v111, a1 + 376);// 0x38 = 56LL = CLoopTypeBase_LoopActivate
           (*(void (__fastcall **)(__int64 *))(qword_977220 + 280))(&qword_977220);
           sub_51BE20(a1, (const char ***)(a1 + 192), 1u);
           *(_BYTE *)(a1 + 240) = 1;

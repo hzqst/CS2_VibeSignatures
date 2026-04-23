@@ -2632,19 +2632,19 @@ class TestFindCcsPlayerMovementServicesProcessMovement(
 class TestFindILoopTypeDeallocateLoopMode(unittest.IsolatedAsyncioTestCase):
     async def test_preprocess_skill_forwards_two_llm_specs_in_fixed_order(self) -> None:
         module = _load_module(
-            Path("ida_preprocessor_scripts/find-ILoopType_DeallocateLoopMode.py"),
-            "find_ILoopType_DeallocateLoopMode",
+            Path("ida_preprocessor_scripts/find-CLoopTypeBase_DeallocateLoopMode.py"),
+            "find_CLoopTypeBase_DeallocateLoopMode",
         )
         mock_preprocess_common_skill = AsyncMock(return_value=True)
         llm_config = {"model": "gpt-5.4", "fake_as": "codex"}
         expected_llm_decompile_specs = [
             (
-                "ILoopType_DeallocateLoopMode",
+                "CLoopTypeBase_DeallocateLoopMode",
                 "prompt/call_llm_decompile.md",
                 "references/engine/CEngineServiceMgr_DeactivateLoop.{platform}.yaml",
             ),
             (
-                "ILoopType_DeallocateLoopMode",
+                "CLoopTypeBase_DeallocateLoopMode",
                 "prompt/call_llm_decompile.md",
                 "references/engine/CEngineServiceMgr__MainLoop.{platform}.yaml",
             ),
@@ -2671,13 +2671,13 @@ class TestFindILoopTypeDeallocateLoopMode(unittest.IsolatedAsyncioTestCase):
             new_binary_dir="bin_dir",
             platform="linux",
             image_base=0x180000000,
-            func_names=["ILoopType_DeallocateLoopMode"],
-            func_vtable_relations=[("ILoopType_DeallocateLoopMode", "ILoopType")],
+            func_names=["CLoopTypeBase_DeallocateLoopMode"],
+            func_vtable_relations=[("CLoopTypeBase_DeallocateLoopMode", "CLoopTypeBase")],
             llm_decompile_specs=expected_llm_decompile_specs,
             llm_config=llm_config,
             generate_yaml_desired_fields=[
                 (
-                    "ILoopType_DeallocateLoopMode",
+                    "CLoopTypeBase_DeallocateLoopMode",
                     [
                         "func_name",
                         "vfunc_sig",

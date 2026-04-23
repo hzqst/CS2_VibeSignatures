@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-ILoopType_GetClientServerMode skill."""
+"""Preprocess script for find-CLoopTypeBase_GetClientServerMode skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "ILoopType_GetClientServerMode",
+    "CLoopTypeBase_GetClientServerMode",
 ]
 
 LLM_DECOMPILE = [
     (
-        "ILoopType_GetClientServerMode",
+        "CLoopTypeBase_GetClientServerMode",
         "prompt/call_llm_decompile.md",
         "references/engine/CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml",
     ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
-    ("ILoopType_GetClientServerMode", "ILoopType"),
+    ("CLoopTypeBase_GetClientServerMode", "CLoopTypeBase"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     (
-        "ILoopType_GetClientServerMode",
+        "CLoopTypeBase_GetClientServerMode",
         [
             "func_name",
             "vfunc_sig",

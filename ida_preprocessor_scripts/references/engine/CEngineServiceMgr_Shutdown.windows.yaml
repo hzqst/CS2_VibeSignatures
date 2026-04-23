@@ -20,8 +20,8 @@ disasm_code: |-
   .text:000000018021B3AB                 test    rcx, rcx
   .text:000000018021B3AE                 jz      short loc_18021B3B6
   .text:000000018021B3B0                 mov     rax, [rcx]
-  .text:000000018021B3B3                 ; 0x18 = 24LL = ILoopType_LoopTypeShutdown
-  .text:000000018021B3B3                 call    qword ptr [rax+18h]; 0x18 = 24LL = ILoopType_LoopTypeShutdown
+  .text:000000018021B3B3                 ; 0x18 = 24LL = CLoopTypeBase_LoopTypeShutdown
+  .text:000000018021B3B3                 call    qword ptr [rax+18h]; 0x18 = 24LL = CLoopTypeBase_LoopTypeShutdown
   .text:000000018021B3B6                 inc     bx
   .text:000000018021B3B9                 movzx   eax, bx
   .text:000000018021B3BC                 cmp     eax, esi
@@ -60,7 +60,7 @@ procedure: |-
     {
       v4 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * i);
       if ( v4 )
-        (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 24LL))(v4);// 0x18 = 24LL = ILoopType_LoopTypeShutdown
+        (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 24LL))(v4);// 0x18 = 24LL = CLoopTypeBase_LoopTypeShutdown
     }
     *(_DWORD *)(a1 + 48) = 0;
     CUtlSymbolTable::RemoveAll((CUtlSymbolTable *)(a1 + 72));

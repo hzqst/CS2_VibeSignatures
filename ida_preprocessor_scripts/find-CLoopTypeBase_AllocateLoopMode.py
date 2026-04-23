@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-ILoopType_AllocateLoopMode skill."""
+"""Preprocess script for find-CLoopTypeBase_AllocateLoopMode skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("ILoopType_AllocateLoopMode", "ILoopType", "CLoopTypeClientServer_AllocateLoopMode", False),
+    ("CLoopTypeBase_AllocateLoopMode", "CLoopTypeBase", "CLoopTypeClientServer_AllocateLoopMode", False),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "ILoopType_AllocateLoopMode",
+        "CLoopTypeBase_AllocateLoopMode",
         [
             "func_name",
             "vtable_name",

@@ -101,8 +101,8 @@ disasm_code: |-
   .text:000000018021C11A                 lea     r8, [rbx+178h]
   .text:000000018021C121                 mov     rax, [rdi]
   .text:000000018021C124                 mov     rcx, rdi
-  .text:000000018021C127                 ; 0x38 = 56LL = ILoopType_LoopDeactivate
-  .text:000000018021C127                 call    qword ptr [rax+38h]; 0x38 = 56LL = ILoopType_LoopDeactivate
+  .text:000000018021C127                 ; 0x38 = 56LL = CLoopTypeBase_LoopDeactivate
+  .text:000000018021C127                 call    qword ptr [rax+38h]; 0x38 = 56LL = CLoopTypeBase_LoopDeactivate
   .text:000000018021C12A                 mov     rax, [rdi]
   .text:000000018021C12D                 mov     rcx, rdi
   .text:000000018021C130                 call    qword ptr [rax+28h]
@@ -259,8 +259,8 @@ procedure: |-
         Plat_EventWriteTransfer(qword_18060E450, &v14, &v28, v11, 3, &v17);
       }
       v30 = &v26;
-      (*(void (__fastcall **)(_QWORD *, __int64, __int64))(*v8 + 56LL))(v8, a2, a1 + 376);// 0x38 = 56LL = ILoopType_LoopDeactivate
-      (*(void (__fastcall **)(_QWORD *))(*v8 + 40LL))(v8);// 0x28 = 40LL = ILoopType_DeallocateLoopMode
+      (*(void (__fastcall **)(_QWORD *, __int64, __int64))(*v8 + 56LL))(v8, a2, a1 + 376);// 0x38 = 56LL = CLoopTypeBase_LoopDeactivate
+      (*(void (__fastcall **)(_QWORD *))(*v8 + 40LL))(v8);// 0x28 = 40LL = CLoopTypeBase_DeallocateLoopMode
       if ( (unsigned __int8)Plat_NeedsLowFragmentation() )
         (*(void (__fastcall **)(__int64))(*(_QWORD *)g_pSceneSystem + 1080LL))(g_pSceneSystem);
       *(_DWORD *)(a1 + 168) = -1;

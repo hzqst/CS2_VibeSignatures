@@ -670,39 +670,39 @@ modules:
         expected_input:
           - CLoopTypeClientServer_vtable.{platform}.yaml
 
-      - name: find-ILoopType_EngineLoop
+      - name: find-CLoopTypeBase_EngineLoop
         expected_output:
-          - ILoopType_EngineLoop.{platform}.yaml
+          - CLoopTypeBase_EngineLoop.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_EngineLoop.{platform}.yaml
 
-      - name: find-ILoopType_FrameUpdate
+      - name: find-CLoopTypeBase_FrameUpdate
         expected_output:
-          - ILoopType_FrameUpdate.{platform}.yaml
+          - CLoopTypeBase_FrameUpdate.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_FrameUpdate.{platform}.yaml
 
-      - name: find-ILoopType_ActivateLoop
+      - name: find-CLoopTypeBase_ActivateLoop
         expected_output:
-          - ILoopType_ActivateLoop.{platform}.yaml
+          - CLoopTypeBase_ActivateLoop.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_ActivateLoop.{platform}.yaml
 
-      - name: find-ILoopType_AllocateLoopMode
+      - name: find-CLoopTypeBase_AllocateLoopMode
         expected_output:
-          - ILoopType_AllocateLoopMode.{platform}.yaml
+          - CLoopTypeBase_AllocateLoopMode.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_AllocateLoopMode.{platform}.yaml
 
-      - name: find-ILoopType_DeactivateLoop
+      - name: find-CLoopTypeBase_DeactivateLoop
         expected_output:
-          - ILoopType_DeactivateLoop.{platform}.yaml
+          - CLoopTypeBase_DeactivateLoop.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_DeactivateLoop.{platform}.yaml
 
-      - name: find-ILoopType_LoopTypeInit
+      - name: find-CLoopTypeBase_LoopTypeInit
         expected_output:
-          - ILoopType_LoopTypeInit.{platform}.yaml
+          - CLoopTypeBase_LoopTypeInit.{platform}.yaml
         expected_input:
           - CLoopTypeClientServer_LoopTypeInit.{platform}.yaml
 
@@ -744,11 +744,11 @@ modules:
         expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
         skip_if_exists:
-          - ILoopType_DeallocateLoopMode.{platform}.yaml
+          - CLoopTypeBase_DeallocateLoopMode.{platform}.yaml
 
-      - name: find-ILoopType_DeallocateLoopMode
+      - name: find-CLoopTypeBase_DeallocateLoopMode
         expected_output:
-          - ILoopType_DeallocateLoopMode.{platform}.yaml
+          - CLoopTypeBase_DeallocateLoopMode.{platform}.yaml
         expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
         prerequisite:
@@ -777,9 +777,9 @@ modules:
           - CEngineServiceMgr_vtable.{platform}.yaml
           - IAppSystem_Shutdown.{platform}.yaml
 
-      - name: find-ILoopType_LoopTypeShutdown
+      - name: find-CLoopTypeBase_LoopTypeShutdown
         expected_output:
-          - ILoopType_LoopTypeShutdown.{platform}.yaml
+          - CLoopTypeBase_LoopTypeShutdown.{platform}.yaml
         expected_input:
           - CEngineServiceMgr_Shutdown.{platform}.yaml
 
@@ -792,7 +792,7 @@ modules:
           - CLoopTypeSimple_FrameUpdate.{platform}.yaml
         expected_input:
           - CLoopTypeSimple_vtable.{platform}.yaml
-          - ILoopType_FrameUpdate.{platform}.yaml
+          - CLoopTypeBase_FrameUpdate.{platform}.yaml
 
       - name: find-ISource2Server_OutOfGameFrameBoundary
         expected_output:
@@ -1121,50 +1121,50 @@ modules:
         alias:
           - ILoopType::AddEngineService
 
-      - name: ILoopType_DeallocateLoopMode
+      - name: CLoopTypeBase_DeallocateLoopMode
         category: vfunc
         alias:
-          - ILoopType::DeallocateLoopMode
+          - CLoopTypeBase::DeallocateLoopMode
 
-      - name: ILoopType_EngineLoop
+      - name: CLoopTypeBase_EngineLoop
         category: vfunc
         alias:
-          - ILoopType::EngineLoop
+          - CLoopTypeBase::EngineLoop
 
-      - name: ILoopType_FrameUpdate
+      - name: CLoopTypeBase_FrameUpdate
         category: vfunc
         alias:
-          - ILoopType::FrameUpdate
+          - CLoopTypeBase::FrameUpdate
 
-      - name: ILoopType_ActivateLoop
+      - name: CLoopTypeBase_ActivateLoop
         category: vfunc
         alias:
-          - ILoopType::ActivateLoop
+          - CLoopTypeBase::ActivateLoop
 
-      - name: ILoopType_AllocateLoopMode
+      - name: CLoopTypeBase_AllocateLoopMode
         category: vfunc
         alias:
-          - ILoopType::AllocateLoopMode
+          - CLoopTypeBase::AllocateLoopMode
 
-      - name: ILoopType_DeactivateLoop
+      - name: CLoopTypeBase_DeactivateLoop
         category: vfunc
         alias:
-          - ILoopType::DeactivateLoop
+          - CLoopTypeBase::DeactivateLoop
 
-      - name: ILoopType_LoopTypeInit
+      - name: CLoopTypeBase_LoopTypeInit
         category: vfunc
         alias:
-          - ILoopType::LoopTypeInit
+          - CLoopTypeBase::LoopTypeInit
 
-      - name: ILoopType_LoopTypeShutdown
+      - name: CLoopTypeBase_LoopTypeShutdown
         category: vfunc
         alias:
-          - ILoopType::LoopTypeShutdown
+          - CLoopTypeBase::LoopTypeShutdown
 
-      - name: ILoopType_GetClientServerMode
+      - name: CLoopTypeBase_GetClientServerMode
         category: vfunc
         alias:
-          - ILoopType::GetClientServerMode
+          - CLoopTypeBase::GetClientServerMode
 
       - name: CEngineServiceMgr_vtable
         category: vtable
@@ -5058,9 +5058,9 @@ modules:
           - CEngineServiceMgr_vtable.{platform}.yaml
           - ../client/IEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
 
-      - name: find-ILoopType_GetClientServerMode
+      - name: find-CLoopTypeBase_GetClientServerMode
         expected_output:
-          - ILoopType_GetClientServerMode.{platform}.yaml
+          - CLoopTypeBase_GetClientServerMode.{platform}.yaml
         expected_input:
           - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
 

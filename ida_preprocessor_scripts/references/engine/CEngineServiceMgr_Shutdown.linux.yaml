@@ -19,7 +19,7 @@ disasm_code: |-
   .text:0000000000516F0B                 test    rdi, rdi
   .text:0000000000516F0E                 jz      short loc_516F16
   .text:0000000000516F10                 mov     rax, [rdi]
-  .text:0000000000516F13                 call    qword ptr [rax+20h]; 0x20 = 32LL = ILoopType_LoopTypeShutdown
+  .text:0000000000516F13                 call    qword ptr [rax+20h]; 0x20 = 32LL = CLoopTypeBase_LoopTypeShutdown
   .text:0000000000516F16                 add     ebx, 1
   .text:0000000000516F19                 movzx   eax, bx
   .text:0000000000516F1C                 cmp     eax, r12d
@@ -62,7 +62,7 @@ procedure: |-
       {
         v4 = *(_QWORD *)(*(_QWORD *)(a1 + 56) + 8LL * v2);
         if ( v4 )
-          (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 32LL))(v4);// 0x20 = 32LL = ILoopType_LoopTypeShutdown
+          (*(void (__fastcall **)(__int64))(*(_QWORD *)v4 + 32LL))(v4);// 0x20 = 32LL = CLoopTypeBase_LoopTypeShutdown
         ++v2;
       }
       while ( v2 < v3 );
