@@ -10,7 +10,7 @@ TARGET_FUNCTION_NAMES = [
 FUNC_XREFS = [
                  {
                      "func_name": 'CSource2GameClients_ClientDisconnect',
-                     "xref_strings": ['FULLMATCH:xuid', 'FULLMATCH:player_disconnect'],
+                     "xref_strings": ['FULLMATCH:networkid', 'FULLMATCH:player_disconnect'],
                      "xref_gvs": [],
                      "xref_signatures": [],
                      "xref_funcs": [],
