@@ -740,6 +740,25 @@ def _is_slot_only_inherit_vfunc_fields(desired_fields):
     return len(desired_fields) == len(slot_only_fields) and set(desired_fields) == slot_only_fields
 
 
+def _is_slot_only_vfunc_fields(desired_fields):
+    desired_field_set = set(desired_fields)
+    required_fields = {
+        "func_name",
+        "vtable_name",
+        "vfunc_offset",
+        "vfunc_index",
+    }
+    allowed_fields = required_fields | {
+        "vfunc_sig",
+        "vfunc_sig_max_match",
+    }
+    if "vfunc_sig_max_match" in desired_field_set and "vfunc_sig" not in desired_field_set:
+        return False
+    return required_fields.issubset(desired_field_set) and desired_field_set.issubset(
+        allowed_fields
+    )
+
+
 def _build_inherited_vfunc_name(
     base_vfunc_name,
     base_vtable_name,
@@ -2872,6 +2891,7 @@ async def preprocess_func_sig_via_mcp(
     direct_func_va=None,
     direct_vtable_class=None,
     direct_vfunc_offset=None,
+    slot_only_vfunc=False,
     allow_func_sig_across_function_boundary=False,
 ):
     """
@@ -2887,6 +2907,8 @@ async def preprocess_func_sig_via_mcp(
       corresponding entry in the new vtable YAML.
     - After resolving function VA/size from vtable, try to generate a new
       function-head `func_sig` automatically.
+    - When `slot_only_vfunc` is True, reuse old `vfunc_sig` + slot metadata
+      directly and skip function-head/vtable-entry resolution.
 
     Args:
         session: Active MCP ClientSession
@@ -3142,7 +3164,7 @@ async def preprocess_func_sig_via_mcp(
     vfunc_match_addr = None
     vfunc_sig_max_match = 1
 
-    if func_sig:
+    if func_sig and not slot_only_vfunc:
         match_addr = await _find_unique_match(
             func_sig, f"{os.path.basename(old_path)} func_sig"
         )
@@ -3155,6 +3177,11 @@ async def preprocess_func_sig_via_mcp(
                 print(f"    Preprocess: could not get func info at {match_addr}")
             return None
     else:
+        if func_sig and slot_only_vfunc and debug:
+            print(
+                f"    Preprocess: ignoring func_sig for slot-only vfunc "
+                f"{os.path.basename(new_path)}"
+            )
         used_vfunc_fallback = True
         if not vfunc_sig:
             if debug:
@@ -3240,7 +3267,7 @@ async def preprocess_func_sig_via_mcp(
         # metadata (e.g. pure-interface classes like IGameTypes whose vtable
         # symbol cannot be resolved).  Carry forward vfunc metadata as-is.
         old_has_func_va = old_data.get("func_va") is not None
-        if not old_has_func_va:
+        if slot_only_vfunc or not old_has_func_va:
             if func_name is None:
                 func_name = old_data.get("func_name")
             if func_name is None:
@@ -3256,7 +3283,7 @@ async def preprocess_func_sig_via_mcp(
             }
             if debug:
                 print(
-                    "    Preprocess: reused vfunc_sig metadata (no vtable resolution) at "
+                    "    Preprocess: reused vfunc_sig metadata (no function-head resolution) at "
                     f"{vfunc_match_addr} for {os.path.basename(new_path)}"
                 )
             return new_data
@@ -7562,6 +7589,7 @@ async def _try_preprocess_func_without_llm(
     func_xrefs_map,
     vtable_relations_map,
     normalized_mangled_class_names,
+    slot_only_vfunc=False,
     allow_func_sig_across_function_boundary=False,
     debug=False,
 ):
@@ -7573,12 +7601,13 @@ async def _try_preprocess_func_without_llm(
         new_binary_dir=new_binary_dir,
         platform=platform,
         func_name=func_name,
+        slot_only_vfunc=slot_only_vfunc,
         allow_func_sig_across_function_boundary=allow_func_sig_across_function_boundary,
         debug=debug,
         mangled_class_names=normalized_mangled_class_names,
     )
 
-    if func_data is None and func_name in func_xrefs_map:
+    if func_data is None and not slot_only_vfunc and func_name in func_xrefs_map:
         xref_spec = func_xrefs_map[func_name]
         if debug:
             print(f"    Preprocess: trying func_xrefs fallback for {func_name}")
@@ -8388,7 +8417,10 @@ async def preprocess_common_skill(
         desired_fields = desired_field_spec["desired_output_fields"]
         generation_options = desired_field_spec["generation_options"]
         desired_fields_set = set(desired_fields)
-        can_use_direct_func_fallback = "vfunc_sig" not in desired_fields_set
+        slot_only_vfunc = _is_slot_only_vfunc_fields(desired_fields)
+        can_use_direct_func_fallback = (
+            not slot_only_vfunc and "vfunc_sig" not in desired_fields_set
+        )
 
         if func_name not in fast_path_attempted:
             fast_path_results[func_name] = await _try_preprocess_func_without_llm(
@@ -8402,6 +8434,7 @@ async def preprocess_common_skill(
                 func_xrefs_map=func_xrefs_map,
                 vtable_relations_map=vtable_relations_map,
                 normalized_mangled_class_names=normalized_mangled_class_names,
+                slot_only_vfunc=slot_only_vfunc,
                 allow_func_sig_across_function_boundary=generation_options.get(
                     "func_sig_allow_across_function_boundary",
                     False,
@@ -8497,44 +8530,45 @@ async def preprocess_common_skill(
             vtable_class = None
             if func_data is None and func_name in vtable_relations_map:
                 vtable_class = vtable_relations_map[func_name]
-            for entry in llm_result.get("found_vcall", []):
-                if vtable_class is None:
-                    break
-                if entry.get("func_name") != func_name:
-                    continue
-                direct_vcall_kwargs = {
-                    "session": session,
-                    "new_path": target_output,
-                    "image_base": image_base,
-                    "platform": platform,
-                    "func_name": func_name,
-                    "direct_vtable_class": vtable_class,
-                    "direct_vfunc_offset": entry.get("vfunc_offset"),
-                    "direct_vcall_inst_va": entry.get("insn_va"),
-                    "require_func_sig": "func_sig" in desired_fields_set,
-                    "require_vfunc_sig": "vfunc_sig" in desired_fields_set,
-                    "vfunc_sig_max_match": generation_options.get(
-                        "vfunc_sig_max_match", 1
-                    ),
-                    "allow_func_sig_across_function_boundary": generation_options.get(
-                        "func_sig_allow_across_function_boundary",
+            if not slot_only_vfunc:
+                for entry in llm_result.get("found_vcall", []):
+                    if vtable_class is None:
+                        break
+                    if entry.get("func_name") != func_name:
+                        continue
+                    direct_vcall_kwargs = {
+                        "session": session,
+                        "new_path": target_output,
+                        "image_base": image_base,
+                        "platform": platform,
+                        "func_name": func_name,
+                        "direct_vtable_class": vtable_class,
+                        "direct_vfunc_offset": entry.get("vfunc_offset"),
+                        "direct_vcall_inst_va": entry.get("insn_va"),
+                        "require_func_sig": "func_sig" in desired_fields_set,
+                        "require_vfunc_sig": "vfunc_sig" in desired_fields_set,
+                        "vfunc_sig_max_match": generation_options.get(
+                            "vfunc_sig_max_match", 1
+                        ),
+                        "allow_func_sig_across_function_boundary": generation_options.get(
+                            "func_sig_allow_across_function_boundary",
+                            False,
+                        ),
+                        "normalized_mangled_class_names": normalized_mangled_class_names,
+                        "debug": debug,
+                    }
+                    if generation_options.get(
+                        "vfunc_sig_allow_across_function_boundary",
                         False,
-                    ),
-                    "normalized_mangled_class_names": normalized_mangled_class_names,
-                    "debug": debug,
-                }
-                if generation_options.get(
-                    "vfunc_sig_allow_across_function_boundary",
-                    False,
-                ):
-                    direct_vcall_kwargs[
-                        "allow_vfunc_sig_across_function_boundary"
-                    ] = True
-                func_data = await _preprocess_direct_func_sig_via_mcp(
-                    **direct_vcall_kwargs,
-                )
-                if func_data is not None:
-                    break
+                    ):
+                        direct_vcall_kwargs[
+                            "allow_vfunc_sig_across_function_boundary"
+                        ] = True
+                    func_data = await _preprocess_direct_func_sig_via_mcp(
+                        **direct_vcall_kwargs,
+                    )
+                    if func_data is not None:
+                        break
             if func_data is None:
                 fallback_vtable_name = None
                 if func_name in vtable_relations_map:
