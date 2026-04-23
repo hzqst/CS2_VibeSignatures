@@ -24,6 +24,12 @@ MODULE_ENABLED = True
 # Relative path to gamedata file within this dist directory
 GAMEDATA_PATH = "assets/gamedata.jsonc"
 
+# Upstream download sources: (raw_url, relative_dest_path)
+DOWNLOAD_SOURCES = [
+    ("https://raw.githubusercontent.com/untrustedmodders/plugify-plugin-s2sdk/main/assets/gamedata.jsonc",
+     GAMEDATA_PATH),
+]
+
 # Platform key mapping: windows -> win64, linux -> linuxsteamrt64
 PLATFORM_MAP = {
     "windows": "win64",

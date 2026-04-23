@@ -23,6 +23,12 @@ MODULE_ENABLED = True
 # Relative path to gamedata file within this dist directory
 GAMEDATA_PATH = "config/addons/counterstrikesharp/gamedata/gamedata.json"
 
+# Upstream download sources: (raw_url, relative_dest_path)
+DOWNLOAD_SOURCES = [
+    ("https://raw.githubusercontent.com/roflmuffin/CounterStrikeSharp/main/configs/addons/counterstrikesharp/gamedata/gamedata.json",
+     GAMEDATA_PATH),
+]
+
 
 def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debug=False):
     """

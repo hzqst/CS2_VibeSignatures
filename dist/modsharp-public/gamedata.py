@@ -25,6 +25,18 @@ MODULE_ENABLED = True
 # Relative paths to gamedata files within this dist directory
 GAMEDATA_DIR = ".asset/gamedata"
 
+# Upstream download sources: (raw_url, relative_dest_path)
+_MODSHARP_BASE_URL = "https://raw.githubusercontent.com/Kxnrl/modsharp-public/master/.asset/gamedata"
+
+DOWNLOAD_SOURCES = [
+    (f"{_MODSHARP_BASE_URL}/core.games.jsonc", f"{GAMEDATA_DIR}/core.games.jsonc"),
+    (f"{_MODSHARP_BASE_URL}/engine.games.jsonc", f"{GAMEDATA_DIR}/engine.games.jsonc"),
+    (f"{_MODSHARP_BASE_URL}/EntityEnhancement.games.jsonc", f"{GAMEDATA_DIR}/EntityEnhancement.games.jsonc"),
+    (f"{_MODSHARP_BASE_URL}/log.games.jsonc", f"{GAMEDATA_DIR}/log.games.jsonc"),
+    (f"{_MODSHARP_BASE_URL}/server.games.jsonc", f"{GAMEDATA_DIR}/server.games.jsonc"),
+    (f"{_MODSHARP_BASE_URL}/tier0.games.jsonc", f"{GAMEDATA_DIR}/tier0.games.jsonc"),
+]
+
 
 def update(yaml_data, func_lib_map, platforms, dist_dir, alias_to_name_map, debug=False):
     """

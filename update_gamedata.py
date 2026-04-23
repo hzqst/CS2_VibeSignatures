@@ -8,7 +8,7 @@ modules from dist/*/gamedata.py and applies optional per-module config
 overlays from dist/*/config.yaml.
 
 Usage:
-    python update_gamedata.py -gamever=<version> [-configyaml=config.yaml] [-bindir=bin] [-distdir=dist] [-platform=windows,linux] [-debug]
+    python update_gamedata.py -gamever=<version> [-configyaml=config.yaml] [-bindir=bin] [-distdir=dist] [-platform=windows,linux] [-debug] [-download_latest]
 
     -gamever: Game version for YAML path (required)
     -configyaml: Path to config.yaml file (default: config.yaml)
@@ -16,6 +16,7 @@ Usage:
     -distdir: Directory containing gamedata modules (default: dist)
     -platform: Comma-separated platforms (default: windows,linux)
     -debug: Print detailed information about missing, updated, and skipped symbols
+    -download_latest: Download latest gamedata files from upstream repos before updating
 
 Requirements:
     uv sync
@@ -33,6 +34,11 @@ except ImportError:
     print("Error: Missing required dependency: yaml")
     print("Please install required dependencies with: uv sync")
     sys.exit(1)
+
+try:
+    import httpx
+except ImportError:
+    httpx = None
 
 
 # Default values
@@ -92,6 +98,11 @@ def parse_args():
         "-debug",
         action="store_true",
         help="Print detailed information about missing and updated symbols"
+    )
+    parser.add_argument(
+        "-download_latest",
+        action="store_true",
+        help="Download latest gamedata files from upstream repos before updating"
     )
 
     return parser.parse_args()
@@ -537,6 +548,66 @@ def discover_gamedata_modules(dist_dir):
     return modules
 
 
+def download_latest_gamedata(modules, dist_dir):
+    """
+    Download latest gamedata files from upstream GitHub repos.
+
+    For each module that exports DOWNLOAD_SOURCES, downloads each file
+    and saves it to the appropriate path under dist_dir.
+
+    Args:
+        modules: List of (subdir, module) tuples from discover_gamedata_modules()
+        dist_dir: Base dist directory path
+
+    Returns:
+        Tuple of (success_count, failure_count)
+    """
+    if httpx is None:
+        print("Error: httpx is required for -download_latest. Install with: uv sync")
+        return 0, 0
+
+    success_count = 0
+    failure_count = 0
+
+    with httpx.Client(
+        follow_redirects=True,
+        timeout=httpx.Timeout(10.0, read=30.0),
+    ) as client:
+        for subdir, module in modules:
+            module_name = getattr(module, 'MODULE_NAME', subdir)
+            sources = getattr(module, 'DOWNLOAD_SOURCES', None)
+
+            if not sources:
+                continue
+
+            print(f"  {module_name}:")
+
+            for url, relative_path in sources:
+                abs_path = os.path.join(dist_dir, subdir, relative_path)
+
+                try:
+                    response = client.get(url)
+                    response.raise_for_status()
+
+                    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+
+                    with open(abs_path, "wb") as f:
+                        f.write(response.content)
+
+                    print(f"    Downloaded: {relative_path}")
+                    success_count += 1
+
+                except httpx.HTTPStatusError as e:
+                    print(f"    Warning: HTTP {e.response.status_code} for {url}")
+                    failure_count += 1
+
+                except (httpx.RequestError, OSError) as e:
+                    print(f"    Warning: Failed to download {relative_path}: {e}")
+                    failure_count += 1
+
+    return success_count, failure_count
+
+
 def print_debug_info(title, missing_symbols, updated_symbols, skipped_symbols):
     """
     Print detailed debug information.
@@ -629,6 +700,12 @@ def main():
     print("\nDiscovering gamedata modules...")
     modules = discover_gamedata_modules(dist_dir)
     print(f"Found {len(modules)} enabled modules")
+
+    # Download latest gamedata files if requested
+    if args.download_latest:
+        print("\nDownloading latest gamedata files...")
+        dl_ok, dl_fail = download_latest_gamedata(modules, dist_dir)
+        print(f"Downloads complete: {dl_ok} succeeded, {dl_fail} failed")
 
     # Collect debug info
     all_updated_symbols = {}
