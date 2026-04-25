@@ -447,6 +447,12 @@ modules:
         expected_input:
           - CGameResourceService_vtable.{platform}.yaml
 
+      - name: find-CGameResourceService_LoadGameResourceManifestGroup
+        expected_output:
+          - CGameResourceService_LoadGameResourceManifestGroup.{platform}.yaml
+        expected_input:
+          - CGameResourceService_vtable.{platform}.yaml
+
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
@@ -848,6 +854,11 @@ modules:
         category: vfunc
         alias:
           - CGameResourceService::LoadGameResourceManifestNamed
+
+      - name: CGameResourceService_LoadGameResourceManifestGroup
+        category: vfunc
+        alias:
+          - CGameResourceService::LoadGameResourceManifestGroup
 
       - name: g_pGameServer
         category: gv
