@@ -437,6 +437,16 @@ modules:
           - CNetworkGameServerBase_SendPeerList.{platform}.yaml
           - CServerSideClient_vtable.{platform}.yaml
 
+      - name: find-CGameResourceService_vtable
+        expected_output:
+          - CGameResourceService_vtable.{platform}.yaml
+
+      - name: find-CGameResourceService_LoadGameResourceManifestNamed
+        expected_output:
+          - CGameResourceService_LoadGameResourceManifestNamed.{platform}.yaml
+        expected_input:
+          - CGameResourceService_vtable.{platform}.yaml
+
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
@@ -830,6 +840,14 @@ modules:
         member: m_pEntitySystem
         alias:
           - GameEntitySystem
+
+      - name: CGameResourceService_vtable
+        category: vtable
+
+      - name: CGameResourceService_LoadGameResourceManifestNamed
+        category: vfunc
+        alias:
+          - CGameResourceService::LoadGameResourceManifestNamed
 
       - name: g_pGameServer
         category: gv
