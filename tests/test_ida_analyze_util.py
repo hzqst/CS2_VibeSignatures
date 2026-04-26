@@ -2316,10 +2316,8 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
         py_code = session.call_tool.await_args.kwargs["arguments"]["code"]
         self.assertIn("import ida_nalt, idautils, json", py_code)
         self.assertIn("strings = idautils.Strings(default_setup=False)", py_code)
-        self.assertIn(
-            "strings.setup(strtypes=[ida_nalt.STRTYPE_C], minlen=4)",
-            py_code,
-        )
+        self.assertNotIn("strings.setup(", py_code)
+        self.assertNotIn("ida_netnode", py_code)
         self.assertIn("for s in strings:", py_code)
         self.assertNotIn("for s in idautils.Strings():", py_code)
         self.assertIn('search_str = "_projectile"', py_code)
@@ -2387,10 +2385,17 @@ class TestFuncXrefsSignatureSupport(unittest.IsolatedAsyncioTestCase):
             debug=False,
         )
         py_code = session.call_tool.await_args.kwargs["arguments"]["code"]
+        self.assertIn("import ida_netnode, json", py_code)
+        self.assertIn("CS2VIBE_STRING_SETUP_STATE_NODE", py_code)
+        self.assertIn(
+            "expected_state = {'version': 1, 'minlen': 6, 'strtypes': 'STRTYPE_C'}",
+            py_code,
+        )
         self.assertIn(
             "strings.setup(strtypes=[ida_nalt.STRTYPE_C], minlen=6)",
             py_code,
         )
+        self.assertIn("_cs2vibe_write_string_setup_state(expected_state)", py_code)
 
     async def test_collect_xref_func_starts_for_string_normalizes_raw_xref_from_addrs(
         self,

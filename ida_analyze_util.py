@@ -6111,7 +6111,7 @@ async def _collect_xref_func_starts_for_string(session, xref_string, debug=False
         "import ida_nalt, idautils, json",
         f"search_str = {json.dumps(search_str)}",
         "code_addrs = set()",
-        *_build_ida_strings_setup_py_lines(strings_var_name="strings"),
+        *_build_ida_strings_enumerator_py_lines(strings_var_name="strings"),
         "for s in strings:",
         "    current_str = str(s)",
         f"    if {match_expr}:",
