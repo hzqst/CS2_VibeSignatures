@@ -1,0 +1,216 @@
+func_name: CEntitySystem_PrecacheEntity
+func_va: '0x1e68d20'
+disasm_code: |-
+  .text:0000000001E68D20                 push    rbp
+  .text:0000000001E68D21                 lea     rax, aClassname; "classname"
+  .text:0000000001E68D28                 mov     rbp, rsp
+  .text:0000000001E68D2B                 push    r15
+  .text:0000000001E68D2D                 lea     r15, [rbp+var_40]
+  .text:0000000001E68D31                 push    r14
+  .text:0000000001E68D33                 mov     r14, rsi
+  .text:0000000001E68D36                 push    r13
+  .text:0000000001E68D38                 mov     rsi, r15
+  .text:0000000001E68D3B                 push    r12
+  .text:0000000001E68D3D                 mov     r12d, edx
+  .text:0000000001E68D40                 xor     edx, edx
+  .text:0000000001E68D42                 push    rbx
+  .text:0000000001E68D43                 mov     rbx, rdi
+  .text:0000000001E68D46                 mov     rdi, r14
+  .text:0000000001E68D49                 sub     rsp, 28h
+  .text:0000000001E68D4D                 mov     [rbp+var_40], 0FFFFFFFFC61B1C62h
+  .text:0000000001E68D55                 mov     [rbp+var_38], rax
+  .text:0000000001E68D59                 call    sub_1E4DC00
+  .text:0000000001E68D5E                 test    rax, rax
+  .text:0000000001E68D61                 jz      short loc_1E68D74
+  .text:0000000001E68D63                 mov     rdi, rax
+  .text:0000000001E68D66                 movzx   eax, word ptr [rax]
+  .text:0000000001E68D69                 shr     ax, 2
+  .text:0000000001E68D6D                 and     eax, 0Fh
+  .text:0000000001E68D70                 cmp     al, 6
+  .text:0000000001E68D72                 jz      short loc_1E68DA8
+  .text:0000000001E68D74                 lea     rbx, dword_27BA5DC
+  .text:0000000001E68D7B                 ; _QWORD
+  .text:0000000001E68D7B                 mov     esi, 3; _QWORD
+  .text:0000000001E68D80                 ; _QWORD
+  .text:0000000001E68D80                 mov     edi, [rbx]; _QWORD
+  .text:0000000001E68D82                 call    _LoggingSystem_IsChannelEnabled
+  .text:0000000001E68D87                 test    al, al
+  .text:0000000001E68D89                 jnz     loc_1E68F00
+  .text:0000000001E68D8F                 xor     r12d, r12d
+  .text:0000000001E68D92                 add     rsp, 28h
+  .text:0000000001E68D96                 mov     rax, r12
+  .text:0000000001E68D99                 pop     rbx
+  .text:0000000001E68D9A                 pop     r12
+  .text:0000000001E68D9C                 pop     r13
+  .text:0000000001E68D9E                 pop     r14
+  .text:0000000001E68DA0                 pop     r15
+  .text:0000000001E68DA2                 pop     rbp
+  .text:0000000001E68DA3                 retn
+  .text:0000000001E68DA8                 lea     rsi, haystack
+  .text:0000000001E68DAF                 call    sub_1B086D0
+  .text:0000000001E68DB4                 mov     rsi, rax
+  .text:0000000001E68DB7                 test    rax, rax
+  .text:0000000001E68DBA                 jz      short loc_1E68D74
+  .text:0000000001E68DBC                 mov     rdx, r15
+  .text:0000000001E68DBF                 mov     rdi, rbx
+  .text:0000000001E68DC2                 mov     [rbp+var_40], 0
+  .text:0000000001E68DCA                 call    sub_1E5ECC0
+  .text:0000000001E68DCF                 test    rax, rax
+  .text:0000000001E68DD2                 mov     [rbp+var_48], rax
+  .text:0000000001E68DD6                 jz      loc_1E68ED0
+  .text:0000000001E68DDC                 xor     r9d, r9d
+  .text:0000000001E68DDF                 mov     r8d, 1
+  .text:0000000001E68DE5                 mov     ecx, 0FFFFFFFFh
+  .text:0000000001E68DEA                 mov     edx, 0FFFFFFFFh
+  .text:0000000001E68DEF                 xor     esi, esi
+  .text:0000000001E68DF1                 mov     rdi, rbx
+  .text:0000000001E68DF4                 call    sub_1E5CD70
+  .text:0000000001E68DF9                 mov     r10, [rbp+var_48]
+  .text:0000000001E68DFD                 mov     r13, rax
+  .text:0000000001E68E00                 mov     [rax+8], r10
+  .text:0000000001E68E04                 mov     eax, [r10+68h]
+  .text:0000000001E68E08                 test    al, 4
+  .text:0000000001E68E0A                 jnz     loc_1E68ED8
+  .text:0000000001E68E10                 cmp     r12d, 0FFFFFFFFh
+  .text:0000000001E68E14                 jnz     short loc_1E68E1D
+  .text:0000000001E68E16                 mov     r12d, [rbx+1F40h]
+  .text:0000000001E68E1D                 and     eax, 400h
+  .text:0000000001E68E22                 jnz     loc_1E68EE6
+  .text:0000000001E68E28                 mov     rdx, [rbx]
+  .text:0000000001E68E2B                 lea     rcx, sub_1E4F150
+  .text:0000000001E68E32                 mov     rdx, [rdx+90h]
+  .text:0000000001E68E39                 cmp     rdx, rcx
+  .text:0000000001E68E3C                 jnz     loc_1E68EF0
+  .text:0000000001E68E42                 movd    xmm0, r12d
+  .text:0000000001E68E47                 mov     rsi, r13
+  .text:0000000001E68E4A                 mov     rdi, rbx
+  .text:0000000001E68E4D                 pinsrd  xmm0, eax, 1
+  .text:0000000001E68E53                 movq    qword ptr [r13+34h], xmm0
+  .text:0000000001E68E59                 mov     rdx, [rbp+var_40]
+  .text:0000000001E68E5D                 lea     rax, haystack
+  .text:0000000001E68E64                 test    rdx, rdx
+  .text:0000000001E68E67                 cmovz   rdx, rax
+  .text:0000000001E68E6B                 call    sub_1E68440
+  .text:0000000001E68E70                 test    al, al
+  .text:0000000001E68E72                 jz      short loc_1E68EB5
+  .text:0000000001E68E74                 mov     rdx, r14
+  .text:0000000001E68E77                 mov     rsi, r13
+  .text:0000000001E68E7A                 mov     rdi, rbx
+  .text:0000000001E68E7D                 mov     r12, [r13+0]
+  .text:0000000001E68E81                 call    sub_1E68C50
+  .text:0000000001E68E86                 test    al, al
+  .text:0000000001E68E88                 jz      short loc_1E68EA8
+  .text:0000000001E68E8A                 cmp     [rbp+var_40], 0
+  .text:0000000001E68E8F                 jz      loc_1E68D92
+  .text:0000000001E68E95                 ; this
+  .text:0000000001E68E95                 mov     rdi, r15; this
+  .text:0000000001E68E98                 call    __ZN10CUtlString15FreeMemoryBlockEv; CUtlString::FreeMemoryBlock(void)
+  .text:0000000001E68E9D                 jmp     loc_1E68D92
+  .text:0000000001E68EA8                 mov     rdi, r12
+  .text:0000000001E68EAB                 mov     r13, [r12+10h]
+  .text:0000000001E68EB0                 call    CEntitySystem_DestroyEntity
+  .text:0000000001E68EB5                 xor     esi, esi
+  .text:0000000001E68EB7                 mov     rdi, r13
+  .text:0000000001E68EBA                 call    sub_1E446E0
+  .text:0000000001E68EBF                 lea     rdi, [rbx+10h]
+  .text:0000000001E68EC3                 mov     edx, 1
+  .text:0000000001E68EC8                 mov     rsi, r13
+  .text:0000000001E68ECB                 call    sub_1E51E80
+  .text:0000000001E68ED0                 xor     r12d, r12d
+  .text:0000000001E68ED3                 jmp     short loc_1E68E8A
+  .text:0000000001E68ED8                 xor     r12d, r12d
+  .text:0000000001E68EDB                 and     eax, 400h
+  .text:0000000001E68EE0                 jz      loc_1E68E28
+  .text:0000000001E68EE6                 mov     eax, 1
+  .text:0000000001E68EEB                 jmp     loc_1E68E42
+  .text:0000000001E68EF0                 mov     esi, r12d
+  .text:0000000001E68EF3                 mov     rdi, rbx
+  .text:0000000001E68EF6                 call    rdx
+  .text:0000000001E68EF8                 jmp     loc_1E68E42
+  .text:0000000001E68F00                 ; _QWORD
+  .text:0000000001E68F00                 mov     edi, [rbx]; _QWORD
+  .text:0000000001E68F02                 lea     rdx, aCentitysystemP; "CEntitySystem::PrecacheEntity: Classnam"...
+  .text:0000000001E68F09                 ; _QWORD
+  .text:0000000001E68F09                 mov     esi, 3; _QWORD
+  .text:0000000001E68F0E                 xor     eax, eax
+  .text:0000000001E68F10                 call    _LoggingSystem_Log
+  .text:0000000001E68F15                 jmp     loc_1E68D8F
+procedure: |-
+  __int64 __fastcall CEntitySystem_PrecacheEntity(_DWORD *a1, __int64 a2, unsigned int a3)
+  {
+    _WORD *v5; // rax
+    __int64 v6; // r12
+    __int64 v8; // rsi
+    __int64 *v9; // r13
+    int v10; // eax
+    __int64 (__fastcall *v11)(); // rdx
+    const char *v12; // rdx
+    __int64 v13; // [rsp+8h] [rbp-48h]
+    _QWORD v14[8]; // [rsp+10h] [rbp-40h] BYREF
+
+    v14[0] = -971301790;
+    v14[1] = "classname";
+    v5 = (_WORD *)sub_1E4DC00(a2, v14, 0);
+    if ( v5 )
+    {
+      if ( ((*v5 >> 2) & 0xF) == 6 )
+      {
+        v8 = sub_1B086D0(v5, &haystack);
+        if ( v8 )
+        {
+          v14[0] = 0;
+          v13 = sub_1E5ECC0(a1, v8, v14);
+          if ( !v13 )
+            goto LABEL_23;
+          v9 = (__int64 *)sub_1E5CD70(a1, 0, 0xFFFFFFFFLL, 0xFFFFFFFFLL, 1, 0);
+          v9[1] = v13;
+          if ( (*(_DWORD *)(v13 + 104) & 4) != 0 )
+          {
+            a3 = 0;
+            v10 = *(_DWORD *)(v13 + 104) & 0x400;
+            if ( !v10 )
+            {
+  LABEL_13:
+              v11 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 144LL);
+              if ( v11 != sub_1E4F150 )
+                v10 = ((__int64 (__fastcall *)(_DWORD *, _QWORD))v11)(a1, a3);
+              goto LABEL_15;
+            }
+          }
+          else
+          {
+            if ( a3 == -1 )
+              a3 = a1[2000];
+            v10 = *(_DWORD *)(v13 + 104) & 0x400;
+            if ( !v10 )
+              goto LABEL_13;
+          }
+          v10 = 1;
+  LABEL_15:
+          *(__int64 *)((char *)v9 + 52) = _mm_insert_epi32(_mm_cvtsi32_si128(a3), v10, 1).m128i_u64[0];
+          v12 = (const char *)v14[0];
+          if ( !v14[0] )
+            v12 = &haystack;
+          if ( (unsigned __int8)sub_1E68440(a1, v9, v12) )
+          {
+            v6 = *v9;
+            if ( (unsigned __int8)sub_1E68C50(a1, v9, a2) )
+              goto LABEL_19;
+            v9 = *(__int64 **)(v6 + 16);
+            CEntitySystem_DestroyEntity(v6);
+          }
+          sub_1E446E0(v9, 0);
+          sub_1E51E80(a1 + 4, v9, 1);
+  LABEL_23:
+          v6 = 0;
+  LABEL_19:
+          if ( v14[0] )
+            CUtlString::FreeMemoryBlock((CUtlString *)v14);
+          return v6;
+        }
+      }
+    }
+    if ( (unsigned __int8)LoggingSystem_IsChannelEnabled((unsigned int)dword_27BA5DC, 3) )
+      LoggingSystem_Log((unsigned int)dword_27BA5DC, 3, "CEntitySystem::PrecacheEntity: Classname missing from entity!\n");
+    return 0;
+  }

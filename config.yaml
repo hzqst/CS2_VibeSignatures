@@ -2044,6 +2044,10 @@ modules:
         expected_input:
           - CPlayer_MovementServices_ForceButtons.{platform}.yaml
 
+      - name: find-CEntityComponentHelperT_CBodyComponent_vtable
+        expected_output:
+          - CEntityComponentHelperT_CBodyComponent_vtable.{platform}.yaml
+
       - name: find-CEntityInstance_vtable
         expected_output:
           - CEntityInstance_vtable.{platform}.yaml
@@ -2520,6 +2524,10 @@ modules:
         expected_output:
           - GiveNamedItem.{platform}.yaml
 
+      - name: find-CEntitySystem_vtable
+        expected_output:
+          - CEntitySystem_vtable.{platform}.yaml
+
       - name: find-CEntitySystem_CreateEntityByName
         expected_output:
           - CEntitySystem_CreateEntityByName.{platform}.yaml
@@ -2527,6 +2535,19 @@ modules:
       - name: find-CEntitySystem_PrecacheEntity
         expected_output:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
+
+      - name: find-CEntitySystem_DestroyEntity
+        expected_output:
+          - CEntitySystem_DestroyEntity.{platform}.yaml
+        expected_input:
+          - CEntitySystem_PrecacheEntity.{platform}.yaml
+
+      - name: find-CEntityInstance_Disconnect-AND-CEntityComponentHelperT_Free
+        expected_output:
+          - CEntityInstance_Disconnect.{platform}.yaml
+          - CEntityComponentHelperT_Free.{platform}.yaml
+        expected_input:
+          - CEntitySystem_DestroyEntity.{platform}.yaml
 
       - name: find-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
         expected_output:
@@ -2846,6 +2867,18 @@ modules:
       - name: find-CGameEntitySystem_BuildResourceManifest_KeyValuesVectors
         expected_output:
           - CGameEntitySystem_BuildResourceManifest_KeyValuesVectors.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
+      - name: find-CGameEntitySystem_FindEntityProcedural
+        expected_output:
+          - CGameEntitySystem_FindEntityProcedural.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
+      - name: find-CGameEntitySystem_Activate
+        expected_output:
+          - CGameEntitySystem_Activate.{platform}.yaml
         expected_input:
           - CGameEntitySystem_vtable.{platform}.yaml
 
@@ -3520,6 +3553,13 @@ modules:
           - CLoopModeGame_ShutdownServer.{platform}.yaml
           - CLoopModeGame_vtable.{platform}.yaml
 
+      - name: find-CEntitySystem_ClearEntityDatabase
+        expected_output:
+          - CEntitySystem_ClearEntityDatabase.{platform}.yaml
+        expected_input:
+          - CLoopModeGame_OnLoopDeactivate.{platform}.yaml
+          - CEntitySystem_vtable.{platform}.yaml
+
       - name: find-ILoopMode_OnLoopDeactivate
         expected_output:
           - ILoopMode_OnLoopDeactivate.{platform}.yaml
@@ -3680,6 +3720,9 @@ modules:
         category: gv
         alias:
           - CPlayer_MovementServices::s_pRunCommandPawn
+
+      - name: CEntityComponentHelperT_CBodyComponent_vtable
+        category: vtable
 
       - name: CEntityInstance_vtable
         category: vtable
@@ -4145,6 +4188,9 @@ modules:
       - name: GiveNamedItem
         category: func
 
+      - name: CEntitySystem_vtable
+        category: vtable
+
       - name: CEntitySystem_CreateEntityByName
         category: func
         alias:
@@ -4154,6 +4200,11 @@ modules:
         category: func
         alias:
           - CEntitySystem::PrecacheEntity
+
+      - name: CEntitySystem_DestroyEntity
+        category: func
+        alias:
+          - CEntitySystem::DestroyEntity
 
       - name: UTIL_CreateEntityByName
         category: func
@@ -4446,6 +4497,16 @@ modules:
         category: vfunc
         alias:
           - CGameEntitySystem::BuildResourceManifest_KeyValuesVectors
+
+      - name: CGameEntitySystem_FindEntityProcedural
+        category: vfunc
+        alias:
+          - CGameEntitySystem::FindEntityProcedural
+
+      - name: CGameEntitySystem_Activate
+        category: vfunc
+        alias:
+          - CGameEntitySystem::Activate
 
       - name: IGameSystem_OnBuildGameSessionManifest
         category: vfunc
@@ -4885,6 +4946,11 @@ modules:
         alias:
           - CEntitySystem::Activate
 
+      - name: CEntitySystem_ClearEntityDatabase
+        category: vfunc
+        alias:
+          - CEntitySystem::ClearEntityDatabase
+
       - name: INetworkMessages_SetNetworkSerializationContextData
         category: vfunc
         alias:
@@ -4926,6 +4992,16 @@ modules:
         category: vfunc
         alias:
           - CEntityInstance::Precache
+
+      - name: CEntityInstance_Disconnect
+        category: vfunc
+        alias:
+          - CEntityInstance::Disconnect
+
+      - name: CEntityComponentHelperT_Free
+        category: vfunc
+        alias:
+          - CEntityComponentHelperT::Free
 
       - name: CScriptedSequence_SynchronizeSequence
         category: func
