@@ -453,12 +453,6 @@ modules:
         expected_input:
           - CGameResourceService_vtable.{platform}.yaml
 
-      - name: find-IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName
-        expected_output:
-          - IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
-        expected_input:
-          - CGameResourceService_LoadGameResourceManifestGroup.{platform}.yaml
-
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
@@ -5100,6 +5094,12 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     skills:
+      - name: find-IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName
+        expected_output:
+          - IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+        expected_input:
+          - ../server/CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+
       - name: find-CEngineServiceMgr_GetActiveLoopClientServerMode
         expected_output:
           - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml

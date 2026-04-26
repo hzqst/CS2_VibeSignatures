@@ -3,22 +3,14 @@
 
 from ida_analyze_util import preprocess_common_skill
 
-TARGET_FUNCTION_NAMES = [
-    "IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName",
-]
-
-LLM_DECOMPILE = [
-    # (symbol_name, path_to_prompt, path_to_reference)
+INHERIT_VFUNCS = [
+    # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
     (
         "IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName",
-        "prompt/call_llm_decompile.md",
-        "references/engine/CGameResourceService_LoadGameResourceManifestGroup.{platform}.yaml",
+        "IEntityResourceManifestBuilder",
+        "../server/CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName",
+        False,
     ),
-]
-
-FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class)
-    ("IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName", "IEntityResourceManifestBuilder"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
@@ -36,9 +28,11 @@ GENERATE_YAML_DESIRED_FIELDS = [
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
-    new_binary_dir, platform, image_base, llm_config=None, debug=False,
+    new_binary_dir, platform, image_base, debug=False,
 ):
-    """Reuse previous gamever vfunc slot; fallback to LLM_DECOMPILE of CGameResourceService_LoadGameResourceManifestGroup."""
+    """Reuse old vfunc slot; fallback to inheriting slot index from CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName."""
+    _ = skill_name
+
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -46,10 +40,7 @@ async def preprocess_skill(
         new_binary_dir=new_binary_dir,
         platform=platform,
         image_base=image_base,
-        func_names=TARGET_FUNCTION_NAMES,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
-        llm_decompile_specs=LLM_DECOMPILE,
-        llm_config=llm_config,
+        inherit_vfuncs=INHERIT_VFUNCS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )
