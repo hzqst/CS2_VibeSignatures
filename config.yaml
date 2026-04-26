@@ -2369,6 +2369,13 @@ modules:
           - CCSPlayerController_vtable.{platform}.yaml
           - CBasePlayerController_Respawn.{platform}.yaml
 
+      - name: find-CCSPlayerController_Connect
+        expected_output:
+          - CCSPlayerController_Connect.{platform}.yaml
+        expected_input:
+          - CPlayerCommandQueue_ctor.{platform}.yaml
+          - CCSPlayerController_vtable.{platform}.yaml
+
       - name: find-CCSPlayerController_SwitchTeam
         expected_output:
           - CCSPlayerController_SwitchTeam.{platform}.yaml
@@ -4116,6 +4123,11 @@ modules:
         category: vfunc
         alias:
           - CCSPlayerController::Respawn
+
+      - name: CCSPlayerController_Connect
+        category: vfunc
+        alias:
+          - CCSPlayerController::Connect
 
       - name: CCSPlayerController_SwitchTeam
         category: func
