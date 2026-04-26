@@ -2855,6 +2855,12 @@ modules:
         expected_input:
           - CGameEntitySystem_vtable.{platform}.yaml
 
+      - name: find-CGameEntitySystem_Activate
+        expected_output:
+          - CGameEntitySystem_Activate.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
       - name: find-IGameSystem_OnBuildGameSessionManifest
         expected_output:
           - IGameSystem_OnBuildGameSessionManifest.{platform}.yaml
@@ -4457,6 +4463,11 @@ modules:
         category: vfunc
         alias:
           - CGameEntitySystem::FindEntityProcedural
+
+      - name: CGameEntitySystem_Activate
+        category: vfunc
+        alias:
+          - CGameEntitySystem::Activate
 
       - name: IGameSystem_OnBuildGameSessionManifest
         category: vfunc
