@@ -437,6 +437,22 @@ modules:
           - CNetworkGameServerBase_SendPeerList.{platform}.yaml
           - CServerSideClient_vtable.{platform}.yaml
 
+      - name: find-CGameResourceService_vtable
+        expected_output:
+          - CGameResourceService_vtable.{platform}.yaml
+
+      - name: find-CGameResourceService_LoadGameResourceManifestNamed
+        expected_output:
+          - CGameResourceService_LoadGameResourceManifestNamed.{platform}.yaml
+        expected_input:
+          - CGameResourceService_vtable.{platform}.yaml
+
+      - name: find-CGameResourceService_LoadGameResourceManifestGroup
+        expected_output:
+          - CGameResourceService_LoadGameResourceManifestGroup.{platform}.yaml
+        expected_input:
+          - CGameResourceService_vtable.{platform}.yaml
+
       - name: find-CGameResourceService_BuildResourceManifest
         expected_output:
           - CGameResourceService_BuildResourceManifest.{platform}.yaml
@@ -830,6 +846,24 @@ modules:
         member: m_pEntitySystem
         alias:
           - GameEntitySystem
+
+      - name: CGameResourceService_vtable
+        category: vtable
+
+      - name: CGameResourceService_LoadGameResourceManifestNamed
+        category: vfunc
+        alias:
+          - CGameResourceService::LoadGameResourceManifestNamed
+
+      - name: CGameResourceService_LoadGameResourceManifestGroup
+        category: vfunc
+        alias:
+          - CGameResourceService::LoadGameResourceManifestGroup
+
+      - name: IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName
+        category: vfunc
+        alias:
+          - IEntityResourceManifestBuilder::BuildResourceManifest
 
       - name: g_pGameServer
         category: gv
@@ -2490,6 +2524,10 @@ modules:
         expected_output:
           - CEntitySystem_CreateEntityByName.{platform}.yaml
 
+      - name: find-CEntitySystem_PrecacheEntity
+        expected_output:
+          - CEntitySystem_PrecacheEntity.{platform}.yaml
+
       - name: find-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
         expected_output:
           - UTIL_CreateEntityByName.{platform}.yaml
@@ -2802,6 +2840,12 @@ modules:
       - name: find-CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName
         expected_output:
           - CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+        expected_input:
+          - CGameEntitySystem_vtable.{platform}.yaml
+
+      - name: find-CGameEntitySystem_BuildResourceManifest_KeyValuesVectors
+        expected_output:
+          - CGameEntitySystem_BuildResourceManifest_KeyValuesVectors.{platform}.yaml
         expected_input:
           - CGameEntitySystem_vtable.{platform}.yaml
 
@@ -4106,6 +4150,11 @@ modules:
         alias:
           - CEntitySystem::CreateEntityByName
 
+      - name: CEntitySystem_PrecacheEntity
+        category: func
+        alias:
+          - CEntitySystem::PrecacheEntity
+
       - name: UTIL_CreateEntityByName
         category: func
         alias:
@@ -4392,6 +4441,11 @@ modules:
         category: vfunc
         alias:
           - CGameEntitySystem::BuildResourceManifest_ManifestNameOrGroupName
+
+      - name: CGameEntitySystem_BuildResourceManifest_KeyValuesVectors
+        category: vfunc
+        alias:
+          - CGameEntitySystem::BuildResourceManifest_KeyValuesVectors
 
       - name: IGameSystem_OnBuildGameSessionManifest
         category: vfunc
@@ -5051,6 +5105,12 @@ modules:
     path_linux: game/bin/linuxsteamrt64/libengine2.so
 
     skills:
+      - name: find-IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName
+        expected_output:
+          - IEntityResourceManifestBuilder_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+        expected_input:
+          - ../server/CGameEntitySystem_BuildResourceManifest_ManifestNameOrGroupName.{platform}.yaml
+
       - name: find-CEngineServiceMgr_GetActiveLoopClientServerMode
         expected_output:
           - CEngineServiceMgr_GetActiveLoopClientServerMode.{platform}.yaml
