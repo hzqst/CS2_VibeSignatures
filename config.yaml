@@ -3338,6 +3338,13 @@ modules:
         expected_input:
           - CEntityInstance_vtable.{platform}.yaml
 
+      - name: find-CEntityInstance_Connect
+        expected_output:
+          - CEntityInstance_Connect.{platform}.yaml
+        expected_input:
+          - CEntityInstance_vtable.{platform}.yaml
+          - CCSPlayerController_Connect.{platform}.yaml
+
       - name: find-CScriptedSequence_SynchronizeSequence
         expected_output:
           - CScriptedSequence_SynchronizeSequence.{platform}.yaml
@@ -4992,6 +4999,11 @@ modules:
         category: vfunc
         alias:
           - CEntityInstance::Precache
+
+      - name: CEntityInstance_Connect
+        category: vfunc
+        alias:
+          - CEntityInstance::Connect
 
       - name: CEntityInstance_Disconnect
         category: vfunc
