@@ -2110,6 +2110,7 @@ class TestIdaStringEnumerationSupport(unittest.TestCase):
             "expected_state = {'version': 1, 'minlen': 8, 'strtypes': 'STRTYPE_C'}",
             code,
         )
+        self.assertIn("globals().update(locals())", code)
         self.assertIn(
             "if _cs2vibe_read_string_setup_state() != expected_state:",
             code,
@@ -2122,6 +2123,74 @@ class TestIdaStringEnumerationSupport(unittest.TestCase):
             "    _cs2vibe_write_string_setup_state(expected_state)",
             code,
         )
+
+    def test_build_ida_strings_enumerator_py_lines_exec_with_split_globals_and_locals(
+        self,
+    ) -> None:
+        py_code = "\n".join(
+            ida_analyze_util._build_ida_strings_enumerator_py_lines(min_length=6)
+        )
+        state_store = {"payload": None}
+        strings_instances = []
+
+        class FakeStrings:
+            def __init__(self, default_setup=False) -> None:
+                self.default_setup = default_setup
+                self.setup_calls = []
+                strings_instances.append(self)
+
+            def setup(self, *, strtypes, minlen) -> None:
+                self.setup_calls.append(
+                    {
+                        "strtypes": strtypes,
+                        "minlen": minlen,
+                    }
+                )
+
+            def __iter__(self):
+                return iter(())
+
+        class FakeNetnode:
+            def valobj(self):
+                return state_store["payload"]
+
+            def set(self, payload) -> None:
+                state_store["payload"] = payload
+
+        def _make_node(name, _unused_zero, _unused_create):
+            self.assertEqual(ida_analyze_util.IDA_STRING_SETUP_STATE_NODE, name)
+            return FakeNetnode()
+
+        fake_ida_netnode = types.ModuleType("ida_netnode")
+        fake_ida_netnode.netnode = _make_node
+        fake_idautils = types.SimpleNamespace(Strings=FakeStrings)
+        fake_ida_nalt = types.SimpleNamespace(STRTYPE_C="STRTYPE_C")
+
+        def _run_generated_code() -> None:
+            exec_globals = {
+                "__builtins__": __builtins__,
+                "idautils": fake_idautils,
+                "ida_nalt": fake_ida_nalt,
+            }
+            exec_locals = {}
+            with patch.dict(sys.modules, {"ida_netnode": fake_ida_netnode}):
+                exec(py_code, exec_globals, exec_locals)
+
+        _run_generated_code()
+        self.assertEqual(1, len(strings_instances))
+        self.assertFalse(strings_instances[0].default_setup)
+        self.assertEqual(
+            [{"strtypes": ["STRTYPE_C"], "minlen": 6}],
+            strings_instances[0].setup_calls,
+        )
+        self.assertEqual(
+            {"version": 1, "minlen": 6, "strtypes": "STRTYPE_C"},
+            json.loads(state_store["payload"]),
+        )
+
+        _run_generated_code()
+        self.assertEqual(2, len(strings_instances))
+        self.assertEqual([], strings_instances[1].setup_calls)
 
     def test_build_ida_strings_enumerator_py_lines_supports_explicit_none(self) -> None:
         with patch.dict(

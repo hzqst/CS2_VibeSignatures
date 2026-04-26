@@ -294,6 +294,7 @@ def _build_ida_strings_enumerator_py_lines(
         "    except Exception:",
         "        pass",
         f"expected_state = {expected_state!r}",
+        "globals().update(locals())",
         "if _cs2vibe_read_string_setup_state() != expected_state:",
         (
             f"    {strings_var_name}.setup("
