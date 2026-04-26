@@ -2532,6 +2532,12 @@ modules:
         expected_output:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
 
+      - name: find-CEntitySystem_DestroyEntity
+        expected_output:
+          - CEntitySystem_DestroyEntity.{platform}.yaml
+        expected_input:
+          - CEntitySystem_PrecacheEntity.{platform}.yaml
+
       - name: find-UTIL_CreateEntityByName-AND-CBaseEntity_DispatchSpawn
         expected_output:
           - UTIL_CreateEntityByName.{platform}.yaml
@@ -4180,6 +4186,11 @@ modules:
         category: func
         alias:
           - CEntitySystem::PrecacheEntity
+
+      - name: CEntitySystem_DestroyEntity
+        category: func
+        alias:
+          - CEntitySystem::DestroyEntity
 
       - name: UTIL_CreateEntityByName
         category: func
