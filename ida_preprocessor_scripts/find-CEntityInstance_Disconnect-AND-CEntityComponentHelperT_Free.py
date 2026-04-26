@@ -27,8 +27,27 @@ FUNC_VTABLE_RELATIONS = [
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
-    ("CEntityInstance_Disconnect", ["func_name", "vtable_name", "vfunc_offset", "vfunc_index"]),
-    ("CEntityComponentHelperT_Free", ["func_name", "vtable_name", "vfunc_offset", "vfunc_index"]),
+    # (symbol_name, generate_yaml_fields)
+    (
+        "CEntityInstance_Disconnect",
+        [
+            "func_name",
+            "vfunc_sig",
+            "vtable_name",
+            "vfunc_offset",
+            "vfunc_index",
+        ],
+    ),
+    (
+        "CEntityComponentHelperT_Free",
+        [
+            "func_name",
+            "vfunc_sig",
+            "vtable_name",
+            "vfunc_offset",
+            "vfunc_index",
+        ],
+    ),
 ]
 
 async def preprocess_skill(
