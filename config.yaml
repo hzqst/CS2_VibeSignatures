@@ -3603,6 +3603,16 @@ modules:
         expected_input:
           - CLoopModeGame_OnLoopDeactivate.{platform}.yaml
 
+      - name: find-CPlayerCommandQueue_vtable
+        expected_output:
+          - CPlayerCommandQueue_vtable.{platform}.yaml
+
+      - name: find-CPlayerCommandQueue_ctor
+        expected_output:
+          - CPlayerCommandQueue_ctor.{platform}.yaml
+        expected_input:
+          - CPlayerCommandQueue_vtable.{platform}.yaml
+
     symbols:
       - name: CSource2Server_vtable
         category: vtable
@@ -5257,6 +5267,14 @@ modules:
         category: vfunc
         alias:
           - ILoopMode::OnLoopDeactivate
+
+      - name: CPlayerCommandQueue_vtable
+        category: vtable
+
+      - name: CPlayerCommandQueue_ctor
+        category: func
+        alias:
+          - CPlayerCommandQueue::CPlayerCommandQueue
 
   - name: engine # Execute skills for engine2.dll again after client.dll
     path_windows: game/bin/win64/engine2.dll
