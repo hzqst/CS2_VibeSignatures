@@ -2912,6 +2912,13 @@ modules:
         expected_input:
           - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
 
+      - name: find-CEntityInstance_ScriptEntityIO
+        expected_output:
+          - CEntityInstance_ScriptEntityIO.{platform}.yaml
+        expected_input:
+          - CEntityInstance_FindOutputsByName.{platform}.yaml
+          - CEntityInstance_vtable.{platform}.yaml
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
@@ -4650,6 +4657,11 @@ modules:
         category: func
         alias:
           - CEntityInstance::FindOutputsByName
+
+      - name: CEntityInstance_ScriptEntityIO
+        category: vfunc
+        alias:
+          - CEntityInstance::ScriptEntityIO
 
       - name: CEntityIOOutput_FireOutputInternal
         category: func
