@@ -28,7 +28,7 @@ disasm_code: |-
   .text:00000001811F2FDC                 cmovnz  ecx, eax
   .text:00000001811F2FDF                 or      r8d, ecx
   .text:00000001811F2FE2                 mov     rcx, rdi
-  .text:00000001811F2FE5                 call    qword ptr [r9+80h] ; 0x80 = 128LL = CEntityInstance_OnRemoveEntity
+  .text:00000001811F2FE5                 call    qword ptr [r9+80h] ; 0x80 = 128LL = CEntitySystem_OnRemoveEntity
   .text:00000001811F2FEC                 mov     rdx, rbx
   .text:00000001811F2FEF                 mov     rcx, rdi
   .text:00000001811F2FF2                 call    sub_1811F4440
@@ -56,7 +56,7 @@ procedure: |-
       if ( v5 != -1 )
         v7 = v5 & 0x7FFF;
       (*(void (__fastcall **)(__int64 *, _QWORD, _QWORD))(v6
-                                                        + 128))(// 0x80 = 128LL = CEntityInstance_OnRemoveEntity
+                                                        + 128))(// 0x80 = 128LL = CEntitySystem_OnRemoveEntity
         a1,
         *(_QWORD *)a2,
         v7 | (((v5 >> 15) - (v2 & 1)) << 15));

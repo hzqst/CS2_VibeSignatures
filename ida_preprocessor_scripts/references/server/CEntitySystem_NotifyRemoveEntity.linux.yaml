@@ -12,7 +12,7 @@ disasm_code: |-
   .text:0000000001E63048                 mov     rbx, rsi
   .text:0000000001E6304B                 sub     rsp, 18h
   .text:0000000001E6304F                 mov     rdx, [rdi]
-  .text:0000000001E63052                 mov     rcx, [rdx+88h] ; 0x88 = 136LL = CEntityInstance_OnRemoveEntity
+  .text:0000000001E63052                 mov     rcx, [rdx+88h] ; 0x88 = 136LL = CEntitySystem_OnRemoveEntity
   .text:0000000001E63059                 mov     edx, [rsi+10h]
   .text:0000000001E6305C                 shr     edx, 0Fh
   .text:0000000001E6305F                 sub     edx, eax
@@ -51,7 +51,7 @@ procedure: |-
     result = *(unsigned int *)(a2 + 48);
     if ( (result & 0x4800) == 0 )
     {
-      v3 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 136LL);// 0x88 = 136LL = CEntityInstance_OnRemoveEntity
+      v3 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 136LL);// 0x88 = 136LL = CEntitySystem_OnRemoveEntity
       if ( *(_DWORD *)(a2 + 16) == -1 )
         v4 = 0x7FFF;
       else
