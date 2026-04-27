@@ -3109,6 +3109,13 @@ modules:
         expected_input:
           - CGameSceneNode_PostDataUpdate.{platform}.yaml
 
+      - name: find-CEntitySystem_OnEntityParentChanged
+        expected_output:
+          - CEntitySystem_OnEntityParentChanged.{platform}.yaml
+        expected_input:
+          - CGameSceneNode_OnParentChanged.{platform}.yaml
+          - CEntitySystem_vtable.{platform}.yaml
+
       - name: find-CPointTeleportAPI_TeleportEntityInternal
         expected_output:
           - CPointTeleportAPI_TeleportEntityInternal.{platform}.yaml
@@ -4334,6 +4341,11 @@ modules:
         category: vfunc
         alias:
           - CEntitySystem::OnAddEntity
+
+      - name: CEntitySystem_OnEntityParentChanged
+        category: vfunc
+        alias:
+          - CEntitySystem::OnEntityParentChanged
 
       - name: CEntitySystem_PrecacheEntity
         category: func
