@@ -2784,6 +2784,13 @@ modules:
         expected_output:
           - EntInfo_CommandHandler.{platform}.yaml
 
+      - name: find-CEntitySystem_RemoveEntityImmediate-AND-ClientPrintToController
+        expected_output:
+          - CEntitySystem_RemoveEntityImmediate.{platform}.yaml
+          - ClientPrintToController.{platform}.yaml
+        expected_input:
+          - EntInfo_CommandHandler.{platform}.yaml
+
       - name: find-CBasePlayerPawn_CommitSuicide
         expected_output:
           - CBasePlayerPawn_CommitSuicide.{platform}.yaml
@@ -5020,6 +5027,16 @@ modules:
         category: func
         alias:
           - CC_Ent_Info
+
+      - name: CEntitySystem_RemoveEntityImmediate
+        category: func
+        alias:
+          - CEntitySystem::RemoveEntityImmediate
+
+      - name: ClientPrintToController
+        category: func
+        alias:
+          - ClientPrint
 
       - name: g_pCSBotManager
         category: gv
