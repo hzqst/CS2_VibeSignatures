@@ -2906,6 +2906,12 @@ modules:
         expected_input:
           - CEntFireOutputAutoCompletionFunctor_vtable.{platform}.yaml
 
+      - name: find-CEntityInstance_FindOutputsByName
+        expected_output:
+          - CEntityInstance_FindOutputsByName.{platform}.yaml
+        expected_input:
+          - CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml
+
       - name: find-CEntityIOOutput_FireOutputInternal
         expected_output:
           - CEntityIOOutput_FireOutputInternal.{platform}.yaml
@@ -4639,6 +4645,11 @@ modules:
         category: vfunc
         alias:
           - CEntFireOutputAutoCompletionFunctor::FireOutput
+
+      - name: CEntityInstance_FindOutputsByName
+        category: func
+        alias:
+          - CEntityInstance::FindOutputsByName
 
       - name: CEntityIOOutput_FireOutputInternal
         category: func
