@@ -46,7 +46,7 @@ disasm_code: |-
   .text:00000001811E62AA                 mov     byte ptr [rsp+0B8h+var_98], 1
   .text:00000001811E62AF                 mov     r9d, 0FFFFFFFFh
   .text:00000001811E62B5                 mov     r8d, 0FFFFFFFFh
-  .text:00000001811E62BB                 call    sub_1811E56C0
+  .text:00000001811E62BB                 call    CEntitySystem_DoAllocateEntity
   .text:00000001811E62C0                 mov     rbx, rax
   .text:00000001811E62C3                 test    rax, rax
   .text:00000001811E62C6                 jnz     short loc_1811E62FC
@@ -106,7 +106,7 @@ disasm_code: |-
   .text:00000001811E63B6                 lea     rdx, [rsp+0B8h+arg_18]
   .text:00000001811E63BE                 mov     r8d, esi
   .text:00000001811E63C1                 mov     rcx, rdi
-  .text:00000001811E63C4                 call    qword ptr [rax+88h]
+  .text:00000001811E63C4                 call    qword ptr [rax+88h]    ; 0x88 = CEntitySystem_GetSpawnGroupWorldId
   .text:00000001811E63CA                 mov     ecx, [rax]
   .text:00000001811E63CC                 jmp     short loc_1811E63D3
   .text:00000001811E63CE                 mov     ecx, 1
@@ -118,7 +118,7 @@ disasm_code: |-
   .text:00000001811E63E4                 test    rax, rax
   .text:00000001811E63E7                 cmovnz  r14, rax
   .text:00000001811E63EB                 mov     r8, r14
-  .text:00000001811E63EE                 call    sub_1811EA690
+  .text:00000001811E63EE                 call    CEntitySystem_ConstructEntity
   .text:00000001811E63F3                 test    al, al
   .text:00000001811E63F5                 jnz     short loc_1811E6412
   .text:00000001811E63F7                 xor     edx, edx
@@ -208,7 +208,7 @@ procedure: |-
           v9 = sub_1811ED0E0(a1, v8, &v17);
           if ( !v9 )
             goto LABEL_26;
-          v10 = sub_1811E56C0((int)a1 + 16, 0, -1, -1, 1, 0);
+          v10 = CEntitySystem_DoAllocateEntity((int)a1 + 16, 0, -1, -1, 1, 0);
           v11 = v10;
           if ( !v10 )
           {
@@ -257,12 +257,12 @@ procedure: |-
           if ( (v12 & 0x400) != 0 )
             v13 = 1;
           else
-            v13 = *(_DWORD *)(*(__int64 (__fastcall **)(_DWORD *, char *, _QWORD))(*(_QWORD *)a1 + 136LL))(a1, &v25, a3);
+            v13 = *(_DWORD *)(*(__int64 (__fastcall **)(_DWORD *, char *, _QWORD))(*(_QWORD *)a1 + 136LL))(a1, &v25, a3); // 136LL = 0x88 = CEntitySystem_GetSpawnGroupWorldId
           *(_DWORD *)(v11 + 56) = v13;
           *(_DWORD *)(v11 + 52) = a3;
           if ( v17 )
             v7 = v17;
-          if ( (unsigned __int8)sub_1811EA690(a1, v11, v7) )
+          if ( (unsigned __int8)CEntitySystem_ConstructEntity(a1, v11, v7) )
           {
             v15 = *(_QWORD *)v11;
             if ( (unsigned __int8)sub_1811FB030(a1, v11, a2) )

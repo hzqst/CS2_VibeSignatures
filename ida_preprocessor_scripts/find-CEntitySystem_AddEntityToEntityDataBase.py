@@ -1,54 +1,29 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CEntityInstance_Disconnect-AND-CEntityComponentHelperT_Free skill."""
+"""Preprocess script for find-CEntitySystem_AddEntityToEntityDataBase skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CEntityInstance_Disconnect",
-    "CEntityComponentHelperT_Free",
+    "CEntitySystem_AddEntityToEntityDataBase",
 ]
 
 LLM_DECOMPILE = [
     (
-        "CEntityInstance_Disconnect",
+        "CEntitySystem_AddEntityToEntityDataBase",
         "prompt/call_llm_decompile.md",
-        "references/server/CEntitySystem_DestroyEntity.{platform}.yaml",
+        "references/server/CEntitySystem_CreateEntity.{platform}.yaml",
     ),
-    (
-        "CEntityComponentHelperT_Free",
-        "prompt/call_llm_decompile.md",
-        "references/server/CEntitySystem_DestroyEntity.{platform}.yaml",
-    ),
-]
-
-FUNC_VTABLE_RELATIONS = [
-    ("CEntityInstance_Disconnect", "CEntityInstance"),
-    ("CEntityComponentHelperT_Free", "CEntityComponentHelperT"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
-    # (symbol_name, generate_yaml_fields)
     (
-        "CEntityInstance_Disconnect",
+        "CEntitySystem_AddEntityToEntityDataBase",
         [
             "func_name",
+            "func_sig",
             "func_va",
             "func_rva",
             "func_size",
-            "vfunc_sig",
-            "vtable_name",
-            "vfunc_offset",
-            "vfunc_index",
-        ],
-    ),
-    (
-        "CEntityComponentHelperT_Free",
-        [
-            "func_name",
-            "vfunc_sig",
-            "vtable_name",
-            "vfunc_offset",
-            "vfunc_index",
         ],
     ),
 ]
@@ -66,7 +41,6 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
         llm_decompile_specs=LLM_DECOMPILE,
         llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,

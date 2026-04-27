@@ -2216,6 +2216,13 @@ modules:
         expected_output:
           - CBasePlayerController_ProcessUsercmds.{platform}.yaml
 
+      - name: find-CBasePlayerController_Connect
+        expected_output:
+          - CBasePlayerController_Connect.{platform}.yaml
+        expected_input:
+          - CPlayerCommandQueue_ctor.{platform}.yaml
+          - CBasePlayerController_vtable.{platform}.yaml
+
       - name: find-FireTarget_CommandHandler
         expected_output:
           - FireTarget_CommandHandler.{platform}.yaml
@@ -2532,15 +2539,38 @@ modules:
         expected_output:
           - CEntitySystem_CreateEntityByName.{platform}.yaml
 
+      - name: find-CEntitySystem_CreateEntity
+        expected_output:
+          - CEntitySystem_CreateEntity.{platform}.yaml
+
+      - name: find-CEntitySystem_AddEntityToEntityDataBase
+        expected_output:
+          - CEntitySystem_AddEntityToEntityDataBase.{platform}.yaml
+        expected_input:
+          - CEntitySystem_CreateEntity.{platform}.yaml
+
+      - name: find-CEntitySystem_OnAddEntity-AND-CEntityInstance_AddedToEntityDatabase
+        expected_output:
+          - CEntitySystem_OnAddEntity.{platform}.yaml
+          - CEntityInstance_AddedToEntityDatabase.{platform}.yaml
+        expected_input:
+          - CEntitySystem_AddEntityToEntityDataBase.{platform}.yaml
+          - CEntitySystem_vtable.{platform}.yaml
+          - CEntityInstance_vtable.{platform}.yaml
+
       - name: find-CEntitySystem_PrecacheEntity
         expected_output:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
 
-      - name: find-CEntitySystem_DestroyEntity
+      - name: find-CEntitySystem_DestroyEntity-AND-CEntitySystem_DoAllocateEntity-AND-CEntitySystem_ConstructEntity-AND-CEntitySystem_GetSpawnGroupWorldId
         expected_output:
           - CEntitySystem_DestroyEntity.{platform}.yaml
+          - CEntitySystem_DoAllocateEntity.{platform}.yaml
+          - CEntitySystem_ConstructEntity.{platform}.yaml
+          - CEntitySystem_GetSpawnGroupWorldId.{platform}.yaml
         expected_input:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
+          - CEntitySystem_vtable.{platform}.yaml
 
       - name: find-CEntityInstance_Disconnect-AND-CEntityComponentHelperT_Free
         expected_output:
@@ -3338,6 +3368,13 @@ modules:
         expected_input:
           - CEntityInstance_vtable.{platform}.yaml
 
+      - name: find-CEntityInstance_Connect
+        expected_output:
+          - CEntityInstance_Connect.{platform}.yaml
+        expected_input:
+          - CEntityInstance_vtable.{platform}.yaml
+          - CBasePlayerController_Connect.{platform}.yaml
+
       - name: find-CScriptedSequence_SynchronizeSequence
         expected_output:
           - CScriptedSequence_SynchronizeSequence.{platform}.yaml
@@ -3881,6 +3918,11 @@ modules:
         alias:
           - CBasePlayerController::GetPawn
 
+      - name: CBasePlayerController_Connect
+        category: vfunc
+        alias:
+          - CBasePlayerController::Connect
+
       - name: CSource2GameClients_ClientDisconnect
         category: vfunc
         alias:
@@ -4196,6 +4238,21 @@ modules:
         alias:
           - CEntitySystem::CreateEntityByName
 
+      - name: CEntitySystem_CreateEntity
+        category: func
+        alias:
+          - CEntitySystem::CreateEntity
+
+      - name: CEntitySystem_AddEntityToEntityDataBase
+        category: func
+        alias:
+          - CEntitySystem::AddEntityToEntityDataBase
+
+      - name: CEntitySystem_OnAddEntity
+        category: vfunc
+        alias:
+          - CEntitySystem::OnAddEntity
+
       - name: CEntitySystem_PrecacheEntity
         category: func
         alias:
@@ -4205,6 +4262,21 @@ modules:
         category: func
         alias:
           - CEntitySystem::DestroyEntity
+
+      - name: CEntitySystem_DoAllocateEntity
+        category: func
+        alias:
+          - CEntitySystem::DoAllocateEntity
+
+      - name: CEntitySystem_ConstructEntity
+        category: func
+        alias:
+          - CEntitySystem::ConstructEntity
+
+      - name: CEntitySystem_GetSpawnGroupWorldId
+        category: vfunc
+        alias:
+          - CEntitySystem::GetSpawnGroupWorldId
 
       - name: UTIL_CreateEntityByName
         category: func
@@ -4993,10 +5065,20 @@ modules:
         alias:
           - CEntityInstance::Precache
 
+      - name: CEntityInstance_Connect
+        category: vfunc
+        alias:
+          - CEntityInstance::Connect
+
       - name: CEntityInstance_Disconnect
         category: vfunc
         alias:
           - CEntityInstance::Disconnect
+
+      - name: CEntityInstance_AddedToEntityDatabase
+        category: vfunc
+        alias:
+          - CEntityInstance::AddedToEntityDatabase
 
       - name: CEntityComponentHelperT_Free
         category: vfunc

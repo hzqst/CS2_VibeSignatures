@@ -1,51 +1,49 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CEntityInstance_Disconnect-AND-CEntityComponentHelperT_Free skill."""
+"""Preprocess script for find-CEntitySystem_OnAddEntity-AND-CEntityInstance_AddedToEntityDatabase skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CEntityInstance_Disconnect",
-    "CEntityComponentHelperT_Free",
+    "CEntitySystem_OnAddEntity",
+    "CEntityInstance_AddedToEntityDatabase",
 ]
 
 LLM_DECOMPILE = [
+    # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CEntityInstance_Disconnect",
+        "CEntitySystem_OnAddEntity",
         "prompt/call_llm_decompile.md",
-        "references/server/CEntitySystem_DestroyEntity.{platform}.yaml",
+        "references/server/CEntitySystem_AddEntityToEntityDataBase.{platform}.yaml",
     ),
     (
-        "CEntityComponentHelperT_Free",
+        "CEntityInstance_AddedToEntityDatabase",
         "prompt/call_llm_decompile.md",
-        "references/server/CEntitySystem_DestroyEntity.{platform}.yaml",
+        "references/server/CEntitySystem_AddEntityToEntityDataBase.{platform}.yaml",
     ),
 ]
 
 FUNC_VTABLE_RELATIONS = [
-    ("CEntityInstance_Disconnect", "CEntityInstance"),
-    ("CEntityComponentHelperT_Free", "CEntityComponentHelperT"),
+    # (func_name, vtable_class)
+    ("CEntitySystem_OnAddEntity", "CEntitySystem"),
+    ("CEntityInstance_AddedToEntityDatabase", "CEntityInstance"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
+    # IMPORTANT: must be exactly these four fields to trigger slot-only mode
     (
-        "CEntityInstance_Disconnect",
+        "CEntitySystem_OnAddEntity",
         [
             "func_name",
-            "func_va",
-            "func_rva",
-            "func_size",
-            "vfunc_sig",
             "vtable_name",
             "vfunc_offset",
             "vfunc_index",
         ],
     ),
     (
-        "CEntityComponentHelperT_Free",
+        "CEntityInstance_AddedToEntityDatabase",
         [
             "func_name",
-            "vfunc_sig",
             "vtable_name",
             "vfunc_offset",
             "vfunc_index",
@@ -57,7 +55,7 @@ async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
     new_binary_dir, platform, image_base, llm_config=None, debug=False,
 ):
-    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
+    """Reuse previous gamever vfunc slot; fallback to LLM_DECOMPILE on CEntitySystem_AddEntityToEntityDataBase."""
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,

@@ -1,25 +1,33 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CEntitySystem_DestroyEntity skill."""
+"""Preprocess script for find-CEntitySystem_CreateEntity skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CEntitySystem_DestroyEntity",
+    "CEntitySystem_CreateEntity",
 ]
 
-LLM_DECOMPILE = [
-    # (symbol_name, path_to_prompt, path_to_reference)
-    (
-        "CEntitySystem_DestroyEntity",
-        "prompt/call_llm_decompile.md",
-        "references/server/CEntitySystem_PrecacheEntity.{platform}.yaml",
-    ),
+FUNC_XREFS = [
+    {
+        "func_name": "CEntitySystem_CreateEntity",
+        "xref_strings": [
+            "Cannot create an entity because entity class is NULL %d",
+            "Cannot create a %s entity because the class has limited schema metadata",
+        ],
+        "xref_gvs": [],
+        "xref_signatures": [],
+        "xref_funcs": [],
+        "exclude_funcs": [],
+        "exclude_strings": [],
+        "exclude_gvs": [],
+        "exclude_signatures": [],
+    },
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CEntitySystem_DestroyEntity",
+        "CEntitySystem_CreateEntity",
         [
             "func_name",
             "func_sig",
@@ -32,7 +40,7 @@ GENERATE_YAML_DESIRED_FIELDS = [
 
 async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
-    new_binary_dir, platform, image_base, llm_config=None, debug=False,
+    new_binary_dir, platform, image_base, debug=False,
 ):
     """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
     return await preprocess_common_skill(
@@ -43,8 +51,7 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        llm_decompile_specs=LLM_DECOMPILE,
-        llm_config=llm_config,
+        func_xrefs=FUNC_XREFS,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
         debug=debug,
     )
