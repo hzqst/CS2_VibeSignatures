@@ -2780,6 +2780,10 @@ modules:
         expected_output:
           - BotKill_CommandHandler.{platform}.yaml
 
+      - name: find-EntInfo_CommandHandler
+        expected_output:
+          - EntInfo_CommandHandler.{platform}.yaml
+
       - name: find-CBasePlayerPawn_CommitSuicide
         expected_output:
           - CBasePlayerPawn_CommitSuicide.{platform}.yaml
@@ -5011,6 +5015,11 @@ modules:
         category: func
         alias:
           - CCSBotManager::BotKillCommand
+
+      - name: EntInfo_CommandHandler
+        category: func
+        alias:
+          - CC_Ent_Info
 
       - name: g_pCSBotManager
         category: gv
