@@ -106,7 +106,7 @@ disasm_code: |-
   .text:00000001811E63B6                 lea     rdx, [rsp+0B8h+arg_18]
   .text:00000001811E63BE                 mov     r8d, esi
   .text:00000001811E63C1                 mov     rcx, rdi
-  .text:00000001811E63C4                 call    qword ptr [rax+88h]
+  .text:00000001811E63C4                 call    qword ptr [rax+88h]    ; 0x88 = CEntitySystem_GetSpawnGroupWorldId
   .text:00000001811E63CA                 mov     ecx, [rax]
   .text:00000001811E63CC                 jmp     short loc_1811E63D3
   .text:00000001811E63CE                 mov     ecx, 1
@@ -257,7 +257,7 @@ procedure: |-
           if ( (v12 & 0x400) != 0 )
             v13 = 1;
           else
-            v13 = *(_DWORD *)(*(__int64 (__fastcall **)(_DWORD *, char *, _QWORD))(*(_QWORD *)a1 + 136LL))(a1, &v25, a3);
+            v13 = *(_DWORD *)(*(__int64 (__fastcall **)(_DWORD *, char *, _QWORD))(*(_QWORD *)a1 + 136LL))(a1, &v25, a3); // 136LL = 0x88 = CEntitySystem_GetSpawnGroupWorldId
           *(_DWORD *)(v11 + 56) = v13;
           *(_DWORD *)(v11 + 52) = a3;
           if ( v17 )

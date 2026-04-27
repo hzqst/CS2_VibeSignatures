@@ -78,7 +78,7 @@ disasm_code: |-
   .text:0000000001E68E22                 jnz     loc_1E68EE6
   .text:0000000001E68E28                 mov     rdx, [rbx]
   .text:0000000001E68E2B                 lea     rcx, sub_1E4F150
-  .text:0000000001E68E32                 mov     rdx, [rdx+90h]
+  .text:0000000001E68E32                 mov     rdx, [rdx+90h]    ; 0x90 = CEntitySystem_GetSpawnGroupWorldId
   .text:0000000001E68E39                 cmp     rdx, rcx
   .text:0000000001E68E3C                 jnz     loc_1E68EF0
   .text:0000000001E68E42                 movd    xmm0, r12d
@@ -171,7 +171,7 @@ procedure: |-
             if ( !v10 )
             {
   LABEL_13:
-              v11 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 144LL);
+              v11 = *(__int64 (__fastcall **)())(*(_QWORD *)a1 + 144LL); // 144LL = 0x90 = CEntitySystem_GetSpawnGroupWorldId
               if ( v11 != sub_1E4F150 )
                 v10 = ((__int64 (__fastcall *)(_DWORD *, _QWORD))v11)(a1, a3);
               goto LABEL_15;

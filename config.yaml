@@ -2547,13 +2547,15 @@ modules:
         expected_output:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
 
-      - name: find-CEntitySystem_DestroyEntity-AND-CEntitySystem_DoAllocateEntity-AND-CEntitySystem_ConstructEntity
+      - name: find-CEntitySystem_DestroyEntity-AND-CEntitySystem_DoAllocateEntity-AND-CEntitySystem_ConstructEntity-AND-CEntitySystem_GetSpawnGroupWorldId
         expected_output:
           - CEntitySystem_DestroyEntity.{platform}.yaml
           - CEntitySystem_DoAllocateEntity.{platform}.yaml
           - CEntitySystem_ConstructEntity.{platform}.yaml
+          - CEntitySystem_GetSpawnGroupWorldId.{platform}.yaml
         expected_input:
           - CEntitySystem_PrecacheEntity.{platform}.yaml
+          - CEntitySystem_vtable.{platform}.yaml
 
       - name: find-CEntityInstance_Disconnect-AND-CEntityComponentHelperT_Free
         expected_output:
@@ -4245,6 +4247,11 @@ modules:
         category: func
         alias:
           - CEntitySystem::ConstructEntity
+
+      - name: CEntitySystem_GetSpawnGroupWorldId
+        category: vfunc
+        alias:
+          - CEntitySystem::GetSpawnGroupWorldId
 
       - name: UTIL_CreateEntityByName
         category: func
