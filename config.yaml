@@ -2413,6 +2413,12 @@ modules:
         expected_input:
           - CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml
 
+      - name: find-CSource2Server_ApplyGameSettings
+        expected_output:
+          - CSource2Server_ApplyGameSettings.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
       - name: find-CSource2Server_Init
         expected_output:
           - CSource2Server_Init.{platform}.yaml
@@ -4321,6 +4327,11 @@ modules:
         category: vfunc
         alias:
           - CSource2Server::Init
+
+      - name: CSource2Server_ApplyGameSettings
+        category: vfunc
+        alias:
+          - CSource2Server::ApplyGameSettings
 
       - name: CSource2Server_GameFrame
         category: vfunc
