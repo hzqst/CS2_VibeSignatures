@@ -8,8 +8,6 @@
 
 目前，本项目已可自动更新 **CounterStrikeSharp** 和 **CS2Fixes** 的全部 signatures/offsets。
 
-* 欢迎通过 PR 贡献你的 SKILL！[如何创建SKILL? 见这里](https://github.com/hzqst/CS2_VibeSignatures/issues?q=is%3Aissue%20state%3Aclosed) - `TODO: Add skill support for XXXXXXX`
-
 ## 依赖要求
 
 1. 安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)
