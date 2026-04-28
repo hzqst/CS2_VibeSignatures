@@ -2431,6 +2431,12 @@ modules:
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
 
+      - name: find-CSource2Server_GetMatchmakingGameData
+        expected_output:
+          - CSource2Server_GetMatchmakingGameData.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
       - name: find-CSource2Server_Init
         expected_output:
           - CSource2Server_Init.{platform}.yaml
@@ -4354,6 +4360,11 @@ modules:
         category: vfunc
         alias:
           - CSource2Server::GameCreateNetworkStringTables
+
+      - name: CSource2Server_GetMatchmakingGameData
+        category: vfunc
+        alias:
+          - CSource2Server::GetMatchmakingGameData
 
       - name: CSource2Server_GameFrame
         category: vfunc
