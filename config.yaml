@@ -584,9 +584,9 @@ modules:
           - CNetworkGameServer_vtable.{platform}.yaml
           - INetworkGameServer_ClientUpdate.{platform}.yaml
 
-      - name: find-ISource2Server_ClientUpdate
+      - name: find-ISource2Server_PreWorldUpdate
         expected_output:
-          - ISource2Server_ClientUpdate.{platform}.yaml
+          - ISource2Server_PreWorldUpdate.{platform}.yaml
         expected_input:
           - CNetworkGameServer_ClientUpdate.{platform}.yaml
 
@@ -1049,10 +1049,10 @@ modules:
         alias:
           - CNetworkGameServer::ClientUpdate
 
-      - name: ISource2Server_ClientUpdate
+      - name: ISource2Server_PreWorldUpdate
         category: vfunc
         alias:
-          - ISource2Server::ClientUpdate
+          - ISource2Server::PreWorldUpdate
         shared: true
 
       - name: ISource2Server_OutOfGameFrameBoundary
@@ -2479,18 +2479,18 @@ modules:
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
 
-      - name: find-CSource2Server_ClientUpdate
+      - name: find-CSource2Server_PreWorldUpdate
         expected_output:
-          - CSource2Server_ClientUpdate.{platform}.yaml
+          - CSource2Server_PreWorldUpdate.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
-          - ../engine/ISource2Server_ClientUpdate.{platform}.yaml
+          - ../engine/ISource2Server_PreWorldUpdate.{platform}.yaml
 
       - name: find-IGameSystem_OnServerPreClientUpdate
         expected_output:
           - IGameSystem_OnServerPreClientUpdate.{platform}.yaml
         expected_input:
-          - CSource2Server_ClientUpdate.{platform}.yaml
+          - CSource2Server_PreWorldUpdate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
 
       - name: find-IGameSystem_OnServerPreEntityThink-AND-IGameSystem_OnServerPostEntityThink
@@ -3784,10 +3784,10 @@ modules:
       - name: CSource2Server_vtable
         category: vtable
 
-      - name: CSource2Server_ClientUpdate
+      - name: CSource2Server_PreWorldUpdate
         category: vfunc
         alias:
-          - CSource2Server::ClientUpdate
+          - CSource2Server::PreWorldUpdate
 
       - name: CSource2Server_OutOfGameFrameBoundary
         category: vfunc

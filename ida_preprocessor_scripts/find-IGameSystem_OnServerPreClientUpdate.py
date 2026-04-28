@@ -5,7 +5,7 @@ from ida_preprocessor_scripts._igamesystem_dispatch_common import (
     preprocess_igamesystem_dispatch_skill,
 )
 
-SOURCE_YAML_STEM = "CSource2Server_ClientUpdate"
+SOURCE_YAML_STEM = "CSource2Server_PreWorldUpdate"
 TARGET_SPECS = [
     {"target_name": "IGameSystem_OnServerPreClientUpdate", "rename_to": "GameSystem_OnServerPreClientUpdate"},
 ]

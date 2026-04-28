@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CSource2Server_ClientUpdate skill."""
+"""Preprocess script for find-CSource2Server_PreWorldUpdate skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 INHERIT_VFUNCS = [
     # (target_func_name, inherit_vtable_class, base_vfunc_name, generate_func_sig)
-    ("CSource2Server_ClientUpdate", "CSource2Server", "../engine/ISource2Server_ClientUpdate", False),
+    ("CSource2Server_PreWorldUpdate", "CSource2Server", "../engine/ISource2Server_PreWorldUpdate", False),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CSource2Server_ClientUpdate",
+        "CSource2Server_PreWorldUpdate",
         [
             "func_name",
             "func_va",
@@ -34,7 +34,7 @@ async def preprocess_skill(
     image_base,
     debug=False,
 ):
-    """Reuse old vfunc slot; fallback to inheriting slot index from ISource2Server_ClientUpdate."""
+    """Reuse old vfunc slot; fallback to inheriting slot index from ISource2Server_PreWorldUpdate."""
     _ = skill_name
 
     return await preprocess_common_skill(

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-ISource2Server_ClientUpdate skill."""
+"""Preprocess script for find-ISource2Server_PreWorldUpdate skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "ISource2Server_ClientUpdate",
+    "ISource2Server_PreWorldUpdate",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "ISource2Server_ClientUpdate",
+        "ISource2Server_PreWorldUpdate",
         "prompt/call_llm_decompile.md",
         "references/engine/CNetworkGameServer_ClientUpdate.{platform}.yaml",
     ),
@@ -19,13 +19,13 @@ LLM_DECOMPILE = [
 # ISource2Server is an abstract interface -- no vtable YAML needed; vtable_name is metadata only
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("ISource2Server_ClientUpdate", "ISource2Server"),
+    ("ISource2Server_PreWorldUpdate", "ISource2Server"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "ISource2Server_ClientUpdate",
+        "ISource2Server_PreWorldUpdate",
         [
             "func_name",
             "vfunc_sig",
