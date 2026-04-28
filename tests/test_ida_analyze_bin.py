@@ -497,6 +497,240 @@ class TestPostProcessActionCollection(unittest.TestCase):
         self.assertEqual([], actions["sig_comments"])
 
 
+class TestPostProcessMcpExecution(unittest.IsolatedAsyncioTestCase):
+    async def test_post_process_expected_outputs_via_session_executes_renames_and_comments(
+        self,
+    ) -> None:
+        session = MagicMock()
+        session.call_tool = AsyncMock(
+            side_effect=[
+                _tool_result(
+                    [
+                        {
+                            "pattern": "48 FF A0 B8 00 00 00 C3",
+                            "matches": ["0x180a32c60"],
+                            "n": 1,
+                        }
+                    ]
+                ),
+                _tool_result({"items": [{"addr": "0x180a32c62", "ok": True}]}),
+                _tool_result({"renamed": True}),
+                _tool_result({"result": ""}),
+            ]
+        )
+
+        ok = await ida_analyze_bin.post_process_expected_outputs_via_session(
+            session,
+            [
+                (
+                    "fixture.yaml",
+                    {
+                        "func_name": "CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                        "func_va": "0x180c165c0",
+                        "vfunc_offset": "0xb8",
+                        "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                        "vfunc_sig_disp": 2,
+                        "gv_name": "CCSGameRules__sm_mapGcBanInformation",
+                        "gv_va": "0x181eff6a8",
+                    },
+                )
+            ],
+            debug=False,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(
+            [
+                call(
+                    name="find_bytes",
+                    arguments={"patterns": ["48 FF A0 B8 00 00 00 C3"], "limit": 2},
+                ),
+                call(
+                    name="set_comments",
+                    arguments={
+                        "items": [
+                            {
+                                "addr": "0x180a32c62",
+                                "comment": "0xB8 = 184LL = CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                            }
+                        ]
+                    },
+                ),
+                call(
+                    name="rename",
+                    arguments={
+                        "batch": {
+                            "func": [
+                                {
+                                    "addr": "0x180c165c0",
+                                    "name": "CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                                }
+                            ]
+                        }
+                    },
+                ),
+                call(
+                    name="py_eval",
+                    arguments={
+                        "code": (
+                            "import idc\n"
+                            "idc.set_name(6474954408, "
+                            "\"CCSGameRules__sm_mapGcBanInformation\", idc.SN_NOWARN)\n"
+                        )
+                    },
+                ),
+            ],
+            session.call_tool.await_args_list,
+        )
+
+    async def test_post_process_expected_outputs_via_session_skips_non_unique_signature_matches(
+        self,
+    ) -> None:
+        session = MagicMock()
+        session.call_tool = AsyncMock(
+            side_effect=[
+                _tool_result(
+                    [
+                        {
+                            "pattern": "8B 8F ?? ?? ?? ??",
+                            "matches": [],
+                            "n": 0,
+                        }
+                    ]
+                ),
+                _tool_result(
+                    [
+                        {
+                            "pattern": "48 FF A0 B8 00 00 00 C3",
+                            "matches": ["0x1801", "0x1802"],
+                            "n": 2,
+                        }
+                    ]
+                ),
+            ]
+        )
+
+        ok = await ida_analyze_bin.post_process_expected_outputs_via_session(
+            session,
+            [
+                (
+                    "fixture.yaml",
+                    {
+                        "struct_name": "CCheckTransmitInfo",
+                        "member_name": "m_nPlayerSlot",
+                        "offset": "0x240",
+                        "offset_sig": "8B 8F ?? ?? ?? ??",
+                        "func_name": "CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                        "vfunc_offset": "0xb8",
+                        "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                    },
+                )
+            ],
+            debug=False,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual(2, session.call_tool.await_count)
+        self.assertNotIn(
+            "set_comments",
+            [call_item.kwargs["name"] for call_item in session.call_tool.await_args_list],
+        )
+
+    async def test_post_process_expected_outputs_via_session_falls_back_to_py_eval_comments(
+        self,
+    ) -> None:
+        session = MagicMock()
+        session.call_tool = AsyncMock(
+            side_effect=[
+                _tool_result(
+                    [
+                        {
+                            "pattern": "48 FF A0 B8 00 00 00 C3",
+                            "matches": [6453142112],
+                            "n": 1,
+                        }
+                    ]
+                ),
+                RuntimeError("Unknown tool: set_comments"),
+                _tool_result({"result": ""}),
+            ]
+        )
+
+        ok = await ida_analyze_bin.post_process_expected_outputs_via_session(
+            session,
+            [
+                (
+                    "fixture.yaml",
+                    {
+                        "func_name": "CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                        "vfunc_offset": "0xb8",
+                        "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                    },
+                )
+            ],
+            debug=False,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual("py_eval", session.call_tool.await_args_list[-1].kwargs["name"])
+        self.assertIn(
+            "idc.set_cmt(6453142112, \"0xB8 = 184LL = CCSPlayer_ItemServices_DropActivePlayerWeapon\", 0)",
+            session.call_tool.await_args_list[-1].kwargs["arguments"]["code"],
+        )
+
+    async def test_post_process_expected_outputs_via_session_ignores_set_comments_item_errors(
+        self,
+    ) -> None:
+        session = MagicMock()
+        session.call_tool = AsyncMock(
+            side_effect=[
+                _tool_result(
+                    [
+                        {
+                            "pattern": "48 FF A0 B8 00 00 00 C3",
+                            "matches": ["0x180a32c60"],
+                            "n": 1,
+                        }
+                    ]
+                ),
+                _tool_result(
+                    {
+                        "items": [
+                            {
+                                "addr": "0x180a32c60",
+                                "error": "Decompiler comment failed",
+                            }
+                        ]
+                    }
+                ),
+                _tool_result({"renamed": True}),
+            ]
+        )
+
+        ok = await ida_analyze_bin.post_process_expected_outputs_via_session(
+            session,
+            [
+                (
+                    "fixture.yaml",
+                    {
+                        "func_name": "CCSPlayer_ItemServices_DropActivePlayerWeapon",
+                        "func_va": "0x180c165c0",
+                        "vfunc_offset": "0xb8",
+                        "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                    },
+                )
+            ],
+            debug=True,
+        )
+
+        self.assertTrue(ok)
+        self.assertEqual("rename", session.call_tool.await_args_list[-1].kwargs["name"])
+        self.assertNotIn(
+            "py_eval",
+            [call_item.kwargs["name"] for call_item in session.call_tool.await_args_list],
+        )
+
+
 class TestProcessBinary(unittest.TestCase):
     def test_process_binary_treats_absent_ok_as_skip_and_continues(self) -> None:
         with TemporaryDirectory() as temp_dir:
@@ -988,6 +1222,155 @@ class TestProcessBinary(unittest.TestCase):
         mock_start_ida.assert_called_once_with(binary_path, "127.0.0.1", 13337, "", False)
         mock_post_process.assert_called_once()
         mock_quit_ida.assert_called_once_with(fake_process, "127.0.0.1", 13337, debug=False)
+
+    def test_process_binary_counts_post_process_failure_once(
+        self,
+    ) -> None:
+        fake_process = object()
+
+        with TemporaryDirectory() as temp_dir:
+            binary_dir = Path(temp_dir) / "bin" / "14141" / "server"
+            binary_dir.mkdir(parents=True, exist_ok=True)
+            binary_path = str(binary_dir / "server.dll")
+            (binary_dir / "CEntFireOutputAutoCompletionFunctor_FireOutput.windows.yaml").write_text(
+                "func_name: CEntFireOutputAutoCompletionFunctor_FireOutput\n"
+                "func_va: '0x180c165c0'\n",
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(
+                    ida_analyze_bin,
+                    "start_idalib_mcp",
+                    return_value=fake_process,
+                ),
+                patch.object(
+                    ida_analyze_bin,
+                    "ensure_mcp_available",
+                    return_value=(fake_process, True),
+                ),
+                patch.object(
+                    ida_analyze_bin,
+                    "_run_post_process_expected_outputs_via_mcp",
+                    side_effect=RuntimeError("boom"),
+                ),
+                patch.object(
+                    ida_analyze_bin,
+                    "quit_ida_gracefully",
+                    return_value=None,
+                ),
+            ):
+                success, fail, skip = ida_analyze_bin.process_binary(
+                    binary_path=binary_path,
+                    skills=[
+                        {
+                            "name": "find-CEntFireOutputAutoCompletionFunctor_FireOutput",
+                            "expected_output": [
+                                "CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml"
+                            ],
+                            "expected_input": [],
+                        }
+                    ],
+                    agent="codex",
+                    host="127.0.0.1",
+                    port=13337,
+                    ida_args="",
+                    platform="windows",
+                    debug=False,
+                    max_retries=1,
+                    rename=True,
+                )
+
+        self.assertEqual((0, 1, 1), (success, fail, skip))
+
+    def test_process_binary_counts_post_process_preflight_collection_failure_once(
+        self,
+    ) -> None:
+        with TemporaryDirectory() as temp_dir:
+            binary_dir = Path(temp_dir) / "bin" / "14141" / "server"
+            binary_dir.mkdir(parents=True, exist_ok=True)
+            binary_path = str(binary_dir / "server.dll")
+            (binary_dir / "CEntFireOutputAutoCompletionFunctor_FireOutput.windows.yaml").write_text(
+                "func_name: CEntFireOutputAutoCompletionFunctor_FireOutput\n"
+                "func_va: '0x180c165c0'\n",
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(
+                    ida_analyze_bin,
+                    "_collect_post_process_yaml_mappings",
+                    side_effect=RuntimeError("collect boom"),
+                ),
+                patch.object(
+                    ida_analyze_bin,
+                    "start_idalib_mcp",
+                ) as mock_start_ida,
+            ):
+                success, fail, skip = ida_analyze_bin.process_binary(
+                    binary_path=binary_path,
+                    skills=[
+                        {
+                            "name": "find-CEntFireOutputAutoCompletionFunctor_FireOutput",
+                            "expected_output": [
+                                "CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml"
+                            ],
+                            "expected_input": [],
+                        }
+                    ],
+                    agent="codex",
+                    host="127.0.0.1",
+                    port=13337,
+                    ida_args="",
+                    platform="windows",
+                    debug=False,
+                    max_retries=1,
+                    rename=True,
+                )
+
+        self.assertEqual((0, 1, 1), (success, fail, skip))
+        mock_start_ida.assert_not_called()
+
+    def test_process_binary_counts_startup_failure_for_rename_only_work(
+        self,
+    ) -> None:
+        with TemporaryDirectory() as temp_dir:
+            binary_dir = Path(temp_dir) / "bin" / "14141" / "server"
+            binary_dir.mkdir(parents=True, exist_ok=True)
+            binary_path = str(binary_dir / "server.dll")
+            (binary_dir / "CEntFireOutputAutoCompletionFunctor_FireOutput.windows.yaml").write_text(
+                "func_name: CEntFireOutputAutoCompletionFunctor_FireOutput\n"
+                "func_va: '0x180c165c0'\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(
+                ida_analyze_bin,
+                "start_idalib_mcp",
+                return_value=None,
+            ):
+                success, fail, skip = ida_analyze_bin.process_binary(
+                    binary_path=binary_path,
+                    skills=[
+                        {
+                            "name": "find-CEntFireOutputAutoCompletionFunctor_FireOutput",
+                            "expected_output": [
+                                "CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml"
+                            ],
+                            "expected_input": [],
+                        }
+                    ],
+                    agent="codex",
+                    host="127.0.0.1",
+                    port=13337,
+                    ida_args="",
+                    platform="windows",
+                    debug=False,
+                    max_retries=1,
+                    rename=True,
+                )
+
+        self.assertEqual((0, 1, 1), (success, fail, skip))
 
 
 class TestExpectedInputArtifactValidation(unittest.IsolatedAsyncioTestCase):
@@ -1751,6 +2134,7 @@ class TestMainLlmWiring(unittest.TestCase):
             llm_temperature=0.5,
             llm_effort="high",
             llm_fake_as="codex",
+            rename=False,
         )
         mock_parse_config.return_value = [
             {
@@ -1784,6 +2168,66 @@ class TestMainLlmWiring(unittest.TestCase):
             },
             captured["kwargs"],
         )
+
+
+class TestMainPostProcessWiring(unittest.TestCase):
+    @patch.object(ida_analyze_bin, "parse_config")
+    @patch("ida_analyze_bin.os.path.exists", return_value=True)
+    @patch.object(ida_analyze_bin, "parse_args")
+    def test_main_passes_rename_to_process_binary(
+        self,
+        mock_parse_args,
+        _mock_exists,
+        mock_parse_config,
+    ) -> None:
+        captured = {}
+
+        def fake_process_binary(*args, **kwargs):
+            captured["kwargs"] = kwargs
+            return (0, 0, 0)
+
+        mock_parse_args.return_value = SimpleNamespace(
+            configyaml="config.yaml",
+            bindir="bin",
+            gamever="14141",
+            oldgamever=None,
+            platforms=["windows"],
+            module_filter=None,
+            modules="*",
+            agent="codex",
+            ida_args="",
+            debug=False,
+            maxretry=3,
+            vcall_finder_filter=None,
+            llm_model="gpt-4.1-mini",
+            llm_apikey=None,
+            llm_baseurl=None,
+            llm_temperature=None,
+            llm_effort="high",
+            llm_fake_as="codex",
+            rename=True,
+        )
+        mock_parse_config.return_value = [
+            {
+                "name": "server",
+                "skills": [
+                    {
+                        "name": "find-CEntFireOutputAutoCompletionFunctor_FireOutput",
+                        "expected_output": [
+                            "CEntFireOutputAutoCompletionFunctor_FireOutput.{platform}.yaml"
+                        ],
+                        "expected_input": [],
+                    }
+                ],
+                "vcall_finder_objects": [],
+                "path_windows": "game/bin/win64/server.dll",
+            }
+        ]
+
+        with patch.object(ida_analyze_bin, "process_binary", new=fake_process_binary):
+            ida_analyze_bin.main()
+
+        self.assertTrue(captured["kwargs"]["rename"])
 
 
 if __name__ == '__main__':

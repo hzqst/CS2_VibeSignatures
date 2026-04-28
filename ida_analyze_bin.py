@@ -593,7 +593,34 @@ async def post_process_expected_outputs_via_mcp(
     debug=False,
 ):
     """Connect to IDA MCP and execute post_process actions."""
-    return True
+    yaml_items = list(yaml_items or [])
+    if not yaml_items:
+        return True
+
+    server_url = f"http://{host}:{port}/mcp"
+
+    try:
+        async with httpx.AsyncClient(
+            follow_redirects=True,
+            timeout=httpx.Timeout(10.0, read=120.0),
+            trust_env=False,
+        ) as http_client:
+            async with streamable_http_client(server_url, http_client=http_client) as (
+                read_stream,
+                write_stream,
+                _,
+            ):
+                async with ClientSession(read_stream, write_stream) as session:
+                    await session.initialize()
+                    return await post_process_expected_outputs_via_session(
+                        session,
+                        yaml_items,
+                        debug=debug,
+                    )
+    except Exception as exc:
+        if debug:
+            print(f"  Post-process: MCP connection failed: {exc}")
+        return False
 
 
 async def preprocess_single_vcall_object_via_mcp(
@@ -1545,6 +1572,158 @@ def _build_post_process_actions_from_yaml(payload, source_path, debug=False):
         print(f"  Post-process: skipped invalid offset_sig comment in {source_path}")
 
     return actions
+
+
+def _parse_post_process_match_addr(value):
+    parsed = _parse_post_process_int(value)
+    if parsed is None or parsed < 0:
+        return None
+    return parsed
+
+
+async def _find_post_process_signature_comment_addr(session, action, debug=False):
+    try:
+        result = await session.call_tool(
+            name="find_bytes",
+            arguments={"patterns": [action["pattern"]], "limit": 2},
+        )
+        payload = _parse_tool_json_content(result)
+    except Exception as exc:
+        if debug:
+            print(f"  Post-process: find_bytes failed for {action['source_path']}: {exc}")
+        return None
+
+    if not isinstance(payload, list) or not payload:
+        return None
+    entry = payload[0]
+    if not isinstance(entry, dict):
+        return None
+
+    matches = entry.get("matches", [])
+    if not isinstance(matches, list):
+        matches = []
+    match_count = entry.get("n", len(matches))
+    if match_count != 1 or not matches:
+        if debug:
+            print(
+                "  Post-process: skipped "
+                f"{action['kind']} comment in {action['source_path']} "
+                f"because signature matched {match_count}"
+            )
+        return None
+
+    match_addr = _parse_post_process_match_addr(matches[0])
+    if match_addr is None:
+        if debug:
+            print(f"  Post-process: unparsable signature match in {action['source_path']}")
+        return None
+    return match_addr + action["disp"]
+
+
+async def _post_process_set_comments(session, comment_items, debug=False):
+    if not comment_items:
+        return
+
+    try:
+        result = await session.call_tool(
+            name="set_comments",
+            arguments={"items": comment_items},
+        )
+        payload = _parse_tool_json_content(result)
+        if isinstance(payload, dict):
+            for item in payload.get("items", []):
+                if isinstance(item, dict) and item.get("error") and debug:
+                    print(
+                        "  Post-process: set_comments item failed "
+                        f"at {item.get('addr')}: {item.get('error')}"
+                    )
+        return
+    except Exception as exc:
+        if debug:
+            print(f"  Post-process: set_comments unavailable, using py_eval fallback: {exc}")
+
+    for item in comment_items:
+        addr_int = _parse_post_process_int(item["addr"])
+        if addr_int is None:
+            continue
+        code = (
+            "import idc\n"
+            f"idc.set_cmt({addr_int}, {json.dumps(item['comment'])}, 0)\n"
+        )
+        try:
+            await session.call_tool(name="py_eval", arguments={"code": code})
+        except Exception as exc:
+            if debug:
+                print(
+                    "  Post-process: py_eval comment fallback failed "
+                    f"at {item['addr']}: {exc}"
+                )
+
+
+async def _post_process_func_renames(session, func_renames, debug=False):
+    if not func_renames:
+        return
+    try:
+        await session.call_tool(
+            name="rename",
+            arguments={"batch": {"func": func_renames}},
+        )
+    except Exception as exc:
+        if debug:
+            print(f"  Post-process: function rename batch failed: {exc}")
+
+
+async def _post_process_data_renames(session, data_renames, debug=False):
+    for item in data_renames:
+        addr_int = _parse_post_process_int(item["addr"])
+        if addr_int is None:
+            continue
+        code = (
+            "import idc\n"
+            f"idc.set_name({addr_int}, {json.dumps(item['name'])}, idc.SN_NOWARN)\n"
+        )
+        try:
+            await session.call_tool(name="py_eval", arguments={"code": code})
+        except Exception as exc:
+            if debug:
+                print(
+                    "  Post-process: data rename failed "
+                    f"{item['addr']} -> {item['name']}: {exc}"
+                )
+
+
+async def post_process_expected_outputs_via_session(
+    session,
+    yaml_items,
+    debug=False,
+):
+    actions = _empty_post_process_actions()
+    for source_path, payload in yaml_items:
+        _extend_post_process_actions(
+            actions,
+            _build_post_process_actions_from_yaml(payload, source_path, debug=debug),
+        )
+
+    comment_items = []
+    for action in actions["sig_comments"]:
+        comment_addr = await _find_post_process_signature_comment_addr(
+            session,
+            action,
+            debug=debug,
+        )
+        if comment_addr is None:
+            continue
+        comment_items.append(
+            {
+                "addr": f"0x{comment_addr:x}",
+                "comment": action["comment"],
+            }
+        )
+
+    await _post_process_set_comments(session, comment_items, debug=debug)
+    await _post_process_func_renames(session, actions["func_renames"], debug=debug)
+    await _post_process_data_renames(session, actions["data_renames"], debug=debug)
+    return True
 
 
 def should_skip_skill_for_existing_artifacts(binary_dir, skill, platform):
