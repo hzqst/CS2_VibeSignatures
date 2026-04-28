@@ -320,6 +320,183 @@ class TestSkillOrdering(unittest.TestCase):
         )
 
 
+class TestPostProcessActionCollection(unittest.TestCase):
+    def test_collect_post_process_yaml_mappings_skips_missing_invalid_and_duplicates(
+        self,
+    ) -> None:
+        with TemporaryDirectory() as temp_dir:
+            binary_dir = Path(temp_dir) / "bin" / "14141" / "server"
+            binary_dir.mkdir(parents=True, exist_ok=True)
+            valid_path = binary_dir / "Valid.windows.yaml"
+            invalid_path = binary_dir / "Invalid.windows.yaml"
+            scalar_path = binary_dir / "Scalar.windows.yaml"
+            valid_path.write_text("func_name: Valid\nfunc_va: '0x180100000'\n", encoding="utf-8")
+            invalid_path.write_text("func_name: [\n", encoding="utf-8")
+            scalar_path.write_text("- item\n", encoding="utf-8")
+
+            result = ida_analyze_bin._collect_post_process_yaml_mappings(
+                str(binary_dir),
+                ["skill-a", "skill-b"],
+                {
+                    "skill-a": {
+                        "name": "skill-a",
+                        "expected_output": [
+                            "Valid.{platform}.yaml",
+                            "Missing.{platform}.yaml",
+                            "Invalid.{platform}.yaml",
+                            "Scalar.{platform}.yaml",
+                        ],
+                    },
+                    "skill-b": {
+                        "name": "skill-b",
+                        "expected_output": ["Valid.{platform}.yaml"],
+                    },
+                },
+                "windows",
+                debug=False,
+            )
+
+        self.assertEqual([(str(valid_path.resolve()), {"func_name": "Valid", "func_va": "0x180100000"})], result)
+
+    def test_collect_post_process_yaml_mappings_skips_paths_outside_current_binary_dir(
+        self,
+    ) -> None:
+        with TemporaryDirectory() as temp_dir:
+            gamever_dir = Path(temp_dir) / "bin" / "14141"
+            binary_dir = gamever_dir / "server"
+            sibling_dir = gamever_dir / "engine"
+            binary_dir.mkdir(parents=True, exist_ok=True)
+            sibling_dir.mkdir(parents=True, exist_ok=True)
+            (sibling_dir / "CrossModule.windows.yaml").write_text(
+                "func_name: CrossModule\nfunc_va: '0x180200000'\n",
+                encoding="utf-8",
+            )
+
+            result = ida_analyze_bin._collect_post_process_yaml_mappings(
+                str(binary_dir),
+                ["skill-a"],
+                {
+                    "skill-a": {
+                        "name": "skill-a",
+                        "expected_output": ["../engine/CrossModule.{platform}.yaml"],
+                    },
+                },
+                "windows",
+                debug=False,
+            )
+
+        self.assertEqual([], result)
+
+    def test_build_post_process_actions_supports_all_yaml_action_types(self) -> None:
+        actions = ida_analyze_bin._build_post_process_actions_from_yaml(
+            {
+                "vtable_class": "CEntFireOutputAutoCompletionFunctor",
+                "vtable_va": "0x1817617a8",
+                "func_name": "CEntFireOutputAutoCompletionFunctor_FireOutput",
+                "func_va": "0x180c165c0",
+                "gv_name": "CCSGameRules__sm_mapGcBanInformation",
+                "gv_va": "0x181eff6a8",
+                "vfunc_offset": "0xb8",
+                "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                "vfunc_sig_disp": 2,
+                "struct_name": "CCheckTransmitInfo",
+                "member_name": "m_nPlayerSlot",
+                "offset": "0x240",
+                "offset_sig": "8B 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B F0",
+                "offset_sig_disp": 0,
+            },
+            "fixture.yaml",
+            debug=False,
+        )
+
+        self.assertEqual(
+            [{"addr": "0x180c165c0", "name": "CEntFireOutputAutoCompletionFunctor_FireOutput"}],
+            actions["func_renames"],
+        )
+        self.assertEqual(
+            [
+                {
+                    "addr": "0x1817617a8",
+                    "name": "CEntFireOutputAutoCompletionFunctor_vtable",
+                    "kind": "vtable",
+                },
+                {
+                    "addr": "0x181eff6a8",
+                    "name": "CCSGameRules__sm_mapGcBanInformation",
+                    "kind": "global",
+                },
+            ],
+            actions["data_renames"],
+        )
+        self.assertEqual(
+            [
+                {
+                    "pattern": "48 FF A0 B8 00 00 00 C3",
+                    "disp": 2,
+                    "comment": "0xB8 = 184LL = CEntFireOutputAutoCompletionFunctor_FireOutput",
+                    "source_path": "fixture.yaml",
+                    "kind": "vfunc_sig",
+                },
+                {
+                    "pattern": "8B 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B F0",
+                    "disp": 0,
+                    "comment": "0x240 = 576LL = CCheckTransmitInfo::m_nPlayerSlot",
+                    "source_path": "fixture.yaml",
+                    "kind": "offset_sig",
+                },
+            ],
+            actions["sig_comments"],
+        )
+
+    def test_build_post_process_actions_skips_invalid_fields_without_blocking_valid_actions(
+        self,
+    ) -> None:
+        actions = ida_analyze_bin._build_post_process_actions_from_yaml(
+            {
+                "func_name": "ValidFunction",
+                "func_va": "0x180111000",
+                "gv_name": "InvalidGlobal",
+                "gv_va": "not-an-address",
+                "vfunc_offset": "not-an-offset",
+                "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+            },
+            "invalid-fields.yaml",
+            debug=False,
+        )
+
+        self.assertEqual(
+            [{"addr": "0x180111000", "name": "ValidFunction"}],
+            actions["func_renames"],
+        )
+        self.assertEqual([], actions["data_renames"])
+        self.assertEqual([], actions["sig_comments"])
+
+    def test_build_post_process_actions_skips_invalid_sig_disp_fields(self) -> None:
+        actions = ida_analyze_bin._build_post_process_actions_from_yaml(
+            {
+                "func_name": "ValidFunction",
+                "func_va": "0x180111000",
+                "vfunc_offset": "0xb8",
+                "vfunc_sig": "48 FF A0 B8 00 00 00 C3",
+                "vfunc_sig_disp": None,
+                "struct_name": "CCheckTransmitInfo",
+                "member_name": "m_nPlayerSlot",
+                "offset": "0x240",
+                "offset_sig": "8B 8F ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B F0",
+                "offset_sig_disp": None,
+            },
+            "invalid-disp.yaml",
+            debug=False,
+        )
+
+        self.assertEqual(
+            [{"addr": "0x180111000", "name": "ValidFunction"}],
+            actions["func_renames"],
+        )
+        self.assertEqual([], actions["data_renames"])
+        self.assertEqual([], actions["sig_comments"])
+
+
 class TestProcessBinary(unittest.TestCase):
     def test_process_binary_treats_absent_ok_as_skip_and_continues(self) -> None:
         with TemporaryDirectory() as temp_dir:

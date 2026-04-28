@@ -1398,6 +1398,155 @@ def _collect_post_process_yaml_mappings(
     return yaml_items
 
 
+def _empty_post_process_actions():
+    return {
+        "func_renames": [],
+        "data_renames": [],
+        "sig_comments": [],
+    }
+
+
+def _extend_post_process_actions(target, source):
+    target["func_renames"].extend(source["func_renames"])
+    target["data_renames"].extend(source["data_renames"])
+    target["sig_comments"].extend(source["sig_comments"])
+
+
+def _parse_post_process_int(value):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return None
+        try:
+            return int(raw, 0)
+        except ValueError:
+            return None
+    return None
+
+
+def _parse_post_process_addr(value):
+    parsed = _parse_post_process_int(value)
+    if parsed is None or parsed < 0:
+        return None
+    return f"0x{parsed:x}"
+
+
+def _post_process_text(value):
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+def _format_post_process_offset_comment(offset_value, label):
+    return f"0x{offset_value:X} = {offset_value}LL = {label}"
+
+
+def _build_post_process_actions_from_yaml(payload, source_path, debug=False):
+    actions = _empty_post_process_actions()
+    if not isinstance(payload, dict):
+        return actions
+
+    vtable_class = _post_process_text(payload.get("vtable_class"))
+    vtable_addr = _parse_post_process_addr(payload.get("vtable_va"))
+    if vtable_class and vtable_addr:
+        actions["data_renames"].append(
+            {
+                "addr": vtable_addr,
+                "name": f"{vtable_class}_vtable",
+                "kind": "vtable",
+            }
+        )
+    elif debug and (payload.get("vtable_class") is not None or payload.get("vtable_va") is not None):
+        print(f"  Post-process: skipped invalid vtable rename in {source_path}")
+
+    func_name = _post_process_text(payload.get("func_name"))
+    func_addr = _parse_post_process_addr(payload.get("func_va"))
+    if func_name and func_addr:
+        actions["func_renames"].append({"addr": func_addr, "name": func_name})
+    elif debug and (payload.get("func_name") is not None or payload.get("func_va") is not None):
+        print(f"  Post-process: skipped invalid function rename in {source_path}")
+
+    gv_name = _post_process_text(payload.get("gv_name"))
+    gv_addr = _parse_post_process_addr(payload.get("gv_va"))
+    if gv_name and gv_addr:
+        actions["data_renames"].append(
+            {
+                "addr": gv_addr,
+                "name": gv_name,
+                "kind": "global",
+            }
+        )
+    elif debug and (payload.get("gv_name") is not None or payload.get("gv_va") is not None):
+        print(f"  Post-process: skipped invalid global rename in {source_path}")
+
+    vfunc_sig = _post_process_text(payload.get("vfunc_sig"))
+    vfunc_offset = _parse_post_process_int(payload.get("vfunc_offset"))
+    has_vfunc_sig_disp = "vfunc_sig_disp" in payload
+    raw_vfunc_sig_disp = payload.get("vfunc_sig_disp")
+    vfunc_sig_disp = _parse_post_process_int(raw_vfunc_sig_disp)
+    if not has_vfunc_sig_disp:
+        vfunc_sig_disp = 0
+    if (
+        func_name
+        and vfunc_sig
+        and vfunc_offset is not None
+        and vfunc_offset >= 0
+        and vfunc_sig_disp is not None
+        and vfunc_sig_disp >= 0
+    ):
+        actions["sig_comments"].append(
+            {
+                "pattern": vfunc_sig,
+                "disp": vfunc_sig_disp,
+                "comment": _format_post_process_offset_comment(vfunc_offset, func_name),
+                "source_path": source_path,
+                "kind": "vfunc_sig",
+            }
+        )
+    elif debug and (payload.get("vfunc_sig") is not None or payload.get("vfunc_offset") is not None):
+        print(f"  Post-process: skipped invalid vfunc_sig comment in {source_path}")
+
+    struct_name = _post_process_text(payload.get("struct_name"))
+    member_name = _post_process_text(payload.get("member_name"))
+    offset_sig = _post_process_text(payload.get("offset_sig"))
+    offset_value = _parse_post_process_int(payload.get("offset"))
+    has_offset_sig_disp = "offset_sig_disp" in payload
+    raw_offset_sig_disp = payload.get("offset_sig_disp")
+    offset_sig_disp = _parse_post_process_int(raw_offset_sig_disp)
+    if not has_offset_sig_disp:
+        offset_sig_disp = 0
+    if (
+        struct_name
+        and member_name
+        and offset_sig
+        and offset_value is not None
+        and offset_value >= 0
+        and offset_sig_disp is not None
+        and offset_sig_disp >= 0
+    ):
+        actions["sig_comments"].append(
+            {
+                "pattern": offset_sig,
+                "disp": offset_sig_disp,
+                "comment": _format_post_process_offset_comment(
+                    offset_value,
+                    f"{struct_name}::{member_name}",
+                ),
+                "source_path": source_path,
+                "kind": "offset_sig",
+            }
+        )
+    elif debug and (payload.get("offset_sig") is not None or payload.get("offset") is not None):
+        print(f"  Post-process: skipped invalid offset_sig comment in {source_path}")
+
+    return actions
+
+
 def should_skip_skill_for_existing_artifacts(binary_dir, skill, platform):
     """Return resolved skip paths when all configured skip_if_exists artifacts exist."""
     skip_if_exists = list(skill.get("skip_if_exists", []) or [])
