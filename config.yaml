@@ -584,9 +584,9 @@ modules:
           - CNetworkGameServer_vtable.{platform}.yaml
           - INetworkGameServer_ClientUpdate.{platform}.yaml
 
-      - name: find-ISource2Server_ClientUpdate
+      - name: find-ISource2Server_PreWorldUpdate
         expected_output:
-          - ISource2Server_ClientUpdate.{platform}.yaml
+          - ISource2Server_PreWorldUpdate.{platform}.yaml
         expected_input:
           - CNetworkGameServer_ClientUpdate.{platform}.yaml
 
@@ -1049,10 +1049,10 @@ modules:
         alias:
           - CNetworkGameServer::ClientUpdate
 
-      - name: ISource2Server_ClientUpdate
+      - name: ISource2Server_PreWorldUpdate
         category: vfunc
         alias:
-          - ISource2Server::ClientUpdate
+          - ISource2Server::PreWorldUpdate
         shared: true
 
       - name: ISource2Server_OutOfGameFrameBoundary
@@ -2413,6 +2413,72 @@ modules:
         expected_input:
           - CCSPlayerPawn_ProcessSuicideAsKillReward.{platform}.yaml
 
+      - name: find-CSource2Server_ApplyGameSettings
+        expected_output:
+          - CSource2Server_ApplyGameSettings.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_WriteSignonMessages
+        expected_output:
+          - CSource2Server_WriteSignonMessages.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_GameCreateNetworkStringTables
+        expected_output:
+          - CSource2Server_GameCreateNetworkStringTables.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_GetMatchmakingGameData
+        expected_output:
+          - CSource2Server_GetMatchmakingGameData.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_GameServerSteamAPIActivated
+        expected_output:
+          - CSource2Server_GameServerSteamAPIActivated.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_GameServerSteamAPIDeactivated
+        expected_output:
+          - CSource2Server_GameServerSteamAPIDeactivated.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_OnHostNameChanged
+        expected_output:
+          - CSource2Server_OnHostNameChanged.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_GetLevelsFromSaveFile
+        expected_output:
+          - CSource2Server_GetLevelsFromSaveFile.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_ServerConVarChanged
+        expected_output:
+          - CSource2Server_ServerConVarChanged.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_Save
+        expected_output:
+          - CSource2Server_Save.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
+      - name: find-CSource2Server_Connect
+        expected_output:
+          - CSource2Server_Connect.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
       - name: find-CSource2Server_Init
         expected_output:
           - CSource2Server_Init.{platform}.yaml
@@ -2425,18 +2491,18 @@ modules:
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
 
-      - name: find-CSource2Server_ClientUpdate
+      - name: find-CSource2Server_PreWorldUpdate
         expected_output:
-          - CSource2Server_ClientUpdate.{platform}.yaml
+          - CSource2Server_PreWorldUpdate.{platform}.yaml
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
-          - ../engine/ISource2Server_ClientUpdate.{platform}.yaml
+          - ../engine/ISource2Server_PreWorldUpdate.{platform}.yaml
 
       - name: find-IGameSystem_OnServerPreClientUpdate
         expected_output:
           - IGameSystem_OnServerPreClientUpdate.{platform}.yaml
         expected_input:
-          - CSource2Server_ClientUpdate.{platform}.yaml
+          - CSource2Server_PreWorldUpdate.{platform}.yaml
           - IGameSystem_vtable.{platform}.yaml
 
       - name: find-IGameSystem_OnServerPreEntityThink-AND-IGameSystem_OnServerPostEntityThink
@@ -3730,10 +3796,10 @@ modules:
       - name: CSource2Server_vtable
         category: vtable
 
-      - name: CSource2Server_ClientUpdate
+      - name: CSource2Server_PreWorldUpdate
         category: vfunc
         alias:
-          - CSource2Server::ClientUpdate
+          - CSource2Server::PreWorldUpdate
 
       - name: CSource2Server_OutOfGameFrameBoundary
         category: vfunc
@@ -4321,6 +4387,61 @@ modules:
         category: vfunc
         alias:
           - CSource2Server::Init
+
+      - name: CSource2Server_ApplyGameSettings
+        category: vfunc
+        alias:
+          - CSource2Server::ApplyGameSettings
+
+      - name: CSource2Server_WriteSignonMessages
+        category: vfunc
+        alias:
+          - CSource2Server::WriteSignonMessages
+
+      - name: CSource2Server_GameCreateNetworkStringTables
+        category: vfunc
+        alias:
+          - CSource2Server::GameCreateNetworkStringTables
+
+      - name: CSource2Server_GetMatchmakingGameData
+        category: vfunc
+        alias:
+          - CSource2Server::GetMatchmakingGameData
+
+      - name: CSource2Server_GameServerSteamAPIActivated
+        category: vfunc
+        alias:
+          - CSource2Server::GameServerSteamAPIActivated
+
+      - name: CSource2Server_GameServerSteamAPIDeactivated
+        category: vfunc
+        alias:
+          - CSource2Server::GameServerSteamAPIDeactivated
+
+      - name: CSource2Server_OnHostNameChanged
+        category: vfunc
+        alias:
+          - CSource2Server::OnHostNameChanged
+
+      - name: CSource2Server_GetLevelsFromSaveFile
+        category: vfunc
+        alias:
+          - CSource2Server::GetLevelsFromSaveFile
+
+      - name: CSource2Server_ServerConVarChanged
+        category: vfunc
+        alias:
+          - CSource2Server::ServerConVarChanged
+
+      - name: CSource2Server_Save
+        category: vfunc
+        alias:
+          - CSource2Server::Save
+
+      - name: CSource2Server_Connect
+        category: vfunc
+        alias:
+          - CSource2Server::Connect
 
       - name: CSource2Server_GameFrame
         category: vfunc

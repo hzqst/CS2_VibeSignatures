@@ -9,7 +9,7 @@ disasm_code: |-
   .text:00000000006AEBAA                 jz      short locret_6AEB96
   .text:00000000006AEBAC                 mov     rax, [rdi]
   .text:00000000006AEBAF                 mov     esi, 1
-  .text:00000000006AEBB4                 mov     rax, [rax+78h]; 0x78 = 120 = ISource2Server_ClientUpdate
+  .text:00000000006AEBB4                 mov     rax, [rax+78h]; 0x78 = 120 = ISource2Server_PreWorldUpdate
   .text:00000000006AEBB8                 jmp     rax
 procedure: |-
   __int64 __fastcall CNetworkGameServer_ClientUpdate(__int64 a1)
@@ -19,7 +19,7 @@ procedure: |-
     if ( *(_DWORD *)(a1 + 56) == 3 )
     {
       if ( g_pSource2Server )
-        return (*(__int64 (__fastcall **)(__int64, __int64))(*(_QWORD *)g_pSource2Server + 120LL))(g_pSource2Server, 1);// 0x78 = 120 = ISource2Server_ClientUpdate
+        return (*(__int64 (__fastcall **)(__int64, __int64))(*(_QWORD *)g_pSource2Server + 120LL))(g_pSource2Server, 1);// 0x78 = 120 = ISource2Server_PreWorldUpdate
     }
     return result;
   }
