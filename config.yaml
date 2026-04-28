@@ -2461,6 +2461,12 @@ modules:
         expected_input:
           - CSource2Server_vtable.{platform}.yaml
 
+      - name: find-CSource2Server_ServerConVarChanged
+        expected_output:
+          - CSource2Server_ServerConVarChanged.{platform}.yaml
+        expected_input:
+          - CSource2Server_vtable.{platform}.yaml
+
       - name: find-CSource2Server_Init
         expected_output:
           - CSource2Server_Init.{platform}.yaml
@@ -4409,6 +4415,11 @@ modules:
         category: vfunc
         alias:
           - CSource2Server::GetLevelsFromSaveFile
+
+      - name: CSource2Server_ServerConVarChanged
+        category: vfunc
+        alias:
+          - CSource2Server::ServerConVarChanged
 
       - name: CSource2Server_GameFrame
         category: vfunc
