@@ -566,6 +566,36 @@ def _run_validate_expected_input_artifacts_via_mcp(
     )
 
 
+def _run_post_process_expected_outputs_via_mcp(
+    *,
+    host,
+    port,
+    yaml_items,
+    debug=False,
+):
+    """Run post_process for collected expected output YAML mappings."""
+    if not yaml_items:
+        return True
+    return asyncio.run(
+        post_process_expected_outputs_via_mcp(
+            host=host,
+            port=port,
+            yaml_items=yaml_items,
+            debug=debug,
+        )
+    )
+
+
+async def post_process_expected_outputs_via_mcp(
+    host=DEFAULT_HOST,
+    port=DEFAULT_PORT,
+    yaml_items=None,
+    debug=False,
+):
+    """Connect to IDA MCP and execute post_process actions."""
+    return True
+
+
 async def preprocess_single_vcall_object_via_mcp(
     host,
     port,
@@ -955,6 +985,11 @@ def parse_args():
         help="Enable debug output"
     )
     parser.add_argument(
+        "-rename",
+        action="store_true",
+        help="Run post_process rename/comment pass for existing expected output YAML files",
+    )
+    parser.add_argument(
         "-maxretry",
         type=int,
         default=3,
@@ -1259,9 +1294,13 @@ def topological_sort_skills(skills):
     return sorted_names
 
 
-def should_start_binary_processing(skills_to_process, vcall_targets):
-    """Start IDA when either skills or vcall_finder still has work to do."""
-    return bool(skills_to_process or vcall_targets)
+def should_start_binary_processing(
+    skills_to_process,
+    vcall_targets,
+    post_process_yaml_items=None,
+):
+    """Start IDA when skills, vcall_finder, or post_process still has work to do."""
+    return bool(skills_to_process or vcall_targets or post_process_yaml_items)
 
 
 def resolve_artifact_path(binary_dir, artifact_path, platform):
@@ -1291,6 +1330,72 @@ def expand_expected_paths(binary_dir, paths, platform):
 def all_expected_outputs_exist(expected_outputs):
     """Return True when every expected output already exists on disk."""
     return bool(expected_outputs) and all(os.path.exists(path) for path in expected_outputs)
+
+
+def _load_post_process_yaml_mapping(path, debug=False):
+    """Load one post_process YAML file and return a mapping payload or None."""
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = yaml.safe_load(handle)
+    except Exception as exc:
+        if debug:
+            print(f"  Post-process: skipping unreadable YAML {path}: {exc}")
+        return None
+
+    if not isinstance(payload, dict):
+        if debug:
+            print(f"  Post-process: skipping non-mapping YAML {path}")
+        return None
+    return payload
+
+
+def _collect_post_process_yaml_mappings(
+    binary_dir,
+    sorted_skill_names,
+    skill_map,
+    platform,
+    debug=False,
+):
+    """Collect existing expected output YAML mappings in stable skill/output order."""
+    yaml_items = []
+    seen_paths = set()
+
+    for skill_name in sorted_skill_names:
+        skill = skill_map[skill_name]
+        skill_platform = skill.get("platform")
+        if skill_platform and skill_platform != platform:
+            continue
+        try:
+            expected_outputs = expand_expected_paths(
+                binary_dir,
+                skill.get("expected_output", []),
+                platform,
+            )
+        except ValueError as exc:
+            if debug:
+                print(f"  Post-process: skipping {skill_name}: {exc}")
+            continue
+
+        for output_path in expected_outputs:
+            resolved_path = str(Path(output_path).resolve())
+            if not _is_current_module_artifact_path(resolved_path, binary_dir):
+                if debug:
+                    print(
+                        "  Post-process: skipping YAML outside current module dir "
+                        f"{resolved_path}"
+                    )
+                continue
+            if resolved_path in seen_paths:
+                continue
+            seen_paths.add(resolved_path)
+            if not os.path.exists(resolved_path):
+                continue
+            payload = _load_post_process_yaml_mapping(resolved_path, debug=debug)
+            if payload is None:
+                continue
+            yaml_items.append((resolved_path, payload))
+
+    return yaml_items
 
 
 def should_skip_skill_for_existing_artifacts(binary_dir, skill, platform):
@@ -1636,6 +1741,7 @@ def process_binary(
     llm_temperature=None,
     llm_effort="medium",
     llm_fake_as=None,
+    rename=False,
 ):
     """
     Process a single binary file.
@@ -1652,6 +1758,7 @@ def process_binary(
         debug: Enable debug output
         max_retries: Default maximum number of retry attempts for skill execution
         old_binary_dir: Directory containing old version YAML files for signature reuse
+        rename: Run module/platform post_process over valid expected output YAML mappings
 
     Returns:
         Tuple of (success_count, fail_count, skip_count)
@@ -1709,15 +1816,43 @@ def process_binary(
                 skills_to_process.append((skill_name, expected_outputs, skill_max_retries))
 
     vcall_targets = list(vcall_targets or [])
+    startup_post_process_yaml_items = []
+    startup_post_process_failed = False
+    if rename:
+        try:
+            startup_post_process_yaml_items = _collect_post_process_yaml_mappings(
+                binary_dir,
+                sorted_skill_names,
+                skill_map,
+                platform,
+                debug=debug,
+            )
+        except Exception as exc:
+            startup_post_process_failed = True
+            fail_count += 1
+            if debug:
+                print(f"  Post-process preflight collection failed: {exc}")
 
-    if not should_start_binary_processing(skills_to_process, vcall_targets):
-        print("  All skills already have yaml files and no vcall_finder targets remain, skipping IDA startup")
+    if not should_start_binary_processing(
+        skills_to_process,
+        vcall_targets,
+        startup_post_process_yaml_items,
+    ):
+        if startup_post_process_failed:
+            print("  Post-process preflight failed before IDA startup")
+        else:
+            print("  All skills already have yaml files and no vcall_finder/post_process targets remain, skipping IDA startup")
         return success_count, fail_count, skip_count
 
     # Start idalib-mcp
     process = start_idalib_mcp(binary_path, host, port, ida_args, debug)
     if process is None:
-        return success_count, fail_count + len(skills_to_process) + len(vcall_targets), skip_count
+        post_process_failure = 1 if startup_post_process_yaml_items else 0
+        return (
+            success_count,
+            fail_count + len(skills_to_process) + len(vcall_targets) + post_process_failure,
+            skip_count,
+        )
 
     try:
         # Process each skill: try preprocess first, then run_skill if needed
@@ -1913,6 +2048,48 @@ def process_binary(
                     f"skipped_functions={skipped_functions}"
                 )
 
+        post_process_yaml_items = []
+        post_process_collection_failed = False
+        if rename and not startup_post_process_failed:
+            try:
+                post_process_yaml_items = _collect_post_process_yaml_mappings(
+                    binary_dir,
+                    sorted_skill_names,
+                    skill_map,
+                    platform,
+                    debug=debug,
+                )
+            except Exception as exc:
+                post_process_collection_failed = True
+                fail_count += 1
+                if debug:
+                    print(f"  Post-process final collection failed: {exc}")
+
+        if rename and post_process_collection_failed:
+            print("  Post-process failed during YAML recollection")
+        elif rename and post_process_yaml_items:
+            process, mcp_ok = ensure_mcp_available(
+                process, binary_path, host, port, ida_args, debug
+            )
+            if not mcp_ok:
+                fail_count += 1
+                print("  Failed to restore MCP connection, skipping post_process")
+            else:
+                try:
+                    post_process_ok = _run_post_process_expected_outputs_via_mcp(
+                        host=host,
+                        port=port,
+                        yaml_items=post_process_yaml_items,
+                        debug=debug,
+                    )
+                except Exception as exc:
+                    post_process_ok = False
+                    if debug:
+                        print(f"  Post-process error: {exc}")
+                if not post_process_ok:
+                    fail_count += 1
+                    print("  Post-process failed")
+
     finally:
         # Gracefully quit IDA via MCP to avoid breaking IDB
         quit_ida_gracefully(process, host, port, debug=debug)
@@ -2037,6 +2214,7 @@ def main():
                 llm_temperature=args.llm_temperature,
                 llm_effort=args.llm_effort,
                 llm_fake_as=args.llm_fake_as,
+                rename=args.rename,
             )
             total_success += success
             total_fail += fail
