@@ -3201,9 +3201,9 @@ modules:
           - CSkeletonInstance_PostDataUpdate.{platform}.yaml
           - CGameSceneNode_vtable.{platform}.yaml
 
-      - name: find-CGameSceneNode_OnParentChanged
+      - name: find-CGameSceneNode_UpdateEntityForHierarchyChange
         expected_output:
-          - CGameSceneNode_OnParentChanged.{platform}.yaml
+          - CGameSceneNode_UpdateEntityForHierarchyChange.{platform}.yaml
         expected_input:
           - CGameSceneNode_PostDataUpdate.{platform}.yaml
 
@@ -3211,7 +3211,7 @@ modules:
         expected_output:
           - CEntitySystem_OnEntityParentChanged.{platform}.yaml
         expected_input:
-          - CGameSceneNode_OnParentChanged.{platform}.yaml
+          - CGameSceneNode_UpdateEntityForHierarchyChange.{platform}.yaml
           - CEntitySystem_vtable.{platform}.yaml
 
       - name: find-CPointTeleportAPI_TeleportEntityInternal
@@ -5090,10 +5090,10 @@ modules:
         alias:
           - CGameSceneNode::PostDataUpdate
 
-      - name: CGameSceneNode_OnParentChanged
+      - name: CGameSceneNode_UpdateEntityForHierarchyChange
         category: func
         alias:
-          - CGameSceneNode::OnParentChanged
+          - CGameSceneNode::UpdateEntityForHierarchyChange
 
       - name: CPointTeleportAPI_TeleportEntityInternal
         category: func

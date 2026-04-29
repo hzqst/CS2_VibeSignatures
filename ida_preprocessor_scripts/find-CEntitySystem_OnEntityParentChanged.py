@@ -12,7 +12,7 @@ LLM_DECOMPILE = [
     (
         "CEntitySystem_OnEntityParentChanged",
         "prompt/call_llm_decompile.md",
-        "references/server/CGameSceneNode_OnParentChanged.{platform}.yaml",
+        "references/server/CGameSceneNode_UpdateEntityForHierarchyChange.{platform}.yaml",
     ),
 ]
 

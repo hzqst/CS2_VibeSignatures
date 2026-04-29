@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CGameSceneNode_OnParentChanged skill."""
+"""Preprocess script for find-CGameSceneNode_UpdateEntityForHierarchyChange skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CGameSceneNode_OnParentChanged",
+    "CGameSceneNode_UpdateEntityForHierarchyChange",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CGameSceneNode_OnParentChanged",
+        "CGameSceneNode_UpdateEntityForHierarchyChange",
         "prompt/call_llm_decompile.md",
         "references/server/CGameSceneNode_PostDataUpdate.{platform}.yaml",
     ),
@@ -19,7 +19,7 @@ LLM_DECOMPILE = [
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CGameSceneNode_OnParentChanged",
+        "CGameSceneNode_UpdateEntityForHierarchyChange",
         [
             "func_name",
             "func_sig",
