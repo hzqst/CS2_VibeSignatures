@@ -29,10 +29,10 @@ Currently, all signatures/offsets from **CounterStrikeSharp** and **CS2Fixes** c
 ### 1. Download CS2 depot and copy binaries to workspace
 
 ```bash
-uv download_depot.py
+uv run download_depot.py -tag 14156
 
-uv run copy_depot_bin.py -gamever 14141 -platform all-platform
-uv run copy_depot_bin.py -gamever 14141 -platform all-platform -checkonly
+uv run copy_depot_bin.py -gamever 14156 -platform all-platform
+uv run copy_depot_bin.py -gamever 14156 -platform all-platform -checkonly
 ```
 
 Use `-checkonly` in CI or preflight scripts when you only need to know whether all expected target binaries already exist under `bin/<gamever>/...`. In this mode the script only checks target paths, does not require a populated `cs2_depot`, returns `0` when all expected binaries are ready, `1` when any target is missing, and `2` for configuration or argument errors.
@@ -40,7 +40,7 @@ Use `-checkonly` in CI or preflight scripts when you only need to know whether a
 ### 2. Find and generate signatures for all symbols declared in `config.yaml`
 
  ```bash
- uv run ida_analyze_bin.py -gamever 14141 [-oldgamever=14140] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-vcall_finder=g_pNetworkMessages|*] [-llm_model=gpt-4o] [-llm_apikey=your-key] [-llm_baseurl=https://api.example.com/v1] [-llm_temperature=0.2] [-llm_effort=medium] [-llm_fake_as=codex] [-debug]
+ uv run ida_analyze_bin.py -gamever 14156 [-oldgamever=14155] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-vcall_finder=g_pNetworkMessages|*] [-llm_model=gpt-4o] [-llm_apikey=your-key] [-llm_baseurl=https://api.example.com/v1] [-llm_temperature=0.2] [-llm_effort=medium] [-llm_fake_as=codex] [-debug]
  ```
 
 * Shared LLM CLI parameters:
