@@ -2677,6 +2677,13 @@ modules:
         expected_input:
           - GiveNamedItem.{platform}.yaml
 
+      - name: find-CEntitySystem_QueueSpawnEntity-AND-CEntitySystem_ExecuteQueuedCreation
+        expected_output:
+          - CEntitySystem_QueueSpawnEntity.{platform}.yaml
+          - CEntitySystem_ExecuteQueuedCreation.{platform}.yaml
+        expected_input:
+          - CBaseEntity_DispatchSpawn.{platform}.yaml
+
       - name: find-CNetworkTransmitComponent_StateChanged
         expected_output:
           - CNetworkTransmitComponent_StateChanged.{platform}.yaml
@@ -4566,6 +4573,16 @@ modules:
         alias:
           - CBaseEntity::DispatchSpawn
           - DispatchSpawn
+
+      - name: CEntitySystem_QueueSpawnEntity
+        category: func
+        alias:
+          - CEntitySystem::QueueSpawnEntity
+
+      - name: CEntitySystem_ExecuteQueuedCreation
+        category: func
+        alias:
+          - CEntitySystem::ExecuteQueuedCreation
 
       - name: CBaseEntity_SetStateChanged
         category: vfunc
