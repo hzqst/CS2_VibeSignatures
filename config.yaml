@@ -3047,18 +3047,18 @@ modules:
         expected_input:
           - CGameEntitySystem_vtable.{platform}.yaml
 
-      - name: find-CBodyGameSystem_ProcessSpawnGroupSceneNodes-AND-CGameEntitySystem_CheckGlobalState
+      - name: find-CBodyGameSystem_SpawnDependencyIsland-AND-CGameEntitySystem_CheckGlobalState
         expected_output:
-          - CBodyGameSystem_ProcessSpawnGroupSceneNodes.{platform}.yaml
+          - CBodyGameSystem_SpawnDependencyIsland.{platform}.yaml
           - CGameEntitySystem_CheckGlobalState.{platform}.yaml
         expected_input:
           - CGameEntitySystem_Spawn.{platform}.yaml
 
-      - name: find-CGameSceneNode_AcquireParent
+      - name: find-CGameSceneNode_PreInstanceSpawn
         expected_output:
-          - CGameSceneNode_AcquireParent.{platform}.yaml
+          - CGameSceneNode_PreInstanceSpawn.{platform}.yaml
         expected_input:
-          - CBodyGameSystem_ProcessSpawnGroupSceneNodes.{platform}.yaml
+          - CBodyGameSystem_SpawnDependencyIsland.{platform}.yaml
           - CGameSceneNode_vtable.{platform}.yaml
 
       - name: find-IGameSystem_OnBuildGameSessionManifest
@@ -4868,10 +4868,10 @@ modules:
         alias:
           - CGameEntitySystem::Spawn
 
-      - name: CBodyGameSystem_ProcessSpawnGroupSceneNodes
+      - name: CBodyGameSystem_SpawnDependencyIsland
         category: func
         alias:
-          - CBodyGameSystem::ProcessSpawnGroupSceneNodes
+          - CBodyGameSystem::SpawnDependencyIsland
 
       - name: CGameEntitySystem_CheckGlobalState
         category: func
@@ -5054,10 +5054,10 @@ modules:
         alias:
           - CBaseAnimGraph::m_skeletonInstance
 
-      - name: CGameSceneNode_AcquireParent
+      - name: CGameSceneNode_PreInstanceSpawn
         category: vfunc
         alias:
-          - CGameSceneNode::AcquireParent
+          - CGameSceneNode::PreInstanceSpawn
 
       - name: CGameSceneNode_GetSkeletonInstance
         category: vfunc

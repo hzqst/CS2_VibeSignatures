@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CEntitySystem_Activate skill."""
+"""Preprocess script for find-CEntitySystem_Init skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CEntitySystem_Activate",
+    "CEntitySystem_Init",
 ]
 
 FUNC_XREFS = [
                  {
-                     "func_name": 'CEntitySystem_Activate',
+                     "func_name": 'CEntitySystem_Init',
                      "xref_strings": ['EntitySystem - Class Tables'],
                      "xref_gvs": [],
                      "xref_signatures": [],
@@ -25,7 +25,7 @@ FUNC_XREFS = [
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CEntitySystem_Activate",
+        "CEntitySystem_Init",
         [
             "func_name",
             "func_va",

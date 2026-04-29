@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CGameEntitySystem_Activate skill."""
+"""Preprocess script for find-CGameEntitySystem_Spawn skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CGameEntitySystem_Activate",
+    "CGameEntitySystem_Spawn",
 ]
 
 FUNC_XREFS = [
     {
-        "func_name": "CGameEntitySystem_Activate",
+        "func_name": "CGameEntitySystem_Spawn",
         "xref_strings": [
             "Memory trash in SortEntities.. overran the number of entity islands supported!",
         ],
@@ -25,13 +25,13 @@ FUNC_XREFS = [
 
 FUNC_VTABLE_RELATIONS = [
     # (func_name, vtable_class)
-    ("CGameEntitySystem_Activate", "CGameEntitySystem"),
+    ("CGameEntitySystem_Spawn", "CGameEntitySystem"),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CGameEntitySystem_Activate",
+        "CGameEntitySystem_Spawn",
         [
             "func_name",
             "func_va",

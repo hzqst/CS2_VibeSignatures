@@ -1,39 +1,47 @@
 #!/usr/bin/env python3
-"""Preprocess script for find-CGameSceneNode_AcquireParent skill."""
+"""Preprocess script for find-CBodyGameSystem_SpawnDependencyIsland-AND-CGameEntitySystem_CheckGlobalState skill."""
 
 from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
-    "CGameSceneNode_AcquireParent",
+    "CBodyGameSystem_SpawnDependencyIsland",
+    "CGameEntitySystem_CheckGlobalState",
 ]
 
 LLM_DECOMPILE = [
     # (symbol_name, path_to_prompt, path_to_reference)
     (
-        "CGameSceneNode_AcquireParent",
+        "CBodyGameSystem_SpawnDependencyIsland",
         "prompt/call_llm_decompile.md",
-        "references/server/CBodyGameSystem_ProcessSpawnGroupSceneNodes.{platform}.yaml",
+        "references/server/CGameEntitySystem_Spawn.{platform}.yaml",
     ),
-]
-
-FUNC_VTABLE_RELATIONS = [
-    # (func_name, vtable_class)
-    ("CGameSceneNode_AcquireParent", "CGameSceneNode"),
+    (
+        "CGameEntitySystem_CheckGlobalState",
+        "prompt/call_llm_decompile.md",
+        "references/server/CGameEntitySystem_Spawn.{platform}.yaml",
+    ),
 ]
 
 GENERATE_YAML_DESIRED_FIELDS = [
     # (symbol_name, generate_yaml_fields)
     (
-        "CGameSceneNode_AcquireParent",
+        "CBodyGameSystem_SpawnDependencyIsland",
         [
             "func_name",
+            "func_sig",
             "func_va",
             "func_rva",
             "func_size",
-            "vfunc_sig",
-            "vfunc_offset",
-            "vfunc_index",
-            "vtable_name",
+        ],
+    ),
+    (
+        "CGameEntitySystem_CheckGlobalState",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
         ],
     ),
 ]
@@ -42,7 +50,7 @@ async def preprocess_skill(
     session, skill_name, expected_outputs, old_yaml_map,
     new_binary_dir, platform, image_base, llm_config=None, debug=False,
 ):
-    """Reuse previous gamever vfunc_sig to locate target virtual function and write YAML."""
+    """Reuse previous gamever func_sig to locate target function(s) and write YAML."""
     return await preprocess_common_skill(
         session=session,
         expected_outputs=expected_outputs,
@@ -51,7 +59,6 @@ async def preprocess_skill(
         platform=platform,
         image_base=image_base,
         func_names=TARGET_FUNCTION_NAMES,
-        func_vtable_relations=FUNC_VTABLE_RELATIONS,
         llm_decompile_specs=LLM_DECOMPILE,
         llm_config=llm_config,
         generate_yaml_desired_fields=GENERATE_YAML_DESIRED_FIELDS,
