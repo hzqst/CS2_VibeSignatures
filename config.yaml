@@ -2229,6 +2229,12 @@ modules:
         expected_input:
           - CSource2GameClients_vtable.{platform}.yaml
 
+      - name: find-CSource2GameClients_ClientCommand
+        expected_output:
+          - CSource2GameClients_ClientCommand.{platform}.yaml
+        expected_input:
+          - CSource2GameClients_vtable.{platform}.yaml
+
       - name: find-CBasePlayerController_SetPawn-AND-CBasePlayerController_GetPawn
         expected_output:
           - CBasePlayerController_SetPawn.{platform}.yaml
@@ -4179,6 +4185,11 @@ modules:
         category: vfunc
         alias:
           - CSource2GameClients::ClientFullyConnect
+
+      - name: CSource2GameClients_ClientCommand
+        category: vfunc
+        alias:
+          - CSource2GameClients::ClientCommand
 
       - name: FireTarget_CommandHandler
         category: func
