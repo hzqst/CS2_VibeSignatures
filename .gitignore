@@ -1,4 +1,5 @@
 settings.local.json
+settings.json
 __pycache__
 .venv
 .env
