@@ -755,7 +755,7 @@ modules:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
 
       - name: find-CEngineServiceMgr_DeactivateLoop
-        expected_output:
+        optional_output:
           - CEngineServiceMgr_DeactivateLoop.{platform}.yaml
         expected_input:
           - CEngineServiceMgr__MainLoop.{platform}.yaml
