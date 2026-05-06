@@ -1,0 +1,123 @@
+func_name: SDL_PreInitMouse
+func_va: '0x180074850'
+disasm_code: |-
+  .text:0000000180074850                 push    rbx
+  .text:0000000180074852                 sub     rsp, 30h
+  .text:0000000180074856                 call    SDL_GetMouse
+  .text:000000018007485B                 xor     edx, edx
+  .text:000000018007485D                 mov     cs:SDL_mouse_initialized, 1
+  .text:0000000180074864                 mov     r8d, 138h
+  .text:000000018007486A                 mov     rcx, rax
+  .text:000000018007486D                 mov     rbx, rax
+  .text:0000000180074870                 call    SDL_memset_0
+  .text:0000000180074875                 mov     r8, rbx
+  .text:0000000180074878                 lea     rdx, SDL_MouseDoubleClickTimeChanged
+  .text:000000018007487F                 lea     rcx, aSdlMouseDouble; "SDL_MOUSE_DOUBLE_CLICK_TIME"
+  .text:0000000180074886                 call    SDL_AddHintCallback_0
+  .text:000000018007488B                 mov     r8, rbx
+  .text:000000018007488E                 lea     rdx, SDL_MouseDoubleClickRadiusChanged
+  .text:0000000180074895                 lea     rcx, aSdlMouseDouble_0; "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
+  .text:000000018007489C                 call    SDL_AddHintCallback_0
+  .text:00000001800748A1                 mov     r8, rbx
+  .text:00000001800748A4                 lea     rdx, SDL_MouseNormalSpeedScaleChanged
+  .text:00000001800748AB                 lea     rcx, aSdlMouseNormal; "SDL_MOUSE_NORMAL_SPEED_SCALE"
+  .text:00000001800748B2                 call    SDL_AddHintCallback_0
+  .text:00000001800748B7                 mov     r8, rbx
+  .text:00000001800748BA                 lea     rdx, SDL_MouseRelativeSpeedScaleChanged
+  .text:00000001800748C1                 lea     rcx, aSdlMouseRelati; "SDL_MOUSE_RELATIVE_SPEED_SCALE"
+  .text:00000001800748C8                 call    SDL_AddHintCallback_0
+  .text:00000001800748CD                 mov     r8, rbx
+  .text:00000001800748D0                 lea     rdx, SDL_MouseRelativeSystemScaleChanged
+  .text:00000001800748D7                 lea     rcx, aSdlMouseRelati_0; "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
+  .text:00000001800748DE                 call    SDL_AddHintCallback_0
+  .text:00000001800748E3                 mov     r8, rbx
+  .text:00000001800748E6                 lea     rdx, SDL_MouseRelativeModeCenterChanged
+  .text:00000001800748ED                 lea     rcx, aSdlMouseRelati_1; "SDL_MOUSE_RELATIVE_MODE_CENTER"
+  .text:00000001800748F4                 call    SDL_AddHintCallback_0
+  .text:00000001800748F9                 mov     r8, rbx
+  .text:00000001800748FC                 lea     rdx, SDL_MouseWarpEmulationChanged
+  .text:0000000180074903                 lea     rcx, aSdlMouseEmulat; "SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE"
+  .text:000000018007490A                 call    SDL_AddHintCallback_0
+  .text:000000018007490F                 mov     r8, rbx
+  .text:0000000180074912                 lea     rdx, SDL_TouchMouseEventsChanged
+  .text:0000000180074919                 lea     rcx, aSdlTouchMouseE; "SDL_TOUCH_MOUSE_EVENTS"
+  .text:0000000180074920                 call    SDL_AddHintCallback_0
+  .text:0000000180074925                 mov     r8, rbx
+  .text:0000000180074928                 lea     rdx, SDL_MouseTouchEventsChanged
+  .text:000000018007492F                 lea     rcx, aSdlMouseTouchE; "SDL_MOUSE_TOUCH_EVENTS"
+  .text:0000000180074936                 call    SDL_AddHintCallback_0
+  .text:000000018007493B                 mov     r8, rbx
+  .text:000000018007493E                 lea     rdx, SDL_PenMouseEventsChanged
+  .text:0000000180074945                 lea     rcx, aSdlPenMouseEve; "SDL_PEN_MOUSE_EVENTS"
+  .text:000000018007494C                 call    SDL_AddHintCallback_0
+  .text:0000000180074951                 mov     r8, rbx
+  .text:0000000180074954                 lea     rdx, SDL_PenTouchEventsChanged
+  .text:000000018007495B                 lea     rcx, aSdlPenTouchEve; "SDL_PEN_TOUCH_EVENTS"
+  .text:0000000180074962                 call    SDL_AddHintCallback_0
+  .text:0000000180074967                 mov     r8, rbx
+  .text:000000018007496A                 lea     rdx, SDL_MouseAutoCaptureChanged
+  .text:0000000180074971                 lea     rcx, aSdlMouseAutoCa; "SDL_MOUSE_AUTO_CAPTURE"
+  .text:0000000180074978                 call    SDL_AddHintCallback_0
+  .text:000000018007497D                 mov     r8, rbx
+  .text:0000000180074980                 lea     rdx, SDL_MouseRelativeWarpMotionChanged
+  .text:0000000180074987                 lea     rcx, aSdlMouseRelati_2; "SDL_MOUSE_RELATIVE_WARP_MOTION"
+  .text:000000018007498E                 call    SDL_AddHintCallback_0
+  .text:0000000180074993                 mov     r8, rbx
+  .text:0000000180074996                 lea     rdx, SDL_MouseRelativeCursorVisibleChanged
+  .text:000000018007499D                 lea     rcx, aSdlMouseRelati_3; "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
+  .text:00000001800749A4                 call    SDL_AddHintCallback_0
+  .text:00000001800749A9                 mov     r8, rbx
+  .text:00000001800749AC                 lea     rdx, SDL_MouseIntegerModeChanged
+  .text:00000001800749B3                 lea     rcx, aSdlMouseIntege; "SDL_MOUSE_INTEGER_MODE"
+  .text:00000001800749BA                 call    SDL_AddHintCallback_0
+  .text:00000001800749BF                 lea     rax, SDL_DestroyHashValue
+  .text:00000001800749C6                 ; _QWORD
+  .text:00000001800749C6                 mov     [rsp+38h+var_10], 0; _QWORD
+  .text:00000001800749CF                 ; _QWORD
+  .text:00000001800749CF                 lea     r9, SDL_KeyMatchID; _QWORD
+  .text:00000001800749D6                 ; _QWORD
+  .text:00000001800749D6                 mov     [rsp+38h+var_18], rax; _QWORD
+  .text:00000001800749DB                 ; _QWORD
+  .text:00000001800749DB                 lea     r8, SDL_HashID; _QWORD
+  .text:00000001800749E2                 mov     byte ptr [rbx+0F0h], 0; 0F0h = SDL_Mouse::was_touch_mouse_events
+  .text:00000001800749E9                 ; bool
+  .text:00000001800749E9                 mov     dl, 1; bool
+  .text:00000001800749EB                 mov     byte ptr [rbx+128h], 1; 128h = SDL_Mouse::cursor_visible
+  .text:00000001800749F2                 ; _QWORD
+  .text:00000001800749F2                 xor     ecx, ecx; _QWORD
+  .text:00000001800749F4                 call    SDL_CreateHashTable
+  .text:00000001800749F9                 mov     cs:SDL_mouse_names, rax
+  .text:0000000180074A00                 mov     al, 1
+  .text:0000000180074A02                 add     rsp, 30h
+  .text:0000000180074A06                 pop     rbx
+  .text:0000000180074A07                 retn
+procedure: |-
+  char SDL_PreInitMouse()
+  {
+    SDL_Mouse *Mouse; // rax
+    SDL_Mouse *v1; // rbx
+
+    Mouse = (SDL_Mouse *)SDL_GetMouse();
+    SDL_mouse_initialized = 1;
+    v1 = Mouse;
+    SDL_memset_0(Mouse, 0, 312);
+    SDL_AddHintCallback_0("SDL_MOUSE_DOUBLE_CLICK_TIME", SDL_MouseDoubleClickTimeChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_DOUBLE_CLICK_RADIUS", SDL_MouseDoubleClickRadiusChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_NORMAL_SPEED_SCALE", SDL_MouseNormalSpeedScaleChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_RELATIVE_SPEED_SCALE", SDL_MouseRelativeSpeedScaleChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_RELATIVE_SYSTEM_SCALE", SDL_MouseRelativeSystemScaleChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_RELATIVE_MODE_CENTER", SDL_MouseRelativeModeCenterChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE", SDL_MouseWarpEmulationChanged, v1);
+    SDL_AddHintCallback_0("SDL_TOUCH_MOUSE_EVENTS", SDL_TouchMouseEventsChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_TOUCH_EVENTS", SDL_MouseTouchEventsChanged, v1);
+    SDL_AddHintCallback_0("SDL_PEN_MOUSE_EVENTS", SDL_PenMouseEventsChanged, v1);
+    SDL_AddHintCallback_0("SDL_PEN_TOUCH_EVENTS", SDL_PenTouchEventsChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_AUTO_CAPTURE", SDL_MouseAutoCaptureChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_RELATIVE_WARP_MOTION", SDL_MouseRelativeWarpMotionChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_RELATIVE_CURSOR_VISIBLE", SDL_MouseRelativeCursorVisibleChanged, v1);
+    SDL_AddHintCallback_0("SDL_MOUSE_INTEGER_MODE", SDL_MouseIntegerModeChanged, v1);
+    v1->was_touch_mouse_events = 0;
+    v1->cursor_visible = 1;
+    SDL_mouse_names = SDL_CreateHashTable(0, 1, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, 0);
+    return 1;
+  }
