@@ -14,7 +14,7 @@ modules:
           - SDL_QuitMouse.{platform}.yaml
         platform: windows
 
-      - name: find-SDL_GetMouse-AND-SDL_mouse_initialized-windows # by LLM_DECOMPILE SDL_PreInitMouse, 
+      - name: find-SDL_GetMouse-AND-SDL_mouse_initialized-windows # by LLM_DECOMPILE SDL_PreInitMouse
         expected_input:
           - SDL_PreInitMouse.{platform}.yaml
         expected_output:
@@ -23,6 +23,21 @@ modules:
           - SDL_Mouse_was_touch_mouse_events.{platform}.yaml # F0h     bool was_touch_mouse_events;
           - SDL_Mouse_cursor_visible.{platform}.yaml         # 128h bool cursor_visible;
           - SDL_MouseWarpEmulationChanged.{platform}.yaml    # func
+        platform: windows
+
+      - name: find-SDL_SetRelativeMouseMode-AND-SDL_Mouse_warp_emulation_active-windows # by LLM_DECOMPILE SDL_MouseWarpEmulationChanged
+        expected_input:
+          - SDL_MouseWarpEmulationChanged.{platform}.yaml
+        expected_output:
+          - SDL_SetRelativeMouseMode.{platform}.yaml         # func
+          - SDL_Mouse_warp_emulation_active.{platform}.yaml  # C6h     bool warp_emulation_active;
+        platform: windows
+
+      - name: find-SDL_Mouse_relative_mode-windows # by LLM_DECOMPILE SDL_SetRelativeMouseMode
+        expected_input:
+          - SDL_SetRelativeMouseMode.{platform}.yaml
+        expected_output:
+          - SDL_Mouse_relative_mode.{platform}.yaml          # C1h     bool relative_mode;
         platform: windows
 
     symbols:
@@ -53,7 +68,20 @@ modules:
 
       - name: SDL_MouseWarpEmulationChanged
         category: func
-        
+
+      - name: SDL_SetRelativeMouseMode
+        category: func
+
+      - name: SDL_Mouse_warp_emulation_active
+        category: structmember
+        struct: SDL_Mouse
+        member: warp_emulation_active
+
+      - name: SDL_Mouse_relative_mode
+        category: structmember
+        struct: SDL_Mouse
+        member: relative_mode
+
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
     path_linux: game/bin/linuxsteamrt64/libvphysics2.so

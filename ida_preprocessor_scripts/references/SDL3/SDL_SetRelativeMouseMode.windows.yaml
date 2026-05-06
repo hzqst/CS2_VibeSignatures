@@ -1,0 +1,122 @@
+func_name: SDL_SetRelativeMouseMode
+func_va: '0x180075b30'
+disasm_code: |-
+  .text:0000000180075B30                 mov     [rsp+arg_0], rbx
+  .text:0000000180075B35                 mov     [rsp+arg_8], rsi
+  .text:0000000180075B3A                 push    rdi
+  .text:0000000180075B3B                 sub     rsp, 20h
+  .text:0000000180075B3F                 movzx   edi, cl
+  .text:0000000180075B42                 call    SDL_GetMouse
+  .text:0000000180075B47                 mov     rsi, rax
+  .text:0000000180075B4A                 call    SDL_GetKeyboardFocus_0
+  .text:0000000180075B4F                 mov     rbx, rax
+  .text:0000000180075B52                 test    dil, dil
+  .text:0000000180075B55                 jnz     short loc_180075B5E
+  .text:0000000180075B57                 mov     [rsi+0C6h], dil
+  .text:0000000180075B5E                 cmp     dil, [rsi+0C1h]             ; 0C1h = SDL_Mouse_relative_mode (structmember)
+  .text:0000000180075B65                 jz      loc_180075C14
+  .text:0000000180075B6B                 mov     rax, [rsi+40h]
+  .text:0000000180075B6F                 test    rax, rax
+  .text:0000000180075B72                 jnz     short loc_180075B8F
+  .text:0000000180075B74                 lea     rcx, aThatOperationI; "That operation is not supported"
+  .text:0000000180075B7B                 mov     rbx, [rsp+28h+arg_0]
+  .text:0000000180075B80                 mov     rsi, [rsp+28h+arg_8]
+  .text:0000000180075B85                 add     rsp, 20h
+  .text:0000000180075B89                 pop     rdi
+  .text:0000000180075B8A                 jmp     SDL_SetError_0
+  .text:0000000180075B8F                 movzx   ecx, dil
+  .text:0000000180075B93                 call    rax
+  .text:0000000180075B95                 test    al, al
+  .text:0000000180075B97                 jnz     short loc_180075BA9
+  .text:0000000180075B99                 mov     rbx, [rsp+28h+arg_0]
+  .text:0000000180075B9E                 mov     rsi, [rsp+28h+arg_8]
+  .text:0000000180075BA3                 add     rsp, 20h
+  .text:0000000180075BA7                 pop     rdi
+  .text:0000000180075BA8                 retn
+  .text:0000000180075BA9                 mov     [rsi+0C1h], dil             ; 0C1h = SDL_Mouse_relative_mode (structmember)
+  .text:0000000180075BB0                 test    dil, dil
+  .text:0000000180075BB3                 jz      short loc_180075BD1
+  .text:0000000180075BB5                 call    SDL_RedrawCursor
+  .text:0000000180075BBA                 test    rbx, rbx
+  .text:0000000180075BBD                 jz      short loc_180075C0A
+  .text:0000000180075BBF                 mov     rcx, rbx
+  .text:0000000180075BC2                 call    SDL_SetMouseFocus
+  .text:0000000180075BC7                 mov     rcx, rbx
+  .text:0000000180075BCA                 call    SDL_UpdateWindowGrab
+  .text:0000000180075BCF                 jmp     short loc_180075BF9
+  .text:0000000180075BD1                 test    rbx, rbx
+  .text:0000000180075BD4                 jz      short loc_180075C05
+  .text:0000000180075BD6                 mov     rcx, rbx
+  .text:0000000180075BD9                 call    SDL_UpdateWindowGrab
+  .text:0000000180075BDE                 ; a3
+  .text:0000000180075BDE                 movss   xmm2, dword ptr [rsi+94h]; a3
+  .text:0000000180075BE6                 ; a4
+  .text:0000000180075BE6                 mov     r9b, 1; a4
+  .text:0000000180075BE9                 ; X
+  .text:0000000180075BE9                 movss   xmm1, dword ptr [rsi+90h]; X
+  .text:0000000180075BF1                 ; a1
+  .text:0000000180075BF1                 mov     rcx, rbx; a1
+  .text:0000000180075BF4                 call    SDL_PerformWarpMouseInWindow
+  .text:0000000180075BF9                 ; bool
+  .text:0000000180075BF9                 xor     ecx, ecx; bool
+  .text:0000000180075BFB                 call    SDL_UpdateMouseCapture
+  .text:0000000180075C00                 test    dil, dil
+  .text:0000000180075C03                 jnz     short loc_180075C0A
+  .text:0000000180075C05                 call    SDL_RedrawCursor
+  .text:0000000180075C0A                 mov     ecx, 400h
+  .text:0000000180075C0F                 call    SDL_FlushEvent_0
+  .text:0000000180075C14                 mov     rbx, [rsp+28h+arg_0]
+  .text:0000000180075C19                 mov     al, 1
+  .text:0000000180075C1B                 mov     rsi, [rsp+28h+arg_8]
+  .text:0000000180075C20                 add     rsp, 20h
+  .text:0000000180075C24                 pop     rdi
+  .text:0000000180075C25                 retn
+procedure: |-
+  void __fastcall SDL_SetRelativeMouseMode(bool a1)
+  {
+    SDL_Mouse *Mouse; // rsi
+    _BYTE *KeyboardFocus_0; // rbx
+    bool (*SetRelativeMouseMode)(bool); // rax
+
+    Mouse = (SDL_Mouse *)SDL_GetMouse();
+    KeyboardFocus_0 = (_BYTE *)SDL_GetKeyboardFocus_0();
+    if ( !a1 )
+      Mouse->warp_emulation_active = 0;
+    if ( a1 != Mouse->relative_mode ) // 0xC1 = SDL_Mouse_relative_mode (structmember)
+    {
+      SetRelativeMouseMode = Mouse->SetRelativeMouseMode;
+      if ( !SetRelativeMouseMode )
+      {
+        SDL_SetError_0("That operation is not supported");
+        return;
+      }
+      if ( ((unsigned __int8 (__fastcall *)(bool))SetRelativeMouseMode)(a1) )
+      {
+        Mouse->relative_mode = a1; // 0xC1 = SDL_Mouse_relative_mode (structmember)
+        if ( a1 )
+        {
+          SDL_RedrawCursor();
+          if ( !KeyboardFocus_0 )
+            goto LABEL_14;
+          SDL_SetMouseFocus((__int64)KeyboardFocus_0);
+          SDL_UpdateWindowGrab((__int64)KeyboardFocus_0);
+        }
+        else
+        {
+          if ( !KeyboardFocus_0 )
+          {
+  LABEL_13:
+            SDL_RedrawCursor();
+            goto LABEL_14;
+          }
+          SDL_UpdateWindowGrab((__int64)KeyboardFocus_0);
+          SDL_PerformWarpMouseInWindow(KeyboardFocus_0, Mouse->x, Mouse->y, 1);
+        }
+        SDL_UpdateMouseCapture(0);
+        if ( !a1 )
+          goto LABEL_13;
+  LABEL_14:
+        SDL_FlushEvent_0(1024);
+      }
+    }
+  }

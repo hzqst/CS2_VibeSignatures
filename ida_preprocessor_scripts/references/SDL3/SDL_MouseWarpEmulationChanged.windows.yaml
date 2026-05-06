@@ -1,0 +1,36 @@
+func_name: SDL_MouseWarpEmulationChanged
+func_va: '0x180074620'
+disasm_code: |-
+  .text:0000000180074620                 push    rbx
+  .text:0000000180074622                 sub     rsp, 20h
+  .text:0000000180074626                 mov     rbx, rcx
+  .text:0000000180074629                 mov     dl, 1
+  .text:000000018007462B                 mov     rcx, r9
+  .text:000000018007462E                 call    SDL_GetStringBoolean
+  .text:0000000180074633                 mov     [rbx+0C5h], al
+  .text:0000000180074639                 test    al, al
+  .text:000000018007463B                 jnz     short loc_180074653
+  .text:000000018007463D                 cmp     [rbx+0C6h], al              ; 0C6h = SDL_Mouse_warp_emulation_active (structmember)
+  .text:0000000180074643                 jz      short loc_180074653
+  .text:0000000180074645                 ; bool
+  .text:0000000180074645                 xor     ecx, ecx; bool
+  .text:0000000180074647                 call    SDL_SetRelativeMouseMode    ; SDL_SetRelativeMouseMode (func)
+  .text:000000018007464C                 mov     byte ptr [rbx+0C6h], 0     ; 0C6h = SDL_Mouse_warp_emulation_active (structmember)
+  .text:0000000180074653                 add     rsp, 20h
+  .text:0000000180074657                 pop     rbx
+  .text:0000000180074658                 retn
+procedure: |-
+  char __fastcall SDL_MouseWarpEmulationChanged(SDL_Mouse *a1, __int64 a2, __int64 a3, __int64 a4)
+  {
+    char result; // al
+
+    LOBYTE(a2) = 1;
+    result = SDL_GetStringBoolean(a4, a2);
+    a1->warp_emulation_hint = result;
+    if ( !result && a1->warp_emulation_active ) // 0xC6 = SDL_Mouse_warp_emulation_active (structmember)
+    {
+      result = SDL_SetRelativeMouseMode(0); // SDL_SetRelativeMouseMode (func)
+      a1->warp_emulation_active = 0; // 0xC6 = SDL_Mouse_warp_emulation_active (structmember)
+    }
+    return result;
+  }
