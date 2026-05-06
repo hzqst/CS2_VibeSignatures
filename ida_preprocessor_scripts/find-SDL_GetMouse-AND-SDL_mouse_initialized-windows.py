@@ -5,6 +5,7 @@ from ida_analyze_util import preprocess_common_skill
 
 TARGET_FUNCTION_NAMES = [
     "SDL_GetMouse",
+    "SDL_MouseWarpEmulationChanged",
 ]
 
 TARGET_GLOBALVAR_NAMES = [
@@ -35,6 +36,11 @@ LLM_DECOMPILE = [
     ),
     (
         "SDL_Mouse_cursor_visible",
+        "prompt/call_llm_decompile.md",
+        "references/SDL3/SDL_PreInitMouse.{platform}.yaml",
+    ),
+    (
+        "SDL_MouseWarpEmulationChanged",
         "prompt/call_llm_decompile.md",
         "references/SDL3/SDL_PreInitMouse.{platform}.yaml",
     ),
@@ -86,6 +92,16 @@ GENERATE_YAML_DESIRED_FIELDS = [
             "size",
             "offset_sig",
             "offset_sig_disp",
+        ],
+    ),
+    (
+        "SDL_MouseWarpEmulationChanged",
+        [
+            "func_name",
+            "func_sig",
+            "func_va",
+            "func_rva",
+            "func_size",
         ],
     ),
 ]

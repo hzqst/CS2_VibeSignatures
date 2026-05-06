@@ -22,6 +22,7 @@ modules:
           - SDL_mouse_initialized.{platform}.yaml            # gv
           - SDL_Mouse_was_touch_mouse_events.{platform}.yaml # F0h     bool was_touch_mouse_events;
           - SDL_Mouse_cursor_visible.{platform}.yaml         # 128h bool cursor_visible;
+          - SDL_MouseWarpEmulationChanged.{platform}.yaml    # func
         platform: windows
 
     symbols:
@@ -49,6 +50,9 @@ modules:
         category: structmember
         struct: SDL_Mouse
         member: cursor_visible
+
+      - name: SDL_MouseWarpEmulationChanged
+        category: func
         
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
