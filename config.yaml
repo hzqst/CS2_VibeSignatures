@@ -1,4 +1,97 @@
 modules:
+  - name: SDL3
+    path_windows: game/bin/win64/SDL3.dll
+    path_linux: game/bin/linuxsteamrt64/libSDL3.so.0
+
+    skills:
+      - name: find-SDL_PreInitMouse-windows # xref_signatures "B0 01 48 83 C4 ??" + xref_strings "FULLMATCH:SDL_MOUSE_DOUBLE_CLICK_TIME"
+        expected_output:
+          - SDL_PreInitMouse.{platform}.yaml
+        platform: windows
+
+      - name: find-SDL_QuitMouse-windows # exclude_signatures "B0 01 48 83 C4 ??" + xref_strings "FULLMATCH:SDL_MOUSE_DOUBLE_CLICK_TIME"
+        expected_output:
+          - SDL_QuitMouse.{platform}.yaml
+        platform: windows
+
+      - name: find-SDL_GetMouse-AND-SDL_mouse_initialized-windows # by LLM_DECOMPILE SDL_PreInitMouse
+        expected_input:
+          - SDL_PreInitMouse.{platform}.yaml
+        expected_output:
+          - SDL_GetMouse.{platform}.yaml                     # func, func_sig_allow_across_function_boundary: true
+          - SDL_mouse_initialized.{platform}.yaml            # gv
+          - SDL_Mouse_was_touch_mouse_events.{platform}.yaml # F0h     bool was_touch_mouse_events;
+          - SDL_Mouse_cursor_visible.{platform}.yaml         # 128h bool cursor_visible;
+          - SDL_MouseWarpEmulationChanged.{platform}.yaml    # func
+        platform: windows
+
+      - name: find-SDL_SetRelativeMouseMode-AND-SDL_Mouse_warp_emulation_active-windows # by LLM_DECOMPILE SDL_MouseWarpEmulationChanged
+        expected_input:
+          - SDL_MouseWarpEmulationChanged.{platform}.yaml
+        expected_output:
+          - SDL_SetRelativeMouseMode.{platform}.yaml         # func
+          - SDL_Mouse_warp_emulation_active.{platform}.yaml  # C6h     bool warp_emulation_active;
+        platform: windows
+
+      - name: find-SDL_Mouse_relative_mode-AND-SDL_Mouse_SetRelativeMouseMode-AND-SDL_PerformWarpMouseInWindow-windows # by LLM_DECOMPILE SDL_SetRelativeMouseMode
+        expected_input:
+          - SDL_SetRelativeMouseMode.{platform}.yaml
+        expected_output:
+          - SDL_Mouse_relative_mode.{platform}.yaml          # C1h     bool relative_mode;
+          - SDL_Mouse_SetRelativeMouseMode.{platform}.yaml   # 40h     bool (*SetRelativeMouseMode)(bool enabled);
+          - SDL_PerformWarpMouseInWindow.{platform}.yaml     # func
+        platform: windows
+
+    symbols:
+      - name: SDL_PreInitMouse
+        category: func
+
+      - name: SDL_QuitMouse
+        category: func
+
+      - name: SDL_GetMouse
+        category: func
+
+      - name: SDL_mouse_initialized
+        category: gv
+
+      - name: SDL_Mouse
+        category: struct
+
+      - name: SDL_Mouse_was_touch_mouse_events
+        category: structmember
+        struct: SDL_Mouse
+        member: was_touch_mouse_events
+        
+      - name: SDL_Mouse_cursor_visible
+        category: structmember
+        struct: SDL_Mouse
+        member: cursor_visible
+
+      - name: SDL_MouseWarpEmulationChanged
+        category: func
+
+      - name: SDL_SetRelativeMouseMode
+        category: func
+
+      - name: SDL_Mouse_warp_emulation_active
+        category: structmember
+        struct: SDL_Mouse
+        member: warp_emulation_active
+
+      - name: SDL_Mouse_relative_mode
+        category: structmember
+        struct: SDL_Mouse
+        member: relative_mode
+
+      - name: SDL_Mouse_SetRelativeMouseMode
+        category: structmember
+        struct: SDL_Mouse
+        member: SetRelativeMouseMode
+
+      - name: SDL_PerformWarpMouseInWindow
+        category: func
+
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
     path_linux: game/bin/linuxsteamrt64/libvphysics2.so
