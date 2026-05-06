@@ -13,9 +13,9 @@ disasm_code: |-
   .text:0000000180075B52                 test    dil, dil
   .text:0000000180075B55                 jnz     short loc_180075B5E
   .text:0000000180075B57                 mov     [rsi+0C6h], dil
-  .text:0000000180075B5E                 cmp     dil, [rsi+0C1h]             ; 0C1h = SDL_Mouse_relative_mode (structmember)
+  .text:0000000180075B5E                 cmp     dil, [rsi+0C1h]             ; 0C1h = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)
   .text:0000000180075B65                 jz      loc_180075C14
-  .text:0000000180075B6B                 mov     rax, [rsi+40h]
+  .text:0000000180075B6B                 mov     rax, [rsi+40h]              ; 40h = SDL_Mouse::SetRelativeMouseMode (structmember, struct=SDL_Mouse, member=SetRelativeMouseMode)
   .text:0000000180075B6F                 test    rax, rax
   .text:0000000180075B72                 jnz     short loc_180075B8F
   .text:0000000180075B74                 lea     rcx, aThatOperationI; "That operation is not supported"
@@ -33,7 +33,7 @@ disasm_code: |-
   .text:0000000180075BA3                 add     rsp, 20h
   .text:0000000180075BA7                 pop     rdi
   .text:0000000180075BA8                 retn
-  .text:0000000180075BA9                 mov     [rsi+0C1h], dil             ; 0C1h = SDL_Mouse_relative_mode (structmember)
+  .text:0000000180075BA9                 mov     [rsi+0C1h], dil             ; 0C1h = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)
   .text:0000000180075BB0                 test    dil, dil
   .text:0000000180075BB3                 jz      short loc_180075BD1
   .text:0000000180075BB5                 call    SDL_RedrawCursor
@@ -56,7 +56,7 @@ disasm_code: |-
   .text:0000000180075BE9                 movss   xmm1, dword ptr [rsi+90h]; X
   .text:0000000180075BF1                 ; a1
   .text:0000000180075BF1                 mov     rcx, rbx; a1
-  .text:0000000180075BF4                 call    SDL_PerformWarpMouseInWindow
+  .text:0000000180075BF4                 call    SDL_PerformWarpMouseInWindow ; SDL_PerformWarpMouseInWindow (func)
   .text:0000000180075BF9                 ; bool
   .text:0000000180075BF9                 xor     ecx, ecx; bool
   .text:0000000180075BFB                 call    SDL_UpdateMouseCapture
@@ -82,9 +82,9 @@ procedure: |-
     KeyboardFocus_0 = (_BYTE *)SDL_GetKeyboardFocus_0();
     if ( !a1 )
       Mouse->warp_emulation_active = 0;
-    if ( a1 != Mouse->relative_mode ) // 0xC1 = SDL_Mouse_relative_mode (structmember)
+    if ( a1 != Mouse->relative_mode ) // 0xC1 = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)
     {
-      SetRelativeMouseMode = Mouse->SetRelativeMouseMode;
+      SetRelativeMouseMode = Mouse->SetRelativeMouseMode; // 0x40 = SDL_Mouse::SetRelativeMouseMode (structmember, struct=SDL_Mouse, member=SetRelativeMouseMode)
       if ( !SetRelativeMouseMode )
       {
         SDL_SetError_0("That operation is not supported");
@@ -92,7 +92,7 @@ procedure: |-
       }
       if ( ((unsigned __int8 (__fastcall *)(bool))SetRelativeMouseMode)(a1) )
       {
-        Mouse->relative_mode = a1; // 0xC1 = SDL_Mouse_relative_mode (structmember)
+        Mouse->relative_mode = a1; // 0xC1 = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)
         if ( a1 )
         {
           SDL_RedrawCursor();
@@ -110,7 +110,7 @@ procedure: |-
             goto LABEL_14;
           }
           SDL_UpdateWindowGrab((__int64)KeyboardFocus_0);
-          SDL_PerformWarpMouseInWindow(KeyboardFocus_0, Mouse->x, Mouse->y, 1);
+          SDL_PerformWarpMouseInWindow(KeyboardFocus_0, Mouse->x, Mouse->y, 1); // SDL_PerformWarpMouseInWindow (func)
         }
         SDL_UpdateMouseCapture(0);
         if ( !a1 )

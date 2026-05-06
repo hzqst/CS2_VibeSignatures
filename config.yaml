@@ -33,11 +33,13 @@ modules:
           - SDL_Mouse_warp_emulation_active.{platform}.yaml  # C6h     bool warp_emulation_active;
         platform: windows
 
-      - name: find-SDL_Mouse_relative_mode-windows # by LLM_DECOMPILE SDL_SetRelativeMouseMode
+      - name: find-SDL_Mouse_relative_mode-AND-SDL_Mouse_SetRelativeMouseMode-AND-SDL_PerformWarpMouseInWindow-windows # by LLM_DECOMPILE SDL_SetRelativeMouseMode
         expected_input:
           - SDL_SetRelativeMouseMode.{platform}.yaml
         expected_output:
           - SDL_Mouse_relative_mode.{platform}.yaml          # C1h     bool relative_mode;
+          - SDL_Mouse_SetRelativeMouseMode.{platform}.yaml   # 40h     bool (*SetRelativeMouseMode)(bool enabled);
+          - SDL_PerformWarpMouseInWindow.{platform}.yaml     # func
         platform: windows
 
     symbols:
@@ -81,6 +83,14 @@ modules:
         category: structmember
         struct: SDL_Mouse
         member: relative_mode
+
+      - name: SDL_Mouse_SetRelativeMouseMode
+        category: structmember
+        struct: SDL_Mouse
+        member: SetRelativeMouseMode
+
+      - name: SDL_PerformWarpMouseInWindow
+        category: func
 
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
