@@ -392,7 +392,21 @@ where `{gamever}` can be obtained from `.env` -> `CS2VIBE_GAMEVER`.
 
 **IMPORTANT -- Run `generate_reference_yaml.py` sequentially, NOT in parallel.** All invocations share the same IDA MCP connection. Running them in parallel will cause connection conflicts and failures. Run one command at a time, waiting for each to complete before starting the next.
 
-YOU MUST: rename known symbols / add necessary comments in the generated reference YAMLs so the LLM can find desired symbols by comparing reference ones with raw procedure/disassembly read from new binaries. See the `convert-finder-skill-to-preprocessor-scripts` SKILL.md Step 5 for detailed annotation examples.
+YOU MUST: rename known symbols / add necessary comments in the generated reference YAMLs so the LLM can find desired symbols by comparing reference ones with raw procedure/disassembly read from new binaries. Always annotate **both** `disasm_code` and `procedure` fields. Format by target type:
+
+**Direct function call** — rename `sub_XXXX` to the target function name in both fields.
+
+**Virtual function call** — add offset comment:
+- `disasm_code`: `call    qword ptr [rax+3F0h]  ; 3F0h = CBaseEntity_OnTakeDamage`
+- `procedure`: `(*a1 + 1008LL)...  // 1008LL = 0x3F0 = CBaseEntity_OnTakeDamage`
+
+**Global variable** — rename `qword_XXXX` to the target name in both fields.
+
+**Struct member access** — add comments using the `(structmember, struct=X, member=Y)` tag:
+- `disasm_code`: `cmp  dil, [rsi+0C1h]  ; 0C1h = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)`
+- `procedure`: `a1 != Mouse->field  // 0xC1 = SDL_Mouse::relative_mode (structmember, struct=SDL_Mouse, member=relative_mode)`
+
+The `(structmember, struct=StructName, member=member_name)` tag is **required** for all struct member annotations — it tells the LLM which struct and member name to report back. Annotate every access site for the target field.
 
 **IMPORTANT -- When the predecessor is a NEW function (no existing output YAMLs):** If the predecessor function is brand new (discovered by another new script you're creating at the same time), its output YAMLs don't exist yet and `generate_reference_yaml.py` cannot resolve its address. You must use a **multi-phase workflow**:
 

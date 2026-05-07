@@ -58,6 +58,24 @@ async def preprocess_skill(
     )
 ```
 
+## Reference YAML Annotation
+
+In the predecessor YAML, annotate every struct field access that corresponds to a target member. Use the `(structmember, struct=X, member=Y)` tag on **all** access sites for that field in both `disasm_code` and `procedure`.
+
+`disasm_code` (IDA hex with `h` suffix, `;` comment):
+
+```asm
+  .text:0000000180C99633                 mov     ecx, [rdi+240h]  ; 240h = CCheckTransmitInfo::m_nPlayerSlot (structmember, struct=CCheckTransmitInfo, member=m_nPlayerSlot)
+```
+
+`procedure` (C `//` comment, decimal then hex):
+
+```c
+*(unsigned int *)(*v6 + 576);  // 576 = 0x240 = CCheckTransmitInfo::m_nPlayerSlot (structmember, struct=CCheckTransmitInfo, member=m_nPlayerSlot)
+```
+
+Multiple access sites for the same field all need the same annotation — the LLM uses them together to confirm the offset.
+
 ## Key differences from Pattern D
 
 - Uses `TARGET_STRUCT_MEMBER_NAMES` instead of `TARGET_FUNCTION_NAMES`
