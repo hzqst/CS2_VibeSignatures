@@ -40,7 +40,7 @@ Use `-checkonly` in CI or preflight scripts when you only need to know whether a
 ### 2. Find and generate signatures for all symbols declared in `config.yaml`
 
  ```bash
- uv run ida_analyze_bin.py -gamever 14156 [-oldgamever=14155] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-vcall_finder=g_pNetworkMessages|*] [-llm_model=gpt-4o] [-llm_apikey=your-key] [-llm_baseurl=https://api.example.com/v1] [-llm_temperature=0.2] [-llm_effort=medium] [-llm_fake_as=codex] [-debug]
+ uv run ida_analyze_bin.py -gamever 14156 [-oldgamever=14155] [-configyaml=path/to/config.yaml] [-modules=server] [-platform=windows] [-agent=claude/codex/"claude.cmd"/"codex.cmd"] [-maxretry=3] [-vcall_finder=g_pNetworkMessages|*] [-llm_model=gpt-4o] [-llm_apikey=your-key] [-llm_baseurl=https://api.example.com/v1] [-llm_temperature=0.2] [-llm_effort=medium] [-llm_fake_as=codex] [-rename] [-debug]
  ```
 
 * Shared LLM CLI parameters:
@@ -58,6 +58,8 @@ Use `-checkonly` in CI or preflight scripts when you only need to know whether a
 * `-agent="claude.cmd"` is for claude cli installed from Windows npm
 
 * We prefer programmatic preprocessor scripts > LLM_DECOMPILE based preprocessor scripts > Agent with `SKILL.md`
+
+* when `-rename` specified, run rename/comment post-processing over existing expected-output YAML files.
 
 #### vcall_finder related
 

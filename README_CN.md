@@ -62,6 +62,8 @@ uv run copy_depot_bin.py -gamever 14146 -platform all-platform -checkonly
 
 * 推荐实务中优先使用：纯程序化的预处理脚本 > 基于 LLM_DECOMPILE 的自动化反编译 > `SKILL.md`
 
+* 当指定了 `-rename` 时, 会根据已有的YAML里的信息来自动重命名所有已知的函数
+
 #### vcall_finder 相关
 
 * `-vcall_finder=g_pNetworkMessages` 会在模块级 `vcall_finder` 配置中筛选同名对象；`-vcall_finder=*` 会处理 `config.yaml` 中已声明的全部对象。
