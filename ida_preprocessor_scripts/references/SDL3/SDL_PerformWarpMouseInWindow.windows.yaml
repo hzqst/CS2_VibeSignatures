@@ -1,0 +1,93 @@
+func_name: SDL_PerformWarpMouseInWindow
+func_va: '0x1800746f0'
+disasm_code: |-
+  .text:00000001800746F0                 mov     [rsp+arg_0], rbx
+  .text:00000001800746F5                 push    rdi
+  .text:00000001800746F6                 sub     rsp, 50h
+  .text:00000001800746FA                 movaps  [rsp+58h+var_18], xmm6
+  .text:00000001800746FF                 movzx   edi, r9b
+  .text:0000000180074703                 movaps  [rsp+58h+var_28], xmm7
+  .text:0000000180074708                 movaps  xmm6, xmm2
+  .text:000000018007470B                 movaps  xmm7, xmm1
+  .text:000000018007470E                 mov     rbx, rcx
+  .text:0000000180074711                 call    SDL_GetMouse
+  .text:0000000180074716                 test    rbx, rbx
+  .text:0000000180074719                 jnz     short loc_18007472B
+  .text:000000018007471B                 mov     rbx, [rax+88h]  ; 88h = SDL_Mouse::focus (structmember, struct=SDL_Mouse, member=focus)
+  .text:0000000180074722                 test    rbx, rbx
+  .text:0000000180074725                 jz      loc_1800747B0
+  .text:000000018007472B                 test    byte ptr [rbx+48h], 40h
+  .text:000000018007472F                 jnz     short loc_1800747B0
+  .text:0000000180074731                 movzx   ecx, byte ptr [rax+0C1h]
+  .text:0000000180074738                 movss   dword ptr [rax+0A0h], xmm7  ; A0h = SDL_Mouse::last_x (structmember, struct=SDL_Mouse, member=last_x)
+  .text:0000000180074740                 movss   dword ptr [rax+0A4h], xmm6  ; A4h = SDL_Mouse::last_y (structmember, struct=SDL_Mouse, member=last_y)
+  .text:0000000180074748                 mov     byte ptr [rax+0C0h], 0  ; C0h = SDL_Mouse::has_position (structmember, struct=SDL_Mouse, member=has_position)
+  .text:000000018007474F                 test    cl, cl
+  .text:0000000180074751                 jz      short loc_18007477A
+  .text:0000000180074753                 test    dil, dil
+  .text:0000000180074756                 jnz     short loc_18007477A
+  .text:0000000180074758                 cmp     [rax+0C2h], dil  ; C2h = SDL_Mouse::relative_mode_warp_motion (structmember, struct=SDL_Mouse, member=relative_mode_warp_motion)
+  .text:000000018007475F                 jnz     short loc_18007477A
+  .text:0000000180074761                 movss   dword ptr [rax+90h], xmm7
+  .text:0000000180074769                 movss   dword ptr [rax+94h], xmm6
+  .text:0000000180074771                 mov     byte ptr [rax+0C0h], 1  ; C0h = SDL_Mouse::has_position (structmember, struct=SDL_Mouse, member=has_position)
+  .text:0000000180074778                 jmp     short loc_1800747B0
+  .text:000000018007477A                 mov     rdx, [rax+30h]  ; 30h = SDL_Mouse::WarpMouse (structmember, struct=SDL_Mouse, member=WarpMouse)
+  .text:000000018007477E                 test    rdx, rdx
+  .text:0000000180074781                 jz      short loc_180074794
+  .text:0000000180074783                 test    cl, cl
+  .text:0000000180074785                 jnz     short loc_180074794
+  .text:0000000180074787                 movaps  xmm2, xmm6
+  .text:000000018007478A                 movaps  xmm1, xmm7
+  .text:000000018007478D                 mov     rcx, rbx
+  .text:0000000180074790                 call    rdx
+  .text:0000000180074792                 jmp     short loc_1800747B0
+  .text:0000000180074794                 ; float
+  .text:0000000180074794                 movss   [rsp+58h+var_30], xmm6; float
+  .text:000000018007479A                 ; int
+  .text:000000018007479A                 xor     r9d, r9d; int
+  .text:000000018007479D                 ; int
+  .text:000000018007479D                 xor     r8d, r8d; int
+  .text:00000001800747A0                 ; X
+  .text:00000001800747A0                 movss   [rsp+58h+X], xmm7; X
+  .text:00000001800747A6                 ; int
+  .text:00000001800747A6                 mov     rdx, rbx; int
+  .text:00000001800747A9                 ; int
+  .text:00000001800747A9                 xor     ecx, ecx; int
+  .text:00000001800747AB                 call    SDL_PrivateSendMouseMotion
+  .text:00000001800747B0                 mov     rbx, [rsp+58h+arg_0]
+  .text:00000001800747B5                 movaps  xmm6, [rsp+58h+var_18]
+  .text:00000001800747BA                 movaps  xmm7, [rsp+58h+var_28]
+  .text:00000001800747BF                 add     rsp, 50h
+  .text:00000001800747C3                 pop     rdi
+  .text:00000001800747C4                 retn
+procedure: |-
+  void __fastcall SDL_PerformWarpMouseInWindow(_BYTE *window, float X, float y, char ignore_relative_mode)
+  {
+    SDL_Mouse *Mouse; // rax
+    bool relative_mode; // cl
+    bool (*WarpMouse)(void *, float, float); // rdx
+
+    Mouse = (SDL_Mouse *)SDL_GetMouse();
+    if ( (window || (window = Mouse->focus) != nullptr) && (window[72] & 0x40) == 0 )  // 0x88 = SDL_Mouse::focus (structmember, struct=SDL_Mouse, member=focus)
+    {
+      relative_mode = Mouse->relative_mode;
+      Mouse->last_x = X;  // 0xA0 = SDL_Mouse::last_x (structmember, struct=SDL_Mouse, member=last_x)
+      Mouse->last_y = y;  // 0xA4 = SDL_Mouse::last_y (structmember, struct=SDL_Mouse, member=last_y)
+      Mouse->has_position = 0;  // 0xC0 = SDL_Mouse::has_position (structmember, struct=SDL_Mouse, member=has_position)
+      if ( !relative_mode || ignore_relative_mode || Mouse->relative_mode_warp_motion )  // 0xC2 = SDL_Mouse::relative_mode_warp_motion (structmember, struct=SDL_Mouse, member=relative_mode_warp_motion)
+      {
+        WarpMouse = Mouse->WarpMouse;  // 0x30 = SDL_Mouse::WarpMouse (structmember, struct=SDL_Mouse, member=WarpMouse)
+        if ( !WarpMouse || relative_mode )
+          SDL_PrivateSendMouseMotion(0, (__int64)window, 0, 0, X, y);
+        else
+          ((void (__fastcall *)(_BYTE *, float, float))WarpMouse)(window, X, y);
+      }
+      else
+      {
+        Mouse->x = X;
+        Mouse->y = y;
+        Mouse->has_position = 1;  // 0xC0 = SDL_Mouse::has_position (structmember, struct=SDL_Mouse, member=has_position)
+      }
+    }
+  }
