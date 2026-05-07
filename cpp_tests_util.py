@@ -17,6 +17,10 @@ VFTABLE_HEADER_RE = re.compile(
     r"^\s*(?:VFTable|VTable) indices for '([^']+)' \((\d+) (?:entry|entries)\)\.\s*$"
 )
 VFTABLE_ENTRY_RE = re.compile(r"^\s*(\d+)\s+\|\s+(.+?)\s*$")
+RECORD_LAYOUT_ENTRY_RE = re.compile(r"^\s*(\d+)(?::[0-9\-]+)?\s+\|\s+(.+?)\s*$")
+RECORD_LAYOUT_SIZE_RE = re.compile(r"^\s*\|\s+\[sizeof=(\d+),")
+RECORD_KIND_RE = re.compile(r"^(?:struct|class|union)\s+(.+?)\s*$")
+IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
 def map_target_triple_to_platform(target_triple: str) -> Optional[str]:
@@ -129,6 +133,103 @@ def _extract_member_name(signature: str, class_name: str) -> str:
     if end < 0:
         end = len(tail)
     return tail[:end].strip()
+
+
+def parse_record_layouts(compiler_output: str) -> Dict[str, Dict[str, Any]]:
+    """
+    Parse clang `-fdump-record-layouts` output.
+
+    Returns:
+        {
+          "<StructName>": {
+            "sizeof": int | None,
+            "members_by_name": {
+              "<member>": {"offset": int, "declaration": "<field line>"}
+            },
+            "members_by_offset": {<offset>: ["<member>", ...]},
+            "member_count": int
+          },
+          ...
+        }
+    """
+    parsed: Dict[str, Dict[str, Any]] = {}
+    current_record: Optional[str] = None
+    expect_record_header = False
+
+    for raw_line in compiler_output.splitlines():
+        if raw_line.strip() == "*** Dumping AST Record Layout":
+            current_record = None
+            expect_record_header = True
+            continue
+
+        size_match = RECORD_LAYOUT_SIZE_RE.match(raw_line)
+        if size_match and current_record:
+            parsed[current_record]["sizeof"] = int(size_match.group(1))
+            current_record = None
+            continue
+
+        entry = RECORD_LAYOUT_ENTRY_RE.match(raw_line)
+        if not entry:
+            continue
+
+        offset = int(entry.group(1))
+        declaration = entry.group(2).strip()
+        record_name = _extract_record_name(declaration)
+        if record_name and (expect_record_header or current_record is None):
+            current_record = record_name
+            expect_record_header = False
+            parsed[current_record] = {
+                "sizeof": None,
+                "members_by_name": {},
+                "members_by_offset": {},
+                "member_count": 0,
+            }
+            continue
+
+        expect_record_header = False
+        if current_record is None:
+            continue
+
+        member_name = _extract_record_member_name(declaration)
+        if not member_name:
+            continue
+
+        parsed[current_record]["members_by_name"][member_name] = {
+            "offset": offset,
+            "declaration": declaration,
+        }
+        parsed[current_record]["members_by_offset"].setdefault(offset, []).append(
+            member_name
+        )
+
+    for record in parsed.values():
+        record["member_count"] = len(record["members_by_name"])
+
+    return parsed
+
+
+def _extract_record_name(declaration: str) -> str:
+    match = RECORD_KIND_RE.match(declaration.strip())
+    if not match:
+        return ""
+    return match.group(1).strip()
+
+
+def _extract_record_member_name(declaration: str) -> str:
+    text = declaration.strip()
+    if not text:
+        return ""
+    if re.match(r"^(?:struct|class|union)\s+[A-Za-z_][A-Za-z0-9_:<>]*$", text):
+        return ""
+
+    func_ptr = re.search(r"\(\*\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", text)
+    if func_ptr:
+        return func_ptr.group(1)
+
+    identifiers = IDENTIFIER_RE.findall(text)
+    if not identifiers:
+        return ""
+    return identifiers[-1]
 
 
 def _parse_int_maybe(value: Any) -> Optional[int]:
@@ -451,6 +552,206 @@ def load_reference_vtable_data(
     return None
 
 
+def load_merged_reference_structmember_data(
+    bindir: Path,
+    gamever: str,
+    struct_name: str,
+    platform: str,
+    reference_modules: Sequence[str],
+) -> Optional[Dict[str, Any]]:
+    """Load and merge YAML structmember offsets for a struct from all modules."""
+    if yaml is None:
+        raise RuntimeError("PyYAML is required to read reference YAML files")
+
+    merged: Dict[str, Any] = {
+        "mode": "merged",
+        "modules": [],
+        "files": [],
+        "members_by_name": {},
+        "conflicts": [],
+    }
+
+    for module in reference_modules:
+        module_dir = bindir / gamever / module
+        if not module_dir.is_dir():
+            continue
+
+        module_hit = False
+        for path in sorted(module_dir.glob(f"{struct_name}_*.{platform}.yaml")):
+            try:
+                with path.open("r", encoding="utf-8") as f:
+                    payload = yaml.safe_load(f) or {}
+            except Exception:
+                continue
+
+            if not isinstance(payload, dict):
+                continue
+            if str(payload.get("struct_name", "")).strip() != struct_name:
+                continue
+
+            parsed_offset = _parse_int_maybe(payload.get("offset"))
+            if parsed_offset is None:
+                continue
+
+            member_name = str(
+                payload.get("member_name")
+                or _normalize_reference_member_name(struct_name, None, path.stem)
+            ).strip()
+            if not member_name:
+                continue
+
+            module_hit = True
+            merged["files"].append(str(path))
+            parsed_size = _parse_int_maybe(payload.get("size"))
+            source = {
+                "module": module,
+                "path": str(path),
+                "member_name": member_name,
+                "offset": parsed_offset,
+                "size": parsed_size,
+            }
+
+            current_entry = merged["members_by_name"].get(member_name)
+            if current_entry is None:
+                merged["members_by_name"][member_name] = {
+                    "member_name": member_name,
+                    "offset": parsed_offset,
+                    "size": parsed_size,
+                    "path": str(path),
+                    "module": module,
+                    "sources": [source],
+                }
+                continue
+
+            current_entry["sources"].append(source)
+            if current_entry.get("offset") != parsed_offset:
+                _append_reference_conflict(
+                    merged["conflicts"],
+                    conflict_type="reference_conflict_structmember_offset",
+                    message=(
+                        f"Reference member '{member_name}' offset conflict: "
+                        f"{current_entry['module']}={hex(current_entry['offset'])} "
+                        f"vs {module}={hex(parsed_offset)}."
+                    ),
+                    sources=current_entry["sources"],
+                )
+
+        if module_hit:
+            merged["modules"].append(module)
+
+    if not merged["files"]:
+        return None
+    return merged
+
+
+def compare_compiler_record_layout_with_yaml(
+    *,
+    struct_name: str,
+    compiler_output: str,
+    bindir: Path,
+    gamever: str,
+    platform: str,
+    reference_modules: Sequence[str],
+) -> Dict[str, Any]:
+    """Compare clang record layout member offsets against YAML references."""
+    parsed_layouts = parse_record_layouts(compiler_output)
+    compiler_record = parsed_layouts.get(struct_name)
+    reference = load_merged_reference_structmember_data(
+        bindir=bindir,
+        gamever=gamever,
+        struct_name=struct_name,
+        platform=platform,
+        reference_modules=reference_modules,
+    )
+
+    reference_conflicts = list(reference.get("conflicts", [])) if reference else []
+    report: Dict[str, Any] = {
+        "comparison_kind": "record_layout",
+        "class_name": struct_name,
+        "struct_name": struct_name,
+        "platform": platform,
+        "requested_modules": list(reference_modules),
+        "compiler_found": compiler_record is not None,
+        "reference_found": reference is not None,
+        "reference_mode": "merged",
+        "reference_modules_merged": (
+            list(reference.get("modules", [])) if reference else []
+        ),
+        "reference_files_merged": list(reference.get("files", [])) if reference else [],
+        "reference_conflicts": reference_conflicts,
+        "differences": [],
+        "notes": [],
+    }
+
+    if reference_conflicts:
+        report["differences"].extend(reference_conflicts)
+
+    if compiler_record is None:
+        report["notes"].append(
+            f"No record layout section for struct '{struct_name}' found in compiler output."
+        )
+    else:
+        report["compiler_sizeof"] = compiler_record.get("sizeof")
+        report["compiler_member_count"] = compiler_record.get("member_count", 0)
+        report["compiler_members_by_name"] = compiler_record.get("members_by_name", {})
+
+    if reference is None:
+        report["notes"].append(
+            f"No matching structmember YAML found for modules: {', '.join(reference_modules)}"
+        )
+        return report
+
+    reference_members = reference.get("members_by_name", {})
+    report["reference_members_count"] = len(reference_members)
+    report["reference_members_by_name"] = reference_members
+
+    if compiler_record is None:
+        return report
+
+    compiler_members = compiler_record.get("members_by_name", {})
+    for member_name, ref_item in _sorted_struct_members(reference_members):
+        compiled = compiler_members.get(member_name)
+        expected_offset = ref_item.get("offset")
+        if compiled is None:
+            report["differences"].append(
+                {
+                    "type": "structmember_missing",
+                    "message": (
+                        f"Member '{member_name}' missing in compiler record layout "
+                        f"(reference offset: {hex(expected_offset)}, "
+                        f"file: {ref_item['path']})."
+                    ),
+                }
+            )
+            continue
+
+        actual_offset = compiled.get("offset")
+        if expected_offset != actual_offset:
+            report["differences"].append(
+                {
+                    "type": "structmember_offset_mismatch",
+                    "message": (
+                        f"Member '{member_name}' offset mismatch: "
+                        f"YAML={hex(expected_offset)} vs compiler={hex(actual_offset)}."
+                    ),
+                }
+            )
+
+    if not report["differences"]:
+        report["notes"].append("No differences detected for structmember offsets.")
+
+    return report
+
+
+def _sorted_struct_members(
+    members_by_name: Dict[str, Dict[str, Any]],
+) -> List[tuple[str, Dict[str, Any]]]:
+    return sorted(
+        members_by_name.items(),
+        key=lambda item: (item[1].get("offset", -1), item[0]),
+    )
+
+
 def compare_compiler_vtable_with_yaml(
     *,
     class_name: str,
@@ -713,6 +1014,68 @@ def format_vtable_compare_differences(report: Dict[str, Any]) -> List[str]:
     return lines
 
 
+def format_record_compare_report(
+    report: Dict[str, Any], *, include_differences: bool = True
+) -> List[str]:
+    """Format a record layout comparison report into human-readable lines."""
+    lines: List[str] = []
+    struct_name = report.get("struct_name", report.get("class_name", "unknown"))
+    lines.append(
+        f"Struct '{struct_name}' compare target platform: {report.get('platform', 'unknown')}"
+    )
+
+    if report.get("compiler_found"):
+        lines.append(
+            "Compiler record members: "
+            f"parsed={report.get('compiler_member_count', 0)}, "
+            f"sizeof={report.get('compiler_sizeof')}"
+        )
+    else:
+        lines.extend(report.get("notes", []))
+        return lines
+
+    lines.append("Reference mode: merged")
+    merged_modules = report.get("reference_modules_merged", [])
+    if merged_modules:
+        lines.append(f"Reference modules: {', '.join(merged_modules)}")
+    else:
+        lines.append("Reference modules:")
+    lines.append(f"Reference files merged: {len(report.get('reference_files_merged', []))}")
+    lines.append(f"Reference struct members: {report.get('reference_members_count', 0)}")
+    lines.append(
+        "Reference conflicts found: "
+        f"{len(report.get('reference_conflicts', []))}"
+    )
+
+    if include_differences:
+        lines.extend(format_record_compare_differences(report))
+
+    return lines
+
+
+def format_record_compare_differences(report: Dict[str, Any]) -> List[str]:
+    """Format record layout differences and notes."""
+    lines: List[str] = []
+    diffs = report.get("differences", [])
+    if diffs:
+        lines.append(f"Differences found: {len(diffs)}")
+        for item in diffs:
+            lines.append(f"- {item['message']}")
+    else:
+        for note in report.get("notes", []):
+            lines.append(note)
+    return lines
+
+
+def format_record_differences_for_agent(report: Dict[str, Any]) -> List[str]:
+    """Format record layout differences in a console-like style for agent prompts."""
+    diffs = report.get("differences", [])
+    lines: List[str] = [f"Differences found: {len(diffs)}"]
+    for item in diffs:
+        lines.append(f"- {item['message']}")
+    return lines
+
+
 def format_vtable_differences_for_agent(report: Dict[str, Any]) -> List[str]:
     """
     Format only the differences section in a console-like style for agent prompts.
@@ -752,4 +1115,26 @@ def format_reference_vtable_entries(report: Dict[str, Any]) -> List[str]:
         entry = functions_by_index[index]
         member_name = entry.get("member_name", entry.get("func_name", "???"))
         lines.append(f"[{index}] {member_name}")
+    return lines
+
+
+def format_compiler_record_members(report: Dict[str, Any]) -> List[str]:
+    """Format compiler record layout members for debug output, one per line."""
+    members_by_name = report.get("compiler_members_by_name", {})
+    if not members_by_name:
+        return ["(no compiler record members)"]
+    lines: List[str] = []
+    for member_name, item in _sorted_struct_members(members_by_name):
+        lines.append(f"[{hex(item.get('offset', 0))}] {member_name}")
+    return lines
+
+
+def format_reference_record_members(report: Dict[str, Any]) -> List[str]:
+    """Format YAML reference struct members for debug output, one per line."""
+    members_by_name = report.get("reference_members_by_name", {})
+    if not members_by_name:
+        return ["(no reference struct members)"]
+    lines: List[str] = []
+    for member_name, item in _sorted_struct_members(members_by_name):
+        lines.append(f"[{hex(item.get('offset', 0))}] {member_name}")
     return lines

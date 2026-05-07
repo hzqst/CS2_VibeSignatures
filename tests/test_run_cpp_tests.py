@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
@@ -21,6 +23,80 @@ class TestParseVftableLayouts(unittest.TestCase):
         self.assertEqual(
             "AddEngineService",
             parsed["ILoopType"]["methods_by_index"][0]["member_name"],
+        )
+
+
+class TestParseRecordLayouts(unittest.TestCase):
+    def test_parses_struct_member_offsets_from_record_layout(self) -> None:
+        compiler_output = (
+            "*** Dumping AST Record Layout\n"
+            "         0 | struct SDL_Mouse\n"
+            "         0 |   void *(* CreateCursor)(void *, int, int)\n"
+            "        48 |   bool (* WarpMouse)(void *, float, float)\n"
+            "       136 |   void * focus\n"
+            "       160 |   float last_x\n"
+            "           | [sizeof=304, dsize=304, align=8,\n"
+            "           |  nvsize=304, nvalign=8]\n"
+        )
+
+        parsed = cpp_tests_util.parse_record_layouts(compiler_output)
+
+        self.assertIn("SDL_Mouse", parsed)
+        self.assertEqual(304, parsed["SDL_Mouse"]["sizeof"])
+        self.assertEqual(4, parsed["SDL_Mouse"]["member_count"])
+        self.assertEqual(
+            48,
+            parsed["SDL_Mouse"]["members_by_name"]["WarpMouse"]["offset"],
+        )
+        self.assertEqual(
+            136,
+            parsed["SDL_Mouse"]["members_by_name"]["focus"]["offset"],
+        )
+
+
+class TestCompareRecordLayoutWithYaml(unittest.TestCase):
+    def test_reports_structmember_offset_mismatch(self) -> None:
+        compiler_output = (
+            "*** Dumping AST Record Layout\n"
+            "         0 | struct SDL_Mouse\n"
+            "        48 |   bool (* WarpMouse)(void *, float, float)\n"
+            "       136 |   void * focus\n"
+            "           | [sizeof=304, dsize=304, align=8,\n"
+            "           |  nvsize=304, nvalign=8]\n"
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            module_dir = Path(temp_dir) / "14158" / "SDL3"
+            module_dir.mkdir(parents=True)
+            (module_dir / "SDL_Mouse_WarpMouse.windows.yaml").write_text(
+                "struct_name: SDL_Mouse\n"
+                "member_name: WarpMouse\n"
+                "offset: '0x30'\n",
+                encoding="utf-8",
+            )
+            (module_dir / "SDL_Mouse_focus.windows.yaml").write_text(
+                "struct_name: SDL_Mouse\n"
+                "member_name: focus\n"
+                "offset: '0x90'\n",
+                encoding="utf-8",
+            )
+
+            report = cpp_tests_util.compare_compiler_record_layout_with_yaml(
+                struct_name="SDL_Mouse",
+                compiler_output=compiler_output,
+                bindir=Path(temp_dir),
+                gamever="14158",
+                platform="windows",
+                reference_modules=["SDL3"],
+            )
+
+        self.assertEqual("record_layout", report["comparison_kind"])
+        self.assertTrue(report["compiler_found"])
+        self.assertTrue(report["reference_found"])
+        self.assertEqual(2, report["reference_members_count"])
+        self.assertEqual(
+            ["structmember_offset_mismatch"],
+            [item["type"] for item in report["differences"]],
         )
 
 

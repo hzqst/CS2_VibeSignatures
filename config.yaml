@@ -6143,3 +6143,25 @@ cpp_tests:
       - fdump-vtable-layouts
     reference_modules:
       - engine # bin/{gamever}/engine/CLoopTypeClientServer_*.{platform}.yaml
+
+  - name: SDL_Mouse_MSVC
+    symbol: SDL_Mouse
+    cpp: cpp_tests/SDL_Mouse.cpp
+    headers:
+    - cpp_tests/stubs/SDL3.stub.h
+    claude_permission_mode: acceptEdits
+    claude_allowed_tools: Read,Edit,MultiEdit,Write
+    target: x86_64-pc-windows-msvc
+    include_directories:
+      - cpp_tests/stubs
+    defines:
+      - COMPILER_MSVC=1
+      - COMPILER_MSVC64=1
+      - _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+    additional_compiler_options:
+      - fms-extensions
+      - fms-compatibility
+      - Xclang
+      - fdump-record-layouts
+    reference_modules:
+      - SDL3 # bin/{gamever}/SDL3/SDL_Mouse_*.{platform}.yaml
