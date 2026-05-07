@@ -42,6 +42,18 @@ modules:
           - SDL_PerformWarpMouseInWindow.{platform}.yaml     # func
         platform: windows
 
+      - name: find-SDL_Mouse_focus-AND-SDL_Mouse_last_x-AND-SDL_Mouse_last_y-windows # by LLM_DECOMPILE SDL_PerformWarpMouseInWindow
+        expected_input:
+          - SDL_PerformWarpMouseInWindow.{platform}.yaml
+        expected_output:
+          - SDL_Mouse_focus.{platform}.yaml                  # 88h     bool focus;
+          - SDL_Mouse_last_x.{platform}.yaml                 # A0h     float last_x;
+          - SDL_Mouse_last_y.{platform}.yaml                 # A4h     float last_y;
+          - SDL_Mouse_has_position.{platform}.yaml           # C0h     bool has_position;
+          - SDL_Mouse_relative_mode_warp_motion.{platform}.yaml  # C2h     bool relative_mode_warp_motion;
+          - SDL_Mouse_WarpMouse.{platform}.yaml              # 30h     bool (*WarpMouse)(void *window, float x, float y);
+        platform: windows
+
     symbols:
       - name: SDL_PreInitMouse
         category: func
@@ -91,6 +103,36 @@ modules:
 
       - name: SDL_PerformWarpMouseInWindow
         category: func
+
+      - name: SDL_Mouse_focus
+        category: structmember
+        struct: SDL_Mouse
+        member: focus
+
+      - name: SDL_Mouse_last_x
+        category: structmember
+        struct: SDL_Mouse
+        member: last_x
+
+      - name: SDL_Mouse_last_y
+        category: structmember
+        struct: SDL_Mouse
+        member: last_y
+
+      - name: SDL_Mouse_has_position
+        category: structmember
+        struct: SDL_Mouse
+        member: has_position
+
+      - name: SDL_Mouse_relative_mode_warp_motion
+        category: structmember
+        struct: SDL_Mouse
+        member: relative_mode_warp_motion
+
+      - name: SDL_Mouse_WarpMouse
+        category: structmember
+        struct: SDL_Mouse
+        member: WarpMouse
 
   - name: vphysics2
     path_windows: game/bin/win64/vphysics2.dll
@@ -6101,3 +6143,25 @@ cpp_tests:
       - fdump-vtable-layouts
     reference_modules:
       - engine # bin/{gamever}/engine/CLoopTypeClientServer_*.{platform}.yaml
+
+  - name: SDL_Mouse_MSVC
+    symbol: SDL_Mouse
+    cpp: cpp_tests/SDL_Mouse.cpp
+    headers:
+    - cpp_tests/stubs/SDL3.stub.h
+    claude_permission_mode: acceptEdits
+    claude_allowed_tools: Read,Edit,MultiEdit,Write
+    target: x86_64-pc-windows-msvc
+    include_directories:
+      - cpp_tests/stubs
+    defines:
+      - COMPILER_MSVC=1
+      - COMPILER_MSVC64=1
+      - _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+    additional_compiler_options:
+      - fms-extensions
+      - fms-compatibility
+      - Xclang
+      - fdump-record-layouts
+    reference_modules:
+      - SDL3 # bin/{gamever}/SDL3/SDL_Mouse_*.{platform}.yaml

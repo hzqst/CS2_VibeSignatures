@@ -22,8 +22,14 @@ except ImportError as e:
     sys.exit(1)
 
 from cpp_tests_util import (
+    compare_compiler_record_layout_with_yaml,
     compare_compiler_vtable_with_yaml,
+    format_compiler_record_members,
     format_compiler_vtable_entries,
+    format_record_compare_differences,
+    format_record_compare_report,
+    format_record_differences_for_agent,
+    format_reference_record_members,
     format_reference_vtable_entries,
     format_vtable_compare_differences,
     format_vtable_compare_report,
@@ -191,6 +197,14 @@ def _contains_fdump_vtable_layouts(options: Sequence[str]) -> bool:
     return False
 
 
+def _contains_fdump_record_layouts(options: Sequence[str]) -> bool:
+    for option in options:
+        normalized = _normalize_option(option)
+        if normalized and normalized.lstrip("-") == "fdump-record-layouts":
+            return True
+    return False
+
+
 def _format_command(command: Sequence[str]) -> str:
     return subprocess.list2cmdline(list(command))
 
@@ -278,10 +292,10 @@ def _build_fix_prompt(
     header_paths: Sequence[Path],
     diff_reports: Sequence[Dict[str, Any]],
 ) -> str:
-    """Build English prompt for fixing C++ headers based on vtable differences."""
+    """Build English prompt for fixing C++ headers based on layout differences."""
     lines: List[str] = []
     lines.append(
-        f"Please update the C++ header declarations for interface/class '{symbol}' according to the YAML reference vtable entries."
+        f"Please update the C++ header declarations for interface/class/struct '{symbol}' according to the YAML reference layout entries."
     )
     lines.append(
         "Follow the existing code style, formatting, and naming conventions in the header."
@@ -300,18 +314,29 @@ def _build_fix_prompt(
         #    requested = report.get("requested_modules", [])
         #    module_name = ", ".join(requested) if requested else "unknown"
         #lines.append(f"Reference module: {module_name}")
-        lines.append("  Current vtable entries in c++ header:")
-        for entry_line in format_compiler_vtable_entries(report):
-            lines.append(f"    {entry_line}")
-        lines.append("  YAML reference vtable entries:")
-        for entry_line in format_reference_vtable_entries(report):
-            lines.append(f"    {entry_line}")
-        lines.append("  VTable Differences:")
-        for diff_line in format_vtable_differences_for_agent(report):
-            lines.append(f"    {diff_line}")
+        if report.get("comparison_kind") == "record_layout":
+            lines.append("  Current record members in c++ header:")
+            for entry_line in format_compiler_record_members(report):
+                lines.append(f"    {entry_line}")
+            lines.append("  YAML reference struct members:")
+            for entry_line in format_reference_record_members(report):
+                lines.append(f"    {entry_line}")
+            lines.append("  Record Layout Differences:")
+            for diff_line in format_record_differences_for_agent(report):
+                lines.append(f"    {diff_line}")
+        else:
+            lines.append("  Current vtable entries in c++ header:")
+            for entry_line in format_compiler_vtable_entries(report):
+                lines.append(f"    {entry_line}")
+            lines.append("  YAML reference vtable entries:")
+            for entry_line in format_reference_vtable_entries(report):
+                lines.append(f"    {entry_line}")
+            lines.append("  VTable Differences:")
+            for diff_line in format_vtable_differences_for_agent(report):
+                lines.append(f"    {diff_line}")
     lines.append("")
     lines.append(
-        "Apply the header updates now and keep the resulting declarations consistent with the latest vtable layout."
+        "Apply the header updates now and keep the resulting declarations consistent with the latest reference layout."
     )
     return "\n".join(lines)
 
@@ -702,6 +727,7 @@ def compile_and_compare(
         additional_options = _to_list(test_item.get("additional_compile_options"))
 
     should_parse_vtable = _contains_fdump_vtable_layouts(additional_options)
+    should_parse_record = _contains_fdump_record_layouts(additional_options)
 
     with tempfile.TemporaryDirectory(prefix=f"cpp_test_{test_name}_") as temp_dir:
         temp_dir_path = Path(temp_dir)
@@ -731,55 +757,40 @@ def compile_and_compare(
             "output": compile_output,
         }
 
-    compare_reports = None
-    if should_parse_vtable:
+    compare_reports = []
+    if should_parse_vtable or should_parse_record:
         platform = map_target_triple_to_platform(target)
         if platform is None:
             compare_reports = [
                 {
-                "class_name": symbol,
-                "platform": "unknown",
-                "requested_modules": _to_list(test_item.get("reference_modules")),
-                "compiler_found": False,
-                "reference_found": False,
-                "differences": [],
-                "notes": [
-                    f"Cannot map target triple '{target}' to yaml platform; vtable compare skipped."
-                ],
+                    "class_name": symbol,
+                    "platform": "unknown",
+                    "requested_modules": _to_list(test_item.get("reference_modules")),
+                    "compiler_found": False,
+                    "reference_found": False,
+                    "differences": [],
+                    "notes": [
+                        f"Cannot map target triple '{target}' to yaml platform; layout compare skipped."
+                    ],
                 }
             ]
         else:
             reference_modules = _to_list(test_item.get("reference_modules"))
-            alias_symbols = _to_list(test_item.get("alias_symbols"))
-            try:
-                merge_reference_modules = _to_bool(
-                    test_item.get("merge_reference_modules"), default=True
-                )
-            except ValueError as exc:
-                return {
-                    "status": "invalid",
-                    "message": (
-                        "Invalid 'merge_reference_modules' value: "
-                        f"{test_item.get('merge_reference_modules')!r}. {exc}"
-                    ),
-                }
-            compare_reports = []
-            if not reference_modules or merge_reference_modules:
-                compare_reports.append(
-                    compare_compiler_vtable_with_yaml(
-                        class_name=symbol,
-                        compiler_output=compile_output,
-                        bindir=bindir,
-                        gamever=args.gamever,
-                        platform=platform,
-                        reference_modules=reference_modules,
-                        merge_reference_modules=merge_reference_modules,
-                        pointer_size=pointer_size_from_target_triple(target),
-                        alias_class_names=alias_symbols,
+            if should_parse_vtable:
+                alias_symbols = _to_list(test_item.get("alias_symbols"))
+                try:
+                    merge_reference_modules = _to_bool(
+                        test_item.get("merge_reference_modules"), default=True
                     )
-                )
-            else:
-                for module_name in reference_modules:
+                except ValueError as exc:
+                    return {
+                        "status": "invalid",
+                        "message": (
+                            "Invalid 'merge_reference_modules' value: "
+                            f"{test_item.get('merge_reference_modules')!r}. {exc}"
+                        ),
+                    }
+                if not reference_modules or merge_reference_modules:
                     compare_reports.append(
                         compare_compiler_vtable_with_yaml(
                             class_name=symbol,
@@ -787,12 +798,40 @@ def compile_and_compare(
                             bindir=bindir,
                             gamever=args.gamever,
                             platform=platform,
-                            reference_modules=[module_name],
-                            merge_reference_modules=False,
+                            reference_modules=reference_modules,
+                            merge_reference_modules=merge_reference_modules,
                             pointer_size=pointer_size_from_target_triple(target),
                             alias_class_names=alias_symbols,
                         )
                     )
+                else:
+                    for module_name in reference_modules:
+                        compare_reports.append(
+                            compare_compiler_vtable_with_yaml(
+                                class_name=symbol,
+                                compiler_output=compile_output,
+                                bindir=bindir,
+                                gamever=args.gamever,
+                                platform=platform,
+                                reference_modules=[module_name],
+                                merge_reference_modules=False,
+                                pointer_size=pointer_size_from_target_triple(target),
+                                alias_class_names=alias_symbols,
+                            )
+                        )
+            if should_parse_record:
+                compare_reports.append(
+                    compare_compiler_record_layout_with_yaml(
+                        struct_name=symbol,
+                        compiler_output=compile_output,
+                        bindir=bindir,
+                        gamever=args.gamever,
+                        platform=platform,
+                        reference_modules=reference_modules,
+                    )
+                )
+    else:
+        compare_reports = None
 
     return {
         "status": "ok",
@@ -886,6 +925,10 @@ def main():
     invalid_count = 0
     compare_diff_count = 0
     compare_run_count = 0
+    vtable_compare_run_count = 0
+    vtable_compare_diff_count = 0
+    record_compare_run_count = 0
+    record_compare_diff_count = 0
     header_fix_run_count = 0
     header_fix_fail_count = 0
 
@@ -924,24 +967,53 @@ def main():
             reports_with_diff: List[Dict[str, Any]] = []
             for compare_report in compare_reports:
                 compare_run_count += 1
-                lines = format_vtable_compare_report(
-                    compare_report, include_differences=not args.debug
-                )
+                is_record = compare_report.get("comparison_kind") == "record_layout"
+                if is_record:
+                    record_compare_run_count += 1
+                    lines = format_record_compare_report(
+                        compare_report, include_differences=not args.debug
+                    )
+                else:
+                    vtable_compare_run_count += 1
+                    lines = format_vtable_compare_report(
+                        compare_report, include_differences=not args.debug
+                    )
                 for line in lines:
                     print(f"  {line}")
                 if compare_report.get("differences"):
                     compare_diff_count += 1
+                    if is_record:
+                        record_compare_diff_count += 1
+                    else:
+                        vtable_compare_diff_count += 1
                     reports_with_diff.append(compare_report)
                 if args.debug:
-                    compiler_debug_lines = format_compiler_vtable_entries(compare_report)
-                    print("  [DEBUG] Compiler vtable entries:")
+                    if is_record:
+                        compiler_debug_lines = format_compiler_record_members(
+                            compare_report
+                        )
+                        reference_debug_lines = format_reference_record_members(
+                            compare_report
+                        )
+                        diff_lines = format_record_compare_differences(compare_report)
+                        print("  [DEBUG] Compiler record members:")
+                    else:
+                        compiler_debug_lines = format_compiler_vtable_entries(
+                            compare_report
+                        )
+                        reference_debug_lines = format_reference_vtable_entries(
+                            compare_report
+                        )
+                        diff_lines = format_vtable_compare_differences(compare_report)
+                        print("  [DEBUG] Compiler vtable entries:")
                     for debug_line in compiler_debug_lines:
                         print(f"    {debug_line}")
-                    debug_lines = format_reference_vtable_entries(compare_report)
-                    print("  [DEBUG] YAML reference vtable entries:")
-                    for debug_line in debug_lines:
+                    if is_record:
+                        print("  [DEBUG] YAML reference struct members:")
+                    else:
+                        print("  [DEBUG] YAML reference vtable entries:")
+                    for debug_line in reference_debug_lines:
                         print(f"    {debug_line}")
-                    diff_lines = format_vtable_compare_differences(compare_report)
                     for diff_line in diff_lines:
                         print(f"  {diff_line}")
 
@@ -966,7 +1038,7 @@ def main():
                         args.claude_extra_args,
                     )
                     print(
-                        f"  [INFO] VTable differences detected; invoking agent '{args.agent}' to fix headers..."
+                        f"  [INFO] Layout differences detected; invoking agent '{args.agent}' to fix headers..."
                     )
                     header_fix_run_count += 1
                     if not run_fix_header_with_verification(
@@ -990,8 +1062,12 @@ def main():
     print("=== done ===")
     print(f"Compile failures: {compile_failed_count}")
     print(f"Invalid test items: {invalid_count}")
-    print(f"VTable compares run: {compare_run_count}")
-    print(f"VTable compares with differences: {compare_diff_count}")
+    print(f"Layout compares run: {compare_run_count}")
+    print(f"Layout compares with differences: {compare_diff_count}")
+    print(f"VTable compares run: {vtable_compare_run_count}")
+    print(f"VTable compares with differences: {vtable_compare_diff_count}")
+    print(f"Record layout compares run: {record_compare_run_count}")
+    print(f"Record layout compares with differences: {record_compare_diff_count}")
     if args.fixheader:
         print(f"Header fix agent runs: {header_fix_run_count}")
         print(f"Header fix agent failures: {header_fix_fail_count}")
